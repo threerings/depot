@@ -12,7 +12,6 @@
   <property name="classes.dir" value="${deploy.dir}/classes"/>
   <property name="javadoc.dir" value="${deploy.dir}/docs"/>
   <property name="libs.dir"    value="lib"/>
-  <property name="gwtjar.dir"  value="${deploy.dir}/gwt-jar"/>
 
   <!-- declare our classpath business -->
   <path id="classpath">
@@ -52,10 +51,10 @@
     <echo level="info">Velocity: ${jakarta.velocity.present}</echo>
 
     <!-- combines package availability into build controls -->
-    <condition property="build.depot.ehcache">
+    <condition property="build.ehcache">
       <and><isset property="ehcache.present"/></and>
     </condition>
-    <condition property="build.depot.tools">
+    <condition property="build.tools">
       <and><isset property="ant.present"/>
       <isset property="velocity.present"/></and>
     </condition>
@@ -84,7 +83,6 @@
   <target name="clean">
     <delete dir="${classes.dir}"/>
     <delete dir="${deploy.dir}/docs"/>
-    <delete dir="${gwtjar.dir}"/>
     <delete failonerror="false"><fileset dir="${deploy.dir}" includes="*.jar"/></delete>
   </target>
 
@@ -98,8 +96,8 @@
     <javac srcdir="${src.dir}" destdir="${classes.dir}" includeAntRuntime="false"
            debug="on" optimize="${build.optimize}" source="1.5" target="1.5" encoding="utf-8">
       <classpath refid="classpath"/>
-      <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="build.depot.ehcache"/>
-      <exclude name="com/samskivert/depot/tools/**" unless="build.depot.tools"/>
+      <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="build.ehcache"/>
+      <exclude name="com/samskivert/depot/tools/**" unless="build.tools"/>
       <exclude name="com/samskivert/depot/tests/**" unless="build.tests"/>
       <compilerarg value="-Xlint"/>
       <compilerarg value="-Xlint:-serial"/>
@@ -108,17 +106,16 @@
 
   <!-- build the javadoc documentation -->
   <target name="javadoc" depends="prepare,compute-builds">
-    <javadoc windowtitle="${app.name} API"
-             doctitle="${app.name} API"
-             overview="${src.dir}/${doc.overview}"
-             destdir="${javadoc.dir}"
+    <javadoc windowtitle="${app.name} API" doctitle="${app.name} API"
+             overview="${src.dir}/${doc.overview}" destdir="${javadoc.dir}"
              additionalparam="-breakiterator"
              link="http://samskivert.com/code/samskivert/samskivert/docs/api/">
       <packageset dir="${src.dir}">
-        <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="ehcache.present"/>
+        <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="build.ehcache"/>
+        <exclude name="com/samskivert/depot/tools/**" unless="build.tools"/>
         <exclude name="com/samskivert/depot/tests/**" unless="build.tests"/>
       </packageset>
-      <bottom>Copyright &#169; 2000-${year} ${copyright.holder}. All Rights Reserved.</bottom>
+      <bottom>Copyright &#169; 2006-${year} ${copyright.holder}. All Rights Reserved.</bottom>
       <classpath refid="classpath"/>
       <link href="http://java.sun.com/j2se/1.5/docs/api/"/>
     </javadoc>

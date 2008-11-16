@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head>
+<!--
+
+  $Id: overview.html,v 1.1 2001/08/12 01:45:46 mdb Exp $
+
+  Depot library - useful routines for java programs
+  Copyright (C) 2006-2008 Michael Bayne
+ 
+  This library is free software; you can redistribute it and/or modify it
+  under the terms of the GNU Lesser General Public License as published
+  by the Free Software Foundation; either version 2.1 of the License, or
+  (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+
+-->
+</head>
+<body bgcolor="white">
+
+    Depot is something like an ORM library in Java, but has aims that are
+    somewhat different from the popular "managed" persistence libraries like
+    Hibernate and others.
+
+    <h3>Design Goals</h3>
+
+    <ul>
+    <li><p> Eliminate (as much as possible) the use of raw SQL (or any textual
+        query language), instead providing Java classes that allow the
+        expressions of queries and updates in as concise but compile-time
+        checkable a manner as possible. </p>
+
+    <li><p> Reduce the pain of schema and data migrations as much as possible,
+        but not so much that the system used to do the migrations is too
+        complex for anyone to understand or use properly. </p>
+
+    <li><p> Use annotations to layer database metadata over the top of (almost)
+        POJOs. </p>
+
+    <li><p> Use annotations that are syntactically and semantically equivalent
+        to EJB3 persistence annotations wherever possible. </p>
+
+    <li><p> Support multiple database backends (currently MySQL and Postgresql). </p>
+
+    <li><p> Provide caching support (currently integrated with EHCache). </p>
+
+    <li><p> Keep an eye toward eventual support for sharded databases. </p>
+    </ul>
+
+    <p> I and others who have contributed to the library hope that you find it
+      useful, easy to use and time saving. Comments and contributions are
+      always welcome.
+
+    <p> -- <a href="mailto:mdb@samskivert.com">mdb@samskivert.com</a>
+
+</body>
+</html>
