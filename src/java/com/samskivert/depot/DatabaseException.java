@@ -1,8 +1,8 @@
 //
 // $Id$
 //
-// samskivert library - useful routines for java programs
-// Copyright (C) 2001-2008 Michael Bayne
+// Depot library - a Java relational persistence library
+// Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
 // 
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
