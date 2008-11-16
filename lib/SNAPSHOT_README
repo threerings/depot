@@ -1,0 +1,12 @@
+Depot Snapshot
+--------------
+
+This snapshot contains a pre-built version of the Depot Java persistence
+library along with its runtime and build-time dependencies. Go here for more
+information on those dependencies and on integrating Depot into your project:
+
+http://code.google.com/p/depot/wiki/Configuration
+
+You may also wish to visit the main Depot project page:
+
+http://code.google.com/p/depot/

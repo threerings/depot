@@ -1,19 +1,19 @@
 <?xml version="1.0"?>
 <project name="depot" default="compile" basedir=".">
-  <!-- things you may want to change -->
-  <property name="app.name"         value="depot"/>
+  <!-- project metadata -->
+  <property name="lib.name"         value="depot"/>
   <property name="doc.packages"     value="com.samskivert.depot.*"/>
   <property name="doc.overview"     value="com/samskivert/depot/overview.html"/>
   <property name="copyright.holder" value="Michael Bayne"/>
 
-  <!-- things you probably don't want to change -->
+  <!-- various directories used when building things -->
   <property name="src.dir"     value="src/java"/>
   <property name="deploy.dir"  value="dist"/>
   <property name="classes.dir" value="${deploy.dir}/classes"/>
   <property name="javadoc.dir" value="${deploy.dir}/docs"/>
   <property name="libs.dir"    value="lib"/>
 
-  <!-- declare our classpath business -->
+  <!-- declare our classpath -->
   <path id="classpath">
     <pathelement location="${classes.dir}"/>
     <fileset dir="${deploy.dir}/lib" includes="*.jar"/>
@@ -30,7 +30,7 @@
     <mkdir dir="${classes.dir}"/>
     <mkdir dir="${javadoc.dir}"/>
     <copy todir="${deploy.dir}/lib" flatten="true">
-      <fileset refid="${app.name}.libs"/>
+      <fileset refid="${lib.name}.libs"/>
     </copy>
   </target>
 
@@ -106,7 +106,7 @@
 
   <!-- build the javadoc documentation -->
   <target name="javadoc" depends="prepare,compute-builds">
-    <javadoc windowtitle="${app.name} API" doctitle="${app.name} API"
+    <javadoc windowtitle="${lib.name} API" doctitle="${lib.name} API"
              overview="${src.dir}/${doc.overview}" destdir="${javadoc.dir}"
              additionalparam="-breakiterator"
              link="http://samskivert.com/code/samskivert/samskivert/docs/api/">
@@ -146,11 +146,25 @@
     </unit>
   </target>
 
-  <!-- builds our distribution files (war and jar) -->
+  <!-- builds our distribution jar file -->
   <target name="dist" depends="prepare,compile">
-    <jar destfile="${deploy.dir}/${app.name}.jar" basedir="${classes.dir}">
+    <jar destfile="${deploy.dir}/${lib.name}.jar" basedir="${classes.dir}">
       <exclude name="**/tests/**"/>
     </jar>
+  </target>
+
+  <!-- builds a snapshot zip file -->
+  <target name="snapshot" depends="dist">
+    <tstamp><format property="date" pattern="yyyyMMdd" /></tstamp>
+    <mkdir dir="${deploy.dir}/depot-${date}"/>
+    <copy todir="${deploy.dir}/depot-${date}">
+      <fileset dir="${deploy.dir}/lib" includes="*.jar"/>
+      <fileset dir="${deploy.dir}" includes="${lib.name}.jar"/>
+    </copy>
+    <copy file="lib/SNAPSHOT_README" tofile="${deploy.dir}/depot-${date}/README"/>
+    <zip destfile="${deploy.dir}/depot-${date}.zip" basedir="${deploy.dir}">
+      <include name="depot-${date}/**"/>
+    </zip>
   </target>
 
   <!-- generate a class hierarchy diagram -->
