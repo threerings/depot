@@ -2,7 +2,7 @@
 // $Id$
 //
 // samskivert library - useful routines for java programs
-// Copyright (C) 2006-2007 Michael Bayne, Pär Winzell
+// Copyright (C) 2006-2008 Michael Bayne, Pär Winzell
 //
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
@@ -18,7 +18,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.jdbc.depot.tests;
+package com.samskivert.depot.tests;
 
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -28,16 +28,16 @@ import java.util.Set;
 import com.samskivert.util.RandomUtil;
 
 import com.samskivert.jdbc.StaticConnectionProvider;
-import com.samskivert.jdbc.depot.DepotRepository;
-// import com.samskivert.jdbc.depot.Key;
-// import com.samskivert.jdbc.depot.KeySet;
-import com.samskivert.jdbc.depot.PersistenceContext;
-import com.samskivert.jdbc.depot.PersistentRecord;
-import com.samskivert.jdbc.depot.SchemaMigration;
-import com.samskivert.jdbc.depot.annotation.Computed;
-import com.samskivert.jdbc.depot.clause.Where;
-import com.samskivert.jdbc.depot.expression.LiteralExp;
-import com.samskivert.jdbc.depot.operator.Conditionals;
+import com.samskivert.depot.DepotRepository;
+// import com.samskivert.depot.Key;
+// import com.samskivert.depot.KeySet;
+import com.samskivert.depot.PersistenceContext;
+import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.SchemaMigration;
+import com.samskivert.depot.annotation.Computed;
+import com.samskivert.depot.clause.Where;
+import com.samskivert.depot.expression.LiteralExp;
+import com.samskivert.depot.operator.Conditionals;
 
 /**
  * A test tool for the Depot repository services.

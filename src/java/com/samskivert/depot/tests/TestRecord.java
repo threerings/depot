@@ -2,7 +2,7 @@
 // $Id$
 //
 // samskivert library - useful routines for java programs
-// Copyright (C) 2006-2007 Michael Bayne, Pär Winzell
+// Copyright (C) 2006-2008 Michael Bayne, Pär Winzell
 //
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
@@ -18,17 +18,17 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.jdbc.depot.tests;
+package com.samskivert.depot.tests;
 
 import java.sql.Date;
 import java.sql.Timestamp;
 
-import com.samskivert.jdbc.depot.Key;
-import com.samskivert.jdbc.depot.PersistentRecord;
-import com.samskivert.jdbc.depot.annotation.Entity;
-import com.samskivert.jdbc.depot.annotation.Id;
-import com.samskivert.jdbc.depot.annotation.Index;
-import com.samskivert.jdbc.depot.expression.ColumnExp;
+import com.samskivert.depot.Key;
+import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.annotation.Entity;
+import com.samskivert.depot.annotation.Id;
+import com.samskivert.depot.annotation.Index;
+import com.samskivert.depot.expression.ColumnExp;
 
 import com.samskivert.util.StringUtil;
 
