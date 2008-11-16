@@ -1,0 +1,167 @@
+<?xml version="1.0"?>
+<project name="depot" default="compile" basedir=".">
+  <!-- things you may want to change -->
+  <property name="app.name"         value="depot"/>
+  <property name="doc.packages"     value="com.samskivert.depot.*"/>
+  <property name="doc.overview"     value="com/samskivert/depot/overview.html"/>
+  <property name="copyright.holder" value="Michael Bayne"/>
+
+  <!-- things you probably don't want to change -->
+  <property name="src.dir"     value="src/java"/>
+  <property name="deploy.dir"  value="dist"/>
+  <property name="classes.dir" value="${deploy.dir}/classes"/>
+  <property name="javadoc.dir" value="${deploy.dir}/docs"/>
+  <property name="libs.dir"    value="lib"/>
+  <property name="gwtjar.dir"  value="${deploy.dir}/gwt-jar"/>
+
+  <!-- declare our classpath business -->
+  <path id="classpath">
+    <pathelement location="${classes.dir}"/>
+    <fileset dir="${deploy.dir}/lib" includes="*.jar"/>
+  </path>
+
+  <!-- our dependencies are in a separate file so that we can integrate into OOO builds -->
+  <import file="etc/libs-incl.xml"/>
+
+  <!-- prepares the application directories -->
+  <target name="prepare">
+    <tstamp><format property="year" pattern="yyyy" /></tstamp>
+    <mkdir dir="${deploy.dir}"/>
+    <mkdir dir="${deploy.dir}/lib"/>
+    <mkdir dir="${classes.dir}"/>
+    <mkdir dir="${javadoc.dir}"/>
+    <copy todir="${deploy.dir}/lib" flatten="true">
+      <fileset refid="${app.name}.libs"/>
+    </copy>
+  </target>
+
+  <!-- determines which optional packages should be built -->
+  <target name="compute-builds">
+    <!-- check to see which packages are available -->
+    <available property="ant.present" classpathref="classpath" ignoresystemclasses="true"
+     classname="org.apache.tools.ant.Task"/>
+    <echo level="info">Ant: ${ant.present}</echo>
+    <available property="ehcache.present" classpathref="classpath"
+     classname="net.sf.ehcache.Element"/>
+    <echo level="info">EH Cache: ${ehcache.present}</echo>
+    <available property="junit.present" classpathref="classpath"
+     classname="junit.framework.Test"/>
+    <echo level="info">JUnit: ${junit.present}</echo>
+    <available property="jakarta.velocity.present" classpathref="classpath"
+     classname="org.apache.velocity.Template"/>
+    <echo level="info">Velocity: ${jakarta.velocity.present}</echo>
+
+    <!-- combines package availability into build controls -->
+    <condition property="build.depot.ehcache">
+      <and><isset property="ehcache.present"/></and>
+    </condition>
+    <condition property="build.depot.tools">
+      <and><isset property="ant.present"/>
+      <isset property="velocity.present"/></and>
+    </condition>
+    <condition property="build.tests">
+      <and><isset property="junit.present"/></and>
+    </condition>
+  </target>
+
+  <!-- generates fields for persistent record classes -->
+  <target name="genrecord" depends="prepare">
+    <taskdef name="grecord" classname="com.samskivert.depot.tools.GenRecordTask"
+             classpathref="classpath"/>
+    <!-- make sure the record class files are all compiled -->
+    <javac srcdir="src/java" destdir="${classes.dir}"
+           debug="on" optimize="${build.optimize}" deprecation="on">
+      <classpath refid="classpath"/>
+      <include name="**/*Record.java"/>
+    </javac>
+    <!-- now update the source files -->
+    <grecord classpathref="classpath">
+      <fileset dir="src/java" includes="**/*Record.java"/>
+    </grecord>
+  </target>
+
+  <!-- cleans out the intermediate build files -->
+  <target name="clean">
+    <delete dir="${classes.dir}"/>
+    <delete dir="${deploy.dir}/docs"/>
+    <delete dir="${gwtjar.dir}"/>
+    <delete failonerror="false"><fileset dir="${deploy.dir}" includes="*.jar"/></delete>
+  </target>
+
+  <!-- wipes the entire build directory clean -->
+  <target name="distclean">
+    <delete dir="${deploy.dir}"/>
+  </target>
+
+  <!-- build the java class files -->
+  <target name="compile" depends="prepare,compute-builds">
+    <javac srcdir="${src.dir}" destdir="${classes.dir}" includeAntRuntime="false"
+           debug="on" optimize="${build.optimize}" source="1.5" target="1.5" encoding="utf-8">
+      <classpath refid="classpath"/>
+      <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="build.depot.ehcache"/>
+      <exclude name="com/samskivert/depot/tools/**" unless="build.depot.tools"/>
+      <exclude name="com/samskivert/depot/tests/**" unless="build.tests"/>
+      <compilerarg value="-Xlint"/>
+      <compilerarg value="-Xlint:-serial"/>
+    </javac>
+  </target>
+
+  <!-- build the javadoc documentation -->
+  <target name="javadoc" depends="prepare,compute-builds">
+    <javadoc windowtitle="${app.name} API"
+             doctitle="${app.name} API"
+             overview="${src.dir}/${doc.overview}"
+             destdir="${javadoc.dir}"
+             additionalparam="-breakiterator"
+             link="http://samskivert.com/code/samskivert/samskivert/docs/api/">
+      <packageset dir="${src.dir}">
+        <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="ehcache.present"/>
+        <exclude name="com/samskivert/depot/tests/**" unless="build.tests"/>
+      </packageset>
+      <bottom>Copyright &#169; 2000-${year} ${copyright.holder}. All Rights Reserved.</bottom>
+      <classpath refid="classpath"/>
+      <link href="http://java.sun.com/j2se/1.5/docs/api/"/>
+    </javadoc>
+  </target>
+
+  <!-- a target for rebuilding everything -->
+  <target name="all" depends="clean,prepare,compile,javadoc,dist"/>
+
+  <!-- runs our unit tests -->
+  <target name="tests" depends="prepare,compile" description="Runs unit tests.">
+    <taskdef name="unit" classpathref="classpath"
+      classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask"/>
+    <unit printsummary="off" haltonfailure="yes" fork="${junit.fork}">
+      <classpath>
+        <pathelement location="${classes.dir}"/>
+        <pathelement location="${basedir}"/> <!-- for rsrc/ -->
+        <fileset dir="${deploy.dir}/lib" includes="*.jar"/>
+        <fileset dir="lib/test" includes="*.jar"/>
+      </classpath>
+      <sysproperty key="test_dir" value="${basedir}"/>
+      <formatter type="brief" usefile="false"/>
+      <batchtest>
+        <fileset dir="${src.dir}">
+          <include name="**/tests/**/*Test.java"/>
+          <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="ehcache.present"/>
+        </fileset>
+      </batchtest>
+    </unit>
+  </target>
+
+  <!-- builds our distribution files (war and jar) -->
+  <target name="dist" depends="prepare,compile">
+    <jar destfile="${deploy.dir}/${app.name}.jar" basedir="${classes.dir}">
+      <exclude name="**/tests/**"/>
+    </jar>
+  </target>
+
+  <!-- generate a class hierarchy diagram -->
+  <target name="hiergen" depends="prepare,compile">
+    <taskdef name="viztool" classname="com.samskivert.viztool.DriverTask"/>
+    <viztool visualizer="com.samskivert.viztool.hierarchy.HierarchyVisualizer"
+      pkgroot="com.samskivert" classes="com.samskivert.*" output="hierarchy.ps">
+      <classpath refid="classpath"/>
+    </viztool>
+  </target>
+</project>
