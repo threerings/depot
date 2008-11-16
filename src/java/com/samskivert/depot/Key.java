@@ -23,9 +23,11 @@ package com.samskivert.depot;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import com.samskivert.depot.expression.ExpressionVisitor;
 import com.samskivert.depot.expression.SQLExpression;
@@ -104,7 +106,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
         _pClass = pClass;
 
         // build a local map of field name -> field value
-        Map<String, Comparable<?>> map = new HashMap<String, Comparable<?>>();
+        Map<String, Comparable<?>> map = Maps.newHashMap();
         for (int i = 0; i < fields.length; i ++) {
             map.put(fields[i], values[i]);
         }
@@ -113,7 +115,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
         String[] keyFields = KeyUtil.getKeyFields(pClass);
 
         // now extract the values in field order and ensure none are extra or missing
-        _values = new ArrayList<Comparable<?>>();
+        _values = Lists.newArrayList();
         for (int ii = 0; ii < keyFields.length; ii++) {
             Comparable<?> nugget = map.remove(keyFields[ii]);
             if (nugget == null) {

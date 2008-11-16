@@ -25,14 +25,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.common.collect.Maps;
 
 import com.samskivert.jdbc.DatabaseLiaison;
 import com.samskivert.jdbc.JDBCUtil;
@@ -83,9 +84,9 @@ public abstract class FindAllQuery<T extends PersistentRecord>
         public List<T> invoke (Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
-            Map<Key<T>, T> entities = new HashMap<Key<T>, T>();
-            List<Key<T>> allKeys = new ArrayList<Key<T>>();
-            Set<Key<T>> fetchKeys = new HashSet<Key<T>>();
+            Map<Key<T>, T> entities = Maps.newHashMap();
+            List<Key<T>> allKeys = Lists.newArrayList();
+            Set<Key<T>> fetchKeys = Sets.newHashSet();
 
             PreparedStatement stmt = _builder.prepare(conn);
             String stmtString = stmt.toString(); // for debugging
@@ -134,8 +135,8 @@ public abstract class FindAllQuery<T extends PersistentRecord>
         public List<T> invoke (Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
-            Map<Key<T>, T> entities = new HashMap<Key<T>, T>();
-            Set<Key<T>> fetchKeys = new HashSet<Key<T>>();
+            Map<Key<T>, T> entities = Maps.newHashMap();
+            Set<Key<T>> fetchKeys = Sets.newHashSet();
             for (Key<T> key : _keys) {
                 // TODO: All this cache fiddling needs to move to PersistenceContext?
                 CacheAdapter.CachedValue<T> hit = _ctx.cacheLookup(key);
@@ -175,7 +176,7 @@ public abstract class FindAllQuery<T extends PersistentRecord>
         public List<T> invoke (Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
-            List<T> result = new ArrayList<T>();
+            List<T> result = Lists.newArrayList();
             PreparedStatement stmt = _builder.prepare(conn);
             try {
                 ResultSet rs = stmt.executeQuery();
@@ -219,7 +220,7 @@ public abstract class FindAllQuery<T extends PersistentRecord>
             return bits;
         }
 
-        List<T> result = new ArrayList<T>();
+        List<T> result = Lists.newArrayList();
         for (T bit : bits) {
             if (bit != null) {
                 @SuppressWarnings("unchecked") T cbit = (T) bit.clone();
@@ -240,7 +241,7 @@ public abstract class FindAllQuery<T extends PersistentRecord>
         if (fetchKeys.size() > In.MAX_KEYS) {
             int keyCount = fetchKeys.size();
             do {
-                Set<Key<T>> keys = new HashSet<Key<T>>();
+                Set<Key<T>> keys = Sets.newHashSet();
                 Iterator<Key<T>> iter = fetchKeys.iterator();
                 for (int ii = 0; ii < Math.min(keyCount, In.MAX_KEYS); ii++) {
                     keys.add(iter.next());
@@ -254,7 +255,7 @@ public abstract class FindAllQuery<T extends PersistentRecord>
             loadRecords(conn, fetchKeys, entities, origStmt);
         }
 
-        List<T> result = new ArrayList<T>();
+        List<T> result = Lists.newArrayList();
         for (Key<T> key : allKeys) {
             T value = entities.get(key);
             if (value != null) {
@@ -272,7 +273,7 @@ public abstract class FindAllQuery<T extends PersistentRecord>
                                               new KeySet<T>(_type, keys)));
         PreparedStatement stmt = _builder.prepare(conn);
         try {
-            Set<Key<T>> got = new HashSet<Key<T>>();
+            Set<Key<T>> got = Sets.newHashSet();
             ResultSet rs = stmt.executeQuery();
             int cnt = 0, dups = 0;
             while (rs.next()) {

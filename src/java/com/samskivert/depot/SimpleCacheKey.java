@@ -50,10 +50,10 @@ public class SimpleCacheKey
     /**
      * Construct a {@link SimpleCacheKey} for the given cache id with the given cache key.
      */
-    public SimpleCacheKey (String cacheId, Serializable value)
+    public SimpleCacheKey (String cacheId, Serializable cacheKey)
     {
         _cacheId = cacheId;
-        _cacheKey = value;
+        _cacheKey = cacheKey;
     }
 
     // from CacheKey

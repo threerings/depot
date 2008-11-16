@@ -24,10 +24,11 @@ import java.sql.SQLException;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.expression.SQLExpression;
@@ -57,8 +58,7 @@ public class DepotTypes
         PersistenceContext ctx, Collection<? extends QueryClause> clauses)
         throws DatabaseException
     {
-        Set<Class<? extends PersistentRecord>> classSet =
-            new HashSet<Class<? extends PersistentRecord>>();
+        Set<Class<? extends PersistentRecord>> classSet = Sets.newHashSet();
         for (QueryClause clause : clauses) {
             if (clause != null) {
                 clause.addClasses(classSet);
@@ -210,11 +210,10 @@ public class DepotTypes
     }
 
     /** Classes mapped to integers, used for table abbreviation indexing. */
-    protected Map<Class<?>, Integer> _classIx = new HashMap<Class<?>, Integer>();
+    protected Map<Class<?>, Integer> _classIx = Maps.newHashMap();
 
     /** Classes mapped to marshallers, used for table names and field lists. */
-    protected Map<Class<?>, DepotMarshaller<?>> _classMap =
-        new HashMap<Class<?>, DepotMarshaller<?>>();
+    protected Map<Class<?>, DepotMarshaller<?>> _classMap = Maps.newHashMap();
 
     /** When false, override the normal table abbreviations and return full table names instead. */
     protected boolean _useTableAbbreviations = true;

@@ -20,9 +20,6 @@
 
 package com.samskivert.depot;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +27,10 @@ import java.util.Set;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import com.samskivert.io.PersistenceException;
 import com.samskivert.util.StringUtil;
@@ -53,7 +54,7 @@ public class PersistenceContext
     public static final boolean DEBUG = Boolean.getBoolean("com.samskivert.depot.debug");
 
     /** Map {@link TableGenerator} instances by name. */
-    public HashMap<String, TableGenerator> tableGenerators = new HashMap<String, TableGenerator>();
+    public Map<String, TableGenerator> tableGenerators = Maps.newHashMap();
 
     /**
      * A cache listener is notified when cache entries change. Its purpose is typically to do
@@ -453,7 +454,7 @@ public class PersistenceContext
     {
         Set<CacheListener<?>> listenerSet = _listenerSets.get(cacheId);
         if (listenerSet == null) {
-            listenerSet = new HashSet<CacheListener<?>>();
+            listenerSet = Sets.newHashSet();
             _listenerSets.put(cacheId, listenerSet);
         }
         listenerSet.add(listener);
@@ -595,13 +596,11 @@ public class PersistenceContext
     protected CacheAdapter _cache;
 
     /** Tracks repositories during the pre-initialization phase. */
-    protected List<DepotRepository> _repositories = new ArrayList<DepotRepository>();
+    protected List<DepotRepository> _repositories = Lists.newArrayList();
 
     /** A mapping from persistent record class to resolved marshaller. */
-    protected Map<Class<?>, DepotMarshaller<?>> _marshallers =
-        new HashMap<Class<?>, DepotMarshaller<?>>();
+    protected Map<Class<?>, DepotMarshaller<?>> _marshallers = Maps.newHashMap();
 
     /** A mapping of cache listeners by cache id. */
-    protected Map<String, Set<CacheListener<?>>> _listenerSets =
-        new HashMap<String, Set<CacheListener<?>>>();
+    protected Map<String, Set<CacheListener<?>>> _listenerSets = Maps.newHashMap();
 }

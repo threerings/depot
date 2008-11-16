@@ -26,14 +26,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import com.samskivert.util.ArrayUtil;
 
@@ -92,8 +93,7 @@ public abstract class DepotRepository
     protected void resolveRecords ()
         throws DatabaseException
     {
-        Set<Class<? extends PersistentRecord>> classes =
-            new HashSet<Class<? extends PersistentRecord>>();
+        Set<Class<? extends PersistentRecord>> classes = Sets.newHashSet();
         getManagedRecords(classes);
         for (Class<? extends PersistentRecord> rclass : classes) {
             _ctx.getMarshaller(rclass);
@@ -214,7 +214,7 @@ public abstract class DepotRepository
     {
         // convert the raw keys into real key records
         DepotMarshaller<T> marsh = _ctx.getMarshaller(type);
-        List<Key<T>> keys = new ArrayList<Key<T>>();
+        List<Key<T>> keys = Lists.newArrayList();
         for (Comparable<?> key : primaryKeys) {
             keys.add(marsh.makePrimaryKey(key));
         }
@@ -311,7 +311,7 @@ public abstract class DepotRepository
         Class<T> type, boolean forUpdate, Collection<? extends QueryClause> clauses)
         throws DatabaseException
     {
-        final List<Key<T>> keys = new ArrayList<Key<T>>();
+        final List<Key<T>> keys = Lists.newArrayList();
         final DepotMarshaller<T> marsh = _ctx.getMarshaller(type);
         SelectClause<T> select = new SelectClause<T>(type, marsh.getPrimaryKeyFields(), clauses);
         final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, select));
@@ -984,5 +984,5 @@ public abstract class DepotRepository
     }
 
     protected PersistenceContext _ctx;
-    protected List<DataMigration> _dataMigs = new ArrayList<DataMigration>();
+    protected List<DataMigration> _dataMigs = Lists.newArrayList();
 }

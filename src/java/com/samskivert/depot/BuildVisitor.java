@@ -20,10 +20,11 @@
 
 package com.samskivert.depot;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.collect.Maps;
 
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.clause.DeleteClause;
@@ -310,7 +311,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
                 "Can not yet nest SELECTs on the same persistent record.");
         }
 
-        Map<String, FieldDefinition> definitionMap = new HashMap<String, FieldDefinition>();
+        Map<String, FieldDefinition> definitionMap = Maps.newHashMap();
         for (FieldDefinition definition : selectClause.getFieldDefinitions()) {
             definitionMap.put(definition.getField(), definition);
         }
@@ -600,7 +601,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
 
     /** A mapping of field overrides per persistent record. */
     protected Map<Class<? extends PersistentRecord>, Map<String, FieldDefinition>> _definitions=
-        new HashMap<Class<? extends PersistentRecord>, Map<String,FieldDefinition>>();
+        Maps.newHashMap();
 
     /** A flag that's set to true for inner SELECT's */
     protected boolean _innerClause = false;

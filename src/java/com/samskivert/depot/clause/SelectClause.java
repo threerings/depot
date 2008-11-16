@@ -20,12 +20,13 @@
 
 package com.samskivert.depot.clause;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.WhereClause;
@@ -195,7 +196,7 @@ public class SelectClause<T extends PersistentRecord> extends QueryClause
     }
 
     /** Persistent class fields mapped to field override clauses. */
-    protected Map<String, FieldDefinition> _disMap = new HashMap<String, FieldDefinition>();
+    protected Map<String, FieldDefinition> _disMap = Maps.newHashMap();
 
     /** The persistent class this select defines. */
     protected Class<T> _pClass;
@@ -210,7 +211,7 @@ public class SelectClause<T extends PersistentRecord> extends QueryClause
     protected WhereClause _where;
 
     /** A list of join clauses, each potentially referencing a new class. */
-    protected List<Join> _joinClauses = new ArrayList<Join>();
+    protected List<Join> _joinClauses = Lists.newArrayList();
 
     /** The order by clause, if any. */
     protected OrderBy _orderBy;

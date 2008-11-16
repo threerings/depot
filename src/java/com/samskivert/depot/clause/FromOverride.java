@@ -20,9 +20,10 @@
 
 package com.samskivert.depot.clause;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import com.google.common.collect.Lists;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ExpressionVisitor;
@@ -67,6 +68,5 @@ public class FromOverride extends QueryClause
     }
 
     /** The classes of the tables we're selecting from. */
-    protected List<Class<? extends PersistentRecord>> _fromClasses =
-        new ArrayList<Class<? extends PersistentRecord>>();
+    protected List<Class<? extends PersistentRecord>> _fromClasses = Lists.newArrayList();
 }

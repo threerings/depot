@@ -32,6 +32,7 @@ import java.sql.Timestamp;
 import java.util.Set;
 
 import com.samskivert.jdbc.JDBCUtil;
+
 import com.samskivert.depot.FieldMarshaller.BooleanMarshaller;
 import com.samskivert.depot.FieldMarshaller.ByteArrayMarshaller;
 import com.samskivert.depot.FieldMarshaller.ByteEnumMarshaller;

@@ -21,10 +21,11 @@
 package com.samskivert.depot;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 import com.samskivert.depot.annotation.Id;
 
@@ -41,7 +42,7 @@ public class KeyUtil
     {
         String[] fields = _keyFields.get(pClass);
         if (fields == null) {
-            List<String> kflist = new ArrayList<String>();
+            List<String> kflist = Lists.newArrayList();
             for (Field field : pClass.getFields()) {
                 // look for @Id fields
                 if (field.getAnnotation(Id.class) != null) {
@@ -55,5 +56,5 @@ public class KeyUtil
 
     /** A (never expiring) cache of primary key field names for all persistent classes (of which
      * there are merely dozens, so we don't need to worry about expiring). */
-    protected static Map<Class<?>,String[]> _keyFields = new HashMap<Class<?>,String[]>();
+    protected static Map<Class<?>,String[]> _keyFields = Maps.newHashMap();
 }

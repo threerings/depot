@@ -25,6 +25,8 @@ import java.sql.Timestamp;
 // import java.util.HashSet;
 import java.util.Set;
 
+// import com.google.common.collect.Sets;
+
 import com.samskivert.util.RandomUtil;
 
 import com.samskivert.jdbc.StaticConnectionProvider;
@@ -115,7 +117,7 @@ public class TestRepository extends DepotRepository
         System.out.println("Now have " + repo.findAll(TestRecord.class).size() + " records.");
         repo.deleteAll(TestRecord.class, new Where(new LiteralExp("true")));
 //         // TODO: try to break our In() clause
-//         Set<Key<TestRecord>> ids = new HashSet<Key<TestRecord>>();
+//         Set<Key<TestRecord>> ids = Sets.newHashSet();
 //         for (int ii = 1; ii <= Conditionals.In.MAX_KEYS*2+3; ii++) {
 //             ids.add(TestRecord.getKey(ii));
 //         }

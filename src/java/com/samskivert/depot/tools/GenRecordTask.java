@@ -32,12 +32,13 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
@@ -148,7 +149,7 @@ public class GenRecordTask extends Task
         boolean isAbstract = Modifier.isAbstract(rclass.getModifiers());
 
         // determine our primary key fields for getKey() generation (if we're not an abstract)
-        List<Field> kflist = new ArrayList<Field>();
+        List<Field> kflist = Lists.newArrayList();
         if (!isAbstract) {
             // determine which fields make up our primary key; we'd just use Class.getFields() but
             // that returns things in a random order whereas ClassUtil returns fields in
@@ -162,13 +163,13 @@ public class GenRecordTask extends Task
         }
 
         // determine which fields we need to generate constants for
-        List<Field> flist = new ArrayList<Field>();
+        List<Field> flist = Lists.newArrayList();
         for (Field field : rclass.getFields()) {
             if (isPersistentField(field)) {
                 flist.add(field);
             }
         }
-        Set<Field> declared = new HashSet<Field>();
+        Set<Field> declared = Sets.newHashSet();
         for (Field field : rclass.getDeclaredFields()) {
             if (isPersistentField(field)) {
                 declared.add(field);
@@ -179,7 +180,7 @@ public class GenRecordTask extends Task
         String[] lines = null;
         try {
             BufferedReader bin = new BufferedReader(new FileReader(source));
-            ArrayList<String> llist = new ArrayList<String>();
+            List<String> llist = Lists.newArrayList();
             String line = null;
             while ((line = bin.readLine()) != null) {
                 llist.add(line);
@@ -456,7 +457,7 @@ public class GenRecordTask extends Task
     }
 
     /** A list of filesets that contain tile images. */
-    protected ArrayList<FileSet> _filesets = new ArrayList<FileSet>();
+    protected List<FileSet> _filesets = Lists.newArrayList();
 
     /** Used to do our own classpath business. */
     protected ClassLoader _cloader;

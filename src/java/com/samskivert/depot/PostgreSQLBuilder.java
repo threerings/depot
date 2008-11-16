@@ -34,6 +34,9 @@ import java.util.Set;
 import com.samskivert.jdbc.DatabaseLiaison;
 import com.samskivert.jdbc.JDBCUtil;
 import com.samskivert.jdbc.LiaisonRegistry;
+import com.samskivert.util.ArrayUtil;
+import com.samskivert.util.StringUtil;
+
 import com.samskivert.depot.FieldMarshaller.BooleanMarshaller;
 import com.samskivert.depot.FieldMarshaller.ByteArrayMarshaller;
 import com.samskivert.depot.FieldMarshaller.ByteEnumMarshaller;
@@ -48,8 +51,6 @@ import com.samskivert.depot.FieldMarshaller.ShortMarshaller;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.operator.Conditionals.FullTextMatch;
-import com.samskivert.util.ArrayUtil;
-import com.samskivert.util.StringUtil;
 
 import static com.samskivert.Log.log;
 

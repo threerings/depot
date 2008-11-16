@@ -30,11 +30,13 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.annotation.Entity;
@@ -97,7 +99,7 @@ public class DepotMarshaller<T extends PersistentRecord>
         boolean seenIdentityGenerator = false;
 
         // introspect on the class and create marshallers for persistent fields
-        ArrayList<String> fields = new ArrayList<String>();
+        List<String> fields = Lists.newArrayList();
         for (Field field : _pClass.getFields()) {
             int mods = field.getModifiers();
 
@@ -125,7 +127,7 @@ public class DepotMarshaller<T extends PersistentRecord>
             // check to see if this is our primary key
             if (field.getAnnotation(Id.class) != null) {
                 if (_pkColumns == null) {
-                    _pkColumns = new ArrayList<FieldMarshaller<?>>();
+                    _pkColumns = Lists.newArrayList();
                 }
                 _pkColumns.add(fm);
             }
@@ -197,7 +199,7 @@ public class DepotMarshaller<T extends PersistentRecord>
             if (entity != null) {
                 for (UniqueConstraint constraint : entity.uniqueConstraints()) {
                     String[] conFields = constraint.fieldNames();
-                    Set<String> colSet = new HashSet<String>();
+                    Set<String> colSet = Sets.newHashSet();
                     for (int ii = 0; ii < conFields.length; ii ++) {
                         FieldMarshaller<?> fm = _fields.get(conFields[ii]);
                         if (fm == null) {
@@ -453,7 +455,7 @@ public class DepotMarshaller<T extends PersistentRecord>
     {
         try {
             // first, build a set of the fields that we actually received
-            Set<String> fields = new HashSet<String>();
+            Set<String> fields = Sets.newHashSet();
             ResultSetMetaData metadata = rs.getMetaData();
             for (int ii = 1; ii <= metadata.getColumnCount(); ii ++) {
                fields.add(metadata.getColumnName(ii));
@@ -497,7 +499,7 @@ public class DepotMarshaller<T extends PersistentRecord>
     public Set<String> generateFieldValues (
         Connection conn, DatabaseLiaison liaison, Object po, boolean postFactum)
     {
-        Set<String> idFields = new HashSet<String>();
+        Set<String> idFields = Sets.newHashSet();
 
         for (ValueGenerator vg : _valueGenerators.values()) {
             if (!postFactum && vg instanceof IdentityValueGenerator) {
@@ -752,14 +754,14 @@ public class DepotMarshaller<T extends PersistentRecord>
         }
 
         // this is a little silly, but we need a copy for name disambiguation later
-        Set<String> indicesCopy = new HashSet<String>(metaData.indexColumns.keySet());
+        Set<String> indicesCopy = Sets.newHashSet(metaData.indexColumns.keySet());
 
         // figure out which columns we have in the table now, so that when all is said and done we
         // can see what new columns we have in the table and run the creation code for any value
         // generators that are defined on those columns (we can't just track the columns we add in
         // our automatic migrations because someone might register custom migrations that add
         // columns specially)
-        Set<String> preMigrateColumns = new HashSet<String>(metaData.tableColumns);
+        Set<String> preMigrateColumns = Sets.newHashSet(metaData.tableColumns);
 
         // add any missing columns
         for (String fname : _columnFields) {
@@ -842,7 +844,7 @@ public class DepotMarshaller<T extends PersistentRecord>
         }
 
         // now check if there are any @Entity(uniqueConstraints) that need to be created
-        Set<Set<String>> uniqueIndices = new HashSet<Set<String>>(metaData.indexColumns.values());
+        Set<Set<String>> uniqueIndices = Sets.newHashSet(metaData.indexColumns.values());
 
         // unique constraints are unordered and may be unnamed, so we view them only as column sets
         for (Set<String> colSet : _uniqueConstraints) {
@@ -877,7 +879,7 @@ public class DepotMarshaller<T extends PersistentRecord>
 
         // next we create any full text search indexes that exist on the record but not in the
         // table, first step being to do a dialect-sensitive enumeration of existing indexes
-        Set<String> tableFts = new HashSet<String>();
+        Set<String> tableFts = Sets.newHashSet();
         builder.getFtsIndexes(metaData.tableColumns, metaData.indexColumns.keySet(), tableFts);
 
         // then iterate over what should be there
@@ -1024,10 +1026,10 @@ public class DepotMarshaller<T extends PersistentRecord>
     protected static class TableMetaData
     {
         public boolean tableExists;
-        public Set<String> tableColumns = new HashSet<String>();
-        public Map<String, Set<String>> indexColumns = new HashMap<String, Set<String>>();
+        public Set<String> tableColumns = Sets.newHashSet();
+        public Map<String, Set<String>> indexColumns = Maps.newHashMap();
         public String pkName;
-        public Set<String> pkColumns = new HashSet<String>();
+        public Set<String> pkColumns = Sets.newHashSet();
 
         public static TableMetaData load (PersistenceContext ctx, final String tableName)
             throws DatabaseException
@@ -1066,7 +1068,7 @@ public class DepotMarshaller<T extends PersistentRecord>
                 } else {
                     // for unique indices we collect the column names
                     if (set == null) {
-                        set = new HashSet<String>();
+                        set = Sets.newHashSet();
                         indexColumns.put(indexName, set);
                     }
                     set.add(rs.getString("COLUMN_NAME"));
@@ -1091,14 +1093,14 @@ public class DepotMarshaller<T extends PersistentRecord>
     protected Computed _computed;
 
     /** A mapping of field names to value generators for that field. */
-    protected Map<String, ValueGenerator> _valueGenerators = new HashMap<String, ValueGenerator>();
+    protected Map<String, ValueGenerator> _valueGenerators = Maps.newHashMap();
 
     /** A field marshaller for each persistent field in our object. */
-    protected Map<String, FieldMarshaller<?>> _fields = new HashMap<String, FieldMarshaller<?>>();
+    protected Map<String, FieldMarshaller<?>> _fields = Maps.newHashMap();
 
     /** The field marshallers for our persistent object's primary key columns or null if it did not
      * define a primary key. */
-    protected ArrayList<FieldMarshaller<?>> _pkColumns;
+    protected List<FieldMarshaller<?>> _pkColumns;
 
     /** The persisent fields of our object, in definition order. */
     protected String[] _allFields;
@@ -1107,12 +1109,12 @@ public class DepotMarshaller<T extends PersistentRecord>
     protected String[] _columnFields;
 
     /** The indexes defined in @Entity annotations for this record. */
-    protected Map<String, Index> _indexes = new HashMap<String, Index>();
+    protected Map<String, Index> _indexes = Maps.newHashMap();
 
     /** The unique constraints defined in @Entity annotations for this record. */
-    protected Set<Set<String>> _uniqueConstraints = new HashSet<Set<String>>();
+    protected Set<Set<String>> _uniqueConstraints = Sets.newHashSet();
 
-    protected Map<String, FullTextIndex> _fullTextIndexes = new HashMap<String, FullTextIndex>();
+    protected Map<String, FullTextIndex> _fullTextIndexes = Maps.newHashMap();
 
     /** The version of our persistent object schema as specified in the class definition. */
     protected int _schemaVersion = -1;
@@ -1121,7 +1123,7 @@ public class DepotMarshaller<T extends PersistentRecord>
     protected boolean _initialized;
 
     /** A list of hand registered schema migrations to run prior to doing the default migration. */
-    protected ArrayList<SchemaMigration> _schemaMigs = new ArrayList<SchemaMigration>();
+    protected List<SchemaMigration> _schemaMigs = Lists.newArrayList();
 
     /** The name of the table we use to track schema versions. */
     protected static final String SCHEMA_VERSION_TABLE = "DepotSchemaVersion";

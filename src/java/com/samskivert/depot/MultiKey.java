@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.common.collect.Maps;
+
 import com.samskivert.depot.clause.Where;
 import com.samskivert.depot.expression.ExpressionVisitor;
 import com.samskivert.depot.expression.SQLExpression;
@@ -76,7 +78,7 @@ public class MultiKey<T extends PersistentRecord> extends WhereClause
         _pClass = pClass;
         _mField = mField;
         _mValues = mValues;
-        _map = new HashMap<String, Comparable<?>>();
+        _map = Maps.newHashMap();
         for (int i = 0; i < sFields.length; i ++) {
             _map.put(sFields[i], sValues[i]);
         }
@@ -134,9 +136,10 @@ public class MultiKey<T extends PersistentRecord> extends WhereClause
     // from CacheInvalidator
     public void invalidate (PersistenceContext ctx)
     {
-        HashMap<String, Comparable<?>> newMap = new HashMap<String, Comparable<?>>(_map);
-        for (int i = 0; i < _mValues.length; i ++) {
-            newMap.put(_mField, _mValues[i]);
+        // must be a hashmap for serializability
+        HashMap<String, Comparable<?>> newMap = Maps.newHashMap(_map);
+        for (Comparable<?> value : _mValues) {
+            newMap.put(_mField, value);
             ctx.cacheInvalidate(new SimpleCacheKey(_pClass, newMap));
         }
     }
@@ -151,5 +154,5 @@ public class MultiKey<T extends PersistentRecord> extends WhereClause
     protected String _mField;
     protected Comparable<?>[] _mValues;
     protected Class<T> _pClass;
-    protected HashMap<String, Comparable<?>> _map;
+    protected Map<String, Comparable<?>> _map;
 }
