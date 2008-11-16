@@ -156,6 +156,7 @@
     <!-- we export a small selection of classes for use by GWT -->
     <mkdir dir="${gwtjar.dir}"/>
     <copy todir="${gwtjar.dir}">
+      <fileset dir="src/java" includes="com/samskivert/Depot.gwt.xml"/>
       <fileset dir="src/java" includes="com/samskivert/depot/ByteEnum.java"/>
     </copy>
     <jar basedir="${gwtjar.dir}" destfile="${deploy.dir}/${lib.name}-gwt.jar"/>
