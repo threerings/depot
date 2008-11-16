@@ -12,6 +12,7 @@
   <property name="classes.dir" value="${deploy.dir}/classes"/>
   <property name="javadoc.dir" value="${deploy.dir}/docs"/>
   <property name="libs.dir"    value="lib"/>
+  <property name="gwtjar.dir"  value="${deploy.dir}/gwt-jar"/>
 
   <!-- declare our classpath -->
   <path id="classpath">
@@ -83,6 +84,7 @@
   <target name="clean">
     <delete dir="${classes.dir}"/>
     <delete dir="${deploy.dir}/docs"/>
+    <delete dir="${gwtjar.dir}"/>
     <delete failonerror="false"><fileset dir="${deploy.dir}" includes="*.jar"/></delete>
   </target>
 
@@ -151,6 +153,13 @@
     <jar destfile="${deploy.dir}/${lib.name}.jar" basedir="${classes.dir}">
       <exclude name="**/tests/**"/>
     </jar>
+    <!-- we export a small selection of classes for use by GWT -->
+    <mkdir dir="${gwtjar.dir}"/>
+    <copy todir="${gwtjar.dir}">
+      <fileset dir="src/java" includes="com/samskivert/depot/ByteEnum.java"/>
+    </copy>
+    <jar basedir="${gwtjar.dir}" destfile="${deploy.dir}/${lib.name}-gwt.jar"/>
+    <delete dir="${gwtjar.dir}"/>
   </target>
 
   <!-- builds a snapshot zip file -->
