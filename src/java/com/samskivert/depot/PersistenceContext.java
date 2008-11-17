@@ -570,7 +570,9 @@ public class PersistenceContext
                 }
 
             } finally {
-                _conprov.releaseConnection(_ident, isReadOnly, conn);
+                if (conn != null) {
+                    _conprov.releaseConnection(_ident, isReadOnly, conn);
+                }
             }
         }
 
