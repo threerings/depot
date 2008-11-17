@@ -6,5 +6,6 @@
 	<classpathentry exported="true" kind="var" path="EXT_LIBS_DIR/ehcache.jar"/>
 	<classpathentry exported="true" kind="var" path="EXT_LIBS_DIR/junit4.jar"/>
 	<classpathentry exported="true" kind="var" path="EXT_LIBS_DIR/velocity-1.5-dev.jar"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/samskivert"/>
 	<classpathentry kind="output" path="dist/classes"/>
 </classpath>
