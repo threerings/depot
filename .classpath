@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="var" path="EXT_LIBS_DIR/ant.jar"/>
+	<classpathentry exported="true" kind="var" path="EXT_LIBS_DIR/ehcache.jar"/>
+	<classpathentry exported="true" kind="var" path="EXT_LIBS_DIR/junit4.jar"/>
+	<classpathentry exported="true" kind="var" path="EXT_LIBS_DIR/velocity-1.5-dev.jar"/>
+	<classpathentry kind="output" path="dist/classes"/>
+</classpath>
