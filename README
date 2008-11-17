@@ -1,0 +1,46 @@
+Depot Persistence Library
+-------------------------
+
+Depot is a relational persistence library for Java. It is an ORM library, but
+has aims that are somewhat different from the popular "managed" persistence
+libraries like Hibernate and others.
+
+Website
+-------
+
+See the Depot website for documentation and other info:
+
+  http://code.google.com/p/depot/
+
+Building
+--------
+
+The library is built using ant. It can be found here:
+
+  http://jakarta.apache.org/ant/
+
+Next, ensure that the necessary third party jar files are copied to the lib/
+directory. See etc/libs-incl.xml for the list of those jar files.
+
+Finally invoke 'ant dist' to compile the code and generate a jar file. Invoke
+'ant -p' to see information on other build targets.
+
+Depot also provides .classpath and .project files for Eclipse users which
+require that you set an EXT_LIBS_DIR variable indicating the location of the
+external jar dependencies. The Depot Eclipse project also depends on the
+Eclipse project for the samskivert library. That library can be found at:
+
+  http://code.google.com/p/samskivert/
+
+License and Distribution
+------------------------
+
+Depot is released under the LGPL. This means you are free to use Depot on any
+project, open source or proprietary, but that any modifications made to the
+library must be made available to the maintainers. See COPYING for more
+detailed information.
+
+The most recent version of the Depot source code is available at the website
+listed above.
+
+$Id$

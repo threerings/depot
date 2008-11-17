@@ -81,7 +81,7 @@
   </target>
 
   <!-- cleans out the intermediate build files -->
-  <target name="clean">
+  <target name="clean" description="Cleans out build results.">
     <delete dir="${classes.dir}"/>
     <delete dir="${deploy.dir}/docs"/>
     <delete dir="${gwtjar.dir}"/>
@@ -89,12 +89,13 @@
   </target>
 
   <!-- wipes the entire build directory clean -->
-  <target name="distclean">
+  <target name="distclean" description="Completely removes build result directory.">
     <delete dir="${deploy.dir}"/>
   </target>
 
   <!-- build the java class files -->
-  <target name="compile" depends="prepare,compute-builds">
+  <target name="compile" depends="prepare,compute-builds"
+          description="Compiles the code.">
     <javac srcdir="${src.dir}" destdir="${classes.dir}" includeAntRuntime="false"
            debug="on" optimize="${build.optimize}" source="1.5" target="1.5" encoding="utf-8">
       <classpath refid="classpath"/>
@@ -107,7 +108,8 @@
   </target>
 
   <!-- build the javadoc documentation -->
-  <target name="javadoc" depends="prepare,compute-builds">
+  <target name="javadoc" depends="prepare,compute-builds"
+          description="Generates javadoc documentation.">
     <javadoc windowtitle="${lib.name} API" doctitle="${lib.name} API"
              overview="${src.dir}/${doc.overview}" destdir="${javadoc.dir}"
              additionalparam="-breakiterator"
@@ -124,10 +126,11 @@
   </target>
 
   <!-- a target for rebuilding everything -->
-  <target name="all" depends="clean,prepare,compile,javadoc,dist"/>
+  <target name="all" depends="clean,prepare,compile,javadoc,dist"
+          description="Cleans and rebuilds everything including documentation."/>
 
   <!-- runs our unit tests -->
-  <target name="tests" depends="prepare,compile" description="Runs unit tests.">
+  <target name="tests" depends="prepare,compile" description="Runs the unit tests.">
     <taskdef name="unit" classpathref="classpath"
       classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask"/>
     <unit printsummary="off" haltonfailure="yes" fork="${junit.fork}">
@@ -149,7 +152,8 @@
   </target>
 
   <!-- builds our distribution jar file -->
-  <target name="dist" depends="prepare,compile">
+  <target name="dist" depends="prepare,compile"
+          description="Compiles the code and builds our jar file.">
     <jar destfile="${deploy.dir}/${lib.name}.jar" basedir="${classes.dir}">
       <exclude name="**/tests/**"/>
     </jar>
@@ -164,7 +168,8 @@
   </target>
 
   <!-- builds a snapshot zip file -->
-  <target name="snapshot" depends="dist">
+  <target name="snapshot" depends="dist"
+          description="Generates a snapshot zip containing the Depot jar file and its dependencies.">
     <tstamp><format property="date" pattern="yyyyMMdd" /></tstamp>
     <mkdir dir="${deploy.dir}/depot-${date}"/>
     <copy todir="${deploy.dir}/depot-${date}">
