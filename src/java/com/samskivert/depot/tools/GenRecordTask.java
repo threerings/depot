@@ -470,13 +470,13 @@ public class GenRecordTask extends Task
     protected Class<?> _prclass;
 
     /** Specifies the path to the name code template. */
-    protected static final String NAME_TMPL = "com/samskivert.depot/tools/record_name.tmpl";
+    protected static final String NAME_TMPL = "com/samskivert/depot/tools/record_name.tmpl";
 
     /** Specifies the path to the column code template. */
-    protected static final String COL_TMPL = "com/samskivert.depot/tools/record_column.tmpl";
+    protected static final String COL_TMPL = "com/samskivert/depot/tools/record_column.tmpl";
 
     /** Specifies the path to the key code template. */
-    protected static final String KEY_TMPL = "com/samskivert.depot/tools/record_key.tmpl";
+    protected static final String KEY_TMPL = "com/samskivert/depot/tools/record_key.tmpl";
 
     // markers
     protected static final String MARKER = "// AUTO-GENERATED: ";
