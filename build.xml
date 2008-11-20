@@ -57,7 +57,7 @@
     </condition>
     <condition property="build.tools">
       <and><isset property="ant.present"/>
-      <isset property="velocity.present"/></and>
+      <isset property="jakarta.velocity.present"/></and>
     </condition>
     <condition property="build.tests">
       <and><isset property="junit.present"/></and>
