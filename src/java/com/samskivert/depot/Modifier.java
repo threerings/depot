@@ -118,6 +118,12 @@ public abstract class Modifier implements Operation<Integer>
     }
 
     // from interface Operation
+    public boolean isReadOnly ()
+    {
+        return false;
+    }
+
+    // from interface Operation
     public Integer invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
         throws SQLException
     {

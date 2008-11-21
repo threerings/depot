@@ -37,8 +37,7 @@ import static com.samskivert.depot.Log.log;
 /**
  * The implementation of {@link DepotRepository#load} functionality.
  */
-public class FindOneQuery<T extends PersistentRecord>
-    implements Query<T>
+public class FindOneQuery<T extends PersistentRecord> extends Query<T>
 {
     public FindOneQuery (PersistenceContext ctx, Class<T> type, QueryClause[] clauses)
         throws DatabaseException
@@ -53,7 +52,7 @@ public class FindOneQuery<T extends PersistentRecord>
         _builder.newQuery(_select);
     }
 
-    // from interface Query
+    @Override // from Query
     public T getCachedResult (PersistenceContext ctx)
     {
         CacheKey key = getCacheKey();
@@ -70,7 +69,7 @@ public class FindOneQuery<T extends PersistentRecord>
         return cvalue;
     }
 
-    // from interface Query
+    @Override // from Query
     public T invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
         throws SQLException
     {
@@ -110,7 +109,7 @@ public class FindOneQuery<T extends PersistentRecord>
         }
     }
 
-    // from interface Operation
+    @Override // from Operation
     public void updateStats (Stats stats)
     {
         stats.noteQuery(0, 0, _cachedRecords, 1-_cachedRecords);

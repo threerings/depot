@@ -31,6 +31,11 @@ import com.samskivert.jdbc.DatabaseLiaison;
 public interface Operation<T>
 {
     /**
+     * Indicates whether or not this operation is safe to invoke on a database mirror.
+     */
+    public boolean isReadOnly ();
+
+    /**
      * Performs the actual JDBC interactions associated with this operation.
      */
     public T invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)

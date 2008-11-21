@@ -309,68 +309,10 @@ public abstract class DepotRepository
      * the latest data.
      */
     protected <T extends PersistentRecord> List<Key<T>> findAllKeys (
-        final Class<T> type, boolean forUpdate, Collection<? extends QueryClause> clauses)
+        Class<T> type, boolean forUpdate, Collection<? extends QueryClause> clauses)
         throws DatabaseException
     {
-        final List<Key<T>> keys = Lists.newArrayList();
-        final DepotMarshaller<T> marsh = _ctx.getMarshaller(type);
-        SelectClause<T> select = new SelectClause<T>(type, marsh.getPrimaryKeyFields(), clauses);
-        final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, select));
-        builder.newQuery(select);
-
-        if (forUpdate) {
-            _ctx.invoke(new Modifier(null) {
-                @Override
-                protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-                    PreparedStatement stmt = builder.prepare(conn);
-                    try {
-                        ResultSet rs = stmt.executeQuery();
-                        while (rs.next()) {
-                            keys.add(marsh.makePrimaryKey(rs));
-                        }
-                        // TODO: cache this result?
-                        if (PersistenceContext.CACHE_DEBUG) {
-                            log.info("Loaded " + StringUtil.shortClassName(type) + " keys",
-                                     "count", keys.size());
-                        }
-                        return 0;
-                    } finally {
-                        JDBCUtil.close(stmt);
-                    }
-                }
-                @Override public void updateStats (Stats stats) {
-                    stats.noteQuery(0, 1, 0, 0); // one uncached query
-                }
-            });
-
-        } else {
-            _ctx.invoke(new Query.Trivial<Void>() {
-                @Override
-                public Void invoke (PersistenceContext ctx, Connection conn,
-                                    DatabaseLiaison liaison) throws SQLException {
-                    PreparedStatement stmt = builder.prepare(conn);
-                    try {
-                        ResultSet rs = stmt.executeQuery();
-                        while (rs.next()) {
-                            keys.add(marsh.makePrimaryKey(rs));
-                        }
-                        // TODO: cache this result?
-                        if (PersistenceContext.CACHE_DEBUG) {
-                            log.info("Loaded " + StringUtil.shortClassName(type) + " keys",
-                                     "count", keys.size());
-                        }
-                        return null;
-                    } finally {
-                        JDBCUtil.close(stmt);
-                    }
-                }
-                public void updateStats (Stats stats) {
-                    stats.noteQuery(0, 1, 0, 0); // one uncached query
-                }
-            });
-        }
-
-        return keys;
+        return _ctx.invoke(new FindAllKeysQuery<T>(_ctx, type, forUpdate, clauses));
     }
 
     /**

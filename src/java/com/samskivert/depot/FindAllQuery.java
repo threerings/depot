@@ -49,8 +49,7 @@ import static com.samskivert.depot.Log.log;
  * This class implements the functionality required by {@link DepotRepository#findAll}: fetch
  * a collection of persistent objects using one of two included strategies.
  */
-public abstract class FindAllQuery<T extends PersistentRecord>
-    implements Query<List<T>>
+public abstract class FindAllQuery<T extends PersistentRecord> extends Query<List<T>>
 {
     /**
      * The two-pass collection query implementation. See {@link DepotRepository#findAll} for 
@@ -76,7 +75,7 @@ public abstract class FindAllQuery<T extends PersistentRecord>
             }
 
             _select = new SelectClause<T>(_type, _marsh.getPrimaryKeyFields(), clauses);
-            _builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, _select));
+            _builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, _select));
             _builder.newQuery(_select);
         }
 
@@ -95,7 +94,7 @@ public abstract class FindAllQuery<T extends PersistentRecord>
                     Key<T> key = _marsh.makePrimaryKey(rs);
                     allKeys.add(key);
 
-                    T value = _ctx.<T>cacheLookup(key);
+                    T value = ctx.<T>cacheLookup(key);
                     if (value != null) {
                         @SuppressWarnings("unchecked") T newValue = (T) value.clone();
                         entities.put(key, newValue);
@@ -124,7 +123,6 @@ public abstract class FindAllQuery<T extends PersistentRecord>
             stats.noteQuery(0, 1, _cachedRecords, _uncachedRecords); // one uncached query
         }
 
-        protected SelectClause<T> _select;
         protected int _cachedRecords, _uncachedRecords;
     }
 
@@ -148,7 +146,7 @@ public abstract class FindAllQuery<T extends PersistentRecord>
             Map<Key<T>, T> entities = Maps.newHashMap();
             Set<Key<T>> fetchKeys = Sets.newHashSet();
             for (Key<T> key : _keys) {
-                T value = _ctx.<T>cacheLookup(key);
+                T value = ctx.<T>cacheLookup(key);
                 if (value != null) {
                     @SuppressWarnings("unchecked") T newValue = (T) value.clone();
                     entities.put(key, newValue);
@@ -213,47 +211,26 @@ public abstract class FindAllQuery<T extends PersistentRecord>
             stats.noteQuery(0, 1, 0, _uncachedRecords);
         }
 
-        protected SelectClause<T> _select;
         protected int _uncachedRecords;
     }
 
-    public FindAllQuery (PersistenceContext ctx, Class<T> type)
-        throws DatabaseException
-    {
-        _ctx = ctx;
-        _type = type;
-        _marsh = _ctx.getMarshaller(type);
-    }
-
-    // from interface Query
+    @Override // from Query
     public List<T> getCachedResult (PersistenceContext ctx)
     {
         return null; // TODO
     }
 
-//     // from interface Query
-//     public List<T> transformCacheHit (CacheKey key, List<T> bits)
-//     {
-//         if (bits == null) {
-//             return bits;
-//         }
-
-//         List<T> result = Lists.newArrayList();
-//         for (T bit : bits) {
-//             if (bit != null) {
-//                 @SuppressWarnings("unchecked") T cbit = (T) bit.clone();
-//                 result.add(cbit);
-//             } else {
-//                 result.add(null);
-//             }
-//         }
-//         return result;
-//     }
-
-    // from interface Operation
+    @Override // from Operation
     public void updateStats (Stats stats)
     {
         // TODO
+    }
+
+    protected FindAllQuery (PersistenceContext ctx, Class<T> type)
+        throws DatabaseException
+    {
+        _type = type;
+        _marsh = ctx.getMarshaller(type);
     }
 
     protected List<T> loadAndResolve (PersistenceContext ctx, Connection conn,
@@ -346,8 +323,8 @@ public abstract class FindAllQuery<T extends PersistentRecord>
         return builder.append(")").toString();
     }
 
-    protected PersistenceContext _ctx;
     protected SQLBuilder _builder;
     protected DepotMarshaller<T> _marsh;
     protected Class<T> _type;
+    protected SelectClause<T> _select;
 }

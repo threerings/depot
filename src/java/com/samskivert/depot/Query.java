@@ -29,20 +29,15 @@ import com.samskivert.depot.PersistenceContext.CacheListener;
 /**
  * The base of all read-only queries.
  */
-public interface Query<T> extends Operation<T>
+public abstract class Query<T>
+    implements Operation<T>
 {
     /** A simple base class for non-complex queries. */
-    public abstract class Trivial<T> implements Query<T>
+    public static abstract class Trivial<T> extends Query<T>
     {
-        public abstract T invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
-            throws SQLException;
-
+        @Override // from Query
         public T getCachedResult (PersistenceContext ctx) {
             return null;
-        }
-
-        public T transformCacheHit (CacheKey key, T value) {
-            return value;
         }
     }
 
@@ -51,5 +46,11 @@ public interface Query<T> extends Operation<T>
      * method. If null is returned, the query will be {@link #invoke}d to obtain its result from
      * persistent storage.
      */
-    public T getCachedResult (PersistenceContext ctx);
+    public abstract T getCachedResult (PersistenceContext ctx);
+
+    // from interface Operation
+    public boolean isReadOnly ()
+    {
+        return true;
+    }
 }

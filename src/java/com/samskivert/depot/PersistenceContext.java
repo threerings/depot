@@ -523,7 +523,7 @@ public class PersistenceContext
     {
         checkAreInitialized(); // le check du sanity
 
-        boolean isReadOnly = !(op instanceof Modifier);
+        boolean isReadOnly = op.isReadOnly();
         Connection conn;
         long preConnect = System.nanoTime();
         try {
