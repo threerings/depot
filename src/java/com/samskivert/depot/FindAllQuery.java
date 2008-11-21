@@ -105,6 +105,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             } finally {
                 JDBCUtil.close(stmt);
             }
+            _uncachedQueries++;
 
             // now fetch any records we can from the cache
             loadFromCache(ctx, allKeys, entities, fetchKeys);
@@ -120,13 +121,10 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             return loadAndResolve(ctx, conn, allKeys, fetchKeys, entities, stmtString);
         }
 
-        @Override // from Query
-        public void updateStats (Stats stats)
+        protected CacheKey getCacheKey ()
         {
-            stats.noteQuery(0, 1, _cachedRecords, _uncachedRecords); // one uncached query
+            return null;
         }
-
-        protected int _cachedRecords, _uncachedRecords;
     }
 
     /**
@@ -162,16 +160,9 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             return loadAndResolve(ctx, conn, _keys, _fetchKeys, _entities, null);
         }
 
-        @Override // from Query
-        public void updateStats (Stats stats)
-        {
-            stats.noteQuery(0, 0, _cachedRecords, _uncachedRecords);
-        }
-
         protected Collection<Key<T>> _keys;
         protected Map<Key<T>, T> _entities = Maps.newHashMap();
         protected Set<Key<T>> _fetchKeys = Sets.newHashSet();
-        protected int _cachedRecords, _uncachedRecords;
     }
 
     /**
@@ -212,6 +203,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             } finally {
                 JDBCUtil.close(stmt);
             }
+            _uncachedQueries++;
             if (PersistenceContext.CACHE_DEBUG) {
                 log.info("Loaded " + _marsh.getTableName(), "query", _select,
                          "uncached", _uncachedRecords);
@@ -219,14 +211,12 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             // TODO: do we want to cache these results?
             return result;
         }
+    }
 
-        @Override // from Query
-        public void updateStats (Stats stats)
-        {
-            stats.noteQuery(0, 1, 0, _uncachedRecords);
-        }
-
-        protected int _uncachedRecords;
+    @Override // from Query
+    public void updateStats (Stats stats)
+    {
+        stats.noteQuery(_cachedQueries, _uncachedQueries, _cachedRecords, _uncachedRecords);
     }
 
     protected FindAllQuery (PersistenceContext ctx, Class<T> type)
@@ -349,4 +339,5 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
     protected DepotMarshaller<T> _marsh;
     protected Class<T> _type;
     protected SelectClause<T> _select;
+    protected int _cachedQueries, _uncachedQueries, _cachedRecords, _uncachedRecords;
 }
