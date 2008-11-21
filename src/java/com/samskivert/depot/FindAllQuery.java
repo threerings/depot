@@ -79,6 +79,13 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             _builder.newQuery(_select);
         }
 
+        @Override // from Query
+        public List<T> getCachedResult (PersistenceContext ctx)
+        {
+            return null; // TODO
+        }
+
+        @Override // from Query
         public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
@@ -86,6 +93,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             List<Key<T>> allKeys = Lists.newArrayList();
             Set<Key<T>> fetchKeys = Sets.newHashSet();
 
+            // first load up the primary keys on which we're operating
             PreparedStatement stmt = _builder.prepare(conn);
             String stmtString = stmt.toString(); // for debugging
             try {
@@ -93,21 +101,13 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
                 while (rs.next()) {
                     Key<T> key = _marsh.makePrimaryKey(rs);
                     allKeys.add(key);
-
-                    T value = ctx.<T>cacheLookup(key);
-                    if (value != null) {
-                        @SuppressWarnings("unchecked") T newValue = (T) value.clone();
-                        entities.put(key, newValue);
-                        continue;
-                    }
-
-                    fetchKeys.add(key);
                 }
-
             } finally {
                 JDBCUtil.close(stmt);
             }
 
+            // now fetch any records we can from the cache
+            loadFromCache(ctx, allKeys, entities, fetchKeys);
             _cachedRecords = entities.size();
             _uncachedRecords = fetchKeys.size();
 
@@ -116,10 +116,13 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
                          "keys", keysToString(allKeys));
             }
 
+            // finally load the rest from the database
             return loadAndResolve(ctx, conn, allKeys, fetchKeys, entities, stmtString);
         }
 
-        public void updateStats (Stats stats) {
+        @Override // from Query
+        public void updateStats (Stats stats)
+        {
             stats.noteQuery(0, 1, _cachedRecords, _uncachedRecords); // one uncached query
         }
 
@@ -140,32 +143,34 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             _builder = ctx.getSQLBuilder(new DepotTypes(ctx, _type));
         }
 
+        @Override // from Query
+        public List<T> getCachedResult (PersistenceContext ctx)
+        {
+            // look up what we can from the cache
+            loadFromCache(ctx, _keys, _entities, _fetchKeys);
+            _cachedRecords = _entities.size();
+            _uncachedRecords = _fetchKeys.size();
+
+            // if we found everything, we can just return our result straight away, yay!
+            return _fetchKeys.isEmpty() ? resolve(_keys, _entities) : null;
+        }
+
+        @Override // from Query
         public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
-            Map<Key<T>, T> entities = Maps.newHashMap();
-            Set<Key<T>> fetchKeys = Sets.newHashSet();
-            for (Key<T> key : _keys) {
-                T value = ctx.<T>cacheLookup(key);
-                if (value != null) {
-                    @SuppressWarnings("unchecked") T newValue = (T) value.clone();
-                    entities.put(key, newValue);
-                    continue;
-                }
-                fetchKeys.add(key);
-            }
-
-            _cachedRecords = entities.size();
-            _uncachedRecords = fetchKeys.size();
-
-            return loadAndResolve(ctx, conn, _keys, fetchKeys, entities, null);
+            return loadAndResolve(ctx, conn, _keys, _fetchKeys, _entities, null);
         }
 
-        public void updateStats (Stats stats) {
+        @Override // from Query
+        public void updateStats (Stats stats)
+        {
             stats.noteQuery(0, 0, _cachedRecords, _uncachedRecords);
         }
 
         protected Collection<Key<T>> _keys;
+        protected Map<Key<T>, T> _entities = Maps.newHashMap();
+        protected Set<Key<T>> _fetchKeys = Sets.newHashSet();
         protected int _cachedRecords, _uncachedRecords;
     }
 
@@ -185,6 +190,14 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             _builder.newQuery(_select);
         }
 
+        @Override // from Query
+        public List<T> getCachedResult (PersistenceContext ctx)
+        {
+            return null; // TODO: we could cache all the records as one giant list but that would
+                         // not play nicely when records were evicted from the cache by primary key
+        }
+
+        @Override // from Query
         public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
@@ -207,23 +220,13 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             return result;
         }
 
-        public void updateStats (Stats stats) {
+        @Override // from Query
+        public void updateStats (Stats stats)
+        {
             stats.noteQuery(0, 1, 0, _uncachedRecords);
         }
 
         protected int _uncachedRecords;
-    }
-
-    @Override // from Query
-    public List<T> getCachedResult (PersistenceContext ctx)
-    {
-        return null; // TODO
-    }
-
-    @Override // from Operation
-    public void updateStats (Stats stats)
-    {
-        // TODO
     }
 
     protected FindAllQuery (PersistenceContext ctx, Class<T> type)
@@ -231,6 +234,32 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
     {
         _type = type;
         _marsh = ctx.getMarshaller(type);
+    }
+
+    protected void loadFromCache (PersistenceContext ctx, Collection<Key<T>> allKeys,
+                                  Map<Key<T>, T> entities, Set<Key<T>> fetchKeys)
+    {
+        for (Key<T> key : allKeys) {
+            T value = ctx.<T>cacheLookup(key);
+            if (value != null) {
+                @SuppressWarnings("unchecked") T newValue = (T) value.clone();
+                entities.put(key, newValue);
+                continue;
+            }
+            fetchKeys.add(key);
+        }
+    }
+
+    protected List<T> resolve (Collection<Key<T>> allKeys, Map<Key<T>, T> entities)
+    {
+        List<T> result = Lists.newArrayList();
+        for (Key<T> key : allKeys) {
+            T value = entities.get(key);
+            if (value != null) {
+                result.add(value);
+            }
+        }
+        return result;
     }
 
     protected List<T> loadAndResolve (PersistenceContext ctx, Connection conn,
@@ -260,14 +289,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             loadRecords(ctx, conn, fetchKeys, entities, origStmt);
         }
 
-        List<T> result = Lists.newArrayList();
-        for (Key<T> key : allKeys) {
-            T value = entities.get(key);
-            if (value != null) {
-                result.add(value);
-            }
-        }
-        return result;
+        return resolve(allKeys, entities);
     }
 
     protected void loadRecords (PersistenceContext ctx, Connection conn, Set<Key<T>> keys,
