@@ -54,6 +54,12 @@ public class EpochSeconds implements SQLExpression
         return _arg;
     }
 
+    @Override // from Object
+    public String toString ()
+    {
+        return "Epoch(" + _arg + ")";
+    }
+
     /** The argument. */
     protected SQLExpression _arg;
 }

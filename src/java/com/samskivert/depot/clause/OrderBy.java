@@ -89,6 +89,19 @@ public class OrderBy extends QueryClause
         }
     }
 
+    @Override // from Object
+    public String toString ()
+    {
+        StringBuilder builder = new StringBuilder();
+        for (int ii = 0; ii < _values.length; ii++) {
+            if (ii > 0) {
+                builder.append(", ");
+            }
+            builder.append(_values[ii]).append(" ").append(_orders[ii]);
+        }
+        return builder.toString();
+    }
+
     /** The expressions that are generated for the clause. */
     protected SQLExpression[] _values;
 

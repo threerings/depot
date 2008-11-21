@@ -92,6 +92,13 @@ public class Join extends QueryClause
         _joinCondition.addClasses(classSet);
     }
 
+    @Override // from Object
+    public String toString ()
+    {
+        String jclass = _joinClass.getName();
+        return jclass.substring(jclass.lastIndexOf(".")+1) + ":" + _type + ":" + _joinCondition;
+    }
+
     /** Indicates the type of join to be performed. */
     protected Type _type = Type.INNER;
 

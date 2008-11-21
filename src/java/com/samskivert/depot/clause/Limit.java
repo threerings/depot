@@ -57,6 +57,12 @@ public class Limit extends QueryClause
     {
     }
 
+    @Override // from Object
+    public String toString ()
+    {
+        return _offset + "-" + (_offset+_count);
+    }
+
     /** The first row of the result set to return. */
     protected int _offset;
 
