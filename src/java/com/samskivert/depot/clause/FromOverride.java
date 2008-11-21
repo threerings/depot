@@ -25,6 +25,7 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
+import com.samskivert.depot.DepotUtil;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ExpressionVisitor;
 
@@ -65,6 +66,19 @@ public class FromOverride extends QueryClause
     public void accept (ExpressionVisitor builder)
     {
         builder.visit(this);
+    }
+
+    @Override // from Object
+    public String toString ()
+    {
+        StringBuilder builder = new StringBuilder();
+        for (Class<? extends PersistentRecord> clazz : _fromClasses) {
+            if (builder.length() > 0) {
+                builder.append(", ");
+            }
+            builder.append(DepotUtil.justClassName(clazz));
+        }
+        return builder.toString();
     }
 
     /** The classes of the tables we're selecting from. */

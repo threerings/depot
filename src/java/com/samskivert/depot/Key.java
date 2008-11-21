@@ -112,7 +112,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
         }
 
         // look up the cached primary key fields for this object
-        String[] keyFields = KeyUtil.getKeyFields(pClass);
+        String[] keyFields = DepotUtil.getKeyFields(pClass);
 
         // now extract the values in field order and ensure none are extra or missing
         _values = Lists.newArrayList();
@@ -204,7 +204,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
      */
     public void toShortString (StringBuilder builder)
     {
-        String[] keyFields = KeyUtil.getKeyFields(_pClass);
+        String[] keyFields = DepotUtil.getKeyFields(_pClass);
         for (int ii = 0; ii < keyFields.length; ii ++) {
             if (ii > 0) {
                 builder.append(":");

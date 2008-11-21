@@ -30,9 +30,9 @@ import com.google.common.collect.Maps;
 import com.samskivert.depot.annotation.Id;
 
 /**
- * Simple utility methods used by {@link Key} and {@link KeySet}.
+ * Simple utility methods used by various things.
  */
-public class KeyUtil
+public class DepotUtil
 {
     /**
      * Returns an array containing the names of the primary key fields for the supplied persistent
@@ -52,6 +52,14 @@ public class KeyUtil
             _keyFields.put(pClass, fields = kflist.toArray(new String[kflist.size()]));
         }
         return fields;
+    }
+
+    /**
+     * Returns the name of the supplied class minus its package.
+     */
+    public static String justClassName (Class<?> clazz)
+    {
+        return clazz.getName().substring(clazz.getName().lastIndexOf(".")+1);
     }
 
     /** A (never expiring) cache of primary key field names for all persistent classes (of which

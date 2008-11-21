@@ -50,6 +50,7 @@ import org.apache.tools.ant.util.ClasspathUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 
+import com.samskivert.depot.DepotUtil;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.annotation.Transient;
@@ -249,8 +250,7 @@ public class GenRecordTask extends Task
         }
 
         // get the unqualified class name
-        String rname = rclass.getName();
-        rname = rname.substring(rname.lastIndexOf(".")+1);
+        String rname = DepotUtil.justClassName(rclass);
 
         // generate our fields section
         StringBuilder fsection = new StringBuilder();

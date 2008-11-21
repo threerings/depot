@@ -22,6 +22,7 @@ package com.samskivert.depot.clause;
 
 import java.util.Collection;
 
+import com.samskivert.depot.DepotUtil;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.ExpressionVisitor;
@@ -95,8 +96,7 @@ public class Join extends QueryClause
     @Override // from Object
     public String toString ()
     {
-        String jclass = _joinClass.getName();
-        return jclass.substring(jclass.lastIndexOf(".")+1) + ":" + _type + ":" + _joinCondition;
+        return DepotUtil.justClassName(_joinClass) + ":" + _type + ":" + _joinCondition;
     }
 
     /** Indicates the type of join to be performed. */

@@ -78,8 +78,7 @@ public class DepotMarshaller<T extends PersistentRecord>
         _computed = pClass.getAnnotation(Computed.class);
         if (_computed == null) {
             // if not, this class has a corresponding SQL table
-            _tableName = _pClass.getName();
-            _tableName = _tableName.substring(_tableName.lastIndexOf(".")+1);
+            _tableName = DepotUtil.justClassName(_pClass);
 
             // see if there are Entity values specified
             if (entity != null) {
