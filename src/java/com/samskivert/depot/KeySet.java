@@ -47,7 +47,7 @@ public class KeySet<T extends PersistentRecord> extends WhereClause
         _pClass = pClass;
         _keys = keys;
 
-        String[] keyFields = KeyUtil.getKeyFields(pClass);
+        String[] keyFields = DepotUtil.getKeyFields(pClass);
         if (keys.size() == 0) {
             _condition = new LiteralExp("false");
 
