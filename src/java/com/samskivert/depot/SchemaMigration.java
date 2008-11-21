@@ -53,7 +53,7 @@ public abstract class SchemaMigration extends Modifier
         }
 
         @Override
-        public Integer invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+        protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
             if (!liaison.tableContainsColumn(conn, _tableName, _columnName)) {
                 // we'll accept this inconsistency
                 log.warning(_tableName + "." + _columnName + " already dropped.");
@@ -78,8 +78,12 @@ public abstract class SchemaMigration extends Modifier
             _newColumnName = newColumnName;
         }
 
+        @Override public boolean runBeforeDefault () {
+            return true;
+        }
+
         @Override
-        public Integer invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+        protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
             if (!liaison.tableContainsColumn(conn, _tableName, _oldColumnName)) {
                 if (liaison.tableContainsColumn(conn, _tableName, _newColumnName)) {
                     // we'll accept this inconsistency
@@ -102,10 +106,6 @@ public abstract class SchemaMigration extends Modifier
                 _tableName);
             return liaison.renameColumn(
                 conn, _tableName, _oldColumnName, _newColumnName, _newColumnDef) ? 1 : 0;
-        }
-
-        @Override public boolean runBeforeDefault () {
-            return true;
         }
 
         @Override
@@ -135,16 +135,16 @@ public abstract class SchemaMigration extends Modifier
             _fieldName = fieldName;
         }
 
+        @Override public boolean runBeforeDefault () {
+            return false;
+        }
+
         @Override
-        public Integer invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+        protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
             log.info("Updating type of '" + _fieldName + "' in " + _tableName);
             return liaison.changeColumn(conn, _tableName, _fieldName, _newColumnDef.getType(),
                 _newColumnDef.isNullable(), _newColumnDef.isUnique(),
                 _newColumnDef.getDefaultValue()) ? 1 : 0;
-        }
-
-        @Override public boolean runBeforeDefault () {
-            return false;
         }
 
         @Override
@@ -174,8 +174,12 @@ public abstract class SchemaMigration extends Modifier
             _defaultValue = defaultValue;
         }
 
+        @Override public boolean runBeforeDefault () {
+            return true;
+        }
+
         @Override
-        public Integer invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+        protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
             // override the default value in the column definition with the one provided
             ColumnDefinition defColumnDef = new ColumnDefinition(
                 _newColumnDef.getType(), _newColumnDef.isNullable(),
@@ -188,10 +192,6 @@ public abstract class SchemaMigration extends Modifier
                 return 1;
             }
             return 0;
-        }
-
-        @Override public boolean runBeforeDefault () {
-            return true;
         }
 
         @Override

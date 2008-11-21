@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -41,8 +41,8 @@ public abstract class Modifier implements Operation<Integer>
             super(null);
         }
 
-        @Override
-        public Integer invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+        @Override // from Modifier
+        protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
             Statement stmt = conn.createStatement();
             try {
                 return stmt.executeUpdate(createQuery(liaison));
@@ -86,24 +86,20 @@ public abstract class Modifier implements Operation<Integer>
         }
 
         @Override // from Modifier
-        public void cacheUpdate (PersistenceContext ctx)
+        public Integer invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
+            throws SQLException
         {
-            super.cacheUpdate(ctx);
+            Integer rows = super.invoke(ctx, conn, liaison);
             // if we have both a key and a record, cache
             if (_key != null && _result != null) {
                 ctx.cacheStore(_key, _result.clone());
             }
+            return rows;
         }
 
         protected CacheKey _key;
         protected T _result;
     }
-
-    /**
-     * Overriden to perform the actual database modifications represented by this object; should
-     * return the number of modified rows.
-     */
-    public abstract Integer invoke (Connection conn, DatabaseLiaison liaison) throws SQLException;
 
     /**
      * Constructs a {@link Modifier} without a cache invalidator.
@@ -121,24 +117,27 @@ public abstract class Modifier implements Operation<Integer>
         _invalidator = invalidator;
     }
 
-    /**
-     * Do any cache invalidation needed for this modification. This method is called just
-     * before the database statement is executed.
-     */
-    public void cacheInvalidation (PersistenceContext ctx)
+    // from interface Operation
+    public Integer invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
+        throws SQLException
     {
         if (_invalidator != null) {
             _invalidator.invalidate(ctx);
         }
+        return invoke(conn, liaison);
+    }
+
+    // from interface Operation
+    public void updateStats (Stats stats)
+    {
+        // nothing to update for modifiers
     }
 
     /**
-     * Do any cache updates needed for this modification. This method is called just after
-     * the successful execution of the database statement.
+     * Overriden to perform the actual database modifications represented by this object; should
+     * return the number of modified rows.
      */
-    public void cacheUpdate (PersistenceContext ctx)
-    {
-    }
+    protected abstract int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException;
 
     protected CacheInvalidator _invalidator;
 }

@@ -34,40 +34,22 @@ public interface Query<T> extends Operation<T>
     /** A simple base class for non-complex queries. */
     public abstract class Trivial<T> implements Query<T>
     {
-        public abstract T invoke (Connection conn, DatabaseLiaison liaison) throws SQLException;
+        public abstract T invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
+            throws SQLException;
 
-        public CacheKey getCacheKey () {
+        public T getCachedResult (PersistenceContext ctx) {
             return null;
         }
 
         public T transformCacheHit (CacheKey key, T value) {
             return value;
         }
-
-        public void updateCache (PersistenceContext ctx, T result) {
-        }
     }
 
     /**
-     * Any query may elect to utilize the built-in cache by returning a non-null {@link CacheKey}
-     * in this method. This is done automatically by the {@link DepotRepository} when looking up
-     * single entities by primary key, but even entire collections can be cached under a single
-     * key.
-     *
-     * Great care must be taken to invalidate such cached collections when their constituent
-     * entities are invalidated. This is generally done using {@link CacheListener} and
-     * {@link CacheInvalidator}.
+     * If this query has a simple cached result, it should return the non-null result from this
+     * method. If null is returned, the query will be {@link #invoke}d to obtain its result from
+     * persistent storage.
      */
-    public CacheKey getCacheKey ();
-
-    /**
-     * Overriden by subclasses to perform special operations when the query would return a cache
-     * hit. The value may be mutated, modified, or null may be return to force a database hit.
-     */
-    public T transformCacheHit (CacheKey key, T value);
-
-    /**
-     * Overriden by subclasses to perform case-by-case cache updates.
-     */
-    public void updateCache (PersistenceContext ctx, T result);
+    public T getCachedResult (PersistenceContext ctx);
 }

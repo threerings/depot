@@ -37,6 +37,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import com.samskivert.util.ArrayUtil;
+import com.samskivert.util.StringUtil;
 
 import com.samskivert.jdbc.ConnectionProvider;
 import com.samskivert.jdbc.DatabaseLiaison;
@@ -308,7 +309,7 @@ public abstract class DepotRepository
      * the latest data.
      */
     protected <T extends PersistentRecord> List<Key<T>> findAllKeys (
-        Class<T> type, boolean forUpdate, Collection<? extends QueryClause> clauses)
+        final Class<T> type, boolean forUpdate, Collection<? extends QueryClause> clauses)
         throws DatabaseException
     {
         final List<Key<T>> keys = Lists.newArrayList();
@@ -319,35 +320,52 @@ public abstract class DepotRepository
 
         if (forUpdate) {
             _ctx.invoke(new Modifier(null) {
-                @Override public Integer invoke (Connection conn, DatabaseLiaison liaison)
-                    throws SQLException {
+                @Override
+                protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
                     PreparedStatement stmt = builder.prepare(conn);
                     try {
                         ResultSet rs = stmt.executeQuery();
                         while (rs.next()) {
                             keys.add(marsh.makePrimaryKey(rs));
+                        }
+                        // TODO: cache this result?
+                        if (PersistenceContext.CACHE_DEBUG) {
+                            log.info("Loaded " + StringUtil.shortClassName(type) + " keys",
+                                     "count", keys.size());
                         }
                         return 0;
                     } finally {
                         JDBCUtil.close(stmt);
                     }
                 }
+                @Override public void updateStats (Stats stats) {
+                    stats.noteQuery(0, 1, 0, 0); // one uncached query
+                }
             });
 
         } else {
             _ctx.invoke(new Query.Trivial<Void>() {
                 @Override
-                public Void invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+                public Void invoke (PersistenceContext ctx, Connection conn,
+                                    DatabaseLiaison liaison) throws SQLException {
                     PreparedStatement stmt = builder.prepare(conn);
                     try {
                         ResultSet rs = stmt.executeQuery();
                         while (rs.next()) {
                             keys.add(marsh.makePrimaryKey(rs));
                         }
+                        // TODO: cache this result?
+                        if (PersistenceContext.CACHE_DEBUG) {
+                            log.info("Loaded " + StringUtil.shortClassName(type) + " keys",
+                                     "count", keys.size());
+                        }
                         return null;
                     } finally {
                         JDBCUtil.close(stmt);
                     }
+                }
+                public void updateStats (Stats stats) {
+                    stats.noteQuery(0, 1, 0, 0); // one uncached query
                 }
             });
         }
@@ -375,7 +393,7 @@ public abstract class DepotRepository
         // key will be null if record was supplied without a primary key
         return _ctx.invoke(new CachingModifier<T>(record, key, key) {
             @Override
-            public Integer invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+            protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
                 // if needed, update our modifier's key so that it can cache our results
                 Set<String> identityFields = Collections.emptySet();
                 if (_key == null) {
@@ -427,7 +445,7 @@ public abstract class DepotRepository
 
         return _ctx.invoke(new CachingModifier<T>(record, key, key) {
             @Override
-            public Integer invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+            protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
                 PreparedStatement stmt = builder.prepare(conn);
                 try {
                     return stmt.executeUpdate();
@@ -464,7 +482,7 @@ public abstract class DepotRepository
 
         return _ctx.invoke(new CachingModifier<T>(record, key, key) {
             @Override
-            public Integer invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+            protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
                 PreparedStatement stmt = builder.prepare(conn);
                 // clear out _result so that we don't rewrite this partial record to the cache
                 _result = null;
@@ -604,7 +622,7 @@ public abstract class DepotRepository
 
         return _ctx.invoke(new Modifier(invalidator) {
             @Override
-            public Integer invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+            protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
                 PreparedStatement stmt = builder.prepare(conn);
                 try {
                     return stmt.executeUpdate();
@@ -735,7 +753,7 @@ public abstract class DepotRepository
 
         return _ctx.invoke(new Modifier(invalidator) {
             @Override
-            public Integer invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+            protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
                 PreparedStatement stmt = builder.prepare(conn);
                 try {
                     return stmt.executeUpdate();
@@ -773,7 +791,7 @@ public abstract class DepotRepository
         final boolean[] created = new boolean[1];
         _ctx.invoke(new CachingModifier<T>(record, key, key) {
             @Override
-            public Integer invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+            protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
                 PreparedStatement stmt = null;
                 try {
                     if (_key != null) {
@@ -897,7 +915,7 @@ public abstract class DepotRepository
 
         return _ctx.invoke(new Modifier(invalidator) {
             @Override
-            public Integer invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+            protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
                 PreparedStatement stmt = builder.prepare(conn);
                 try {
                     return stmt.executeUpdate();

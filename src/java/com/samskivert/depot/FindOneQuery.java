@@ -27,8 +27,12 @@ import java.sql.SQLException;
 
 import com.samskivert.jdbc.DatabaseLiaison;
 import com.samskivert.jdbc.JDBCUtil;
+import com.samskivert.util.StringUtil;
+
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.SelectClause;
+
+import static com.samskivert.depot.Log.log;
 
 /**
  * The implementation of {@link DepotRepository#load} functionality.
@@ -49,21 +53,30 @@ public class FindOneQuery<T extends PersistentRecord>
         _builder.newQuery(_select);
     }
 
-    // from Query
-    public CacheKey getCacheKey ()
+    // from interface Query
+    public T getCachedResult (PersistenceContext ctx)
     {
-        WhereClause where = _select.getWhereClause();
-        if (where != null && where instanceof CacheKey) {
-            return (CacheKey) where;
+        CacheKey key = getCacheKey();
+        if (key == null) {
+            return null;
         }
-        return null;
+        T value = ctx.<T>cacheLookup(key);
+        if (value == null) {
+            return null;
+        }
+        _cachedRecords = 1;
+        // we do not want to return a reference to the actual cached entity so we clone it
+        @SuppressWarnings("unchecked") T cvalue = (T) value.clone();
+        return cvalue;
     }
 
-    // from Query
-    public T invoke (Connection conn, DatabaseLiaison liaison) throws SQLException
+    // from interface Query
+    public T invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
+        throws SQLException
     {
         PreparedStatement stmt = _builder.prepare(conn);
         try {
+            // load up the record in question
             T result = null;
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -71,6 +84,25 @@ public class FindOneQuery<T extends PersistentRecord>
             }
             // TODO: if (rs.next()) issue warning?
             rs.close();
+
+            // potentially cache the result
+            CacheKey key = getCacheKey();
+            if (key == null) {
+                // no row-specific cache key was given, if we can, create a key from the record
+                if (result != null && _marsh.hasPrimaryKey()) {
+                    key = _marsh.getPrimaryKey(result);
+                }
+            }
+            if (PersistenceContext.CACHE_DEBUG) {
+                log.info("Loaded " + (key != null ? key : _marsh.getTableName()));
+            }
+            if (key != null) {
+                ctx.cacheStore(key, (result != null) ? result.clone() : null);
+                if (PersistenceContext.CACHE_DEBUG) {
+                    log.info("Cached " + key);
+                }
+            }
+
             return result;
 
         } finally {
@@ -78,33 +110,20 @@ public class FindOneQuery<T extends PersistentRecord>
         }
     }
 
-    // from Query
-    public void updateCache (PersistenceContext ctx, T result)
+    // from interface Operation
+    public void updateStats (Stats stats)
     {
-        CacheKey key = getCacheKey();
-        if (key == null) {
-            // no row-specific cache key was given
-            if (result == null || !_marsh.hasPrimaryKey()) {
-                return;
-            }
-            // if we can, create a key from what was actually returned
-            key = _marsh.getPrimaryKey(result);
-        }
-        ctx.cacheStore(key, (result != null) ? result.clone() : null);
+        stats.noteQuery(0, 0, _cachedRecords, 1-_cachedRecords);
     }
 
-    // from Query
-    public T transformCacheHit (CacheKey key, T value)
+    protected CacheKey getCacheKey ()
     {
-        if (value == null) {
-            return null;
-        }
-        // we do not want to return a reference to the actual cached entity so we clone it
-        @SuppressWarnings("unchecked") T cvalue = (T) value.clone();
-        return cvalue;
+        WhereClause where = _select.getWhereClause();
+        return (where != null && where instanceof CacheKey) ? (CacheKey)where : null;
     }
 
     protected DepotMarshaller<T> _marsh;
     protected SelectClause<T> _select;
     protected SQLBuilder _builder;
+    protected int _cachedRecords;
 }

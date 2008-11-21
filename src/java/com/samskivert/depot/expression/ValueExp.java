@@ -51,6 +51,12 @@ public class ValueExp
         return _value;
     }
 
+    @Override // from Object
+    public String toString ()
+    {
+        return (_value instanceof Number) ? String.valueOf(_value) : ("'" + _value + "'");
+    }
+
     /** The value to be bound to the SQL parameters. */
     protected Object _value;
 }

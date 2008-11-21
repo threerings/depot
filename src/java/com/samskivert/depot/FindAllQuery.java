@@ -75,13 +75,12 @@ public abstract class FindAllQuery<T extends PersistentRecord>
                 }
             }
 
-            SelectClause<T> select =
-                new SelectClause<T>(_type, _marsh.getPrimaryKeyFields(), clauses);
-            _builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, select));
-            _builder.newQuery(select);
+            _select = new SelectClause<T>(_type, _marsh.getPrimaryKeyFields(), clauses);
+            _builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, _select));
+            _builder.newQuery(_select);
         }
 
-        public List<T> invoke (Connection conn, DatabaseLiaison liaison)
+        public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
             Map<Key<T>, T> entities = Maps.newHashMap();
@@ -96,15 +95,11 @@ public abstract class FindAllQuery<T extends PersistentRecord>
                     Key<T> key = _marsh.makePrimaryKey(rs);
                     allKeys.add(key);
 
-                    // TODO: All this cache fiddling needs to move to PersistenceContext?
-                    CacheAdapter.CachedValue<T> hit = _ctx.cacheLookup(key);
-                    if (hit != null) {
-                        T value = hit.getValue();
-                        if (value != null) {
-                            @SuppressWarnings("unchecked") T newValue = (T) value.clone();
-                            entities.put(key, newValue);
-                            continue;
-                        }
+                    T value = _ctx.<T>cacheLookup(key);
+                    if (value != null) {
+                        @SuppressWarnings("unchecked") T newValue = (T) value.clone();
+                        entities.put(key, newValue);
+                        continue;
                     }
 
                     fetchKeys.add(key);
@@ -114,8 +109,23 @@ public abstract class FindAllQuery<T extends PersistentRecord>
                 JDBCUtil.close(stmt);
             }
 
-            return loadAndResolve(conn, allKeys, fetchKeys, entities, stmtString);
+            _cachedRecords = entities.size();
+            _uncachedRecords = fetchKeys.size();
+
+            if (PersistenceContext.CACHE_DEBUG) {
+                log.info("Loaded " + _marsh.getTableName(), "query", _select,
+                         "keys", keysToString(allKeys));
+            }
+
+            return loadAndResolve(ctx, conn, allKeys, fetchKeys, entities, stmtString);
         }
+
+        public void updateStats (Stats stats) {
+            stats.noteQuery(0, 1, _cachedRecords, _uncachedRecords); // one uncached query
+        }
+
+        protected SelectClause<T> _select;
+        protected int _cachedRecords, _uncachedRecords;
     }
 
     /**
@@ -132,29 +142,33 @@ public abstract class FindAllQuery<T extends PersistentRecord>
             _builder = ctx.getSQLBuilder(new DepotTypes(ctx, _type));
         }
 
-        public List<T> invoke (Connection conn, DatabaseLiaison liaison)
+        public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
             Map<Key<T>, T> entities = Maps.newHashMap();
             Set<Key<T>> fetchKeys = Sets.newHashSet();
             for (Key<T> key : _keys) {
-                // TODO: All this cache fiddling needs to move to PersistenceContext?
-                CacheAdapter.CachedValue<T> hit = _ctx.cacheLookup(key);
-                if (hit != null) {
-                    T value = hit.getValue();
-                    if (value != null) {
-                        @SuppressWarnings("unchecked") T newValue = (T) value.clone();
-                        entities.put(key, newValue);
-                        continue;
-                    }
+                T value = _ctx.<T>cacheLookup(key);
+                if (value != null) {
+                    @SuppressWarnings("unchecked") T newValue = (T) value.clone();
+                    entities.put(key, newValue);
+                    continue;
                 }
                 fetchKeys.add(key);
             }
 
-            return loadAndResolve(conn, _keys, fetchKeys, entities, null);
+            _cachedRecords = entities.size();
+            _uncachedRecords = fetchKeys.size();
+
+            return loadAndResolve(ctx, conn, _keys, fetchKeys, entities, null);
+        }
+
+        public void updateStats (Stats stats) {
+            stats.noteQuery(0, 0, _cachedRecords, _uncachedRecords);
         }
 
         protected Collection<Key<T>> _keys;
+        protected int _cachedRecords, _uncachedRecords;
     }
 
     /**
@@ -168,12 +182,12 @@ public abstract class FindAllQuery<T extends PersistentRecord>
             throws DatabaseException
         {
             super(ctx, type);
-            SelectClause<T> select = new SelectClause<T>(type, _marsh.getFieldNames(), clauses);
-            _builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, select));
-            _builder.newQuery(select);
+            _select = new SelectClause<T>(type, _marsh.getFieldNames(), clauses);
+            _builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, _select));
+            _builder.newQuery(_select);
         }
 
-        public List<T> invoke (Connection conn, DatabaseLiaison liaison)
+        public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
             List<T> result = Lists.newArrayList();
@@ -182,12 +196,25 @@ public abstract class FindAllQuery<T extends PersistentRecord>
                 ResultSet rs = stmt.executeQuery();
                 while (rs.next()) {
                     result.add(_marsh.createObject(rs));
+                    _uncachedRecords++;
                 }
             } finally {
                 JDBCUtil.close(stmt);
             }
+            if (PersistenceContext.CACHE_DEBUG) {
+                log.info("Loaded " + _marsh.getTableName(), "query", _select,
+                         "uncached", _uncachedRecords);
+            }
+            // TODO: do we want to cache these results?
             return result;
         }
+
+        public void updateStats (Stats stats) {
+            stats.noteQuery(0, 1, 0, _uncachedRecords);
+        }
+
+        protected SelectClause<T> _select;
+        protected int _uncachedRecords;
     }
 
     public FindAllQuery (PersistenceContext ctx, Class<T> type)
@@ -198,45 +225,46 @@ public abstract class FindAllQuery<T extends PersistentRecord>
         _marsh = _ctx.getMarshaller(type);
     }
 
-    // from Query
-    public CacheKey getCacheKey ()
+    // from interface Query
+    public List<T> getCachedResult (PersistenceContext ctx)
     {
-        return null;
+        return null; // TODO
     }
 
-    // from Query
-    public void updateCache (PersistenceContext ctx, List<T> result) {
-        if (_marsh.hasPrimaryKey()) {
-            for (T bit : result) {
-                ctx.cacheStore(_marsh.getPrimaryKey(bit), bit.clone());
-            }
-        }
-    }
+//     // from interface Query
+//     public List<T> transformCacheHit (CacheKey key, List<T> bits)
+//     {
+//         if (bits == null) {
+//             return bits;
+//         }
 
-    // from Query
-    public List<T> transformCacheHit (CacheKey key, List<T> bits)
+//         List<T> result = Lists.newArrayList();
+//         for (T bit : bits) {
+//             if (bit != null) {
+//                 @SuppressWarnings("unchecked") T cbit = (T) bit.clone();
+//                 result.add(cbit);
+//             } else {
+//                 result.add(null);
+//             }
+//         }
+//         return result;
+//     }
+
+    // from interface Operation
+    public void updateStats (Stats stats)
     {
-        if (bits == null) {
-            return bits;
-        }
-
-        List<T> result = Lists.newArrayList();
-        for (T bit : bits) {
-            if (bit != null) {
-                @SuppressWarnings("unchecked") T cbit = (T) bit.clone();
-                result.add(cbit);
-            } else {
-                result.add(null);
-            }
-        }
-        return result;
+        // TODO
     }
 
-    protected List<T> loadAndResolve (Connection conn, Collection<Key<T>> allKeys,
-                                      Set<Key<T>> fetchKeys, Map<Key<T>, T> entities,
-                                      String origStmt)
+    protected List<T> loadAndResolve (PersistenceContext ctx, Connection conn,
+                                      Collection<Key<T>> allKeys, Set<Key<T>> fetchKeys,
+                                      Map<Key<T>, T> entities, String origStmt)
         throws SQLException
     {
+        if (PersistenceContext.CACHE_DEBUG && fetchKeys.size() > 0) {
+            log.info("Loading " + _marsh.getTableName(), "keys", keysToString(fetchKeys));
+        }
+
         // if we're fetching a huge number of records, we have to do it in multiple queries
         if (fetchKeys.size() > In.MAX_KEYS) {
             int keyCount = fetchKeys.size();
@@ -248,11 +276,11 @@ public abstract class FindAllQuery<T extends PersistentRecord>
                     iter.remove();
                 }
                 keyCount -= keys.size();
-                loadRecords(conn, keys, entities, origStmt);
+                loadRecords(ctx, conn, keys, entities, origStmt);
             } while (keyCount > 0);
 
         } else if (fetchKeys.size() > 0) {
-            loadRecords(conn, fetchKeys, entities, origStmt);
+            loadRecords(ctx, conn, fetchKeys, entities, origStmt);
         }
 
         List<T> result = Lists.newArrayList();
@@ -265,10 +293,11 @@ public abstract class FindAllQuery<T extends PersistentRecord>
         return result;
     }
 
-    protected void loadRecords (Connection conn, Set<Key<T>> keys, Map<Key<T>, T> entities,
-                                String origStmt)
+    protected void loadRecords (PersistenceContext ctx, Connection conn, Set<Key<T>> keys,
+                                Map<Key<T>, T> entities, String origStmt)
         throws SQLException
     {
+        boolean hasPrimaryKey = _marsh.hasPrimaryKey();
         _builder.newQuery(new SelectClause<T>(_type, _marsh.getFieldNames(),
                                               new KeySet<T>(_type, keys)));
         PreparedStatement stmt = _builder.prepare(conn);
@@ -282,6 +311,10 @@ public abstract class FindAllQuery<T extends PersistentRecord>
                 if (entities.put(key, obj) != null) {
                     dups++;
                 }
+                // cache our result if it has a primary key
+                if (hasPrimaryKey) {
+                    ctx.cacheStore(_marsh.getPrimaryKey(obj), obj.clone());
+                }
                 got.add(key);
                 cnt++;
             }
@@ -292,9 +325,25 @@ public abstract class FindAllQuery<T extends PersistentRecord>
                             "wanted", keys, "got", got, "dups", dups, new Exception());
             }
 
+            if (PersistenceContext.CACHE_DEBUG) {
+                log.info("Cached " + _marsh.getTableName(), "count", cnt);
+            }
+
         } finally {
             JDBCUtil.close(stmt);
         }
+    }
+
+    protected String keysToString (Iterable<Key<T>> keySet)
+    {
+        StringBuilder builder = new StringBuilder("(");
+        for (Key<T> key : keySet) {
+            if (builder.length() > 1) {
+                builder.append(", ");
+            }
+            key.toShortString(builder);
+        }
+        return builder.append(")").toString();
     }
 
     protected PersistenceContext _ctx;

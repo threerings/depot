@@ -53,6 +53,9 @@ public class PersistenceContext
     /** Allow toggling of query logging and other debug output via a system property. */
     public static final boolean DEBUG = Boolean.getBoolean("com.samskivert.depot.debug");
 
+    /** Allow toggling of cache-related logging via a system property. */
+    public static final boolean CACHE_DEBUG = Boolean.getBoolean("com.samskivert.depot.cache_debug");
+
     /** Map {@link TableGenerator} instances by name. */
     public Map<String, TableGenerator> tableGenerators = Maps.newHashMap();
 
@@ -174,6 +177,14 @@ public class PersistenceContext
     }
 
     /**
+     * Returns a snapshot of our current runtime statistics.
+     */
+    public Stats.Snapshot getStats ()
+    {
+        return _stats.getSnapshot();
+    }
+
+    /**
      * Create and return a new {@link SQLBuilder} for the appropriate dialect.
      *
      * TODO: At some point perhaps use a more elegant way of discerning our dialect.
@@ -258,26 +269,14 @@ public class PersistenceContext
     public <T> T invoke (Query<T> query)
         throws DatabaseException
     {
-        CacheKey key = query.getCacheKey();
-        // if there is a cache key, check the cache
-        if (key != null && _cache != null) {
-            CacheAdapter.CachedValue<T> cacheHit = cacheLookup(key);
-            if (cacheHit != null) {
-                log.debug("cache hit [key=" + key + ", hit=" + cacheHit + "]");
-                T value = cacheHit.getValue();
-                value = query.transformCacheHit(key, value);
-                if (value != null) {
-                    return value;
-                }
-                log.debug("transformCacheHit returned null; rejecting cached value.");
-            }
-            log.debug("cache miss [key=" + key + "]");
+        // we check to see if the query is already cached before invoking it to avoid requesting a
+        // database connection if we don't actually need one
+        T result = query.getCachedResult(this);
+        if (result != null) {
+            query.updateStats(_stats);
+            return result;
         }
-        // otherwise, perform the query
-        T result = invoke(query, true);
-        // and let the caller figure out if it wants to cache itself somehow
-        query.updateCache(this, result);
-        return result;
+        return invoke(query, true);
     }
 
     /**
@@ -286,12 +285,7 @@ public class PersistenceContext
     public int invoke (Modifier modifier)
         throws DatabaseException
     {
-        modifier.cacheInvalidation(this);
-        int rows = invoke(modifier, true);
-        if (rows > 0) {
-            modifier.cacheUpdate(this);
-        }
-        return rows;
+        return invoke(modifier, true);
     }
 
     /**
@@ -305,13 +299,14 @@ public class PersistenceContext
     /**
      * Looks up an entry in the cache by the given key.
      */
-    public <T> CacheAdapter.CachedValue<T> cacheLookup (CacheKey key)
+    public <T> T cacheLookup (CacheKey key)
     {
         if (_cache == null) {
             return null;
         }
         CacheAdapter.CacheBin<T> bin = _cache.getCache(key.getCacheId());
-        return bin.lookup(key.getCacheKey());
+        CacheAdapter.CachedValue<T> ref = bin.lookup(key.getCacheKey());
+        return (ref == null) ? null : ref.getValue();
     }
 
     /**
@@ -530,6 +525,7 @@ public class PersistenceContext
 
         boolean isReadOnly = !(op instanceof Modifier);
         Connection conn;
+        long preConnect = System.nanoTime();
         try {
             conn = _conprov.getConnection(_ident, isReadOnly);
         } catch (PersistenceException pe) {
@@ -541,10 +537,15 @@ public class PersistenceContext
         // connection pooling which will block in getConnection() instead of returning a connection
         // that someone else may be using
         synchronized (conn) {
+            long preInvoke = System.nanoTime();
             try {
-                // if this becomes more complex than this single statement, then this should turn
-                // into a method call that contains the complexity
-                return op.invoke(conn, _liaison);
+                // invoke our database operation
+                T value = op.invoke(this, conn, _liaison);
+                // note the time it took to invoke this operation
+                _stats.noteOp(isReadOnly, preConnect, preInvoke, System.nanoTime());
+                // have the operation update any appropriate runtime statistics as well
+                op.updateStats(_stats);
+                return value;
 
             } catch (SQLException sqe) {
                 if (!isReadOnly) {
@@ -593,6 +594,9 @@ public class PersistenceContext
     protected ConnectionProvider _conprov;
     protected DatabaseLiaison _liaison;
     protected boolean _warnOnLazyInit;
+
+    /** Used to track various statistics. */
+    protected Stats _stats = new Stats();
 
     /** The object through which all our caching is relayed, or null, for no caching. */
     protected CacheAdapter _cache;

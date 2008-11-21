@@ -199,6 +199,20 @@ public class Key<T extends PersistentRecord> extends WhereClause
         ctx.cacheInvalidate(this);
     }
 
+    /**
+     * Appends just the key=value portion of our {@link #toString} to the supplied buffer.
+     */
+    public void toShortString (StringBuilder builder)
+    {
+        String[] keyFields = KeyUtil.getKeyFields(_pClass);
+        for (int ii = 0; ii < keyFields.length; ii ++) {
+            if (ii > 0) {
+                builder.append(":");
+            }
+            builder.append(keyFields[ii]).append("=").append(_values.get(ii));
+        }
+    }
+
     @Override // from WhereClause
     public void validateQueryType (Class<?> pClass)
     {
@@ -229,13 +243,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
     {
         StringBuilder builder = new StringBuilder(_pClass.getSimpleName());
         builder.append("(");
-        String[] keyFields = KeyUtil.getKeyFields(_pClass);
-        for (int ii = 0; ii < keyFields.length; ii ++) {
-            if (ii > 0) {
-                builder.append(", ");
-            }
-            builder.append(keyFields[ii]).append("=").append(_values.get(ii));
-        }
+        toShortString(builder);
         builder.append(")");
         return builder.toString();
     }

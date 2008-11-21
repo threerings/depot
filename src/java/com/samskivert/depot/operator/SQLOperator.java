@@ -69,6 +69,19 @@ public interface SQLOperator extends SQLExpression
          */
         public abstract String operator ();
 
+        @Override // from Object
+        public String toString ()
+        {
+            StringBuilder builder = new StringBuilder("(");
+            for (SQLExpression condition : _conditions) {
+                if (builder.length() > 1) {
+                    builder.append(operator());
+                }
+                builder.append(condition);
+            }
+            return builder.append(")").toString();
+        }
+
         protected SQLExpression[] _conditions;
     }
 
@@ -114,6 +127,12 @@ public interface SQLOperator extends SQLExpression
         public SQLExpression getRightHandSide ()
         {
             return _rhs;
+        }
+
+        @Override // from Object
+        public String toString ()
+        {
+            return "(" + _lhs + operator() + _rhs + ")";
         }
 
         protected SQLExpression _lhs;

@@ -85,6 +85,12 @@ public class Where extends WhereClause
         _condition.addClasses(classSet);
     }
 
+    @Override // from Object
+    public String toString ()
+    {
+        return String.valueOf(_condition);
+    }
+
     protected static SQLExpression toCondition (ColumnExp[] columns, Comparable<?>[] values)
     {
         SQLExpression[] comparisons = new SQLExpression[columns.length];

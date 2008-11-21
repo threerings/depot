@@ -49,7 +49,7 @@ public abstract class Logic
 
         @Override public String operator()
         {
-            return "or";
+            return " or ";
         }
     }
 
@@ -70,7 +70,7 @@ public abstract class Logic
 
         @Override public String operator()
         {
-            return "and";
+            return " and ";
         }
     }
 
@@ -100,6 +100,12 @@ public abstract class Logic
         public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
         {
             _condition.addClasses(classSet);
+        }
+
+        @Override // from Object
+        public String toString ()
+        {
+            return "Not(" + _condition + ")";
         }
 
         protected SQLExpression _condition;

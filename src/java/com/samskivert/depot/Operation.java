@@ -33,6 +33,11 @@ public interface Operation<T>
     /**
      * Performs the actual JDBC interactions associated with this operation.
      */
-    public T invoke (Connection conn, DatabaseLiaison liaison)
+    public T invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
         throws SQLException;
+
+    /**
+     * Called after the operation has been invoked so that it can update our runtime statistics.
+     */
+    public void updateStats (Stats stats);
 }

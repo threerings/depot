@@ -59,6 +59,12 @@ public class ColumnExp
         return _pField;
     }
 
+    @Override // from Object
+    public String toString ()
+    {
+        return "\"" + _pField + "\""; // TODO: qualify with record name and be uber verbose?
+    }
+
     /** The table that hosts the column we reference, or null. */
     protected final Class<? extends PersistentRecord> _pClass;
 

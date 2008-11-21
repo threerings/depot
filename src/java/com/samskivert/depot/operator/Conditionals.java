@@ -69,6 +69,12 @@ public abstract class Conditionals
         {
         }
 
+        @Override // from Object
+        public String toString ()
+        {
+            return "IsNull(" + _column + ")";
+        }
+
         protected ColumnExp _column;
     }
 
@@ -240,6 +246,20 @@ public abstract class Conditionals
             _column.addClasses(classSet);
         }
 
+        @Override // from Object
+        public String toString ()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.append(_column).append(" in (");
+            for (int ii = 0; ii < _values.length; ii++) {
+                if (ii > 0) {
+                    builder.append(", ");
+                }
+                builder.append(_values[ii]);
+            }
+            return builder.append(")").toString();
+        }
+
         protected ColumnExp _column;
         protected Comparable<?>[] _values;
     }
@@ -286,6 +306,12 @@ public abstract class Conditionals
             return _clause;
         }
 
+        @Override // from Object
+        public String toString ()
+        {
+            return "Exists(" + _clause + ")";
+        }
+
         protected SelectClause<T> _clause;
     }
 
@@ -327,6 +353,12 @@ public abstract class Conditionals
         // from SQLExpression
         public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
         {
+        }
+
+        @Override // from Object
+        public String toString ()
+        {
+            return "FullText(" + _name + "=" + _query + ")";
         }
 
         protected Class<? extends PersistentRecord> _pClass;

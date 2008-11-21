@@ -195,6 +195,32 @@ public class SelectClause<T extends PersistentRecord> extends QueryClause
         builder.visit(this);
     }
 
+    @Override // from Object
+    public String toString ()
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append("(where=").append(_where);
+        if (_fromOverride != null) {
+            builder.append(", from=").append(_fromOverride);
+        }
+        if (!_joinClauses.isEmpty()) {
+            builder.append(", join=").append(_joinClauses);
+        }
+        if (_orderBy != null) {
+            builder.append(", orderBy=").append(_orderBy);
+        }
+        if (_groupBy != null) {
+            builder.append(", groupBy=").append(_groupBy);
+        }
+        if (_limit != null) {
+            builder.append(", limit=").append(_limit);
+        }
+        if (_forUpdate != null) {
+            builder.append(", forUpdate=").append(_forUpdate);
+        }
+        return builder.append(")").toString();
+    }
+
     /** Persistent class fields mapped to field override clauses. */
     protected Map<String, FieldDefinition> _disMap = Maps.newHashMap();
 
