@@ -69,7 +69,7 @@ public class FindOneQuery<T extends PersistentRecord> extends Query<T>
         return cvalue;
     }
 
-    @Override // from Query
+    // from Query
     public T invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
         throws SQLException
     {
@@ -109,7 +109,7 @@ public class FindOneQuery<T extends PersistentRecord> extends Query<T>
         }
     }
 
-    @Override // from Operation
+    // from Operation
     public void updateStats (Stats stats)
     {
         stats.noteQuery(0, 0, _cachedRecords, 1-_cachedRecords);

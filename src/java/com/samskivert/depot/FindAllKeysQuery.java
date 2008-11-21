@@ -66,7 +66,7 @@ public class FindAllKeysQuery<T extends PersistentRecord> extends Query<List<Key
         return null; // TODO
     }
 
-    @Override // from Query
+    // from Query
     public List<Key<T>> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
         throws SQLException
     {
@@ -87,7 +87,7 @@ public class FindAllKeysQuery<T extends PersistentRecord> extends Query<List<Key
         }
     }
 
-    @Override // from Query
+    // from Query
     public void updateStats (Stats stats)
     {
         stats.noteQuery(0, 1, 0, 0); // one uncached query

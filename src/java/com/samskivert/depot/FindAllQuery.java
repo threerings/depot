@@ -85,7 +85,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             return null; // TODO
         }
 
-        @Override // from Query
+        // from Query
         public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
@@ -153,7 +153,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             return _fetchKeys.isEmpty() ? resolve(_keys, _entities) : null;
         }
 
-        @Override // from Query
+        // from Query
         public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
@@ -188,7 +188,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
                          // not play nicely when records were evicted from the cache by primary key
         }
 
-        @Override // from Query
+        // from Query
         public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
@@ -213,7 +213,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
         }
     }
 
-    @Override // from Query
+    // from Query
     public void updateStats (Stats stats)
     {
         stats.noteQuery(_cachedQueries, _uncachedQueries, _cachedRecords, _uncachedRecords);

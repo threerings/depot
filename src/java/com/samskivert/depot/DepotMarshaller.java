@@ -1034,8 +1034,8 @@ public class DepotMarshaller<T extends PersistentRecord>
             throws DatabaseException
         {
             return ctx.invoke(new Query.Trivial<TableMetaData>() {
-                @Override public TableMetaData invoke (PersistenceContext ctx, Connection conn,
-                                                       DatabaseLiaison dl) throws SQLException {
+                public TableMetaData invoke (PersistenceContext ctx, Connection conn,
+                                             DatabaseLiaison dl) throws SQLException {
                     return new TableMetaData(conn.getMetaData(), tableName);
                 }
                 public void updateStats (Stats stats) {
