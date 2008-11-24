@@ -828,7 +828,7 @@ public abstract class DepotRepository
     {
         if (_ctx.getMarshaller(type).hasPrimaryKey()) {
             // look up the primary keys for all rows matching our where clause and delete using those
-            KeySet<T> pwhere = new KeySet<T>(type, findAllKeys(type, true, where));
+            KeySet<T> pwhere = KeySet.newKeySet(type, findAllKeys(type, true, where));
             return deleteAll(type, pwhere, pwhere);
         } else {
             // otherwise just do the delete directly as we can't have cached a record that has no

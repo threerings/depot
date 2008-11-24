@@ -133,7 +133,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
      */
     public static class WithKeys<T extends PersistentRecord> extends FindAllQuery<T>
     {
-        public WithKeys (PersistenceContext ctx, Collection<Key<T>> keys)
+        public WithKeys (PersistenceContext ctx, Iterable<Key<T>> keys)
             throws DatabaseException
         {
             super(ctx, keys.iterator().next().getPersistentClass());
@@ -160,7 +160,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             return loadAndResolve(ctx, conn, _keys, _fetchKeys, _entities, null);
         }
 
-        protected Collection<Key<T>> _keys;
+        protected Iterable<Key<T>> _keys;
         protected Map<Key<T>, T> _entities = Maps.newHashMap();
         protected Set<Key<T>> _fetchKeys = Sets.newHashSet();
     }
@@ -226,7 +226,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
         _marsh = ctx.getMarshaller(type);
     }
 
-    protected void loadFromCache (PersistenceContext ctx, Collection<Key<T>> allKeys,
+    protected void loadFromCache (PersistenceContext ctx, Iterable<Key<T>> allKeys,
                                   Map<Key<T>, T> entities, Set<Key<T>> fetchKeys)
     {
         for (Key<T> key : allKeys) {
@@ -240,7 +240,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
         }
     }
 
-    protected List<T> resolve (Collection<Key<T>> allKeys, Map<Key<T>, T> entities)
+    protected List<T> resolve (Iterable<Key<T>> allKeys, Map<Key<T>, T> entities)
     {
         List<T> result = Lists.newArrayList();
         for (Key<T> key : allKeys) {
@@ -253,7 +253,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
     }
 
     protected List<T> loadAndResolve (PersistenceContext ctx, Connection conn,
-                                      Collection<Key<T>> allKeys, Set<Key<T>> fetchKeys,
+                                      Iterable<Key<T>> allKeys, Set<Key<T>> fetchKeys,
                                       Map<Key<T>, T> entities, String origStmt)
         throws SQLException
     {
@@ -288,7 +288,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
     {
         boolean hasPrimaryKey = _marsh.hasPrimaryKey();
         _builder.newQuery(new SelectClause<T>(_type, _marsh.getFieldNames(),
-                                              new KeySet<T>(_type, keys)));
+                                              KeySet.newKeySet(_type, keys)));
         PreparedStatement stmt = _builder.prepare(conn);
         try {
             Set<Key<T>> got = Sets.newHashSet();

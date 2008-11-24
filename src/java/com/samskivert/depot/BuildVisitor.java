@@ -100,7 +100,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
     {
         Class<? extends PersistentRecord> pClass = key.getPersistentClass();
         String[] keyFields = DepotUtil.getKeyFields(pClass);
-        List<Comparable<?>> values = key.getValues();
+        Comparable<?>[] values = key.getValues();
         for (int ii = 0; ii < keyFields.length; ii ++) {
             if (ii > 0) {
                 _builder.append(" and ");
@@ -111,7 +111,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
             _enableOverrides = true;
             appendRhsColumn(pClass, keyFields[ii]);
             _enableOverrides = saved;
-            _builder.append(values.get(ii) == null ? " is null " : " = ? ");
+            _builder.append(values[ii] == null ? " is null " : " = ? ");
         }
     }
 

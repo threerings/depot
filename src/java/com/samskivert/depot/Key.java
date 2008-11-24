@@ -22,6 +22,7 @@ package com.samskivert.depot;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -47,14 +48,14 @@ public class Key<T extends PersistentRecord> extends WhereClause
      * combine a buncy of keys into a {@link KeySet}. */
     public static class Expression<U extends PersistentRecord> implements SQLExpression
     {
-        public Expression (Class<U> pClass, List<Comparable<?>> values) {
+        public Expression (Class<U> pClass, Comparable<?>[] values) {
             _pClass = pClass;
             _values = values;
         }
         public Class<U> getPersistentClass () {
             return _pClass;
         }
-        public List<Comparable<?>> getValues () {
+        public Comparable<?>[] getValues () {
             return _values;
         }
         public void accept (ExpressionVisitor builder) {
@@ -64,7 +65,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
             classSet.add(getPersistentClass());
         }
         protected Class<U> _pClass;
-        protected List<Comparable<?>> _values;
+        protected Comparable<?>[] _values;
     }
 
     /**
@@ -115,19 +116,18 @@ public class Key<T extends PersistentRecord> extends WhereClause
         String[] keyFields = DepotUtil.getKeyFields(pClass);
 
         // now extract the values in field order and ensure none are extra or missing
-        _values = Lists.newArrayList();
+        _values = new Comparable<?>[values.length];
         for (int ii = 0; ii < keyFields.length; ii++) {
-            Comparable<?> nugget = map.remove(keyFields[ii]);
-            if (nugget == null) {
+            Comparable<?> value = map.remove(keyFields[ii]);
+            if (value == null) {
                 // make sure we were provided with a value for this primary key field
                 throw new IllegalArgumentException("Missing value for key field: " + keyFields[ii]);
             }
-            if (nugget instanceof Serializable) {
-                _values.add(nugget);
-                continue;
+            if (!(value instanceof Serializable)) {
+                throw new IllegalArgumentException(
+                    "Non-serializable argument [key=" + keyFields[ii] + ", value=" + value + "]");
             }
-            throw new IllegalArgumentException(
-                "Non-serializable argument [key=" + keyFields[ii] + ", arg=" + nugget + "]");
+            _values[ii] = value;
         }
 
         // finally make sure we were not given any fields that are not in fact primary key fields
@@ -135,6 +135,15 @@ public class Key<T extends PersistentRecord> extends WhereClause
             throw new IllegalArgumentException(
                 "Non-key columns given: " +  StringUtil.join(map.keySet().toArray(), ", "));
         }
+    }
+
+    /**
+     * Used to create a key when you know you have the canonical values array.
+     */
+    protected Key (Class<T> pClass, Comparable<?>[] values)
+    {
+        _pClass = pClass;
+        _values = values;
     }
 
     /**
@@ -148,7 +157,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
     /**
      * Returns the values bound to this key.
      */
-    public List<Comparable<?>> getValues ()
+    public Comparable<?>[] getValues ()
     {
         return _values;
     }
@@ -209,7 +218,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
             if (ii > 0) {
                 builder.append(":");
             }
-            builder.append(keyFields[ii]).append("=").append(_values.get(ii));
+            builder.append(keyFields[ii]).append("=").append(_values[ii]);
         }
     }
 
@@ -229,13 +238,13 @@ public class Key<T extends PersistentRecord> extends WhereClause
         if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
-        return _values.equals(((Key<?>) obj)._values);
+        return Arrays.equals(_values, ((Key<?>) obj)._values);
     }
 
     @Override
     public int hashCode ()
     {
-        return _values.hashCode();
+        return Arrays.hashCode(_values);
     }
 
     @Override
@@ -252,5 +261,5 @@ public class Key<T extends PersistentRecord> extends WhereClause
     protected final Class<T> _pClass;
 
     /** The expression that identifies our row. */
-    protected final ArrayList<Comparable<?>> _values; // must declare as ArrayList for Serializable
+    protected final Comparable<?>[] _values;
 }

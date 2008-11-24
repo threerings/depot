@@ -22,17 +22,17 @@ package com.samskivert.depot.tests;
 
 import java.sql.Date;
 import java.sql.Timestamp;
-// import java.util.HashSet;
+import java.util.Collections;
 import java.util.Set;
 
-// import com.google.common.collect.Sets;
+import com.google.common.collect.Sets;
 
 import com.samskivert.util.RandomUtil;
 
 import com.samskivert.jdbc.StaticConnectionProvider;
 import com.samskivert.depot.DepotRepository;
-// import com.samskivert.depot.Key;
-// import com.samskivert.depot.KeySet;
+import com.samskivert.depot.Key;
+import com.samskivert.depot.KeySet;
 import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.SchemaMigration;
@@ -55,7 +55,7 @@ public class TestRepository extends DepotRepository
             return recordId + ":" + name;
         }
     }
-    
+
     public static void main (String[] args)
         throws Exception
     {
@@ -109,7 +109,18 @@ public class TestRepository extends DepotRepository
             record.lastModified = tnow;
             repo.insert(record);
         }
-        
+
+        // test the empty ky set
+        KeySet<TestRecord> none = KeySet.newKeySet(
+            TestRecord.class, Collections.<Key<TestRecord>>emptySet());
+        System.out.println("Load none " + repo.loadAll(none.toCollection()) + ".");
+        System.out.println("Delete none " + repo.deleteAll(TestRecord.class, none) + ".");
+
+        // test a partial key set
+        KeySet<TestRecord> some = KeySet.newSimpleKeySet(
+            TestRecord.class, Sets.newHashSet(1, 3, 5, 7, 9));
+        System.out.println("Load some " + repo.loadAll(some.toCollection()) + ".");
+
         System.out.println("Names " + repo.findAll(TestNameRecord.class) + ".");
         System.out.println("Have " + repo.findAll(TestRecord.class).size() + " records.");
         repo.deleteAll(TestRecord.class, new Where(new Conditionals.LessThan(
@@ -117,11 +128,11 @@ public class TestRepository extends DepotRepository
         System.out.println("Now have " + repo.findAll(TestRecord.class).size() + " records.");
         repo.deleteAll(TestRecord.class, new Where(new LiteralExp("true")));
 //         // TODO: try to break our In() clause
-//         Set<Key<TestRecord>> ids = Sets.newHashSet();
+//         Set<Integer> ids = Sets.newHashSet();
 //         for (int ii = 1; ii <= Conditionals.In.MAX_KEYS*2+3; ii++) {
-//             ids.add(TestRecord.getKey(ii));
+//             ids.add(ii);
 //         }
-//         repo.deleteAll(TestRecord.class, new KeySet<TestRecord>(TestRecord.class, ids));
+//         repo.deleteAll(TestRecord.class, KeySet.newSimpleKeySet(TestRecord.class, ids));
         System.out.println("Now have " + repo.findAll(TestRecord.class).size() + " records.");
     }
 
