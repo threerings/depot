@@ -38,8 +38,6 @@ import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.operator.Conditionals;
 import com.samskivert.depot.operator.Logic;
 
-import static com.samskivert.depot.Log.log;
-
 /**
  * Contains a set of primary keys that match a set of persistent records. This is used internally
  * in Depot when decomposing queries into two parts: first a query for the primary keys that

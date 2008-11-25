@@ -30,7 +30,6 @@ import com.google.common.collect.Sets;
 import com.samskivert.jdbc.StaticConnectionProvider;
 import com.samskivert.util.RandomUtil;
 
-import com.samskivert.depot.CacheAdapter;
 import com.samskivert.depot.DepotRepository;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.KeySet;

@@ -304,7 +304,6 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
                                 Map<Key<T>, T> entities, String origStmt)
         throws SQLException
     {
-        boolean hasPrimaryKey = _marsh.hasPrimaryKey();
         SelectClause<T> select = new SelectClause<T>(
             _type, _marsh.getFieldNames(), KeySet.newKeySet(_type, keys));
         SQLBuilder builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, select));

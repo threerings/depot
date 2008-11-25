@@ -20,12 +20,6 @@
 
 package com.samskivert.depot;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.depot.PersistenceContext.CacheListener;
-
 /**
  * The base of all read-only queries.
  */

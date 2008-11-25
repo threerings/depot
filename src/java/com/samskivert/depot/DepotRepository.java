@@ -22,7 +22,6 @@ package com.samskivert.depot;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
@@ -37,7 +36,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import com.samskivert.util.ArrayUtil;
-import com.samskivert.util.StringUtil;
 
 import com.samskivert.jdbc.ConnectionProvider;
 import com.samskivert.jdbc.DatabaseLiaison;
@@ -48,7 +46,6 @@ import com.samskivert.depot.clause.DeleteClause;
 import com.samskivert.depot.clause.FieldOverride;
 import com.samskivert.depot.clause.InsertClause;
 import com.samskivert.depot.clause.QueryClause;
-import com.samskivert.depot.clause.SelectClause;
 import com.samskivert.depot.clause.UpdateClause;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.ValueExp;
