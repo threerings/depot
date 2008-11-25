@@ -215,18 +215,15 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
                 ResultSet rs = stmt.executeQuery();
                 while (rs.next()) {
                     result.add(_marsh.createObject(rs));
-                    _uncachedRecords++;
                 }
             } finally {
                 JDBCUtil.close(stmt);
             }
-            _uncachedQueries++;
+            _explicitQueries++;
             if (PersistenceContext.CACHE_DEBUG) {
-                log.info("Loaded " + _marsh.getTableName(), "query", _select,
-                         "uncached", _uncachedRecords);
+                log.info("Loaded " + _marsh.getTableName(), "query", _select, "rows", result.size());
             }
-            // TODO: do we want to cache these results?
-            return result;
+            return result; // TODO: do we want to cache these results?
         }
 
         protected SelectClause<T> _select;
@@ -235,7 +232,8 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
     // from Query
     public void updateStats (Stats stats)
     {
-        stats.noteQuery(_cachedQueries, _uncachedQueries, _cachedRecords, _uncachedRecords);
+        stats.noteQuery(_cachedQueries, _uncachedQueries, _explicitQueries,
+                        _cachedRecords, _uncachedRecords);
     }
 
     protected FindAllQuery (PersistenceContext ctx, Class<T> type)
@@ -365,5 +363,6 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
 
     protected Class<T> _type;
     protected DepotMarshaller<T> _marsh;
-    protected int _cachedQueries, _uncachedQueries, _cachedRecords, _uncachedRecords;
+    protected int _cachedQueries, _uncachedQueries, _explicitQueries;
+    protected int _cachedRecords, _uncachedRecords;
 }

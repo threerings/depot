@@ -47,6 +47,9 @@ public class Stats
         /** The total number of collection queries that were loaded from the database. */
         public final int uncachedQueries;
 
+        /** The total number of one-phase collection queries that executed. */
+        public final int explicitQueries;
+
         /** The number of record loads (individual or as part of a collection query) that were
          * loaded from the cache. */
         public final long cachedRecords;
@@ -69,7 +72,7 @@ public class Stats
 
         /** Creates a stats instance. */
         protected Snapshot (int totalOps, long connectionWaitTime,
-                            int cachedQueries, int uncachedQueries,
+                            int cachedQueries, int uncachedQueries, int explicitQueries,
                             int cachedRecords, int uncachedRecords,
                             Histogram queryHisto, long queryTime,
                             Histogram modifierHisto, long modifierTime)
@@ -78,6 +81,7 @@ public class Stats
             this.connectionWaitTime = connectionWaitTime;
             this.cachedQueries = cachedQueries;
             this.uncachedQueries = uncachedQueries;
+            this.explicitQueries = explicitQueries;
             this.cachedRecords = cachedRecords;
             this.uncachedRecords = uncachedRecords;
             this.queryHisto = queryHisto;
@@ -90,7 +94,8 @@ public class Stats
     public synchronized Snapshot getSnapshot ()
     {
         return new Snapshot(_totalOps, _connectionWaitTime,
-                            _cachedQueries, _uncachedQueries, _cachedRecords, _uncachedRecords,
+                            _cachedQueries, _uncachedQueries, _explicitQueries,
+                            _cachedRecords, _uncachedRecords,
                             _readHisto.clone(), _readTime, _writeHisto.clone(), _writeTime);
     }
 
@@ -115,11 +120,12 @@ public class Stats
         }
     }
 
-    public synchronized void noteQuery (int cachedQueries, int uncachedQueries,
+    public synchronized void noteQuery (int cachedQueries, int uncachedQueries, int explicitQueries,
                                         int cachedRecords, int uncachedRecords)
     {
         _cachedQueries += cachedQueries;
         _uncachedQueries += uncachedQueries;
+        _explicitQueries += explicitQueries;
         _cachedRecords += cachedRecords;
         _uncachedRecords += uncachedRecords;
     }
@@ -133,6 +139,6 @@ public class Stats
     protected Histogram _writeHisto = new Histogram(0, 500, 20);
     protected long _writeTime;
 
-    protected int _cachedQueries, _uncachedQueries;
+    protected int _cachedQueries, _uncachedQueries, _explicitQueries;
     protected int _cachedRecords, _uncachedRecords;
 }

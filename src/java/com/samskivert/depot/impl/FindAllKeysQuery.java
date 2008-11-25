@@ -95,7 +95,7 @@ public class FindAllKeysQuery<T extends PersistentRecord> extends Query<List<Key
     // from Query
     public void updateStats (Stats stats)
     {
-        stats.noteQuery(0, 1, 0, 0); // one uncached query
+        stats.noteQuery(0, 1, 0, 0, 0); // one uncached query
     }
 
     protected boolean _forUpdate;
