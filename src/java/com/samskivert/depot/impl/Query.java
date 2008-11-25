@@ -18,7 +18,9 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot;
+package com.samskivert.depot.impl;
+
+import com.samskivert.depot.PersistenceContext;
 
 /**
  * The base of all read-only queries.

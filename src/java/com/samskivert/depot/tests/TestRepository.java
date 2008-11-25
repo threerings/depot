@@ -40,7 +40,6 @@ import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.clause.Where;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.operator.Conditionals;
-import com.samskivert.depot.util.TestCacheAdapter;
 
 /**
  * A test tool for the Depot repository services.

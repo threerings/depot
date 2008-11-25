@@ -27,6 +27,8 @@ import java.util.Map;
 import com.samskivert.jdbc.ColumnDefinition;
 import com.samskivert.jdbc.DatabaseLiaison;
 import com.samskivert.depot.annotation.Column;
+import com.samskivert.depot.impl.FieldMarshaller;
+import com.samskivert.depot.impl.Modifier;
 
 import static com.samskivert.depot.Log.log;
 
@@ -83,6 +85,17 @@ public abstract class SchemaMigration extends Modifier
         }
 
         @Override
+        public void init (String tableName, Map<String, FieldMarshaller<?>> marshallers) {
+            super.init(tableName, marshallers);
+            FieldMarshaller<?> fm = marshallers.get(_newColumnName);
+            if (fm == null) {
+                throw new IllegalArgumentException(
+                    _tableName + " does not contain '" + _newColumnName + "' field.");
+            }
+            _newColumnDef = fm.getColumnDefinition();
+        }
+
+        @Override
         protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
             if (!liaison.tableContainsColumn(conn, _tableName, _oldColumnName)) {
                 if (liaison.tableContainsColumn(conn, _tableName, _newColumnName)) {
@@ -108,17 +121,6 @@ public abstract class SchemaMigration extends Modifier
                 conn, _tableName, _oldColumnName, _newColumnName, _newColumnDef) ? 1 : 0;
         }
 
-        @Override
-        protected void init (String tableName, Map<String, FieldMarshaller<?>> marshallers) {
-            super.init(tableName, marshallers);
-            FieldMarshaller<?> fm = marshallers.get(_newColumnName);
-            if (fm == null) {
-                throw new IllegalArgumentException(
-                    _tableName + " does not contain '" + _newColumnName + "' field.");
-            }
-            _newColumnDef = fm.getColumnDefinition();
-        }
-
         protected String _oldColumnName,  _newColumnName;
         protected ColumnDefinition _newColumnDef;
     }
@@ -140,18 +142,18 @@ public abstract class SchemaMigration extends Modifier
         }
 
         @Override
+        public void init (String tableName, Map<String, FieldMarshaller<?>> marshallers) {
+            super.init(tableName, marshallers);
+            _columnName = marshallers.get(_fieldName).getColumnName();
+            _newColumnDef = marshallers.get(_fieldName).getColumnDefinition();
+        }
+
+        @Override
         protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
             log.info("Updating type of '" + _fieldName + "' in " + _tableName);
             return liaison.changeColumn(conn, _tableName, _fieldName, _newColumnDef.getType(),
                 _newColumnDef.isNullable(), _newColumnDef.isUnique(),
                 _newColumnDef.getDefaultValue()) ? 1 : 0;
-        }
-
-        @Override
-        protected void init (String tableName, Map<String, FieldMarshaller<?>> marshallers) {
-            super.init(tableName, marshallers);
-            _columnName = marshallers.get(_fieldName).getColumnName();
-            _newColumnDef = marshallers.get(_fieldName).getColumnDefinition();
         }
 
         protected String _fieldName, _columnName;
@@ -179,6 +181,13 @@ public abstract class SchemaMigration extends Modifier
         }
 
         @Override
+        public void init (String tableName, Map<String, FieldMarshaller<?>> marshallers) {
+            super.init(tableName, marshallers);
+            _columnName = marshallers.get(_fieldName).getColumnName();
+            _newColumnDef = marshallers.get(_fieldName).getColumnDefinition();
+        }
+
+        @Override
         protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
             // override the default value in the column definition with the one provided
             ColumnDefinition defColumnDef = new ColumnDefinition(
@@ -192,13 +201,6 @@ public abstract class SchemaMigration extends Modifier
                 return 1;
             }
             return 0;
-        }
-
-        @Override
-        protected void init (String tableName, Map<String, FieldMarshaller<?>> marshallers) {
-            super.init(tableName, marshallers);
-            _columnName = marshallers.get(_fieldName).getColumnName();
-            _newColumnDef = marshallers.get(_fieldName).getColumnDefinition();
         }
 
         protected String _fieldName, _columnName, _defaultValue;
@@ -224,21 +226,21 @@ public abstract class SchemaMigration extends Modifier
         return (currentVersion < _targetVersion);
     }
 
-    protected SchemaMigration (int targetVersion)
-    {
-        super();
-        _targetVersion = targetVersion;
-    }
-
     /**
      * This is called to provide the migration with the name of the entity table and access to its
      * field marshallers prior to being invoked. This will <em>only</em> be called after this
      * migration has been determined to be runnable so one cannot rely on this method having been
      * called in {@link #shouldRunMigration}.
      */
-    protected void init (String tableName, Map<String, FieldMarshaller<?>> marshallers)
+    public void init (String tableName, Map<String, FieldMarshaller<?>> marshallers)
     {
         _tableName = tableName;
+    }
+
+    protected SchemaMigration (int targetVersion)
+    {
+        super();
+        _targetVersion = targetVersion;
     }
 
     protected int _targetVersion;

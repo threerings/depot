@@ -18,7 +18,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot;
+package com.samskivert.depot.impl;
 
 import java.lang.reflect.Field;
 
@@ -38,6 +38,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import com.samskivert.depot.DatabaseException;
+import com.samskivert.depot.Key;
+import com.samskivert.depot.PersistenceContext;
+import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.SchemaMigration;
+import com.samskivert.depot.Stats;
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.annotation.Entity;
 import com.samskivert.depot.annotation.FullTextIndex;
@@ -446,96 +452,12 @@ public class DepotMarshaller<T extends PersistentRecord>
     }
 
     /**
-     * Creates a persistent object from the supplied result set. The result set must have come from
-     * a properly constructed query (see {@link BuildVisitor}).
-     */
-    public T createObject (ResultSet rs)
-        throws SQLException
-    {
-        try {
-            // first, build a set of the fields that we actually received
-            Set<String> fields = Sets.newHashSet();
-            ResultSetMetaData metadata = rs.getMetaData();
-            for (int ii = 1; ii <= metadata.getColumnCount(); ii ++) {
-               fields.add(metadata.getColumnName(ii));
-            }
-
-            // then create and populate the persistent object
-            T po = _pClass.newInstance();
-            for (FieldMarshaller<?> fm : _fields.values()) {
-                if (!fields.contains(fm.getColumnName())) {
-                    // this field was not in the result set, make sure that's OK
-                    if (fm.getComputed() != null && !fm.getComputed().required()) {
-                        continue;
-                    }
-                    throw new SQLException("ResultSet missing field: " + fm.getField().getName());
-                }
-                fm.getAndWriteToObject(rs, po);
-            }
-            return po;
-
-        } catch (SQLException sqe) {
-            // pass this on through
-            throw sqe;
-
-        } catch (Exception e) {
-            String errmsg = "Failed to unmarshall persistent object [class=" +
-                _pClass.getName() + "]";
-            throw (SQLException)new SQLException(errmsg).initCause(e);
-        }
-    }
-
-    /**
-     * Go through the registered {@link ValueGenerator}s for our persistent object and run the ones
-     * that match the current postFactum phase, filling in the fields on the supplied object while
-     * we go.
-     *
-     * The return value is only non-empty for the !postFactum phase, in which case it is a set of
-     * field names that are associated with {@link IdentityValueGenerator}, because these need
-     * special handling in the INSERT (specifically, 'DEFAULT' must be supplied as a value in the
-     * eventual SQL).
-     */
-    public Set<String> generateFieldValues (
-        Connection conn, DatabaseLiaison liaison, Object po, boolean postFactum)
-    {
-        Set<String> idFields = Sets.newHashSet();
-
-        for (ValueGenerator vg : _valueGenerators.values()) {
-            if (!postFactum && vg instanceof IdentityValueGenerator) {
-                idFields.add(vg.getFieldMarshaller().getField().getName());
-            }
-            if (vg.isPostFactum() != postFactum) {
-                continue;
-            }
-
-            try {
-                int nextValue = vg.nextGeneratedValue(conn, liaison);
-                vg.getFieldMarshaller().getField().set(po, nextValue);
-
-            } catch (Exception e) {
-                throw new IllegalStateException(
-                    "Failed to assign primary key [type=" + _pClass + "]", e);
-            }
-        }
-        return idFields;
-    }
-
-    /**
-     * This is called by the persistence context to register a migration for the entity managed by
-     * this marshaller.
-     */
-    protected void registerMigration (SchemaMigration migration)
-    {
-        _schemaMigs.add(migration);
-    }
-
-    /**
      * Initializes the table used by this marshaller. This is called automatically by the {@link
      * PersistenceContext} the first time an entity is used. If the table does not exist, it will
      * be created. If the schema version specified by the persistent object is newer than the
      * database schema, it will be migrated.
      */
-    protected void init (PersistenceContext ctx)
+    public void init (PersistenceContext ctx)
         throws DatabaseException
     {
         if (_initialized) { // sanity check
@@ -680,6 +602,90 @@ public class DepotMarshaller<T extends PersistentRecord>
                 log.warning("Failure restoring migrating version! Bad bad!", "record", _pClass, e);
             }
         }
+    }
+
+    /**
+     * This is called by the persistence context to register a migration for the entity managed by
+     * this marshaller.
+     */
+    public void registerMigration (SchemaMigration migration)
+    {
+        _schemaMigs.add(migration);
+    }
+
+    /**
+     * Creates a persistent object from the supplied result set. The result set must have come from
+     * a properly constructed query (see {@link BuildVisitor}).
+     */
+    public T createObject (ResultSet rs)
+        throws SQLException
+    {
+        try {
+            // first, build a set of the fields that we actually received
+            Set<String> fields = Sets.newHashSet();
+            ResultSetMetaData metadata = rs.getMetaData();
+            for (int ii = 1; ii <= metadata.getColumnCount(); ii ++) {
+               fields.add(metadata.getColumnName(ii));
+            }
+
+            // then create and populate the persistent object
+            T po = _pClass.newInstance();
+            for (FieldMarshaller<?> fm : _fields.values()) {
+                if (!fields.contains(fm.getColumnName())) {
+                    // this field was not in the result set, make sure that's OK
+                    if (fm.getComputed() != null && !fm.getComputed().required()) {
+                        continue;
+                    }
+                    throw new SQLException("ResultSet missing field: " + fm.getField().getName());
+                }
+                fm.getAndWriteToObject(rs, po);
+            }
+            return po;
+
+        } catch (SQLException sqe) {
+            // pass this on through
+            throw sqe;
+
+        } catch (Exception e) {
+            String errmsg = "Failed to unmarshall persistent object [class=" +
+                _pClass.getName() + "]";
+            throw (SQLException)new SQLException(errmsg).initCause(e);
+        }
+    }
+
+    /**
+     * Go through the registered {@link ValueGenerator}s for our persistent object and run the ones
+     * that match the current postFactum phase, filling in the fields on the supplied object while
+     * we go.
+     *
+     * The return value is only non-empty for the !postFactum phase, in which case it is a set of
+     * field names that are associated with {@link IdentityValueGenerator}, because these need
+     * special handling in the INSERT (specifically, 'DEFAULT' must be supplied as a value in the
+     * eventual SQL).
+     */
+    public Set<String> generateFieldValues (
+        Connection conn, DatabaseLiaison liaison, Object po, boolean postFactum)
+    {
+        Set<String> idFields = Sets.newHashSet();
+
+        for (ValueGenerator vg : _valueGenerators.values()) {
+            if (!postFactum && vg instanceof IdentityValueGenerator) {
+                idFields.add(vg.getFieldMarshaller().getField().getName());
+            }
+            if (vg.isPostFactum() != postFactum) {
+                continue;
+            }
+
+            try {
+                int nextValue = vg.nextGeneratedValue(conn, liaison);
+                vg.getFieldMarshaller().getField().set(po, nextValue);
+
+            } catch (Exception e) {
+                throw new IllegalStateException(
+                    "Failed to assign primary key [type=" + _pClass + "]", e);
+            }
+        }
+        return idFields;
     }
 
     protected void createTable (PersistenceContext ctx, final SQLBuilder builder,

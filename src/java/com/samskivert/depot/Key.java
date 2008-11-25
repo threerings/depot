@@ -27,8 +27,11 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 
-import com.samskivert.depot.expression.ExpressionVisitor;
+import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.impl.DepotMarshaller;
+import com.samskivert.depot.impl.DepotUtil;
+import com.samskivert.depot.impl.ExpressionVisitor;
 import com.samskivert.util.StringUtil;
 
 /**

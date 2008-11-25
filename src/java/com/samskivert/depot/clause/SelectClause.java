@@ -29,8 +29,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.WhereClause;
-import com.samskivert.depot.expression.ExpressionVisitor;
+import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
  * Builds actual SQL given a main persistent type and some {@link QueryClause} objects.

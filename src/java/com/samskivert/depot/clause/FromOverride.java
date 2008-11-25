@@ -25,9 +25,9 @@ import java.util.List;
 
 import com.google.common.collect.Lists;
 
-import com.samskivert.depot.DepotUtil;
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.expression.ExpressionVisitor;
+import com.samskivert.depot.impl.DepotUtil;
+import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
  *  Completely overrides the FROM clause, if it exists.

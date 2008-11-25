@@ -18,7 +18,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot;
+package com.samskivert.depot.impl;
 
 import java.sql.Blob;
 import java.sql.Clob;
@@ -33,29 +33,31 @@ import java.util.Set;
 
 import com.samskivert.jdbc.JDBCUtil;
 
-import com.samskivert.depot.FieldMarshaller.BooleanMarshaller;
-import com.samskivert.depot.FieldMarshaller.ByteArrayMarshaller;
-import com.samskivert.depot.FieldMarshaller.ByteEnumMarshaller;
-import com.samskivert.depot.FieldMarshaller.ByteMarshaller;
-import com.samskivert.depot.FieldMarshaller.DoubleMarshaller;
-import com.samskivert.depot.FieldMarshaller.FloatMarshaller;
-import com.samskivert.depot.FieldMarshaller.IntArrayMarshaller;
-import com.samskivert.depot.FieldMarshaller.IntMarshaller;
-import com.samskivert.depot.FieldMarshaller.LongMarshaller;
-import com.samskivert.depot.FieldMarshaller.ObjectMarshaller;
-import com.samskivert.depot.FieldMarshaller.ShortMarshaller;
+import com.samskivert.depot.DatabaseException;
+import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.clause.DeleteClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
+import com.samskivert.depot.impl.FieldMarshaller.BooleanMarshaller;
+import com.samskivert.depot.impl.FieldMarshaller.ByteArrayMarshaller;
+import com.samskivert.depot.impl.FieldMarshaller.ByteEnumMarshaller;
+import com.samskivert.depot.impl.FieldMarshaller.ByteMarshaller;
+import com.samskivert.depot.impl.FieldMarshaller.DoubleMarshaller;
+import com.samskivert.depot.impl.FieldMarshaller.FloatMarshaller;
+import com.samskivert.depot.impl.FieldMarshaller.IntArrayMarshaller;
+import com.samskivert.depot.impl.FieldMarshaller.IntMarshaller;
+import com.samskivert.depot.impl.FieldMarshaller.LongMarshaller;
+import com.samskivert.depot.impl.FieldMarshaller.ObjectMarshaller;
+import com.samskivert.depot.impl.FieldMarshaller.ShortMarshaller;
 import com.samskivert.depot.operator.Conditionals.FullTextMatch;
 
 import static com.samskivert.Log.log;
 
-public class HSQLBuilder
+public class MySQLBuilder
     extends SQLBuilder
 {
-    public class HBuildVisitor extends BuildVisitor
+    public class MSBuildVisitor extends BuildVisitor
     {
         @Override public void visit (FullTextMatch match)
         {
@@ -95,7 +97,7 @@ public class HSQLBuilder
             _builder.append(")");
         }
 
-        protected HBuildVisitor (DepotTypes types)
+        protected MSBuildVisitor (DepotTypes types)
         {
             super(types);
         }
@@ -116,9 +118,9 @@ public class HSQLBuilder
         }
     }
 
-    public class HBindVisitor extends BindVisitor
+    public class MSBindVisitor extends BindVisitor
     {
-        protected HBindVisitor (DepotTypes types, Connection conn, PreparedStatement stmt) {
+        protected MSBindVisitor (DepotTypes types, Connection conn, PreparedStatement stmt) {
             super(types, conn, stmt);
         }
 
@@ -132,7 +134,7 @@ public class HSQLBuilder
         }
     }
 
-    public HSQLBuilder (DepotTypes types)
+    public MySQLBuilder (DepotTypes types)
     {
         super(types);
     }
@@ -179,7 +181,7 @@ public class HSQLBuilder
     @Override
     public boolean isPrivateColumn (String column)
     {
-        // The HSQLDB builder does not yet have any private columns.
+        // The MySQL builder does not yet have any private columns.
         return false;
     }
 
@@ -192,13 +194,13 @@ public class HSQLBuilder
     @Override
     protected BuildVisitor getBuildVisitor ()
     {
-        return new HBuildVisitor(_types);
+        return new MSBuildVisitor(_types);
     }
 
     @Override
     protected BindVisitor getBindVisitor (Connection conn, PreparedStatement stmt)
     {
-        return new HBindVisitor(_types, conn, stmt);
+        return new MSBindVisitor(_types, conn, stmt);
     }
 
     @Override

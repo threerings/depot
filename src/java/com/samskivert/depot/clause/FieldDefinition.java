@@ -24,9 +24,9 @@ import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ColumnExp;
-import com.samskivert.depot.expression.ExpressionVisitor;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
  * Supplies a definition for a computed field of the persistent object we're creating.

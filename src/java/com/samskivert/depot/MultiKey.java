@@ -27,8 +27,9 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 
 import com.samskivert.depot.clause.Where;
-import com.samskivert.depot.expression.ExpressionVisitor;
+import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
  * A special form of {@link Where} clause that specifies an explicit range of database rows. It

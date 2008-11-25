@@ -50,10 +50,10 @@ import org.apache.tools.ant.util.ClasspathUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 
-import com.samskivert.depot.DepotUtil;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.annotation.Transient;
+import com.samskivert.depot.impl.DepotUtil;
 import com.samskivert.util.ClassUtil;
 import com.samskivert.util.GenUtil;
 import com.samskivert.util.StringUtil;

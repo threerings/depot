@@ -23,8 +23,8 @@ package com.samskivert.depot.operator;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.expression.ExpressionVisitor;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
  * A convenient container for implementations of logical operators.  Classes that value brevity

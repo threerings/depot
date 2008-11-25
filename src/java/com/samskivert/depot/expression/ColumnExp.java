@@ -23,6 +23,7 @@ package com.samskivert.depot.expression;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
  * An expression that unambiguously identifies a field of a class, e.g. GameRecord.itemId.

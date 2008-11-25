@@ -18,7 +18,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot;
+package com.samskivert.depot.impl;
 
 import java.sql.Blob;
 import java.sql.Clob;
@@ -37,17 +37,8 @@ import com.samskivert.jdbc.LiaisonRegistry;
 import com.samskivert.util.ArrayUtil;
 import com.samskivert.util.StringUtil;
 
-import com.samskivert.depot.FieldMarshaller.BooleanMarshaller;
-import com.samskivert.depot.FieldMarshaller.ByteArrayMarshaller;
-import com.samskivert.depot.FieldMarshaller.ByteEnumMarshaller;
-import com.samskivert.depot.FieldMarshaller.ByteMarshaller;
-import com.samskivert.depot.FieldMarshaller.DoubleMarshaller;
-import com.samskivert.depot.FieldMarshaller.FloatMarshaller;
-import com.samskivert.depot.FieldMarshaller.IntArrayMarshaller;
-import com.samskivert.depot.FieldMarshaller.IntMarshaller;
-import com.samskivert.depot.FieldMarshaller.LongMarshaller;
-import com.samskivert.depot.FieldMarshaller.ObjectMarshaller;
-import com.samskivert.depot.FieldMarshaller.ShortMarshaller;
+import com.samskivert.depot.DatabaseException;
+import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.operator.Conditionals.FullTextMatch;
@@ -238,19 +229,19 @@ public class PostgreSQLBuilder
     @Override
     protected <T> String getColumnType (FieldMarshaller<?> fm, int length)
     {
-        if (fm instanceof ByteMarshaller) {
+        if (fm instanceof FieldMarshaller.ByteMarshaller) {
             return "SMALLINT";
-        } else if (fm instanceof ShortMarshaller) {
+        } else if (fm instanceof FieldMarshaller.ShortMarshaller) {
             return "SMALLINT";
-        } else if (fm instanceof IntMarshaller) {
+        } else if (fm instanceof FieldMarshaller.IntMarshaller) {
             return "INTEGER";
-        } else if (fm instanceof LongMarshaller) {
+        } else if (fm instanceof FieldMarshaller.LongMarshaller) {
             return "BIGINT";
-        } else if (fm instanceof FloatMarshaller) {
+        } else if (fm instanceof FieldMarshaller.FloatMarshaller) {
             return "REAL";
-        } else if (fm instanceof DoubleMarshaller) {
+        } else if (fm instanceof FieldMarshaller.DoubleMarshaller) {
             return "DOUBLE PRECISION";
-        } else if (fm instanceof ObjectMarshaller) {
+        } else if (fm instanceof FieldMarshaller.ObjectMarshaller) {
             Class<?> ftype = fm.getField().getType();
             if (ftype.equals(Byte.class)) {
                 return "SMALLINT";
@@ -283,13 +274,13 @@ public class PostgreSQLBuilder
                 throw new IllegalArgumentException(
                     "Don't know how to create SQL for " + ftype + ".");
             }
-        } else if (fm instanceof ByteArrayMarshaller) {
+        } else if (fm instanceof FieldMarshaller.ByteArrayMarshaller) {
             return "BYTEA";
-        } else if (fm instanceof IntArrayMarshaller) {
+        } else if (fm instanceof FieldMarshaller.IntArrayMarshaller) {
             return "BYTEA";
-        } else if (fm instanceof ByteEnumMarshaller) {
+        } else if (fm instanceof FieldMarshaller.ByteEnumMarshaller) {
             return "SMALLINT";
-        } else if (fm instanceof BooleanMarshaller) {
+        } else if (fm instanceof FieldMarshaller.BooleanMarshaller) {
             return "BOOLEAN";
         } else {
             throw new IllegalArgumentException("Unknown field marshaller type: " + fm.getClass());

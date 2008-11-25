@@ -23,7 +23,8 @@ package com.samskivert.depot.expression;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.SQLBuilder;
+import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.SQLBuilder;
 
 /**
  * Represents an SQL expression, e.g. column name, function, or constant.

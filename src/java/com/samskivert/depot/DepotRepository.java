@@ -41,14 +41,23 @@ import com.samskivert.jdbc.ConnectionProvider;
 import com.samskivert.jdbc.DatabaseLiaison;
 import com.samskivert.jdbc.JDBCUtil;
 
-import com.samskivert.depot.Modifier.*;
 import com.samskivert.depot.clause.DeleteClause;
 import com.samskivert.depot.clause.FieldOverride;
 import com.samskivert.depot.clause.InsertClause;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.UpdateClause;
+import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.ValueExp;
+import com.samskivert.depot.impl.DepotMarshaller;
+import com.samskivert.depot.impl.DepotMigrationHistoryRecord;
+import com.samskivert.depot.impl.DepotTypes;
+import com.samskivert.depot.impl.FindAllKeysQuery;
+import com.samskivert.depot.impl.FindAllQuery;
+import com.samskivert.depot.impl.FindOneQuery;
+import com.samskivert.depot.impl.Modifier;
+import com.samskivert.depot.impl.SQLBuilder;
+import com.samskivert.depot.impl.Modifier.*;
 
 import static com.samskivert.depot.Log.log;
 
@@ -378,7 +387,8 @@ public abstract class DepotRepository
             throw new IllegalArgumentException("Can't update record with null primary key.");
         }
 
-        UpdateClause<T> update = new UpdateClause<T>(pClass, key, marsh._columnFields, record);
+        UpdateClause<T> update = 
+            new UpdateClause<T>(pClass, key, marsh.getColumnFieldNames(), record);
         final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, update));
         builder.newQuery(update);
 
@@ -719,7 +729,7 @@ public abstract class DepotRepository
         final DepotMarshaller<T> marsh = _ctx.getMarshaller(pClass);
         Key<T> key = marsh.hasPrimaryKey() ? marsh.getPrimaryKey(record) : null;
         final UpdateClause<T> update =
-            new UpdateClause<T>(pClass, key, marsh._columnFields, record);
+            new UpdateClause<T>(pClass, key, marsh.getColumnFieldNames(), record);
         final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, update));
 
         // if our primary key isn't null, we start by trying to update rather than insert

@@ -23,7 +23,7 @@ package com.samskivert.depot.clause;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.expression.ExpressionVisitor;
+import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
  *  Represents a FOR UPDATE clause.

@@ -43,6 +43,15 @@ import com.samskivert.jdbc.MySQLLiaison;
 import com.samskivert.jdbc.PostgreSQLLiaison;
 
 import com.samskivert.depot.annotation.TableGenerator;
+import com.samskivert.depot.impl.DepotMarshaller;
+import com.samskivert.depot.impl.DepotTypes;
+import com.samskivert.depot.impl.HSQLBuilder;
+import com.samskivert.depot.impl.Modifier;
+import com.samskivert.depot.impl.MySQLBuilder;
+import com.samskivert.depot.impl.Operation;
+import com.samskivert.depot.impl.PostgreSQLBuilder;
+import com.samskivert.depot.impl.Query;
+import com.samskivert.depot.impl.SQLBuilder;
 
 import static com.samskivert.depot.Log.log;
 

@@ -23,11 +23,10 @@ package com.samskivert.depot.clause;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.WhereClause;
 import com.samskivert.depot.expression.ColumnExp;
-import com.samskivert.depot.expression.ExpressionVisitor;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.ValueExp;
+import com.samskivert.depot.impl.ExpressionVisitor;
 import com.samskivert.depot.operator.Conditionals.Equals;
 import com.samskivert.depot.operator.Conditionals.IsNull;
 import com.samskivert.depot.operator.Logic.And;

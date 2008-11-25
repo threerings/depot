@@ -23,6 +23,7 @@ package com.samskivert.depot.expression;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
  * An expression for extracting the seconds since the epoch from a date expression.

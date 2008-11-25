@@ -141,7 +141,6 @@
         <pathelement location="${classes.dir}"/>
         <pathelement location="${basedir}"/> <!-- for rsrc/ -->
         <fileset dir="${deploy.dir}/lib" includes="*.jar"/>
-        <fileset dir="lib/test" includes="*.jar"/>
       </classpath>
       <sysproperty key="test_dir" value="${basedir}"/>
       <formatter type="brief" usefile="false"/>
@@ -187,10 +186,25 @@
 
   <!-- generate a class hierarchy diagram -->
   <target name="hiergen" depends="prepare,compile">
-    <taskdef name="viztool" classname="com.samskivert.viztool.DriverTask"/>
+    <taskdef name="viztool" classname="com.samskivert.viztool.DriverTask">
+      <classpath>
+        <fileset dir="../viztool/dist" includes="*.jar"/>
+        <fileset dir="../viztool/lib" includes="*.jar"/>
+      </classpath>
+    </taskdef>
     <viztool visualizer="com.samskivert.viztool.hierarchy.HierarchyVisualizer"
-      pkgroot="com.samskivert" classes="com.samskivert.*" output="hierarchy.ps">
+             pkgroot="com.samskivert" classes="com.samskivert.depot.*" output="hierarchy.ps">
       <classpath refid="classpath"/>
     </viztool>
+  </target>
+
+  <!-- TEMP: runs our test that requires a repository (replace with HSQLDB unit test) -->
+  <target name="repotest" depends="prepare,compile">
+    <copy file="depot.properties" tofile="${classes.dir}/depot.properties"/>
+    <java classpathref="classpath" fork="true" maxmemory="256M"
+          classname="com.samskivert.depot.tests.TestRepository">
+      <jvmarg value="-Dcom.samskivert.depot.cache_debug=true"/>
+    </java>
+    <delete file="${classes.dir}/depot.properties"/>
   </target>
 </project>

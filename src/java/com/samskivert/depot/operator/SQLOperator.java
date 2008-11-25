@@ -23,9 +23,9 @@ package com.samskivert.depot.operator;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.expression.ExpressionVisitor;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.ValueExp;
+import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
  * A common interface for operator hierarchies in SQL. The main purpose of breaking this out from

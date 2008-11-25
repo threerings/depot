@@ -18,7 +18,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot;
+package com.samskivert.depot.impl;
 
 import java.sql.SQLException;
 
@@ -30,6 +30,9 @@ import java.util.Set;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import com.samskivert.depot.DatabaseException;
+import com.samskivert.depot.PersistenceContext;
+import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.expression.SQLExpression;
 

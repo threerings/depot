@@ -18,7 +18,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot;
+package com.samskivert.depot.impl;
 
 import java.nio.ByteBuffer;
 import java.sql.Connection;
@@ -27,6 +27,11 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
 
+import com.samskivert.depot.ByteEnum;
+import com.samskivert.depot.DatabaseException;
+import com.samskivert.depot.Key;
+import com.samskivert.depot.MultiKey;
+import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.clause.DeleteClause;
 import com.samskivert.depot.clause.FieldDefinition;
 import com.samskivert.depot.clause.ForUpdate;
@@ -38,9 +43,9 @@ import com.samskivert.depot.clause.Limit;
 import com.samskivert.depot.clause.OrderBy;
 import com.samskivert.depot.clause.SelectClause;
 import com.samskivert.depot.clause.UpdateClause;
+import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
-import com.samskivert.depot.expression.ExpressionVisitor;
 import com.samskivert.depot.expression.FunctionExp;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.SQLExpression;
