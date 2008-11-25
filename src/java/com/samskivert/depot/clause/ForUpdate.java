@@ -28,7 +28,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  *  Represents a FOR UPDATE clause.
  */
-public class ForUpdate extends QueryClause
+public class ForUpdate implements QueryClause
 {
     // from SQLExpression
     public void accept (ExpressionVisitor builder)

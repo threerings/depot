@@ -25,7 +25,7 @@ import com.samskivert.depot.expression.SQLExpression;
 /**
  * Currently only exists as a type without any functionality of its own.
  */
-public abstract class WhereClause extends QueryClause
+public abstract class WhereClause implements QueryClause
 {
     /**
      * Returns the condition associated with this where clause.

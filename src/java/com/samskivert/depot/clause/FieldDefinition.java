@@ -37,7 +37,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
  *
  * @see FieldOverride
  */
-public class FieldDefinition extends QueryClause
+public class FieldDefinition implements QueryClause
 {
     public FieldDefinition (String field, String str)
     {

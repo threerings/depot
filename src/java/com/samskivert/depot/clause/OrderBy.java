@@ -30,7 +30,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  *  Represents an ORDER BY clause.
  */
-public class OrderBy extends QueryClause
+public class OrderBy implements QueryClause
 {
     /** Indicates the order of the clause. */
     public enum Order { ASC, DESC };

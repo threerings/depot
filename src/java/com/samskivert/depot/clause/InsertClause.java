@@ -29,7 +29,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  * Builds actual SQL given a main persistent type and some {@link QueryClause} objects.
  */
-public class InsertClause<T extends PersistentRecord> extends QueryClause
+public class InsertClause<T extends PersistentRecord> implements QueryClause
 {
     public InsertClause (
         Class<? extends PersistentRecord> pClass, Object pojo, Set<String> identityFields)

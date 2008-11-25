@@ -34,7 +34,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  * Builds actual SQL given a main persistent type and some {@link QueryClause} objects.
  */
-public class SelectClause<T extends PersistentRecord> extends QueryClause
+public class SelectClause<T extends PersistentRecord> implements QueryClause
 {
     /**
      * Creates a new Query object to generate one or more instances of the specified persistent

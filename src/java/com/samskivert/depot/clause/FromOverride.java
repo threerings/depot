@@ -32,7 +32,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  *  Completely overrides the FROM clause, if it exists.
  */
-public class FromOverride extends QueryClause
+public class FromOverride implements QueryClause
 {
     public FromOverride (Class<? extends PersistentRecord> fromClass)
     {

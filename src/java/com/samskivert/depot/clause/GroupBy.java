@@ -29,7 +29,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  *  Represents a GROUP BY clause.
  */
-public class GroupBy extends QueryClause
+public class GroupBy implements QueryClause
 {
     public GroupBy (SQLExpression... values)
     {

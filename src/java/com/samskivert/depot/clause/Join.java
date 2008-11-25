@@ -32,7 +32,7 @@ import com.samskivert.depot.operator.Conditionals.Equals;
 /**
  *  Represents a JOIN.
  */
-public class Join extends QueryClause
+public class Join implements QueryClause
 {
     /** Indicates the join type to be used. The default is INNER. */
     public static enum Type { INNER, LEFT_OUTER, RIGHT_OUTER };

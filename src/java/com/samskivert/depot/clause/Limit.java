@@ -28,7 +28,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  *  Represents a LIMIT/OFFSET clause, for pagination.
  */
-public class Limit extends QueryClause
+public class Limit implements QueryClause
 {
     public Limit (int offset, int count)
     {

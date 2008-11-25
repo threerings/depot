@@ -25,6 +25,6 @@ import com.samskivert.depot.expression.SQLExpression;
 /**
  * Represents a piece or modifier of an SQL query.
  */
-public abstract class QueryClause implements SQLExpression
+public interface QueryClause extends SQLExpression
 {
 }
