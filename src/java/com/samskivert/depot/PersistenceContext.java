@@ -37,6 +37,7 @@ import com.samskivert.util.StringUtil;
 
 import com.samskivert.jdbc.ConnectionProvider;
 import com.samskivert.jdbc.DatabaseLiaison;
+import com.samskivert.jdbc.HsqldbLiaison;
 import com.samskivert.jdbc.LiaisonRegistry;
 import com.samskivert.jdbc.MySQLLiaison;
 import com.samskivert.jdbc.PostgreSQLLiaison;
@@ -196,6 +197,9 @@ public class PersistenceContext
         }
         if (_liaison instanceof MySQLLiaison) {
             return new MySQLBuilder(types);
+        }
+        if (_liaison instanceof HsqldbLiaison) {
+            return new HSQLBuilder(types);
         }
         throw new IllegalArgumentException("Unknown liaison type: " + _liaison.getClass());
     }
@@ -375,7 +379,9 @@ public class PersistenceContext
         if (_cache == null) {
             return;
         }
-        log.debug("invalidating [cacheId=" + cacheId + ", cacheKey=" + cacheKey + "]");
+        if (CACHE_DEBUG) {
+            log.info("Invalidating", "id", cacheId, "key", cacheKey);
+        }
 
         CacheAdapter.CacheBin<T> bin = _cache.getCache(cacheId);
         CacheAdapter.CachedValue<T> element = bin.lookup(cacheKey);
