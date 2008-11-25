@@ -27,9 +27,10 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
+import com.samskivert.jdbc.StaticConnectionProvider;
 import com.samskivert.util.RandomUtil;
 
-import com.samskivert.jdbc.StaticConnectionProvider;
+import com.samskivert.depot.CacheAdapter;
 import com.samskivert.depot.DepotRepository;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.KeySet;
@@ -40,6 +41,7 @@ import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.clause.Where;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.operator.Conditionals;
+import com.samskivert.depot.util.TestCacheAdapter;
 
 /**
  * A test tool for the Depot repository services.
@@ -60,7 +62,8 @@ public class TestRepository extends DepotRepository
         throws Exception
     {
         PersistenceContext perCtx = new PersistenceContext();
-        perCtx.init("test", new StaticConnectionProvider("depot.properties"), null);
+        perCtx.init("test", new StaticConnectionProvider("depot.properties"),
+                    new TestCacheAdapter());
 
         // tests a bogus rename migration
         // perCtx.registerMigration(TestRecord.class, new SchemaMigration.Rename(1, "foo", "bar"));
@@ -71,6 +74,7 @@ public class TestRepository extends DepotRepository
 
         TestRepository repo = new TestRepository(perCtx);
 
+        System.out.println("Deleting old record.");
         repo.delete(TestRecord.class, 1);
 
         Date now = new Date(System.currentTimeMillis());
@@ -86,7 +90,7 @@ public class TestRepository extends DepotRepository
         record.numbers = new int[] { 9, 0, 2, 1, 0 };
 
         repo.insert(record);
-        System.out.println(repo.load(TestRecord.class, record.recordId));
+        System.out.println("Record: " + repo.load(TestRecord.class, record.recordId));
 
 //         record.age = 25;
 //         record.name = "Bob";
@@ -96,7 +100,7 @@ public class TestRepository extends DepotRepository
         repo.updatePartial(TestRecord.class, record.recordId,
                            TestRecord.AGE, 25, TestRecord.NAME, "Bob",
                            TestRecord.NUMBERS, new int[] { 1, 2, 3, 4, 5 });
-        System.out.println(repo.load(TestRecord.class, record.recordId));
+        System.out.println("Updated " + repo.load(TestRecord.class, record.recordId));
 
         for (int ii = 2; ii < CREATE_RECORDS; ii++) {
             record = new TestRecord();
@@ -115,6 +119,11 @@ public class TestRepository extends DepotRepository
             TestRecord.class, Collections.<Key<TestRecord>>emptySet());
         System.out.println("Load none " + repo.loadAll(none.toCollection()) + ".");
         System.out.println("Delete none " + repo.deleteAll(TestRecord.class, none) + ".");
+
+        // test collection caching
+        Where where = new Where(new Conditionals.GreaterThan(TestRecord.RECORD_ID_C, 100));
+        System.out.println("100 and up: " + repo.findAll(TestRecord.class, where).size());
+        System.out.println("100 and up again: " + repo.findAll(TestRecord.class, where).size());
 
         // test a partial key set
         KeySet<TestRecord> some = KeySet.newSimpleKeySet(

@@ -75,56 +75,68 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             }
 
             _select = new SelectClause<T>(_type, _marsh.getPrimaryKeyFields(), clauses);
-            _builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, _select));
-            _builder.newQuery(_select);
+            _qkey = new SimpleCacheKey(_marsh.getTableName() + "Query", _select.toString());
         }
 
         @Override // from Query
         public List<T> getCachedResult (PersistenceContext ctx)
         {
-            return null; // TODO
+            if (_qkey == null) {
+                return null;
+            }
+            _keys = ctx.<KeySet<T>>cacheLookup(_qkey);
+            if (_keys == null) {
+                return null;
+            }
+            _cachedQueries++;
+            _fetchKeys = loadFromCache(ctx, _keys, _entities);
+            return (_fetchKeys.size() == 0) ? resolve(_keys, _entities) : null;
         }
 
         // from Query
         public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
-            Map<Key<T>, T> entities = Maps.newHashMap();
-            List<Key<T>> allKeys = Lists.newArrayList();
-            Set<Key<T>> fetchKeys = Sets.newHashSet();
+            // we want this to remain null if our key set came from the cache
+            String stmtString = null;
 
-            // first load up the primary keys on which we're operating
-            PreparedStatement stmt = _builder.prepare(conn);
-            String stmtString = stmt.toString(); // for debugging
-            try {
-                ResultSet rs = stmt.executeQuery();
-                while (rs.next()) {
-                    Key<T> key = _marsh.makePrimaryKey(rs);
-                    allKeys.add(key);
+            // if we didn't find our key set in the cache, load the keys that match
+            if (_keys == null) {
+                List<Key<T>> keys = Lists.newArrayList();
+                SQLBuilder builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, _select));
+                builder.newQuery(_select);
+                PreparedStatement stmt = builder.prepare(conn);
+                stmtString = stmt.toString(); // for debugging
+                try {
+                    ResultSet rs = stmt.executeQuery();
+                    while (rs.next()) {
+                        keys.add(_marsh.makePrimaryKey(rs));
+                    }
+                } finally {
+                    JDBCUtil.close(stmt);
                 }
-            } finally {
-                JDBCUtil.close(stmt);
-            }
-            _uncachedQueries++;
-
-            // now fetch any records we can from the cache
-            loadFromCache(ctx, allKeys, entities, fetchKeys);
-            _cachedRecords = entities.size();
-            _uncachedRecords = fetchKeys.size();
-
-            if (PersistenceContext.CACHE_DEBUG) {
-                log.info("Loaded " + _marsh.getTableName(), "query", _select,
-                         "keys", keysToString(allKeys));
+                _keys = KeySet.newKeySet(_type, keys);
+                _uncachedQueries++;
+                if (PersistenceContext.CACHE_DEBUG) {
+                    log.info("Loaded " + _marsh.getTableName() + " keys", "query", _select,
+                             "keys", keysToString(_keys), "cacheable", (_qkey != null));
+                }
+                if (_qkey != null) {
+                    ctx.cacheStore(_qkey, _keys); // cache the resulting key set
+                }
+                // and fetch any records we can from the cache
+                _fetchKeys = loadFromCache(ctx, _keys, _entities);
             }
 
             // finally load the rest from the database
-            return loadAndResolve(ctx, conn, allKeys, fetchKeys, entities, stmtString);
+            return loadAndResolve(ctx, conn, _keys, _fetchKeys, _entities, stmtString);
         }
 
-        protected CacheKey getCacheKey ()
-        {
-            return null;
-        }
+        protected SimpleCacheKey _qkey;
+        protected SelectClause<T> _select;
+        protected KeySet<T> _keys;
+        protected Set<Key<T>> _fetchKeys;
+        protected Map<Key<T>, T> _entities = Maps.newHashMap();
     }
 
     /**
@@ -138,16 +150,13 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
         {
             super(ctx, keys.iterator().next().getPersistentClass());
             _keys = keys;
-            _builder = ctx.getSQLBuilder(new DepotTypes(ctx, _type));
         }
 
         @Override // from Query
         public List<T> getCachedResult (PersistenceContext ctx)
         {
             // look up what we can from the cache
-            loadFromCache(ctx, _keys, _entities, _fetchKeys);
-            _cachedRecords = _entities.size();
-            _uncachedRecords = _fetchKeys.size();
+            _fetchKeys = loadFromCache(ctx, _keys, _entities);
 
             // if we found everything, we can just return our result straight away, yay!
             return _fetchKeys.isEmpty() ? resolve(_keys, _entities) : null;
@@ -161,8 +170,8 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
         }
 
         protected Iterable<Key<T>> _keys;
+        protected Set<Key<T>> _fetchKeys;
         protected Map<Key<T>, T> _entities = Maps.newHashMap();
-        protected Set<Key<T>> _fetchKeys = Sets.newHashSet();
     }
 
     /**
@@ -177,8 +186,6 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
         {
             super(ctx, type);
             _select = new SelectClause<T>(type, _marsh.getFieldNames(), clauses);
-            _builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, _select));
-            _builder.newQuery(_select);
         }
 
         @Override // from Query
@@ -193,7 +200,9 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             throws SQLException
         {
             List<T> result = Lists.newArrayList();
-            PreparedStatement stmt = _builder.prepare(conn);
+            SQLBuilder builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, _select));
+            builder.newQuery(_select);
+            PreparedStatement stmt = builder.prepare(conn);
             try {
                 ResultSet rs = stmt.executeQuery();
                 while (rs.next()) {
@@ -211,6 +220,8 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             // TODO: do we want to cache these results?
             return result;
         }
+
+        protected SelectClause<T> _select;
     }
 
     // from Query
@@ -226,9 +237,10 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
         _marsh = ctx.getMarshaller(type);
     }
 
-    protected void loadFromCache (PersistenceContext ctx, Iterable<Key<T>> allKeys,
-                                  Map<Key<T>, T> entities, Set<Key<T>> fetchKeys)
+    protected Set<Key<T>> loadFromCache (PersistenceContext ctx, Iterable<Key<T>> allKeys,
+                                         Map<Key<T>, T> entities)
     {
+        Set<Key<T>> fetchKeys = Sets.newHashSet();
         for (Key<T> key : allKeys) {
             T value = ctx.<T>cacheLookup(key);
             if (value != null) {
@@ -238,6 +250,12 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             }
             fetchKeys.add(key);
         }
+        if (PersistenceContext.CACHE_DEBUG) {
+            log.info("Loaded from cache " + _marsh.getTableName(), "count", entities.size());
+        }
+        _cachedRecords = entities.size();
+        _uncachedRecords = fetchKeys.size();
+        return fetchKeys;
     }
 
     protected List<T> resolve (Iterable<Key<T>> allKeys, Map<Key<T>, T> entities)
@@ -287,9 +305,11 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
         throws SQLException
     {
         boolean hasPrimaryKey = _marsh.hasPrimaryKey();
-        _builder.newQuery(new SelectClause<T>(_type, _marsh.getFieldNames(),
-                                              KeySet.newKeySet(_type, keys)));
-        PreparedStatement stmt = _builder.prepare(conn);
+        SelectClause<T> select = new SelectClause<T>(
+            _type, _marsh.getFieldNames(), KeySet.newKeySet(_type, keys));
+        SQLBuilder builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, select));
+        builder.newQuery(select);
+        PreparedStatement stmt = builder.prepare(conn);
         try {
             Set<Key<T>> got = Sets.newHashSet();
             ResultSet rs = stmt.executeQuery();
@@ -300,10 +320,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
                 if (entities.put(key, obj) != null) {
                     dups++;
                 }
-                // cache our result if it has a primary key
-                if (hasPrimaryKey) {
-                    ctx.cacheStore(_marsh.getPrimaryKey(obj), obj.clone());
-                }
+                ctx.cacheStore(key, obj.clone()); // cache our result
                 got.add(key);
                 cnt++;
             }
@@ -311,7 +328,11 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             // fewer, then complain
             if (cnt > keys.size() || (origStmt != null && cnt < keys.size())) {
                 log.warning("Row count mismatch in second pass", "origQuery", origStmt,
-                            "wanted", keys, "got", got, "dups", dups, new Exception());
+                            // we need toString() here or StringUtil will get smart and dump our
+                            // KeySet using its iterator which results in verbosity
+                            "wanted", KeySet.newKeySet(_type, keys).toString(),
+                            "got", KeySet.newKeySet(_type, got).toString(),
+                            "dups", dups, new Exception());
             }
 
             if (PersistenceContext.CACHE_DEBUG) {
@@ -335,9 +356,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
         return builder.append(")").toString();
     }
 
-    protected SQLBuilder _builder;
-    protected DepotMarshaller<T> _marsh;
     protected Class<T> _type;
-    protected SelectClause<T> _select;
+    protected DepotMarshaller<T> _marsh;
     protected int _cachedQueries, _uncachedQueries, _cachedRecords, _uncachedRecords;
 }

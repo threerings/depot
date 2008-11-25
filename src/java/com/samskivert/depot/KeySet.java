@@ -20,6 +20,7 @@
 
 package com.samskivert.depot;
 
+import java.io.Serializable;
 import java.util.AbstractCollection;
 import java.util.Arrays;
 import java.util.Collection;
@@ -48,7 +49,7 @@ import static com.samskivert.depot.Log.log;
  * the cache.
  */
 public abstract class KeySet<T extends PersistentRecord> extends WhereClause
-    implements SQLExpression, ValidatingCacheInvalidator, Iterable<Key<T>>
+    implements Serializable, SQLExpression, ValidatingCacheInvalidator, Iterable<Key<T>>
 {
     /**
      * Creates a key set for the supplied persistent record and keys.

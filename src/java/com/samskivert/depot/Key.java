@@ -189,7 +189,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
     // from CacheKey
     public Serializable getCacheKey ()
     {
-        return _values;
+        return this;
     }
 
     // from ValidatingCacheInvalidator

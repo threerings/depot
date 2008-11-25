@@ -22,6 +22,8 @@ package com.samskivert.depot;
 
 import java.io.Serializable;
 
+import com.samskivert.util.ObjectUtil;
+
 /**
  * Convenience class that implements {@link CacheKey} as simply as possibly. This class is
  * typically used when the caller wants to cache a non-obvious query such as a collection,
@@ -85,21 +87,8 @@ public class SimpleCacheKey
             return false;
         }
         SimpleCacheKey other = (SimpleCacheKey) obj;
-        if (_cacheId == null) {
-            if (other._cacheId != null) {
-                return false;
-            }
-        } else if (!_cacheId.equals(other._cacheId)) {
-            return false;
-        }
-        if (_cacheKey == null) {
-            if (other._cacheKey != null) {
-                return false;
-            }
-        } else if (!_cacheKey.equals(other._cacheKey)) {
-            return false;
-        }
-        return true;
+        return ObjectUtil.equals(_cacheId, other._cacheId) &&
+            ObjectUtil.equals(_cacheKey, other._cacheKey);
     }
 
     @Override
