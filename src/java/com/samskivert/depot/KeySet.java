@@ -128,7 +128,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
 
         // from WhereClause
         public SQLExpression getWhereExpression () {
-            return new LiteralExp("false");
+            return new LiteralExp("(1 = 0)");
         }
 
         // from Iterable<Key<T>>
