@@ -29,16 +29,25 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
+
+import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
+
+import com.samskivert.jdbc.ColumnDefinition;
 import com.samskivert.jdbc.JDBCUtil;
+import com.samskivert.util.ArrayUtil;
 
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
+import com.samskivert.depot.annotation.GeneratedValue;
 import com.samskivert.depot.clause.DeleteClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
+import com.samskivert.depot.expression.FunctionExp;
+import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FieldMarshaller.BooleanMarshaller;
 import com.samskivert.depot.impl.FieldMarshaller.ByteArrayMarshaller;
 import com.samskivert.depot.impl.FieldMarshaller.ByteEnumMarshaller;
@@ -50,7 +59,12 @@ import com.samskivert.depot.impl.FieldMarshaller.IntMarshaller;
 import com.samskivert.depot.impl.FieldMarshaller.LongMarshaller;
 import com.samskivert.depot.impl.FieldMarshaller.ObjectMarshaller;
 import com.samskivert.depot.impl.FieldMarshaller.ShortMarshaller;
+import com.samskivert.depot.operator.Arithmetic.BitAnd;
+import com.samskivert.depot.operator.Arithmetic.BitOr;
 import com.samskivert.depot.operator.Conditionals.FullTextMatch;
+import com.samskivert.depot.operator.Conditionals.Like;
+import com.samskivert.depot.operator.Logic.Or;
+import com.samskivert.depot.operator.SQLOperator.BinaryOperator;
 
 import static com.samskivert.Log.log;
 
@@ -61,40 +75,57 @@ public class HSQLBuilder
     {
         @Override public void visit (FullTextMatch match)
         {
-            _builder.append("match(");
+            // HSQL doesn't have real full text search, so we fake it by creating a condition like
+            // (lower(COL1) like '%foo%') OR (lower(COL1) like '%bar%') OR ...
+            // (lower(COL2) like '%foo%') OR (lower(COL2) like '%bar%') OR ...
+            // ... and so on. Not efficient, but basically functional.
             Class<? extends PersistentRecord> pClass = match.getPersistentRecord();
-            String[] fields =
-                _types.getMarshaller(pClass).getFullTextIndex(match.getName()).fields();
-            for (int ii = 0; ii < fields.length; ii ++) {
-                if (ii > 0) {
-                    _builder.append(", ");
-                }
-                new ColumnExp(pClass, fields[ii]).accept(this);
+
+            // find the fields involved
+            String[] fields = _types.getMarshaller(pClass).
+                getFullTextIndex(match.getName()).fields();
+
+            // explode the query into words
+            String[] ftsWords = match.getQuery().toLowerCase().split("\\W+");
+            if (ftsWords.length > 0 && ftsWords[0].length() == 0) {
+                // if the query led with whitespace, the first 'word' will be empty; strip it
+                ftsWords = ArrayUtil.splice(ftsWords, 0, 1);
             }
-            _builder.append(") against (? in boolean mode)");
+
+            // now iterate over the cartesian product of the query words & the fields
+            List<SQLExpression> bits = Lists.newArrayList();
+            for (int ii = 0; ii < fields.length; ii ++) {
+                FunctionExp colexp = new FunctionExp("lower", new ColumnExp(pClass, fields[ii]));
+                for (int jj = 0; jj < ftsWords.length; jj ++) {
+                    // build comparisons between each word and column
+                    bits.add(new Like(colexp, "%" + ftsWords[jj] + "%"));
+                }
+            }
+            // then just OR them all together and we have our query
+            _ftsCondition = new Or(bits);
+            _ftsCondition.accept(this);
         }
 
-        @Override public void visit (DeleteClause<? extends PersistentRecord> deleteClause)
+        @Override
+        public void visit (BinaryOperator binaryOperator)
         {
-            _builder.append("delete from ");
-            appendTableName(deleteClause.getPersistentClass());
-            _builder.append(" ");
+            // HSQL doesn't handle & and | operators
+            if (binaryOperator instanceof BitAnd) {
+                _builder.append("BITAND(?, ?)");
 
-            // MySQL can't do DELETE FROM SomeTable AS T1, so we turn off abbreviations briefly.
-            boolean savedFlag = _types.getUseTableAbbreviations();
-            _types.setUseTableAbbreviations(false);
-            try {
-                deleteClause.getWhereClause().accept(this);
-            } finally {
-                _types.setUseTableAbbreviations(savedFlag);
+            } else if (binaryOperator instanceof BitOr) {
+                _builder.append("BITOR(?, ?)");
+
+            } else {
+                super.visit(binaryOperator);
             }
         }
 
         public void visit (EpochSeconds epochSeconds)
         {
-            _builder.append("unix_timestamp(");
+            _builder.append("datediff('ss', ");
             epochSeconds.getArgument().accept(this);
-            _builder.append(")");
+            _builder.append(", '1970-01-01')");
         }
 
         protected HBuildVisitor (DepotTypes types)
@@ -102,19 +133,8 @@ public class HSQLBuilder
             super(types);
         }
 
-        @Override protected void appendTableName (Class<? extends PersistentRecord> type)
-        {
-            _builder.append(_types.getTableName(type));
-        }
-
-        @Override protected void appendTableAbbreviation (Class<? extends PersistentRecord> type)
-        {
-            _builder.append(_types.getTableAbbreviation(type));
-        }
-
-        @Override protected void appendIdentifier (String field)
-        {
-            _builder.append(field);
+        @Override protected void appendIdentifier (String field) {
+            _builder.append("\"").append(field).append("\"");
         }
     }
 
@@ -125,12 +145,8 @@ public class HSQLBuilder
         }
 
         @Override public void visit (FullTextMatch match) {
-            try {
-                _stmt.setString(_argIdx++, match.getQuery());
-            } catch (SQLException sqe) {
-                throw new DatabaseException("Failed to configure full-text match column " +
-                                            "[idx=" + (_argIdx-1) + ", match=" + match + "]", sqe);
-            }
+            _ftsCondition.accept(this);
+            _ftsCondition = null;
         }
     }
 
@@ -143,11 +159,7 @@ public class HSQLBuilder
     public void getFtsIndexes (
         Iterable<String> columns, Iterable<String> indexes, Set<String> target)
     {
-        for (String index : indexes) {
-            if (index.startsWith("ftsIx_")) {
-                target.add(index.substring("ftsIx_".length()));
-            }
-        }
+        // do nothing
     }
 
     @Override
@@ -155,26 +167,8 @@ public class HSQLBuilder
         Connection conn, DepotMarshaller<T> marshaller, FullTextIndex fts)
         throws SQLException
     {
-        Class<T> pClass = marshaller.getPersistentClass();
-        StringBuilder update = new StringBuilder("ALTER TABLE ").
-            append(marshaller.getTableName()).append(" ADD FULLTEXT INDEX ftsIx_").
-            append(fts.name()).append(" (");
-        String[] fields = fts.fields();
-        for (int ii = 0; ii < fields.length; ii ++) {
-            if (ii > 0) {
-                update.append(", ");
-            }
-            update.append(_types.getColumnName(pClass, fields[ii]));
-        }
-        update.append(")");
+        // nothing to do for HSQL
 
-        Statement stmt = conn.createStatement();
-        try {
-            log.info("Adding full-text search index: ftsIx_" + fts.name());
-            stmt.executeUpdate(update.toString());
-        } finally {
-            JDBCUtil.close(stmt);
-        }
         return true;
     }
 
@@ -188,7 +182,7 @@ public class HSQLBuilder
     @Override
     protected String getBooleanDefault ()
     {
-        return "0";
+        return "false";
     }
 
     @Override
@@ -204,24 +198,42 @@ public class HSQLBuilder
     }
 
     @Override
+    protected void maybeMutateForGeneratedValue (GeneratedValue genValue, ColumnDefinition column)
+    {
+        // HSQL's IDENTITY() implementation does not take the form of a type, as MySQL's
+        // and PostgreSQL's conveniently shared SERIAL alias, nor as MySQL's original 
+        // AUTO_INCREMENT modifier -- but as a default value, which admittedly makes sense
+        switch (genValue.strategy()) {
+        case AUTO:
+        case IDENTITY:
+            column.defaultValue = "IDENTITY";
+            column.unique = true;
+            break;
+
+        default:
+            super.maybeMutateForGeneratedValue(genValue, column);
+        }
+    }
+
+    @Override
     protected <T> String getColumnType (FieldMarshaller<?> fm, int length)
     {
-        if (fm instanceof ByteMarshaller) {
+        if (fm instanceof FieldMarshaller.ByteMarshaller) {
             return "TINYINT";
-        } else if (fm instanceof ShortMarshaller) {
+        } else if (fm instanceof FieldMarshaller.ShortMarshaller) {
             return "SMALLINT";
-        } else if (fm instanceof IntMarshaller) {
+        } else if (fm instanceof FieldMarshaller.IntMarshaller) {
             return "INTEGER";
-        } else if (fm instanceof LongMarshaller) {
+        } else if (fm instanceof FieldMarshaller.LongMarshaller) {
             return "BIGINT";
-        } else if (fm instanceof FloatMarshaller) {
-            return "FLOAT";
-        } else if (fm instanceof DoubleMarshaller) {
-            return "DOUBLE";
-        } else if (fm instanceof ObjectMarshaller) {
+        } else if (fm instanceof FieldMarshaller.FloatMarshaller) {
+            return "REAL";
+        } else if (fm instanceof FieldMarshaller.DoubleMarshaller) {
+            return "DOUBLE PRECISION";
+        } else if (fm instanceof FieldMarshaller.ObjectMarshaller) {
             Class<?> ftype = fm.getField().getType();
             if (ftype.equals(Byte.class)) {
-                return "SMALLINT";
+                return "TINYINT";
             } else if (ftype.equals(Short.class)) {
                 return "SMALLINT";
             } else if (ftype.equals(Integer.class)) {
@@ -231,49 +243,37 @@ public class HSQLBuilder
             } else if (ftype.equals(Float.class)) {
                 return "FLOAT";
             } else if (ftype.equals(Double.class)) {
-                return "DOUBLE";
+                return "DOUBLE PRECISION";
             } else if (ftype.equals(String.class)) {
-                if (length < (1 << 15)) {
-                    return "VARCHAR(" + length + ")";
-                }
-                return "TEXT";
+                return "VARCHAR(" + length + ")";
             } else if (ftype.equals(Date.class)) {
                 return "DATE";
             } else if (ftype.equals(Time.class)) {
-                return "DATETIME";
+                return "TIME";
             } else if (ftype.equals(Timestamp.class)) {
-                return "DATETIME";
+                return "TIMESTAMP";
             } else if (ftype.equals(Blob.class)) {
-                return "BYTEA";
+                return "VARBINARY";
             } else if (ftype.equals(Clob.class)) {
-                return "TEXT";
+                return "VARCHAR";
             } else {
                 throw new IllegalArgumentException(
                     "Don't know how to create SQL for " + ftype + ".");
             }
-        } else if (fm instanceof ByteArrayMarshaller ||
-                   fm instanceof IntArrayMarshaller) {
-            if (fm instanceof IntArrayMarshaller) {
-                length *= 4;
-            }
-            // semi-arbitrarily use VARBINARY() up to 32767
-            if (length < (1 << 15)) {
-                return "VARBINARY(" + length + ")";
-            }
-            // use BLOB to 65535
-            if (length < (1 << 16)) {
-                return "BLOB";
-            }
-            if (length < (1 << 24)) {
-                return "MEDIUMBLOB";
-            }
-            return "LONGBLOB";
-        } else if (fm instanceof ByteEnumMarshaller) {
+        } else if (fm instanceof FieldMarshaller.ByteArrayMarshaller) {
+            return "VARBINARY";
+        } else if (fm instanceof FieldMarshaller.IntArrayMarshaller) {
+            return "VARBINARY";
+        } else if (fm instanceof FieldMarshaller.ByteEnumMarshaller) {
             return "TINYINT";
-        } else if (fm instanceof BooleanMarshaller) {
-            return "TINYINT";
+        } else if (fm instanceof FieldMarshaller.BooleanMarshaller) {
+            return "BOOLEAN";
         } else {
             throw new IllegalArgumentException("Unknown field marshaller type: " + fm.getClass());
         }
     }
+
+    /** Holds the Full Text Seach condition between build and bind phases. */
+    protected SQLExpression _ftsCondition;
 }
+
