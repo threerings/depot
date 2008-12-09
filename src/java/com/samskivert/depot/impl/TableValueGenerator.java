@@ -123,36 +123,51 @@ public class TableValueGenerator extends ValueGenerator
     public int nextGeneratedValue (Connection conn, DatabaseLiaison liaison)
         throws SQLException
     {
-        PreparedStatement stmt = null;
+        PreparedStatement readStatement = null;
+        PreparedStatement writeStatement = null;
         try {
             // TODO: Make this lockless!
-            String query =
+            readStatement = conn.prepareStatement(
                 " SELECT " + liaison.columnSQL(_valueColumnName) +
                 "   FROM " + liaison.tableSQL(_valueTable) +
-                "  WHERE " + liaison.columnSQL(_pkColumnName) + " = ? FOR UPDATE";
-            stmt = conn.prepareStatement(query);
-            stmt.setString(1, _pkColumnValue);
+                "  WHERE " + liaison.columnSQL(_pkColumnName) + " = ? ");
+            readStatement.setString(1, _pkColumnValue);
 
-            ResultSet rs = stmt.executeQuery();
-            if (!rs.next()) {
-                throw new SQLException("Failed to find next primary key value " +
-                                       "[table=" + _valueTable + ", column=" + _valueColumnName +
-                                       ", where=" + _pkColumnName + "=" + _pkColumnValue + "]");
-            }
-            int val = rs.getInt(1);
-            JDBCUtil.close(stmt);
-
-            stmt = conn.prepareStatement(
+            writeStatement = conn.prepareStatement(
                 " UPDATE " + liaison.tableSQL(_valueTable) +
                 "    SET " + liaison.columnSQL(_valueColumnName) + " = ? " +
-                "  WHERE " + liaison.columnSQL(_pkColumnName) + " = ?");
-            stmt.setInt(1, val + _allocationSize);
-            stmt.setString(2, _pkColumnValue);
-            stmt.executeUpdate();
-            return val;
+                "  WHERE " + liaison.columnSQL(_pkColumnName) + " = ? " +
+                "    AND " + liaison.columnSQL(_valueColumnName) + " = ? ");
+
+            for (int tries = 0; tries < 10; tries ++) {
+                // execute the query
+                ResultSet rs = readStatement.executeQuery();
+                if (!rs.next()) {
+                    throw new SQLException(
+                        "Failed to find next primary key value [table=" + _valueTable +
+                        ", column=" + _valueColumnName + "]");
+                }
+                // fetch the next available value
+                int val = rs.getInt(1);
+
+                // claim this value locklessly
+                writeStatement.setInt(1, val + _allocationSize);
+                writeStatement.setString(2, _pkColumnValue);
+                writeStatement.setInt(3, val);
+
+                // if we modified a row, we know we and nobody else got this particular value!
+                if (writeStatement.executeUpdate() == 1) {
+                    return val;
+                }
+                // else try again
+            }
+            throw new SQLException(
+                "Failed to claim next primary key value in 10 attempts [table=" + _valueTable +
+                ", column=" + _valueColumnName + "]");
 
         } finally {
-            JDBCUtil.close(stmt);
+            JDBCUtil.close(readStatement);
+            JDBCUtil.close(writeStatement);
         }
     }
 
