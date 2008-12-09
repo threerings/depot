@@ -109,69 +109,77 @@ public abstract class SQLBuilder
         }
 
         Field field = fm.getField();
-
-        String type = null;
-        boolean nullable = false;
-        boolean unique = false;
-        String defaultValue = null;
-        int length = 255;
-
         Column column = field.getAnnotation(Column.class);
-        if (column != null) {
-            type = nullify(column.type());
-            nullable = column.nullable();
-            unique = column.unique();
-            defaultValue = nullify(column.defaultValue());
-            length = column.length();
-        }
 
-        // handle primary keyness
+        ColumnDefinition coldef = (column != null) ?
+            new ColumnDefinition(nullify(column.type()), column.nullable(),
+                                 column.unique(), nullify(column.defaultValue())) :
+            new ColumnDefinition();
+
         GeneratedValue genValue = fm.getGeneratedValue();
         if (genValue != null) {
-            switch (genValue.strategy()) {
-            case AUTO:
-            case IDENTITY:
-                type = "SERIAL";
-                unique = true;
-                break;
-            case SEQUENCE: // TODO
-                throw new IllegalArgumentException(
-                    "SEQUENCE key generation strategy not yet supported.");
-            case TABLE:
-                // nothing to do here, it'll be handled later
-                break;
-            }
+            maybeMutateForGeneratedValue(genValue, coldef);
+
+        } else if (coldef.defaultValue == null) {
+            maybeMutateForPrimitive(field, coldef);
         }
 
-        if (type == null) {
-            type = getColumnType(fm, length);
+        if (coldef.type == null) {
+            coldef.type = getColumnType(fm, (column != null) ? column.length() : 255);
         }
 
         // sanity check nullability
-        if (nullable && field.getType().isPrimitive()) {
+        if (coldef.nullable && field.getType().isPrimitive()) {
             throw new IllegalArgumentException(
                 "Primitive Java type cannot be nullable [field=" + field.getName() + "]");
         }
 
+        return coldef;
+    }
+
+    protected void maybeMutateForPrimitive (Field field, ColumnDefinition coldef)
+    {
         // Java primitive types cannot be null, so we provide a default value for these columns
-        // that matches Java's default for primitive types; however, if the column has a generated
-        // value, don't provide a default because that will anger the database Gods
-        if (defaultValue == null && genValue == null) {
-            if (field.getType().equals(Byte.TYPE) ||
-                field.getType().equals(Short.TYPE) ||
-                field.getType().equals(Integer.TYPE) ||
-                field.getType().equals(Long.TYPE) ||
-                field.getType().equals(Float.TYPE) ||
-                field.getType().equals(Double.TYPE) ||
-                ByteEnum.class.isAssignableFrom(field.getType())) {
-                defaultValue = "0";
+        // that matches Java's default for primitive types; however, if the column has a
+        // generated value, don't provide a default because that will anger the database Gods
+        if (field.getType().equals(Byte.TYPE) ||
+            field.getType().equals(Short.TYPE) ||
+            field.getType().equals(Integer.TYPE) ||
+            field.getType().equals(Long.TYPE) ||
+            field.getType().equals(Float.TYPE) ||
+            field.getType().equals(Double.TYPE) ||
+            ByteEnum.class.isAssignableFrom(field.getType())) {
+            coldef.defaultValue = "0";
 
-            } else if (field.getType().equals(Boolean.TYPE)) {
-                defaultValue = getBooleanDefault();
-            }
+        } else if (field.getType().equals(Boolean.TYPE)) {
+            coldef.defaultValue = getBooleanDefault();
         }
+    }
 
-        return new ColumnDefinition(type, nullable, unique, defaultValue);
+    protected void maybeMutateForGeneratedValue (GeneratedValue genValue, ColumnDefinition coldef)
+    {
+        switch (genValue.strategy()) {
+        case AUTO:
+        case IDENTITY:
+            coldef.type = "SERIAL";
+            coldef.unique = true;
+            break;
+
+        case SEQUENCE: // TODO
+            throw new IllegalArgumentException(
+                "SEQUENCE key generation strategy not yet supported.");
+        case TABLE:
+            // nothing to do here, it'll be handled later
+            break;
+        }
+    }
+
+    /**
+     * Returns the boolean literal that corresponds to false.
+     */
+    protected String getBooleanDefault ()
+    {
+        return "false";
     }
 
     /**
@@ -198,14 +206,6 @@ public abstract class SQLBuilder
      */
     public abstract void getFtsIndexes (
         Iterable<String> columns, Iterable<String> indexes, Set<String> target);
-
-    /**
-     * Returns the boolean literal that corresponds to false.
-     */
-    protected String getBooleanDefault ()
-    {
-        return "false";
-    }
 
     /**
      * Overridden by subclasses to create a dialect-specific {@link BuildVisitor}.
