@@ -442,29 +442,36 @@ public abstract class BuildVisitor implements ExpressionVisitor
         DepotMarshaller<?> marsh = _types.getMarshaller(pClass);
         _innerClause = true;
 
+        Set<String> idFields = insertClause.getIdentityFields();
         String[] fields = marsh.getColumnFieldNames();
 
         _builder.append("insert into ");
         appendTableName(insertClause.getPersistentClass());
         _builder.append(" (");
-        for (int ii = 0; ii < fields.length; ii ++) {
-            if (ii > 0) {
-                _builder.append(", ");
-            }
-            appendLhsColumn(pClass, fields[ii]);
-        }
-        _builder.append(") values(");
 
-        Set<String> idFields = insertClause.getIdentityFields();
-        for (int ii = 0; ii < fields.length; ii++) {
-            if (ii > 0) {
+        boolean comma = false;
+        for (String field : fields) {
+            if (idFields.contains(field)) {
+                continue;
+            }
+            if (comma) {
                 _builder.append(", ");
             }
-            if (idFields.contains(fields[ii])) {
-                _builder.append("DEFAULT");
-            } else {
-                _builder.append("?");
+            comma = true;
+            appendLhsColumn(pClass, field);
+        }
+        _builder.append(") values (");
+
+        comma = false;
+        for (String field : fields) {
+            if (idFields.contains(field)) {
+                continue;
             }
+            if (comma) {
+                _builder.append(", ");
+            }
+            comma = true;
+            _builder.append("?");
         }
         _builder.append(")");
     }
