@@ -151,9 +151,9 @@ public abstract class SchemaMigration extends Modifier
         @Override
         protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
             log.info("Updating type of '" + _fieldName + "' in " + _tableName);
-            return liaison.changeColumn(conn, _tableName, _fieldName, _newColumnDef.getType(),
-                _newColumnDef.isNullable(), _newColumnDef.isUnique(),
-                _newColumnDef.getDefaultValue()) ? 1 : 0;
+            return liaison.changeColumn(conn, _tableName, _fieldName, _newColumnDef.type,
+                _newColumnDef.nullable, _newColumnDef.unique,
+                _newColumnDef.defaultValue) ? 1 : 0;
         }
 
         protected String _fieldName, _columnName;
@@ -191,13 +191,13 @@ public abstract class SchemaMigration extends Modifier
         protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
             // override the default value in the column definition with the one provided
             ColumnDefinition defColumnDef = new ColumnDefinition(
-                _newColumnDef.getType(), _newColumnDef.isNullable(),
-                _newColumnDef.isUnique(), _defaultValue);
+                _newColumnDef.type, _newColumnDef.nullable,
+                _newColumnDef.unique, _defaultValue);
             // first add the column with the overridden default value
             if (liaison.addColumn(conn, _tableName, _fieldName, defColumnDef, true)) {
                 // then change the column to the permanent default value
-                liaison.changeColumn(conn, _tableName, _fieldName, _newColumnDef.getType(),
-                                     null, null, _newColumnDef.getDefaultValue());
+                liaison.changeColumn(conn, _tableName, _fieldName, _newColumnDef.type,
+                                     null, null, _newColumnDef.defaultValue);
                 return 1;
             }
             return 0;
