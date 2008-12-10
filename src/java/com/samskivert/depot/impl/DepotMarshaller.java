@@ -1053,7 +1053,7 @@ public class DepotMarshaller<T extends PersistentRecord>
         public TableMetaData (DatabaseMetaData meta, String tableName)
             throws SQLException
         {
-            tableExists = meta.getTables("", "", tableName, null).next();
+            tableExists = meta.getTables(null, null, tableName, null).next();
             if (!tableExists) {
                 return;
             }
