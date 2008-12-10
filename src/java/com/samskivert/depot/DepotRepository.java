@@ -417,7 +417,7 @@ public abstract class DepotRepository
         throws DatabaseException
     {
         @SuppressWarnings("unchecked") Class<T> pClass = (Class<T>) record.getClass();
-        requireNotComputed(pClass, "updatePartial");
+        requireNotComputed(pClass, "update");
 
         DepotMarshaller<T> marsh = _ctx.getMarshaller(pClass);
         Key<T> key = marsh.getPrimaryKey(record);
