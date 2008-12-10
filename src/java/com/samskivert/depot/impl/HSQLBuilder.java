@@ -26,7 +26,6 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 
@@ -36,37 +35,21 @@ import java.util.Set;
 import com.google.common.collect.Lists;
 
 import com.samskivert.jdbc.ColumnDefinition;
-import com.samskivert.jdbc.JDBCUtil;
 import com.samskivert.util.ArrayUtil;
 
-import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.annotation.GeneratedValue;
-import com.samskivert.depot.clause.DeleteClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.expression.FunctionExp;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.impl.FieldMarshaller.BooleanMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.ByteArrayMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.ByteEnumMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.ByteMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.DoubleMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.FloatMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.IntArrayMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.IntMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.LongMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.ObjectMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.ShortMarshaller;
 import com.samskivert.depot.operator.Arithmetic.BitAnd;
 import com.samskivert.depot.operator.Arithmetic.BitOr;
 import com.samskivert.depot.operator.Conditionals.FullTextMatch;
 import com.samskivert.depot.operator.Conditionals.Like;
 import com.samskivert.depot.operator.Logic.Or;
 import com.samskivert.depot.operator.SQLOperator.BinaryOperator;
-
-import static com.samskivert.Log.log;
 
 public class HSQLBuilder
     extends SQLBuilder
