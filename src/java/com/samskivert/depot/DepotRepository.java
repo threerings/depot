@@ -96,6 +96,8 @@ public abstract class DepotRepository
      * Resolves all persistent records registered to this repository (via {@link
      * #getManagedRecords}. This will be done before the repository is initialized via {@link
      * #init}.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected void resolveRecords ()
         throws DatabaseException
@@ -110,6 +112,8 @@ public abstract class DepotRepository
     /**
      * Provides a place where a repository can perform any initialization that requires database
      * operations.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected void init ()
         throws DatabaseException
@@ -149,6 +153,8 @@ public abstract class DepotRepository
 
     /**
      * Loads the persistent object that matches the specified primary key.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> T load (Class<T> type, Comparable<?> primaryKey,
                                                    QueryClause... clauses)
@@ -160,6 +166,8 @@ public abstract class DepotRepository
 
     /**
      * Loads the persistent object that matches the specified primary key.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> T load (Class<T> type, String ix, Comparable<?> val,
                                                    QueryClause... clauses)
@@ -171,6 +179,8 @@ public abstract class DepotRepository
 
     /**
      * Loads the persistent object that matches the specified two-column primary key.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> T load (Class<T> type, String ix1, Comparable<?> val1,
                                                    String ix2, Comparable<?> val2,
@@ -183,6 +193,8 @@ public abstract class DepotRepository
 
     /**
      * Loads the persistent object that matches the specified three-column primary key.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> T load (Class<T> type, String ix1, Comparable<?> val1,
                                                    String ix2, Comparable<?> val2, String ix3,
@@ -195,6 +207,8 @@ public abstract class DepotRepository
 
     /**
      * Loads the first persistent object that matches the supplied query clauses.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> T load (
         Class<T> type, Collection<? extends QueryClause> clauses)
@@ -205,6 +219,8 @@ public abstract class DepotRepository
 
     /**
      * Loads the first persistent object that matches the supplied query clauses.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> T load (Class<T> type, QueryClause... clauses)
         throws DatabaseException
@@ -214,6 +230,8 @@ public abstract class DepotRepository
 
     /**
      * Loads up all persistent records that match the supplied set of raw primary keys.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> List<T> loadAll (
         Class<T> type, Collection<? extends Comparable<?>> primaryKeys)
@@ -230,6 +248,8 @@ public abstract class DepotRepository
 
     /**
      * Loads up all persistent records that match the supplied set of primary keys.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> List<T> loadAll (Collection<Key<T>> keys)
         throws DatabaseException
@@ -240,6 +260,8 @@ public abstract class DepotRepository
 
     /**
      * A varargs version of {@link #findAll(Class,Collection)}.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> List<T> findAll (Class<T> type, QueryClause... clauses)
         throws DatabaseException
@@ -257,6 +279,8 @@ public abstract class DepotRepository
      * The more complex strategy could save a lot of data shuffling. On the other hand, its
      * complexity is an inherent drawback, and it does execute two separate database queries for
      * what the simple method does in one.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> List<T> findAll (
         Class<T> type, Collection<? extends QueryClause> clauses)
@@ -271,6 +295,8 @@ public abstract class DepotRepository
      * @param skipCache if true, our normal mixed select strategy that allows cached records to be
      * loaded from the cache will not be used even if it otherwise could. See {@link
      * #findAll(Class,Collection)} for details on the mixed strategy.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> List<T> findAll (
         Class<T> type, boolean skipCache, Collection<? extends QueryClause> clauses)
@@ -297,6 +323,8 @@ public abstract class DepotRepository
      * and may load keys from a slave. For performance reasons, you should always pass false unless
      * you know you will be modifying the database as a result of this query and absolutely need
      * the latest data.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> List<Key<T>> findAllKeys (
         Class<T> type, boolean forUpdate, QueryClause... clause)
@@ -313,6 +341,8 @@ public abstract class DepotRepository
      * and may load keys from a slave. For performance reasons, you should always pass false unless
      * you know you will be modifying the database as a result of this query and absolutely need
      * the latest data.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> List<Key<T>> findAllKeys (
         Class<T> type, boolean forUpdate, Collection<? extends QueryClause> clauses)
@@ -326,6 +356,10 @@ public abstract class DepotRepository
      * has one) in the process.
      *
      * @return the number of rows modified by this action, this should always be one.
+     *
+     * @throws DuplicateKeyException if the inserted record conflicts with the primary key (or any
+     * other unique key) of a record already in the database.
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int insert (T record)
         throws DatabaseException
@@ -374,6 +408,8 @@ public abstract class DepotRepository
      * row to be updated.
      *
      * @return the number of rows modified by this action.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int update (T record)
         throws DatabaseException
@@ -412,6 +448,8 @@ public abstract class DepotRepository
      * cached value iff the record exists in the cache.
      *
      * @return the number of rows modified by this action.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int update (T record, final String... modifiedFields)
         throws DatabaseException
@@ -452,6 +490,10 @@ public abstract class DepotRepository
      * @param updates an mapping from the names of the fields/columns ti the values to be assigned.
      *
      * @return the number of rows modified by this action.
+     *
+     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
+     * values that duplicate another row already in the database.
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updatePartial (
         Class<T> type, Comparable<?> primaryKey, Map<String,Object> updates)
@@ -475,6 +517,10 @@ public abstract class DepotRepository
      * assigned, in key, value, key, value, etc. order.
      *
      * @return the number of rows modified by this action.
+     *
+     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
+     * values that duplicate another row already in the database.
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updatePartial (
         Class<T> type, Comparable<?> primaryKey, Object... fieldsValues)
@@ -492,6 +538,10 @@ public abstract class DepotRepository
      * assigned, in key, value, key, value, etc. order.
      *
      * @return the number of rows modified by this action.
+     *
+     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
+     * values that duplicate another row already in the database.
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updatePartial (
         Class<T> type, String ix1, Comparable<?> val1, String ix2, Comparable<?> val2,
@@ -510,6 +560,10 @@ public abstract class DepotRepository
      * assigned, in key, value, key, value, etc. order.
      *
      * @return the number of rows modified by this action.
+     *
+     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
+     * values that duplicate another row already in the database.
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updatePartial (
         Class<T> type, String ix1, Comparable<?> val1, String ix2, Comparable<?> val2,
@@ -527,6 +581,10 @@ public abstract class DepotRepository
      * assigned, in key, value, key, value, etc. order.
      *
      * @return the number of rows modified by this action.
+     *
+     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
+     * values that duplicate another row already in the database.
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updatePartial (Key<T> key, Object... fieldsValues)
         throws DatabaseException
@@ -548,6 +606,10 @@ public abstract class DepotRepository
      * assigned, in key, value, key, value, etc. order.
      *
      * @return the number of rows modified by this action.
+     *
+     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
+     * values that duplicate another row already in the database.
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updatePartial (
         Class<T> type, final WhereClause key, CacheInvalidator invalidator, Object... fieldsValues)
@@ -598,6 +660,10 @@ public abstract class DepotRepository
      * assigned, in key, literal value, key, literal value, etc. order.
      *
      * @return the number of rows modified by this action.
+     *
+     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
+     * values that duplicate another row already in the database.
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updateLiteral (
         Class<T> type, Comparable<?> primaryKey, Map<String, SQLExpression> fieldsValues)
@@ -622,6 +688,10 @@ public abstract class DepotRepository
      * assigned, in key, literal value, key, literal value, etc. order.
      *
      * @return the number of rows modified by this action.
+     *
+     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
+     * values that duplicate another row already in the database.
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updateLiteral (
         Class<T> type, String ix1, Comparable<?> val1, String ix2, Comparable<?> val2,
@@ -647,6 +717,10 @@ public abstract class DepotRepository
      * assigned, in key, literal value, key, literal value, etc. order.
      *
      * @return the number of rows modified by this action.
+     *
+     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
+     * values that duplicate another row already in the database.
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updateLiteral (
         Class<T> type, String ix1, Comparable<?> val1, String ix2, Comparable<?> val2,
@@ -673,6 +747,10 @@ public abstract class DepotRepository
      * assigned, in key, literal value, key, literal value, etc. order.
      *
      * @return the number of rows modified by this action.
+     *
+     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
+     * values that duplicate another row already in the database.
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updateLiteral (
         Class<T> type, final WhereClause key, CacheInvalidator invalidator,
@@ -719,6 +797,8 @@ public abstract class DepotRepository
      * and if that matches zero rows, the object will be inserted.
      *
      * @return true if the record was created, false if it was updated.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> boolean store (T record)
         throws DatabaseException
@@ -789,6 +869,8 @@ public abstract class DepotRepository
      * of the supplied object.
      *
      * @return the number of rows deleted by this action.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int delete (T record)
         throws DatabaseException
@@ -806,6 +888,8 @@ public abstract class DepotRepository
      * primary key.
      *
      * @return the number of rows deleted by this action.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int delete (Class<T> type, Comparable<?> primaryKeyValue)
         throws DatabaseException
@@ -818,6 +902,8 @@ public abstract class DepotRepository
      * primary key.
      *
      * @return the number of rows deleted by this action.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int delete (Class<T> type, Key<T> primaryKey)
         throws DatabaseException
@@ -829,6 +915,8 @@ public abstract class DepotRepository
      * Deletes all persistent objects from the database that match the supplied where clause.
      *
      * @return the number of rows deleted by this action.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int deleteAll (Class<T> type, final WhereClause where)
         throws DatabaseException
@@ -848,6 +936,8 @@ public abstract class DepotRepository
      * Deletes all persistent objects from the database that match the supplied key.
      *
      * @return the number of rows deleted by this action.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int deleteAll (
         Class<T> type, final WhereClause where, CacheInvalidator invalidator)
