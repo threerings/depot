@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -30,7 +30,9 @@ import com.samskivert.depot.Key;
 import com.samskivert.depot.MultiKey;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.Computed;
+import com.samskivert.depot.clause.CreateIndexClause;
 import com.samskivert.depot.clause.DeleteClause;
+import com.samskivert.depot.clause.DropIndexClause;
 import com.samskivert.depot.clause.FieldDefinition;
 import com.samskivert.depot.clause.FieldOverride;
 import com.samskivert.depot.clause.ForUpdate;
@@ -43,6 +45,7 @@ import com.samskivert.depot.clause.OrderBy;
 import com.samskivert.depot.clause.SelectClause;
 import com.samskivert.depot.clause.UpdateClause;
 import com.samskivert.depot.clause.WhereClause;
+import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.expression.FunctionExp;
@@ -56,6 +59,7 @@ import com.samskivert.depot.operator.Conditionals.IsNull;
 import com.samskivert.depot.operator.Logic.Not;
 import com.samskivert.depot.operator.SQLOperator.BinaryOperator;
 import com.samskivert.depot.operator.SQLOperator.MultiOperator;
+import com.samskivert.util.Tuple;
 
 /**
  * Implements the base functionality of the SQL-building pass of {@link SQLBuilder}. Dialectal
@@ -476,6 +480,45 @@ public abstract class BuildVisitor implements ExpressionVisitor
         _builder.append(")");
     }
 
+    public void visit (CreateIndexClause<? extends PersistentRecord> createIndexClause)
+    {
+        _builder.append("create ");
+        if (createIndexClause.isUnique()) {
+            _builder.append("unique ");
+        }
+        _builder.append("index ");
+        appendIdentifier(createIndexClause.getName());
+        _builder.append(" on ");
+        appendTableName(createIndexClause.getPersistentClass());
+        _builder.append(" (");
+
+        // turn off table abbreviations here
+        _defaultType = createIndexClause.getPersistentClass();
+        boolean comma = false;
+        for (Tuple<SQLExpression, Order> field : createIndexClause.getFields()) {
+            if (comma) {
+                _builder.append(", ");
+            }
+            comma = true;
+
+            field.left.accept(this);
+            if (field.right == Order.DESC) {
+                // ascending is default, print nothing unless explicitly descending
+                _builder.append(" desc");
+            }
+        }
+        // turn them back on
+        _defaultType = null;
+
+        _builder.append(")");
+    }
+
+    public void visit (DropIndexClause<? extends PersistentRecord> dropIndexClause)
+    {
+        _builder.append("drop index ");
+        appendIdentifier(dropIndexClause.getName());
+    }
+
     protected abstract void appendIdentifier (String field);
 
     protected void appendTableName (Class<? extends PersistentRecord> type)
@@ -588,8 +631,10 @@ public abstract class BuildVisitor implements ExpressionVisitor
 
         // if we get this far we hopefully have a table to select from
         if (tableClass != null) {
-            appendTableAbbreviation(tableClass);
-            _builder.append(".");
+            if (_defaultType != tableClass) {
+                appendTableAbbreviation(tableClass);
+                _builder.append(".");
+            }
             appendIdentifier(fm.getColumnName());
             return;
         }
@@ -612,6 +657,9 @@ public abstract class BuildVisitor implements ExpressionVisitor
     /** A mapping of field overrides per persistent record. */
     protected Map<Class<? extends PersistentRecord>, Map<String, FieldDefinition>> _definitions=
         Maps.newHashMap();
+
+    /** Set this to non-null to suppress table abbreviations from being prepended for a class. */
+    protected Class<? extends PersistentRecord> _defaultType;
 
     /** A flag that's set to true for inner SELECT's */
     protected boolean _innerClause = false;

@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -19,6 +19,8 @@
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
 package com.samskivert.depot.impl;
+
+import static com.samskivert.Log.log;
 
 import java.sql.Blob;
 import java.sql.Clob;
@@ -36,10 +38,13 @@ import com.google.common.collect.Lists;
 
 import com.samskivert.jdbc.ColumnDefinition;
 import com.samskivert.util.ArrayUtil;
+import com.samskivert.util.Tuple;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.annotation.GeneratedValue;
+import com.samskivert.depot.clause.CreateIndexClause;
+import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.expression.FunctionExp;
@@ -109,6 +114,19 @@ public class HSQLBuilder
             _builder.append("datediff('ss', ");
             epochSeconds.getArgument().accept(this);
             _builder.append(", '1970-01-01')");
+        }
+
+        @Override
+        public void visit (CreateIndexClause<? extends PersistentRecord> createIndexClause)
+        {
+            for (Tuple<SQLExpression, Order> field : createIndexClause.getFields()) {
+                if (!(field.left instanceof ColumnExp)) {
+                    log.warning("This database can't handle complex indexes. Aborting creation.",
+                        "ixName", createIndexClause.getName());
+                    return;
+                }
+            }
+            super.visit(createIndexClause);
         }
 
         protected HBuildVisitor (DepotTypes types)
@@ -184,7 +202,7 @@ public class HSQLBuilder
     protected void maybeMutateForGeneratedValue (GeneratedValue genValue, ColumnDefinition column)
     {
         // HSQL's IDENTITY() implementation does not take the form of a type, as MySQL's
-        // and PostgreSQL's conveniently shared SERIAL alias, nor as MySQL's original 
+        // and PostgreSQL's conveniently shared SERIAL alias, nor as MySQL's original
         // AUTO_INCREMENT modifier -- but as a default value, which admittedly makes sense
         switch (genValue.strategy()) {
         case AUTO:

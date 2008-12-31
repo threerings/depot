@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -24,7 +24,9 @@ import com.samskivert.depot.Key;
 import com.samskivert.depot.MultiKey;
 import com.samskivert.depot.PersistentRecord;
 
+import com.samskivert.depot.clause.CreateIndexClause;
 import com.samskivert.depot.clause.DeleteClause;
+import com.samskivert.depot.clause.DropIndexClause;
 import com.samskivert.depot.clause.FieldDefinition;
 import com.samskivert.depot.clause.ForUpdate;
 import com.samskivert.depot.clause.FromOverride;
@@ -81,4 +83,6 @@ public interface ExpressionVisitor
     public void visit (UpdateClause<? extends PersistentRecord> updateClause);
     public void visit (DeleteClause<? extends PersistentRecord> deleteClause);
     public void visit (InsertClause<? extends PersistentRecord> insertClause);
+    public void visit (CreateIndexClause<? extends PersistentRecord> createIndexClause);
+    public void visit (DropIndexClause<? extends PersistentRecord> dropIndexClause);
 }

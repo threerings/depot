@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -53,15 +53,16 @@ public abstract class SQLBuilder
 
     /**
      * Construct an entirely new SQL query relative to our configured {@link DepotTypes} data.
-     * This method may be called multiple times, each time beginning a new query, and should be
-     * followed up by a call to {@link #prepare(Connection)} which creates, configures and
-     * returns the actual {@link PreparedStatement} to execute.
+     * This method may be called multiple times, each time beginning a new query, and will return
+     * true if SQL was generated. If so, a call to {@link #prepare(Connection)} should follow,
+     * which creates, configures and returns the actual {@link PreparedStatement} to execute.
      */
-    public void newQuery (QueryClause clause)
+    public boolean newQuery (QueryClause clause)
     {
         _clause = clause;
         _buildVisitor = getBuildVisitor();
         _clause.accept(_buildVisitor);
+        return _buildVisitor.getQuery().trim().length() > 0;
     }
 
     /**

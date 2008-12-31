@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -32,7 +32,9 @@ import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.MultiKey;
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.clause.CreateIndexClause;
 import com.samskivert.depot.clause.DeleteClause;
+import com.samskivert.depot.clause.DropIndexClause;
 import com.samskivert.depot.clause.FieldDefinition;
 import com.samskivert.depot.clause.ForUpdate;
 import com.samskivert.depot.clause.FromOverride;
@@ -41,6 +43,7 @@ import com.samskivert.depot.clause.InsertClause;
 import com.samskivert.depot.clause.Join;
 import com.samskivert.depot.clause.Limit;
 import com.samskivert.depot.clause.OrderBy;
+import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.clause.SelectClause;
 import com.samskivert.depot.clause.UpdateClause;
 import com.samskivert.depot.clause.WhereClause;
@@ -59,6 +62,7 @@ import com.samskivert.depot.operator.SQLOperator.BinaryOperator;
 import com.samskivert.depot.operator.SQLOperator.MultiOperator;
 
 import com.samskivert.util.StringUtil;
+import com.samskivert.util.Tuple;
 
 /**
  * Implements the base functionality of the argument-binding pass of {@link SQLBuilder}. Dialectal
@@ -265,6 +269,18 @@ public class BindVisitor implements ExpressionVisitor
     public void visit (DeleteClause<? extends PersistentRecord> deleteClause)
     {
         deleteClause.getWhereClause().accept(this);
+    }
+
+    public void visit (CreateIndexClause<? extends PersistentRecord> createIndexClause)
+    {
+        for (Tuple<SQLExpression, Order> field : createIndexClause.getFields()) {
+            field.left.accept(this);
+        }
+    }
+
+    public void visit (DropIndexClause<? extends PersistentRecord> createIndexClause)
+    {
+        // do nothing
     }
 
     protected BindVisitor (DepotTypes types, Connection conn, PreparedStatement stmt)

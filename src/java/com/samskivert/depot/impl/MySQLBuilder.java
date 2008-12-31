@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -32,13 +32,18 @@ import java.sql.Timestamp;
 import java.util.Set;
 
 import com.samskivert.jdbc.JDBCUtil;
+import com.samskivert.util.Tuple;
 
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
+import com.samskivert.depot.clause.CreateIndexClause;
 import com.samskivert.depot.clause.DeleteClause;
+import com.samskivert.depot.clause.DropIndexClause;
+import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
+import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FieldMarshaller.BooleanMarshaller;
 import com.samskivert.depot.impl.FieldMarshaller.ByteArrayMarshaller;
 import com.samskivert.depot.impl.FieldMarshaller.ByteEnumMarshaller;
@@ -95,6 +100,30 @@ public class MySQLBuilder
             _builder.append("unix_timestamp(");
             epochSeconds.getArgument().accept(this);
             _builder.append(")");
+        }
+
+        @Override
+        public void visit (CreateIndexClause<? extends PersistentRecord> createIndexClause)
+        {
+            for (Tuple<SQLExpression, Order> field : createIndexClause.getFields()) {
+                if (!(field.left instanceof ColumnExp)) {
+                    log.warning("This database can't handle complex indexes. Aborting creation.",
+                        "ixName", createIndexClause.getName());
+                    return;
+                }
+            }
+            super.visit(createIndexClause);
+        }
+
+        @Override
+        public void visit (DropIndexClause<? extends PersistentRecord> dropIndexClause)
+        {
+            // MySQL's indexes are scoped on the table, not on the database, and the
+            // SQL syntax reflects it: DROP INDEX fooIx on fooTable
+            _builder.append("drop index ");
+            appendIdentifier(dropIndexClause.getName());
+            _builder.append(" on ");
+            appendTableName(dropIndexClause.getPersistentClass());
         }
 
         protected MSBuildVisitor (DepotTypes types)

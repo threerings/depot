@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -39,4 +39,11 @@ public @interface Index
 
     /** Defines the fields on which the index operates. */
     String[] fields () default {};
+
+    /** Whether or not this is a complex index. If true, a static method
+     * must be defined on the record that declares this index of the signature:
+     * <pre>public static List<Tuple<SQLExpression, OrderBy.Order>> indexNameExpression ()</pre>
+     * which should return the index's defining expressions and whether each one is ascending
+     * or descending. */
+    boolean complex () default false;
 }

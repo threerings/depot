@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -21,6 +21,7 @@
 package com.samskivert.depot.impl;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -30,6 +31,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,10 +55,17 @@ import com.samskivert.depot.annotation.Index;
 import com.samskivert.depot.annotation.TableGenerator;
 import com.samskivert.depot.annotation.Transient;
 import com.samskivert.depot.annotation.UniqueConstraint;
+import com.samskivert.depot.clause.CreateIndexClause;
+import com.samskivert.depot.clause.OrderBy.Order;
+import com.samskivert.depot.clause.QueryClause;
+import com.samskivert.depot.expression.ColumnExp;
+import com.samskivert.depot.expression.SQLExpression;
 
 import com.samskivert.jdbc.ColumnDefinition;
 import com.samskivert.jdbc.DatabaseLiaison;
+import com.samskivert.jdbc.JDBCUtil;
 import com.samskivert.util.ArrayUtil;
+import com.samskivert.util.Tuple;
 
 import static com.samskivert.depot.Log.log;
 
@@ -716,10 +725,11 @@ public class DepotMarshaller<T extends PersistentRecord>
                     declarations, uniqueConCols, primaryKeyColumns);
 
                 // add its indexen
-                for (Index idx : indexen) {
-                    liaison.addIndexToTable(
-                        conn, getTableName(), fieldsToColumns(idx.fields()),
-                        getTableName() + "_" + idx.name(), idx.unique());
+                for (Index index : indexen) {
+                    String ixName = getTableName() + "_" + index.name();
+                    execute(conn, builder, index.complex() ?
+                        buildComplexIndex(ixName, index.unique(), index.name()) :
+                        buildSimpleIndex(ixName, index.unique(), index.fields()));
                 }
 
                 // create our value generators
@@ -737,7 +747,22 @@ public class DepotMarshaller<T extends PersistentRecord>
         });
     }
 
-    protected TableMetaData runMigrations (PersistenceContext ctx, TableMetaData metaData,
+    protected int execute (Connection conn, SQLBuilder builder, QueryClause clause)
+        throws SQLException
+    {
+        if (builder.newQuery(clause)) {
+            PreparedStatement stmt = builder.prepare(conn);
+
+            try {
+                return stmt.executeUpdate();
+            } finally {
+                JDBCUtil.close(stmt);
+            }
+        }
+        return 0;
+    }
+
+    protected TableMetaData runMigrations (final PersistenceContext ctx, TableMetaData metaData,
                                            final SQLBuilder builder, int currentVersion)
         throws DatabaseException
     {
@@ -840,9 +865,9 @@ public class DepotMarshaller<T extends PersistentRecord>
             ctx.invoke(new Modifier() {
                 @Override
                 protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-                    liaison.addIndexToTable(
-                        conn, getTableName(), fieldsToColumns(index.fields()),
-                        ixName, index.unique());
+                    execute(conn, builder, index.complex() ?
+                        buildComplexIndex(ixName, index.unique(), index.name()) :
+                        buildSimpleIndex(ixName, index.unique(), index.fields()));
                     return 0;
                 }
             });
@@ -876,7 +901,9 @@ public class DepotMarshaller<T extends PersistentRecord>
             ctx.invoke(new Modifier() {
                 @Override
                 protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-                    liaison.addIndexToTable(conn, getTableName(), colArr, fName, true);
+                    if (!liaison.tableContainsIndex(conn, getTableName(), fName)) {
+                        execute(conn, builder, buildSimpleIndex(fName, true, colArr));
+                    }
                     return 0;
                 }
             });
@@ -951,6 +978,59 @@ public class DepotMarshaller<T extends PersistentRecord>
         }
 
         return metaData;
+    }
+
+    private CreateIndexClause<T> buildComplexIndex (String ixName, boolean unique, String localIxName)
+        throws SQLException
+    {
+        List<Tuple<SQLExpression, Order>> definition;
+        String methName = localIxName + "Definition";
+
+        Method method;
+        try {
+            method = _pClass.getMethod(methName);
+        } catch (NoSuchMethodException nsme) {
+            throw new IllegalArgumentException(
+                "Index flagged as complex, but no defining method '" + methName
+                + "' found.", nsme);
+        }
+
+        Object result;
+        try {
+            result = method.invoke(null);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                "Error calling index definition method '" + methName + "'", e);
+        }
+
+        if (result instanceof SQLExpression) {
+            definition = new ArrayList<Tuple<SQLExpression,Order>>();
+            definition.add(new Tuple<SQLExpression, Order>((SQLExpression)result, Order.ASC));
+
+        } else if (result instanceof List) {
+            @SuppressWarnings("unchecked")
+            List<Tuple<SQLExpression, Order>> def = (List<Tuple<SQLExpression, Order>>)result;
+            definition = def;
+
+        } else {
+            throw new IllegalArgumentException("Method '" + methName
+                + "' must return SQLExpression or " + "List<Tuple<SQLExpression, Order>>");
+        }
+
+        return new CreateIndexClause<T>(_pClass, ixName, unique, definition);
+    }
+
+    private CreateIndexClause<T> buildSimpleIndex (String ixName, boolean unique, String[] fields)
+        throws SQLException
+    {
+        List<Tuple<SQLExpression, Order>> definition = new ArrayList<Tuple<SQLExpression,Order>>();
+
+        for (String field : fields) {
+            ColumnExp column = new ColumnExp(_pClass, field);
+            definition.add(new Tuple<SQLExpression, Order>(column, Order.ASC));
+        }
+
+        return new CreateIndexClause<T>(_pClass, ixName, unique, definition);
     }
 
     // translate an array of field names to an array of column names
