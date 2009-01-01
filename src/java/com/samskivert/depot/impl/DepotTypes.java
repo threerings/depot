@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -61,7 +61,7 @@ public class DepotTypes
         PersistenceContext ctx, Collection<? extends QueryClause> clauses)
         throws DatabaseException
     {
-        Set<Class<? extends PersistentRecord>> classSet = Sets.newHashSet();
+        Set<Class<? extends PersistentRecord>> classSet = Sets.newLinkedHashSet();
         for (QueryClause clause : clauses) {
             if (clause != null) {
                 clause.addClasses(classSet);
