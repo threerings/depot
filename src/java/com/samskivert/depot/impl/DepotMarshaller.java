@@ -862,6 +862,7 @@ public class DepotMarshaller<T extends PersistentRecord>
                 continue;
             }
             // but this is a new, named index, so we create it
+            log.info("Creating new index: " + ixName);
             ctx.invoke(new Modifier() {
                 @Override
                 protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
