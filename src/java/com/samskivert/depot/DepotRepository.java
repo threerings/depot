@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -56,8 +56,8 @@ import com.samskivert.depot.impl.FindAllKeysQuery;
 import com.samskivert.depot.impl.FindAllQuery;
 import com.samskivert.depot.impl.FindOneQuery;
 import com.samskivert.depot.impl.Modifier;
-import com.samskivert.depot.impl.SQLBuilder;
 import com.samskivert.depot.impl.Modifier.*;
+import com.samskivert.depot.impl.SQLBuilder;
 
 import static com.samskivert.depot.Log.log;
 
@@ -67,6 +67,44 @@ import static com.samskivert.depot.Log.log;
  */
 public abstract class DepotRepository
 {
+    public enum CacheStrategy {
+        /** Completely bypass the cache for this query. */
+        NONE,
+
+        /** Use the {@link #KEYS} strategy if possible, else revert to {@link #NONE}. */
+        BEST,
+
+        /**
+         * Resolve this collection query in two steps: first we enumerate the primary keys for
+         * all the records that satisfy the query, then we acquire the actual requested data for
+         * each key. The cache is consulted and updated in both steps: for the first, see if we've
+         * already executed precisely this query and cached the resulting key set. For the second
+         * phase, searchthe cache for each key in said set, and retrieve the corresponding data
+         * record from there when possible. Finally execute a database query to retrieve the data
+         * for any keys that were not in the cache, making sure to cache them in the process.
+         *
+         * Note: There is currently no cache invalidation of collection queries. If records are
+         * inserted, deleted or modified, cached keysets will not be updated. The keyset cannot be
+         * guaranteed to be up to date. For sensitive operations, use Cache.NONE.
+         *
+         * Note: The KEYS strategy may not be used on @Computed records, for records that do not
+         * in fact have a primary key, or for queries that use @FieldOverrides.
+         */
+        KEYS,
+
+        /**
+         * This cache strategy is direct and explicit, eschewing the dual phases of the KEYS
+         * approach. However, before the database is invoked at all, we consult the cache hoping
+         * to find the entire result set already stashed away in there, using the entire query
+         * as the key. If we failed to find it, we execute the query and update the cache with the
+         * result.
+         *
+         * This strategy has none of the limitations of KEYS and can be used with key-less and
+         * @Computed records and arbitrarily complicated queries. Note however that as with KEYS,
+         * there is currently no automatic invalidation and it is potentially very memory intensive.
+         */
+        CONTENTS };
+
     /**
      * Creates a repository with the supplied persistence context. Any schema migrations needed by
      * this repository should be registered in its constructor. A repository should <em>not</em>
@@ -286,7 +324,7 @@ public abstract class DepotRepository
         Class<T> type, Collection<? extends QueryClause> clauses)
         throws DatabaseException
     {
-        return findAll(type, false, clauses);
+        return findAll(type, CacheStrategy.BEST, clauses);
     }
 
     /**
@@ -299,20 +337,45 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> List<T> findAll (
-        Class<T> type, boolean skipCache, Collection<? extends QueryClause> clauses)
+        Class<T> type, CacheStrategy cache, Collection<? extends QueryClause> clauses)
         throws DatabaseException
     {
         DepotMarshaller<T> marsh = _ctx.getMarshaller(type);
-        boolean useExplicit = skipCache || (marsh.getTableName() == null) ||
-            !marsh.hasPrimaryKey() || !_ctx.isUsingCache();
 
-        // queries on @Computed records or the presence of FieldOverrides use the simple algorithm
-        for (QueryClause clause : clauses) {
-            useExplicit |= (clause instanceof FieldOverride);
+        if (cache == CacheStrategy.KEYS || cache == CacheStrategy.BEST) {
+            String reason = null;
+            if (marsh.getTableName() == null) {
+                reason = type + " is computed";
+
+            } else if (!marsh.hasPrimaryKey()) {
+                reason = type + " has no primary key";
+
+            } else {
+                for (QueryClause clause : clauses) {
+                    if (clause instanceof FieldOverride) {
+                        reason = "query uses a FieldOverride clause";
+                        break;
+                    }
+                }
+            }
+            if (cache == CacheStrategy.BEST) {
+                cache = (reason != null) ? CacheStrategy.NONE : CacheStrategy.KEYS;
+
+            } else if (reason != null) {
+                // if user explicitly asked for the KEYS strategy and we can't do it, protest
+                throw new IllegalArgumentException("Cannot use KEYS strategy because " + reason);
+            }
         }
 
-        return _ctx.invoke(useExplicit ? new FindAllQuery.Explicitly<T>(_ctx, type, clauses) :
-                           new FindAllQuery.WithCache<T>(_ctx, type, clauses));
+        if (!_ctx.isUsingCache()) {
+            cache = CacheStrategy.NONE;
+        }
+
+        if (cache == CacheStrategy.KEYS) {
+            return _ctx.invoke(new FindAllQuery.WithCache<T>(_ctx, type, clauses));
+        }
+        return _ctx.invoke(new FindAllQuery.Explicitly<T>(
+                _ctx, type, clauses, cache == CacheStrategy.CONTENTS));
     }
 
     /**
@@ -423,7 +486,7 @@ public abstract class DepotRepository
             throw new IllegalArgumentException("Can't update record with null primary key.");
         }
 
-        UpdateClause<T> update = 
+        UpdateClause<T> update =
             new UpdateClause<T>(pClass, key, marsh.getColumnFieldNames(), record);
         final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, update));
         builder.newQuery(update);

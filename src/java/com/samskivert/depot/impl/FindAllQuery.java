@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -60,7 +60,7 @@ import static com.samskivert.depot.Log.log;
 public abstract class FindAllQuery<T extends PersistentRecord> extends Query<List<T>>
 {
     /**
-     * The two-pass collection query implementation. See {@link DepotRepository#findAll} for 
+     * The two-pass collection query implementation. See {@link DepotRepository#findAll} for
      * details.
      */
     public static class WithCache<T extends PersistentRecord> extends FindAllQuery<T>
@@ -83,7 +83,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             }
 
             _select = new SelectClause<T>(_type, _marsh.getPrimaryKeyFields(), clauses);
-            _qkey = new SimpleCacheKey(_marsh.getTableName() + "Query", _select.toString());
+            _qkey = new SimpleCacheKey(_marsh.getTableName() + "Keys", _select.toString());
         }
 
         @Override // from Query
@@ -148,7 +148,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
     }
 
     /**
-     * The two-pass collection query implementation. See {@link DepotRepository#findAll} for 
+     * The two-pass collection query implementation. See {@link DepotRepository#findAll} for
      * details.
      */
     public static class WithKeys<T extends PersistentRecord> extends FindAllQuery<T>
@@ -183,24 +183,34 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
     }
 
     /**
-     * The single-pass collection query implementation. See {@link DepotRepository#findAll} for 
+     * The single-pass collection query implementation. See {@link DepotRepository#findAll} for
      * details.
      */
     public static class Explicitly<T extends PersistentRecord> extends FindAllQuery<T>
     {
         public Explicitly (PersistenceContext ctx, Class<T> type,
-                           Collection<? extends QueryClause> clauses)
+                           Collection<? extends QueryClause> clauses, boolean cachedContents)
             throws DatabaseException
         {
             super(ctx, type);
+
             _select = new SelectClause<T>(type, _marsh.getFieldNames(), clauses);
+
+            if (cachedContents) {
+                _qkey = new SimpleCacheKey(_marsh.getTableName() + "Contents", _select.toString());
+            } else {
+                _qkey = null;
+            }
         }
 
         @Override // from Query
         public List<T> getCachedResult (PersistenceContext ctx)
         {
-            return null; // TODO: we could cache all the records as one giant list but that would
-                         // not play nicely when records were evicted from the cache by primary key
+            if (_qkey != null) {
+                _cachedQueries++;
+                return ctx.cacheLookup(_qkey);
+            }
+            return null;
         }
 
         // from Query
@@ -221,12 +231,17 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             }
             _explicitQueries++;
             if (PersistenceContext.CACHE_DEBUG) {
-                log.info("Loaded " + _marsh.getTableName(), "query", _select, "rows", result.size());
+                log.info("Loaded " + _marsh.getTableName(), "query", _select, "rows",
+                    result.size(), "cacheKey", _qkey);
             }
-            return result; // TODO: do we want to cache these results?
+            if (_qkey != null) {
+                ctx.cacheStore(_qkey, result); // cache the entire result set
+            }
+            return result;
         }
 
         protected SelectClause<T> _select;
+        protected SimpleCacheKey _qkey;
     }
 
     // from Query
