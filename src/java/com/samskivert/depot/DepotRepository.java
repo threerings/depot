@@ -79,7 +79,7 @@ public abstract class DepotRepository
          * all the records that satisfy the query, then we acquire the actual requested data for
          * each key. The cache is consulted and updated in both steps: for the first, see if we've
          * already executed precisely this query and cached the resulting key set. For the second
-         * phase, searchthe cache for each key in said set, and retrieve the corresponding data
+         * phase, search the cache for each key in said set, and retrieve the corresponding data
          * record from there when possible. Finally execute a database query to retrieve the data
          * for any keys that were not in the cache, making sure to cache them in the process.
          *
@@ -103,7 +103,8 @@ public abstract class DepotRepository
          * @Computed records and arbitrarily complicated queries. Note however that as with KEYS,
          * there is currently no automatic invalidation and it is potentially very memory intensive.
          */
-        CONTENTS };
+        CONTENTS
+    };
 
     /**
      * Creates a repository with the supplied persistence context. Any schema migrations needed by
