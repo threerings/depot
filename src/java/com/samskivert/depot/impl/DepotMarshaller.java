@@ -31,8 +31,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -949,7 +947,6 @@ public class DepotMarshaller<T extends PersistentRecord>
             throw new IllegalArgumentException(
                 "Index flagged as complex, but no defining method '" + name + "' found.", nsme);
         }
-        Object result;
         try {
             return buildIndex(name, unique, method.invoke(null));
         } catch (Exception e) {

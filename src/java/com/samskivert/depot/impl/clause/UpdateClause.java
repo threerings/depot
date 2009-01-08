@@ -25,7 +25,6 @@ import java.util.Collection;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.WhereClause;
-import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 
 import com.samskivert.depot.impl.ExpressionVisitor;
