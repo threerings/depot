@@ -41,6 +41,13 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import com.samskivert.util.ArrayUtil;
+import com.samskivert.util.Tuple;
+
+import com.samskivert.jdbc.ColumnDefinition;
+import com.samskivert.jdbc.DatabaseLiaison;
+import com.samskivert.jdbc.JDBCUtil;
+
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistenceContext;
@@ -57,17 +64,12 @@ import com.samskivert.depot.annotation.Index;
 import com.samskivert.depot.annotation.TableGenerator;
 import com.samskivert.depot.annotation.Transient;
 import com.samskivert.depot.annotation.UniqueConstraint;
-import com.samskivert.depot.clause.CreateIndexClause;
 import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 
-import com.samskivert.jdbc.ColumnDefinition;
-import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.jdbc.JDBCUtil;
-import com.samskivert.util.ArrayUtil;
-import com.samskivert.util.Tuple;
+import com.samskivert.depot.impl.clause.CreateIndexClause;
 
 import static com.samskivert.depot.Log.log;
 

@@ -18,19 +18,23 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.clause;
+package com.samskivert.depot.impl.clause;
 
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.clause.QueryClause;
+import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
+
 import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
  * Builds actual SQL given a main persistent type and some {@link QueryClause} objects.
  */
-public class UpdateClause<T extends PersistentRecord> implements QueryClause
+public class UpdateClause<T extends PersistentRecord>
+    implements QueryClause
 {
     public UpdateClause (Class<? extends PersistentRecord> pClass, WhereClause where,
                          String[] fields, T pojo)

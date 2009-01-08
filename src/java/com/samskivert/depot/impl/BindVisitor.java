@@ -27,14 +27,15 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
 
+import com.samskivert.util.StringUtil;
+import com.samskivert.util.Tuple;
+
 import com.samskivert.depot.ByteEnum;
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.MultiKey;
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.clause.CreateIndexClause;
-import com.samskivert.depot.clause.DeleteClause;
-import com.samskivert.depot.clause.DropIndexClause;
+
 import com.samskivert.depot.clause.FieldDefinition;
 import com.samskivert.depot.clause.ForUpdate;
 import com.samskivert.depot.clause.FromOverride;
@@ -42,17 +43,18 @@ import com.samskivert.depot.clause.GroupBy;
 import com.samskivert.depot.clause.InsertClause;
 import com.samskivert.depot.clause.Join;
 import com.samskivert.depot.clause.Limit;
-import com.samskivert.depot.clause.OrderBy;
 import com.samskivert.depot.clause.OrderBy.Order;
+import com.samskivert.depot.clause.OrderBy;
 import com.samskivert.depot.clause.SelectClause;
-import com.samskivert.depot.clause.UpdateClause;
 import com.samskivert.depot.clause.WhereClause;
+
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.expression.FunctionExp;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.ValueExp;
+
 import com.samskivert.depot.operator.Conditionals.Exists;
 import com.samskivert.depot.operator.Conditionals.FullTextMatch;
 import com.samskivert.depot.operator.Conditionals.In;
@@ -61,8 +63,10 @@ import com.samskivert.depot.operator.Logic.Not;
 import com.samskivert.depot.operator.SQLOperator.BinaryOperator;
 import com.samskivert.depot.operator.SQLOperator.MultiOperator;
 
-import com.samskivert.util.StringUtil;
-import com.samskivert.util.Tuple;
+import com.samskivert.depot.impl.clause.CreateIndexClause;
+import com.samskivert.depot.impl.clause.DeleteClause;
+import com.samskivert.depot.impl.clause.DropIndexClause;
+import com.samskivert.depot.impl.clause.UpdateClause;
 
 /**
  * Implements the base functionality of the argument-binding pass of {@link SQLBuilder}. Dialectal

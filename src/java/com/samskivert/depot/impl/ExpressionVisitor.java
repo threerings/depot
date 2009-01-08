@@ -24,9 +24,6 @@ import com.samskivert.depot.Key;
 import com.samskivert.depot.MultiKey;
 import com.samskivert.depot.PersistentRecord;
 
-import com.samskivert.depot.clause.CreateIndexClause;
-import com.samskivert.depot.clause.DeleteClause;
-import com.samskivert.depot.clause.DropIndexClause;
 import com.samskivert.depot.clause.FieldDefinition;
 import com.samskivert.depot.clause.ForUpdate;
 import com.samskivert.depot.clause.FromOverride;
@@ -36,8 +33,8 @@ import com.samskivert.depot.clause.Join;
 import com.samskivert.depot.clause.Limit;
 import com.samskivert.depot.clause.OrderBy;
 import com.samskivert.depot.clause.SelectClause;
-import com.samskivert.depot.clause.UpdateClause;
 import com.samskivert.depot.clause.WhereClause;
+
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.expression.FunctionExp;
@@ -51,6 +48,11 @@ import com.samskivert.depot.operator.Conditionals.FullTextMatch;
 import com.samskivert.depot.operator.Logic.Not;
 import com.samskivert.depot.operator.SQLOperator.BinaryOperator;
 import com.samskivert.depot.operator.SQLOperator.MultiOperator;
+
+import com.samskivert.depot.impl.clause.CreateIndexClause;
+import com.samskivert.depot.impl.clause.DeleteClause;
+import com.samskivert.depot.impl.clause.DropIndexClause;
+import com.samskivert.depot.impl.clause.UpdateClause;
 
 /**
  * Enumerates visitation methods for every possible SQL expression type.

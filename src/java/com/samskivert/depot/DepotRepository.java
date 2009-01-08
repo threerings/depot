@@ -41,15 +41,14 @@ import com.samskivert.jdbc.ConnectionProvider;
 import com.samskivert.jdbc.DatabaseLiaison;
 import com.samskivert.jdbc.JDBCUtil;
 
-import com.samskivert.depot.clause.DeleteClause;
 import com.samskivert.depot.clause.FieldOverride;
 import com.samskivert.depot.clause.InsertClause;
 import com.samskivert.depot.clause.QueryClause;
-import com.samskivert.depot.clause.UpdateClause;
 import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.ValueExp;
+
 import com.samskivert.depot.impl.DepotMarshaller;
 import com.samskivert.depot.impl.DepotMigrationHistoryRecord;
 import com.samskivert.depot.impl.DepotTypes;
@@ -59,6 +58,8 @@ import com.samskivert.depot.impl.FindOneQuery;
 import com.samskivert.depot.impl.Modifier.*;
 import com.samskivert.depot.impl.Modifier;
 import com.samskivert.depot.impl.SQLBuilder;
+import com.samskivert.depot.impl.clause.DeleteClause;
+import com.samskivert.depot.impl.clause.UpdateClause;
 
 import static com.samskivert.depot.Log.log;
 

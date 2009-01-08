@@ -43,7 +43,6 @@ import com.samskivert.util.Tuple;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.annotation.GeneratedValue;
-import com.samskivert.depot.clause.CreateIndexClause;
 import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
@@ -55,6 +54,8 @@ import com.samskivert.depot.operator.Conditionals.FullTextMatch;
 import com.samskivert.depot.operator.Conditionals.Like;
 import com.samskivert.depot.operator.Logic.Or;
 import com.samskivert.depot.operator.SQLOperator.BinaryOperator;
+
+import com.samskivert.depot.impl.clause.CreateIndexClause;
 
 public class HSQLBuilder
     extends SQLBuilder

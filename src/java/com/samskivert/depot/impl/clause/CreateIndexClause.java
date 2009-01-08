@@ -1,9 +1,9 @@
 //
-// $Id$
+// $Id: $
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -18,22 +18,37 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.clause;
+package com.samskivert.depot.impl.clause;
 
 import java.util.Collection;
+import java.util.List;
+
+import com.samskivert.util.Tuple;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.clause.OrderBy.Order;
+import com.samskivert.depot.clause.QueryClause;
+import com.samskivert.depot.expression.SQLExpression;
+
 import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
- * Builds actual SQL given a main persistent type and some {@link QueryClause} objects.
+ * Represents an CREATE INDEX instruction to the database.
  */
-public class DeleteClause implements QueryClause
+public class CreateIndexClause
+    implements QueryClause
 {
-    public DeleteClause (Class<? extends PersistentRecord> pClass, WhereClause where)
+    /**
+     * Create a new {@link CreateIndexClause} clause. The name must be unique within the relevant
+     * database.
+     */
+    public CreateIndexClause (Class<? extends PersistentRecord> pClass, String name, boolean unique,
+                              List<Tuple<SQLExpression, Order>> fields)
     {
         _pClass = pClass;
-        _where = where;
+        _name = name;
+        _unique = unique;
+        _fields = fields;
     }
 
     public Class<? extends PersistentRecord> getPersistentClass ()
@@ -41,9 +56,19 @@ public class DeleteClause implements QueryClause
         return _pClass;
     }
 
-    public WhereClause getWhereClause ()
+    public String getName ()
     {
-        return _where;
+        return _name;
+    }
+
+    public boolean isUnique ()
+    {
+        return _unique;
+    }
+
+    public List<Tuple<SQLExpression,Order>> getFields ()
+    {
+        return _fields;
     }
 
     // from SQLExpression
@@ -58,9 +83,10 @@ public class DeleteClause implements QueryClause
         builder.visit(this);
     }
 
-    /** The type of persistent record on which we operate. */
     protected Class<? extends PersistentRecord> _pClass;
+    protected String _name;
+    protected boolean _unique;
 
-    /** The where clause. */
-    protected WhereClause _where;
+    /** The components of the index, e.g. columns or functions of columns. */
+    protected List<Tuple<SQLExpression,Order>> _fields;
 }

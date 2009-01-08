@@ -1,9 +1,9 @@
 //
-// $Id: $
+// $Id$
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-//
+// 
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -18,22 +18,26 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.clause;
+package com.samskivert.depot.impl.clause;
 
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.clause.QueryClause;
+import com.samskivert.depot.clause.WhereClause;
+
 import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
- * Represents an DROP INDEX instruction to the database.
+ * Builds actual SQL given a main persistent type and some {@link QueryClause} objects.
  */
-public class DropIndexClause<T extends PersistentRecord> implements QueryClause
+public class DeleteClause
+    implements QueryClause
 {
-    public DropIndexClause (Class<? extends PersistentRecord> pClass, String name)
+    public DeleteClause (Class<? extends PersistentRecord> pClass, WhereClause where)
     {
         _pClass = pClass;
-        _name = name;
+        _where = where;
     }
 
     public Class<? extends PersistentRecord> getPersistentClass ()
@@ -41,9 +45,9 @@ public class DropIndexClause<T extends PersistentRecord> implements QueryClause
         return _pClass;
     }
 
-    public String getName ()
+    public WhereClause getWhereClause ()
     {
-        return _name;
+        return _where;
     }
 
     // from SQLExpression
@@ -58,7 +62,9 @@ public class DropIndexClause<T extends PersistentRecord> implements QueryClause
         builder.visit(this);
     }
 
+    /** The type of persistent record on which we operate. */
     protected Class<? extends PersistentRecord> _pClass;
 
-    protected String _name;
+    /** The where clause. */
+    protected WhereClause _where;
 }

@@ -37,13 +37,12 @@ import com.samskivert.util.Tuple;
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
-import com.samskivert.depot.clause.CreateIndexClause;
-import com.samskivert.depot.clause.DeleteClause;
-import com.samskivert.depot.clause.DropIndexClause;
 import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.operator.Conditionals.FullTextMatch;
+
 import com.samskivert.depot.impl.FieldMarshaller.BooleanMarshaller;
 import com.samskivert.depot.impl.FieldMarshaller.ByteArrayMarshaller;
 import com.samskivert.depot.impl.FieldMarshaller.ByteEnumMarshaller;
@@ -55,7 +54,9 @@ import com.samskivert.depot.impl.FieldMarshaller.IntMarshaller;
 import com.samskivert.depot.impl.FieldMarshaller.LongMarshaller;
 import com.samskivert.depot.impl.FieldMarshaller.ObjectMarshaller;
 import com.samskivert.depot.impl.FieldMarshaller.ShortMarshaller;
-import com.samskivert.depot.operator.Conditionals.FullTextMatch;
+import com.samskivert.depot.impl.clause.CreateIndexClause;
+import com.samskivert.depot.impl.clause.DeleteClause;
+import com.samskivert.depot.impl.clause.DropIndexClause;
 
 import static com.samskivert.Log.log;
 
