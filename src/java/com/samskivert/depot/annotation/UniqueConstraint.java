@@ -25,15 +25,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation is used to specify that a unique constraint is to be included in the
- * generated DDL for a table.
+ * Used to specify a uniqueness constraint on a set of columns. If you want a single column to be
+ * unique, simply use {@link Column#unique}.
  */
 @Target(value={})
 @Retention(value=RetentionPolicy.RUNTIME)
 public @interface UniqueConstraint
 {
-    /**
-     * An array of the field names that make up the constraint
-     */
-    public String[] fieldNames () default {};
+    /** The name of the index that will be created to enforce this constraint. */
+    String name ();
+
+    /** An array of the field names that make up the constraint */
+    String[] fields ();
 }

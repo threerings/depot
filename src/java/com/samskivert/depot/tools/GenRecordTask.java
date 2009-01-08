@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -254,29 +255,24 @@ public class GenRecordTask extends Task
 
         // generate our fields section
         StringBuilder fsection = new StringBuilder();
+
+        // add our prototype declaration
+        VelocityContext ctx = new VelocityContext();
+        ctx.put("record", rname);
+        fsection.append(mergeTemplate(PROTO_TMPL, ctx));
+
+        // add our ColumnExp constants
         for (int ii = 0; ii < flist.size(); ii++) {
             Field f = flist.get(ii);
             String fname = f.getName();
 
             // create our velocity context
-            VelocityContext ctx = new VelocityContext();
-            ctx.put("record", rname);
-            ctx.put("field", fname);
-            ctx.put("capfield", StringUtil.unStudlyName(fname).toUpperCase());
+            VelocityContext fctx = (VelocityContext)ctx.clone();
+            fctx.put("field", fname);
+            fctx.put("capfield", StringUtil.unStudlyName(fname).toUpperCase());
 
             // now generate our bits
-            if (declared.contains(f)) {
-                if (fsection.length() > 0) {
-                    fsection.append("\n");
-                }
-                fsection.append(mergeTemplate(NAME_TMPL, ctx));
-            }
-            if (!isAbstract) {
-                if (fsection.length() > 0) {
-                    fsection.append("\n");
-                }
-                fsection.append(mergeTemplate(COL_TMPL, ctx));
-            }
+            fsection.append(mergeTemplate(COL_TMPL, fctx));
         }
 
         // generate our methods section
@@ -284,10 +280,6 @@ public class GenRecordTask extends Task
 
         // add a getKey() method, if applicable
         if (kflist.size() > 0) {
-            // create our velocity context
-            VelocityContext ctx = new VelocityContext();
-            ctx.put("record", rname);
-
             StringBuilder argList = new StringBuilder();
             StringBuilder argNameList = new StringBuilder();
             StringBuilder fieldNameList = new StringBuilder();
@@ -470,7 +462,7 @@ public class GenRecordTask extends Task
     protected Class<?> _prclass;
 
     /** Specifies the path to the name code template. */
-    protected static final String NAME_TMPL = "com/samskivert/depot/tools/record_name.tmpl";
+    protected static final String PROTO_TMPL = "com/samskivert/depot/tools/record_proto.tmpl";
 
     /** Specifies the path to the column code template. */
     protected static final String COL_TMPL = "com/samskivert/depot/tools/record_column.tmpl";

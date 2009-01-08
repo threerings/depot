@@ -28,6 +28,7 @@ import java.util.Map;
 import com.google.common.collect.Maps;
 
 import com.samskivert.depot.clause.WhereClause;
+import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.DepotMarshaller;
 import com.samskivert.depot.impl.DepotUtil;
@@ -71,33 +72,42 @@ public class Key<T extends PersistentRecord> extends WhereClause
     /**
      * Constructs a new single-column {@code Key} with the given value.
      */
-    public Key (Class<T> pClass, String ix, Comparable<?> val)
+    public Key (Class<T> pClass, ColumnExp ix, Comparable<?> val)
     {
-        this(pClass, new String[] { ix }, new Comparable[] { val });
+        this(pClass, new ColumnExp[] { ix }, new Comparable[] { val });
     }
 
     /**
      * Constructs a new two-column {@code Key} with the given values.
      */
-    public Key (Class<T> pClass, String ix1, Comparable<?> val1,
-                String ix2, Comparable<?> val2)
+    public Key (Class<T> pClass, ColumnExp ix1, Comparable<?> val1,
+                ColumnExp ix2, Comparable<?> val2)
     {
-        this(pClass, new String[] { ix1, ix2 }, new Comparable[] { val1, val2 });
+        this(pClass, new ColumnExp[] { ix1, ix2 }, new Comparable[] { val1, val2 });
     }
 
     /**
      * Constructs a new three-column {@code Key} with the given values.
      */
-    public Key (Class<T> pClass, String ix1, Comparable<?> val1,
-                String ix2, Comparable<?> val2, String ix3, Comparable<?> val3)
+    public Key (Class<T> pClass, ColumnExp ix1, Comparable<?> val1,
+                ColumnExp ix2, Comparable<?> val2, ColumnExp ix3, Comparable<?> val3)
     {
-        this(pClass, new String[] { ix1, ix2, ix3 }, new Comparable[] { val1, val2, val3 });
+        this(pClass, new ColumnExp[] { ix1, ix2, ix3 }, new Comparable[] { val1, val2, val3 });
+    }
+
+    /**
+     * TEMP: legacy foo bar!
+     */
+    public Key (Class<T> pClass, String[] fields, Comparable<?>[] values)
+    {
+        _pClass = pClass;
+        _values = values;
     }
 
     /**
      * Constructs a new multi-column {@code Key} with the given values.
      */
-    public Key (Class<T> pClass, String[] fields, Comparable<?>[] values)
+    public Key (Class<T> pClass, ColumnExp[] fields, Comparable<?>[] values)
     {
         if (fields.length != values.length) {
             throw new IllegalArgumentException("Field and Value arrays must be of equal length.");
@@ -109,7 +119,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
         // build a local map of field name -> field value
         Map<String, Comparable<?>> map = Maps.newHashMap();
         for (int i = 0; i < fields.length; i ++) {
-            map.put(fields[i], values[i]);
+            map.put(fields[i].name, values[i]);
         }
 
         // look up the cached primary key fields for this object
@@ -138,9 +148,10 @@ public class Key<T extends PersistentRecord> extends WhereClause
     }
 
     /**
-     * Used to create a key when you know you have the canonical values array.
+     * Used to create a key when you know you have the canonical values array. Don't call this
+     * unless you know what you're doing!
      */
-    protected Key (Class<T> pClass, Comparable<?>[] values)
+    public Key (Class<T> pClass, Comparable<?>[] values)
     {
         _pClass = pClass;
         _values = values;

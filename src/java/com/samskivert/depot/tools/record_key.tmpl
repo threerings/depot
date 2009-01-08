@@ -6,6 +6,6 @@
     {
         return new Key<${record}>(
                 ${record}.class,
-                new String[] { $fieldNameList },
+                new ColumnExp[] { $fieldNameList },
                 new Comparable[] { $argNameList });
     }

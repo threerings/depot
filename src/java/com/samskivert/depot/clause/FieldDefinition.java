@@ -55,6 +55,12 @@ public class FieldDefinition implements QueryClause
         _definition = override;
     }
 
+    public FieldDefinition (ColumnExp field, SQLExpression override)
+    {
+        _field = field.name;
+        _definition = override;
+    }
+
     /**
      * The field we're defining. The Query object uses this for indexing.
      */

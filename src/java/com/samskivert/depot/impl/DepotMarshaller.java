@@ -31,7 +31,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,6 +47,7 @@ import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.SchemaMigration;
 import com.samskivert.depot.Stats;
+import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.annotation.Entity;
 import com.samskivert.depot.annotation.FullTextIndex;
@@ -194,6 +196,20 @@ public class DepotMarshaller<T extends PersistentRecord>
                 }
             }
 
+            // check whether this field is indexed
+            Index index = field.getAnnotation(Index.class);
+            if (index != null) {
+                String ixName = index.name().equals("") ? field.getName() + "Index" : index.name();
+                _indexes.add(buildIndex(ixName, index.unique(),
+                                        new ColumnExp(_pClass, field.getName())));
+            }
+
+            // if this column is marked as unique, that also means we create an index
+            Column column = field.getAnnotation(Column.class);
+            if (column != null && column.unique()) {
+                _indexes.add(buildIndex(field.getName() + "Index", true,
+                                        new ColumnExp(_pClass, field.getName())));
+            }
         }
 
         // if we did not find a schema version field, freak out (but not for computed records, for
@@ -207,32 +223,30 @@ public class DepotMarshaller<T extends PersistentRecord>
         _allFields = fields.toArray(new String[fields.size()]);
 
         // now check for @Entity annotations on the entire superclass chain
-        Class<?> iterClass = pClass;
+        Class<? extends PersistentRecord> iterClass = pClass.asSubclass(PersistentRecord.class);
         do {
             entity = iterClass.getAnnotation(Entity.class);
             if (entity != null) {
+                // add any indices needed for uniqueness constraints
                 for (UniqueConstraint constraint : entity.uniqueConstraints()) {
-                    String[] conFields = constraint.fieldNames();
-                    Set<String> colSet = Sets.newHashSet();
-                    for (int ii = 0; ii < conFields.length; ii ++) {
-                        FieldMarshaller<?> fm = _fields.get(conFields[ii]);
+                    List<ColumnExp> colExps = Lists.newArrayList();
+                    for (String field : constraint.fields()) {
+                        FieldMarshaller<?> fm = _fields.get(field);
                         if (fm == null) {
                             throw new IllegalArgumentException(
-                                "Unknown unique constraint field: " + conFields[ii]);
+                                "Unknown unique constraint field: " + field);
                         }
-                        colSet.add(fm.getColumnName());
+                        colExps.add(new ColumnExp(_pClass, field));
                     }
-                    _uniqueConstraints.add(colSet);
+                    _indexes.add(buildIndex(constraint.name(), true, colExps));
                 }
 
+                // add any explicit multicolumn or complex indices
                 for (Index index : entity.indices()) {
-                    if (_indexes.containsKey(index.name())) {
-                        continue;
-                    }
-                    _indexes.put(index.name(), index);
+                    _indexes.add(buildIndex(index.name(), index.unique()));
                 }
 
-                // if there are FTS indexes in the Table, map those out here for future use
+                // note any FTS indices
                 for (FullTextIndex fti : entity.fullTextIndices()) {
                     if (_fullTextIndexes.containsKey(fti.name())) {
                         continue;
@@ -241,7 +255,7 @@ public class DepotMarshaller<T extends PersistentRecord>
                 }
             }
 
-            iterClass = iterClass.getSuperclass();
+            iterClass = iterClass.getSuperclass().asSubclass(PersistentRecord.class);
 
         } while (PersistentRecord.class.isAssignableFrom(iterClass) &&
                  !PersistentRecord.class.equals(iterClass));
@@ -385,7 +399,7 @@ public class DepotMarshaller<T extends PersistentRecord>
 
             // make sure the keys are all null or all non-null
             if (nulls == 0) {
-                return makePrimaryKey(values);
+                return new Key<T>(_pClass, values);
             } else if (nulls == values.length) {
                 return null;
             } else if (nulls == zeros) {
@@ -394,7 +408,7 @@ public class DepotMarshaller<T extends PersistentRecord>
                 // this is a compromise that allows sensible things like (id=99, type=0) but
                 // unfortunately also allows less sensible things like (id=0, type=5) while
                 // continuing to disallow the dangerous (id=0)
-                return makePrimaryKey(values);
+                return new Key<T>(_pClass, values);
             }
 
             // throw an informative error message
@@ -413,19 +427,15 @@ public class DepotMarshaller<T extends PersistentRecord>
 
     /**
      * Creates a primary key record for the type of object handled by this marshaller, using the
-     * supplied primary key value.
+     * supplied primary key value. This is only allowed for records with single column keys.
      */
-    public Key<T> makePrimaryKey (Comparable<?>... values)
+    public Key<T> makePrimaryKey (Comparable<?> value)
     {
         if (!hasPrimaryKey()) {
             throw new UnsupportedOperationException(
                 getClass().getName() + " does not define a primary key");
         }
-        String[] fields = new String[_pkColumns.size()];
-        for (int ii = 0; ii < _pkColumns.size(); ii++) {
-            fields[ii] = _pkColumns.get(ii).getField().getName();
-        }
-        return new Key<T>(_pClass, fields, values);
+        return new Key<T>(_pClass, new Comparable<?>[] { value });
     }
 
     /**
@@ -448,7 +458,7 @@ public class DepotMarshaller<T extends PersistentRecord>
             }
             values[ii] = (Comparable<?>) keyValue;
         }
-        return makePrimaryKey(values);
+        return new Key<T>(_pClass, values);
     }
 
     /**
@@ -703,12 +713,6 @@ public class DepotMarshaller<T extends PersistentRecord>
     {
         log.info("Creating initial table '" + getTableName() + "'.");
 
-        final String[][] uniqueConCols = new String[_uniqueConstraints.size()][];
-        int kk = 0;
-        for (Set<String> colSet : _uniqueConstraints) {
-            uniqueConCols[kk++] = colSet.toArray(new String[colSet.size()]);
-        }
-        final Iterable<Index> indexen = _indexes.values();
         ctx.invoke(new Modifier() {
             @Override
             protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
@@ -722,14 +726,11 @@ public class DepotMarshaller<T extends PersistentRecord>
                 }
                 liaison.createTableIfMissing(
                     conn, getTableName(), fieldsToColumns(_columnFields),
-                    declarations, uniqueConCols, primaryKeyColumns);
+                    declarations, null, primaryKeyColumns);
 
                 // add its indexen
-                for (Index index : indexen) {
-                    String ixName = getTableName() + "_" + index.name();
-                    execute(conn, builder, index.complex() ?
-                        buildComplexIndex(ixName, index.unique(), index.name()) :
-                        buildSimpleIndex(ixName, index.unique(), index.fields()));
+                for (CreateIndexClause iclause : _indexes) {
+                    execute(conn, builder, iclause);
                 }
 
                 // create our value generators
@@ -752,7 +753,6 @@ public class DepotMarshaller<T extends PersistentRecord>
     {
         if (builder.newQuery(clause)) {
             PreparedStatement stmt = builder.prepare(conn);
-
             try {
                 return stmt.executeUpdate();
             } finally {
@@ -782,9 +782,6 @@ public class DepotMarshaller<T extends PersistentRecord>
             // we don't know what the pre-migrations did so we have to re-read metadata
             metaData = TableMetaData.load(ctx, getTableName());
         }
-
-        // this is a little silly, but we need a copy for name disambiguation later
-        Set<String> indicesCopy = Sets.newHashSet(metaData.indexColumns.keySet());
 
         // figure out which columns we have in the table now, so that when all is said and done we
         // can see what new columns we have in the table and run the creation code for any value
@@ -854,57 +851,17 @@ public class DepotMarshaller<T extends PersistentRecord>
         }
 
         // add any named indices that exist on the record but not yet on the table
-        for (final Index index : _indexes.values()) {
-            final String ixName = getTableName() + "_" + index.name();
-            if (metaData.indexColumns.containsKey(ixName)) {
-                // this index already exists
-                metaData.indexColumns.remove(ixName);
+        for (final CreateIndexClause iclause : _indexes) {
+            if (metaData.indexColumns.containsKey(iclause.getName())) {
+                metaData.indexColumns.remove(iclause.getName()); // this index already exists
                 continue;
             }
             // but this is a new, named index, so we create it
-            log.info("Creating new index: " + ixName);
+            log.info("Creating new index: " + iclause.getName());
             ctx.invoke(new Modifier() {
                 @Override
                 protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-                    execute(conn, builder, index.complex() ?
-                        buildComplexIndex(ixName, index.unique(), index.name()) :
-                        buildSimpleIndex(ixName, index.unique(), index.fields()));
-                    return 0;
-                }
-            });
-        }
-
-        // now check if there are any @Entity(uniqueConstraints) that need to be created
-        Set<Set<String>> uniqueIndices = Sets.newHashSet(metaData.indexColumns.values());
-
-        // unique constraints are unordered and may be unnamed, so we view them only as column sets
-        for (Set<String> colSet : _uniqueConstraints) {
-            if (uniqueIndices.contains(colSet)) {
-                // the table already contains precisely this column set
-                continue;
-            }
-
-            // else build the new constraint; we'll name it after one of its columns, adding _N
-            // to resolve any possible ambiguities, because using all the column names in the
-            // index name may exceed the maximum length of an SQL identifier
-            String indexName = colSet.iterator().next();
-            if (indicesCopy.contains(indexName)) {
-                int num = 1;
-                indexName += "_";
-                while (indicesCopy.contains(indexName + num)) {
-                    num ++;
-                }
-                indexName += num;
-            }
-
-            final String[] colArr = colSet.toArray(new String[colSet.size()]);
-            final String fName = indexName;
-            ctx.invoke(new Modifier() {
-                @Override
-                protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-                    if (!liaison.tableContainsIndex(conn, getTableName(), fName)) {
-                        execute(conn, builder, buildSimpleIndex(fName, true, colArr));
-                    }
+                    execute(conn, builder, iclause);
                     return 0;
                 }
             });
@@ -981,57 +938,49 @@ public class DepotMarshaller<T extends PersistentRecord>
         return metaData;
     }
 
-    private CreateIndexClause<T> buildComplexIndex (String ixName, boolean unique, String localIxName)
-        throws SQLException
+    protected CreateIndexClause buildIndex (String name, boolean unique)
     {
-        List<Tuple<SQLExpression, Order>> definition;
-        String methName = localIxName + "Definition";
-
         Method method;
         try {
-            method = _pClass.getMethod(methName);
+            method = _pClass.getMethod(name);
         } catch (NoSuchMethodException nsme) {
             throw new IllegalArgumentException(
-                "Index flagged as complex, but no defining method '" + methName
-                + "' found.", nsme);
+                "Index flagged as complex, but no defining method '" + name + "' found.", nsme);
         }
-
         Object result;
         try {
-            result = method.invoke(null);
+            return buildIndex(name, unique, method.invoke(null));
         } catch (Exception e) {
             throw new IllegalArgumentException(
-                "Error calling index definition method '" + methName + "'", e);
+                "Error calling index definition method '" + name + "'", e);
         }
-
-        if (result instanceof SQLExpression) {
-            definition = new ArrayList<Tuple<SQLExpression,Order>>();
-            definition.add(new Tuple<SQLExpression, Order>((SQLExpression)result, Order.ASC));
-
-        } else if (result instanceof List) {
-            @SuppressWarnings("unchecked")
-            List<Tuple<SQLExpression, Order>> def = (List<Tuple<SQLExpression, Order>>)result;
-            definition = def;
-
-        } else {
-            throw new IllegalArgumentException("Method '" + methName
-                + "' must return SQLExpression or " + "List<Tuple<SQLExpression, Order>>");
-        }
-
-        return new CreateIndexClause<T>(_pClass, ixName, unique, definition);
     }
 
-    private CreateIndexClause<T> buildSimpleIndex (String ixName, boolean unique, String[] fields)
-        throws SQLException
+    protected CreateIndexClause buildIndex (String name, boolean unique, Object config)
     {
-        List<Tuple<SQLExpression, Order>> definition = new ArrayList<Tuple<SQLExpression,Order>>();
-
-        for (String field : fields) {
-            ColumnExp column = new ColumnExp(_pClass, field);
-            definition.add(new Tuple<SQLExpression, Order>(column, Order.ASC));
+        List<Tuple<SQLExpression, Order>> definition = Lists.newArrayList();
+        if (config instanceof ColumnExp) {
+            definition.add(new Tuple<SQLExpression, Order>((ColumnExp)config, Order.ASC));
+        } else if (config instanceof ColumnExp[]) {
+            for (ColumnExp column : (ColumnExp[])config) {
+                definition.add(new Tuple<SQLExpression, Order>(column, Order.ASC));
+            }
+        } else if (config instanceof SQLExpression) {
+            definition.add(new Tuple<SQLExpression, Order>((SQLExpression)config, Order.ASC));
+        } else if (config instanceof Tuple) {
+            @SuppressWarnings("unchecked") Tuple<SQLExpression, Order> tuple =
+                (Tuple<SQLExpression, Order>)config;
+            definition.add(tuple);
+        } else if (config instanceof List) {
+            @SuppressWarnings("unchecked") List<Tuple<SQLExpression, Order>> defs =
+                (List<Tuple<SQLExpression, Order>>)config;
+            definition.addAll(defs);
+        } else {
+            throw new IllegalArgumentException(
+                "Method '" + name + "' must return ColumnExp[], SQLExpression or " +
+                "List<Tuple<SQLExpression, Order>>");
         }
-
-        return new CreateIndexClause<T>(_pClass, ixName, unique, definition);
+        return new CreateIndexClause(_pClass, getTableName() + "_" + name, unique, definition);
     }
 
     // translate an array of field names to an array of column names
@@ -1197,12 +1146,10 @@ public class DepotMarshaller<T extends PersistentRecord>
     /** The fields of our object with directly corresponding table columns. */
     protected String[] _columnFields;
 
-    /** The indexes defined in @Entity annotations for this record. */
-    protected Map<String, Index> _indexes = Maps.newHashMap();
+    /** The indexes defined for this record. */
+    protected List<CreateIndexClause> _indexes = Lists.newArrayList();
 
-    /** The unique constraints defined in @Entity annotations for this record. */
-    protected Set<Set<String>> _uniqueConstraints = Sets.newHashSet();
-
+    /** Any full text indices defined on this entity. */
     protected Map<String, FullTextIndex> _fullTextIndexes = Maps.newHashMap();
 
     /** The version of our persistent object schema as specified in the class definition. */

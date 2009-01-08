@@ -32,17 +32,15 @@ import com.samskivert.util.Tuple;
 /**
  * Represents an CREATE INDEX instruction to the database.
  */
-public class CreateIndexClause<T extends PersistentRecord>
+public class CreateIndexClause
     implements QueryClause
 {
     /**
-     * Create a new {@link CreateIndexClause} clause. The name must be unique within the
-     * relevant database.
+     * Create a new {@link CreateIndexClause} clause. The name must be unique within the relevant
+     * database.
      */
-    public CreateIndexClause (
-        Class<? extends PersistentRecord> pClass, String name, boolean unique,
-        List<Tuple<SQLExpression, Order>> fields)
-
+    public CreateIndexClause (Class<? extends PersistentRecord> pClass, String name, boolean unique,
+                              List<Tuple<SQLExpression, Order>> fields)
     {
         _pClass = pClass;
         _name = name;
@@ -83,9 +81,7 @@ public class CreateIndexClause<T extends PersistentRecord>
     }
 
     protected Class<? extends PersistentRecord> _pClass;
-
     protected String _name;
-
     protected boolean _unique;
 
     /** The components of the index, e.g. columns or functions of columns. */

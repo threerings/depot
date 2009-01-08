@@ -119,7 +119,7 @@ public class TestRepository extends DepotRepository
         System.out.println("Delete none " + repo.deleteAll(TestRecord.class, none) + ".");
 
         // test collection caching
-        Where where = new Where(new Conditionals.GreaterThan(TestRecord.RECORD_ID_C, 100));
+        Where where = new Where(new Conditionals.GreaterThan(TestRecord.RECORD_ID, 100));
         System.out.println("100 and up: " + repo.findAll(TestRecord.class, where).size());
         System.out.println("100 and up again: " + repo.findAll(TestRecord.class, where).size());
 
@@ -131,7 +131,7 @@ public class TestRepository extends DepotRepository
         System.out.println("Names " + repo.findAll(TestNameRecord.class) + ".");
         System.out.println("Have " + repo.findAll(TestRecord.class).size() + " records.");
         repo.deleteAll(TestRecord.class, new Where(new Conditionals.LessThan(
-                                                       TestRecord.RECORD_ID_C, CREATE_RECORDS/2)));
+                                                       TestRecord.RECORD_ID, CREATE_RECORDS/2)));
         System.out.println("Now have " + repo.findAll(TestRecord.class).size() + " records.");
         repo.deleteAll(TestRecord.class, new Where(new LiteralExp("true")));
 //         // TODO: try to break our In() clause

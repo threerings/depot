@@ -67,7 +67,7 @@ public class HSQLBuilder
             // (lower(COL1) like '%foo%') OR (lower(COL1) like '%bar%') OR ...
             // (lower(COL2) like '%foo%') OR (lower(COL2) like '%bar%') OR ...
             // ... and so on. Not efficient, but basically functional.
-            Class<? extends PersistentRecord> pClass = match.getPersistentRecord();
+            Class<? extends PersistentRecord> pClass = match.getPersistentClass();
 
             // find the fields involved
             String[] fields = _types.getMarshaller(pClass).
@@ -117,7 +117,7 @@ public class HSQLBuilder
         }
 
         @Override
-        public void visit (CreateIndexClause<? extends PersistentRecord> createIndexClause)
+        public void visit (CreateIndexClause createIndexClause)
         {
             for (Tuple<SQLExpression, Order> field : createIndexClause.getFields()) {
                 if (!(field.left instanceof ColumnExp)) {

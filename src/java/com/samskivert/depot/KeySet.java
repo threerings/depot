@@ -33,6 +33,7 @@ import com.google.common.base.Function;
 import com.samskivert.util.StringUtil;
 
 import com.samskivert.depot.clause.WhereClause;
+import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.DepotUtil;
@@ -171,7 +172,8 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
         // from WhereClause
         public SQLExpression getWhereExpression () {
             // Single-column keys result in the compact IN(keyVal1, keyVal2, ...)
-            return new Conditionals.In(_pClass, DepotUtil.getKeyFields(_pClass)[0], _keys);
+            ColumnExp column = new ColumnExp(_pClass, DepotUtil.getKeyFields(_pClass)[0]);
+            return new Conditionals.In(column, _keys);
         }
 
         // from Iterable<Key<T>>

@@ -38,16 +38,6 @@ public abstract class Conditionals
     public static class IsNull
         implements SQLOperator
     {
-        public IsNull (String pColumn)
-        {
-            this(new ColumnExp(null, pColumn));
-        }
-
-        public IsNull (Class<? extends PersistentRecord> pClass, String pColumn)
-        {
-            this(new ColumnExp(pClass, pColumn));
-        }
-
         public IsNull (ColumnExp column)
         {
             _column = column;
@@ -199,17 +189,6 @@ public abstract class Conditionals
         /** The maximum number of keys allowed in an IN() clause. */
         public static final int MAX_KEYS = Short.MAX_VALUE;
 
-        public In (Class<? extends PersistentRecord> pClass, String pColumn, Comparable<?>... values)
-        {
-            this(new ColumnExp(pClass, pColumn), values);
-        }
-
-        public In (Class<? extends PersistentRecord> pClass, String pColumn,
-                   Collection<? extends Comparable<?>> values)
-        {
-            this(new ColumnExp(pClass, pColumn), values.toArray(new Comparable<?>[values.size()]));
-        }
-
         public In (ColumnExp column, Comparable<?>... values)
         {
             if (values.length == 0) {
@@ -329,7 +308,7 @@ public abstract class Conditionals
             _query = query;
         }
 
-        public Class<? extends PersistentRecord> getPersistentRecord ()
+        public Class<? extends PersistentRecord> getPersistentClass ()
         {
             return _pClass;
         }

@@ -20,6 +20,7 @@
 
 package com.samskivert.depot.annotation;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -27,23 +28,22 @@ import java.lang.annotation.Target;
 /**
  * Defines an index on an entity table.
  */
-@Target(value={})
+@Target(value=ElementType.FIELD)
 @Retention(value=RetentionPolicy.RUNTIME)
 public @interface Index
 {
-    /** Defines the name of the index. */
-    String name ();
+    /** Defines the name of the index. If this is defined, a static method must be defined on the
+     * record that provides the index configuration. The method must match one of the following
+     * two signatures:
+     * <pre>
+     * public static ColumnExp[] indexName ()
+     * public static List<Tuple<SQLExpression, OrderBy.Order>> indexName ()
+     * </pre>
+     * The first form will result in a simple multicolum index being created with the supplied
+     * columns. The second will create a function index using the supplied SQLExpressions.
+     */
+    String name () default "";
 
     /** Does this index enforce a uniqueness constraint? */
     boolean unique () default false;
-
-    /** Defines the fields on which the index operates. */
-    String[] fields () default {};
-
-    /** Whether or not this is a complex index. If true, a static method
-     * must be defined on the record that declares this index of the signature:
-     * <pre>public static List<Tuple<SQLExpression, OrderBy.Order>> indexNameExpression ()</pre>
-     * which should return the index's defining expressions and whether each one is ascending
-     * or descending. */
-    boolean complex () default false;
 }

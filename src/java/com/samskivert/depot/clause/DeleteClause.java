@@ -28,7 +28,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  * Builds actual SQL given a main persistent type and some {@link QueryClause} objects.
  */
-public class DeleteClause<T extends PersistentRecord> implements QueryClause
+public class DeleteClause implements QueryClause
 {
     public DeleteClause (Class<? extends PersistentRecord> pClass, WhereClause where)
     {

@@ -81,8 +81,8 @@ public interface ExpressionVisitor
     public void visit (Exists<? extends PersistentRecord> exists);
     public void visit (SelectClause<? extends PersistentRecord> selectClause);
     public void visit (UpdateClause<? extends PersistentRecord> updateClause);
-    public void visit (DeleteClause<? extends PersistentRecord> deleteClause);
-    public void visit (InsertClause<? extends PersistentRecord> insertClause);
-    public void visit (CreateIndexClause<? extends PersistentRecord> createIndexClause);
+    public void visit (DeleteClause deleteClause);
+    public void visit (InsertClause insertClause);
+    public void visit (CreateIndexClause createIndexClause);
     public void visit (DropIndexClause<? extends PersistentRecord> dropIndexClause);
 }

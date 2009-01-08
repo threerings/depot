@@ -35,58 +35,18 @@ import com.samskivert.util.StringUtil;
 /**
  * A test persistent object.
  */
-@Entity(indices={ @Index(name="createdIndex", fields={"created"}) })
+@Entity
 public class TestRecord extends PersistentRecord
 {
     // AUTO-GENERATED: FIELDS START
-    /** The column identifier for the {@link #recordId} field. */
-    public static final String RECORD_ID = "recordId";
-
-    /** The qualified column identifier for the {@link #recordId} field. */
-    public static final ColumnExp RECORD_ID_C =
-        new ColumnExp(TestRecord.class, RECORD_ID);
-
-    /** The column identifier for the {@link #name} field. */
-    public static final String NAME = "name";
-
-    /** The qualified column identifier for the {@link #name} field. */
-    public static final ColumnExp NAME_C =
-        new ColumnExp(TestRecord.class, NAME);
-
-    /** The column identifier for the {@link #age} field. */
-    public static final String AGE = "age";
-
-    /** The qualified column identifier for the {@link #age} field. */
-    public static final ColumnExp AGE_C =
-        new ColumnExp(TestRecord.class, AGE);
-
-    /** The column identifier for the {@link #homeTown} field. */
-    public static final String HOME_TOWN = "homeTown";
-
-    /** The qualified column identifier for the {@link #homeTown} field. */
-    public static final ColumnExp HOME_TOWN_C =
-        new ColumnExp(TestRecord.class, HOME_TOWN);
-
-    /** The column identifier for the {@link #created} field. */
-    public static final String CREATED = "created";
-
-    /** The qualified column identifier for the {@link #created} field. */
-    public static final ColumnExp CREATED_C =
-        new ColumnExp(TestRecord.class, CREATED);
-
-    /** The column identifier for the {@link #lastModified} field. */
-    public static final String LAST_MODIFIED = "lastModified";
-
-    /** The qualified column identifier for the {@link #lastModified} field. */
-    public static final ColumnExp LAST_MODIFIED_C =
-        new ColumnExp(TestRecord.class, LAST_MODIFIED);
-
-    /** The column identifier for the {@link #numbers} field. */
-    public static final String NUMBERS = "numbers";
-
-    /** The qualified column identifier for the {@link #numbers} field. */
-    public static final ColumnExp NUMBERS_C =
-        new ColumnExp(TestRecord.class, NUMBERS);
+    public static final Class<TestRecord> _R = TestRecord.class;
+    public static final ColumnExp RECORD_ID = colexp(_R, "recordId");
+    public static final ColumnExp NAME = colexp(_R, "name");
+    public static final ColumnExp AGE = colexp(_R, "age");
+    public static final ColumnExp HOME_TOWN = colexp(_R, "homeTown");
+    public static final ColumnExp CREATED = colexp(_R, "created");
+    public static final ColumnExp LAST_MODIFIED = colexp(_R, "lastModified");
+    public static final ColumnExp NUMBERS = colexp(_R, "numbers");
     // AUTO-GENERATED: FIELDS END
 
     public static final int SCHEMA_VERSION = 3;
@@ -100,6 +60,7 @@ public class TestRecord extends PersistentRecord
 
     public String homeTown;
 
+    @Index
     public Date created;
 
     public Timestamp lastModified;
@@ -121,7 +82,7 @@ public class TestRecord extends PersistentRecord
     {
         return new Key<TestRecord>(
                 TestRecord.class,
-                new String[] { RECORD_ID },
+                new ColumnExp[] { RECORD_ID },
                 new Comparable[] { recordId });
     }
     // AUTO-GENERATED: METHODS END

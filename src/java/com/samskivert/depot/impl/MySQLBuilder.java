@@ -67,7 +67,7 @@ public class MySQLBuilder
         @Override public void visit (FullTextMatch match)
         {
             _builder.append("match(");
-            Class<? extends PersistentRecord> pClass = match.getPersistentRecord();
+            Class<? extends PersistentRecord> pClass = match.getPersistentClass();
             String[] fields =
                 _types.getMarshaller(pClass).getFullTextIndex(match.getName()).fields();
             for (int ii = 0; ii < fields.length; ii ++) {
@@ -79,7 +79,7 @@ public class MySQLBuilder
             _builder.append(") against (? in boolean mode)");
         }
 
-        @Override public void visit (DeleteClause<? extends PersistentRecord> deleteClause)
+        @Override public void visit (DeleteClause deleteClause)
         {
             _builder.append("delete from ");
             appendTableName(deleteClause.getPersistentClass());
@@ -103,7 +103,7 @@ public class MySQLBuilder
         }
 
         @Override
-        public void visit (CreateIndexClause<? extends PersistentRecord> createIndexClause)
+        public void visit (CreateIndexClause createIndexClause)
         {
             for (Tuple<SQLExpression, Order> field : createIndexClause.getFields()) {
                 if (!(field.left instanceof ColumnExp)) {

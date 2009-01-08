@@ -47,6 +47,7 @@ import com.samskivert.depot.clause.InsertClause;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.UpdateClause;
 import com.samskivert.depot.clause.WhereClause;
+import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.ValueExp;
 import com.samskivert.depot.impl.DepotMarshaller;
@@ -55,8 +56,8 @@ import com.samskivert.depot.impl.DepotTypes;
 import com.samskivert.depot.impl.FindAllKeysQuery;
 import com.samskivert.depot.impl.FindAllQuery;
 import com.samskivert.depot.impl.FindOneQuery;
-import com.samskivert.depot.impl.Modifier;
 import com.samskivert.depot.impl.Modifier.*;
+import com.samskivert.depot.impl.Modifier;
 import com.samskivert.depot.impl.SQLBuilder;
 
 import static com.samskivert.depot.Log.log;
@@ -208,7 +209,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> T load (Class<T> type, String ix, Comparable<?> val,
+    protected <T extends PersistentRecord> T load (Class<T> type, ColumnExp ix, Comparable<?> val,
                                                    QueryClause... clauses)
         throws DatabaseException
     {
@@ -221,8 +222,8 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> T load (Class<T> type, String ix1, Comparable<?> val1,
-                                                   String ix2, Comparable<?> val2,
+    protected <T extends PersistentRecord> T load (Class<T> type, ColumnExp ix1, Comparable<?> val1,
+                                                   ColumnExp ix2, Comparable<?> val2,
                                                    QueryClause... clauses)
         throws DatabaseException
     {
@@ -235,8 +236,8 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> T load (Class<T> type, String ix1, Comparable<?> val1,
-                                                   String ix2, Comparable<?> val2, String ix3,
+    protected <T extends PersistentRecord> T load (Class<T> type, ColumnExp ix1, Comparable<?> val1,
+                                                   ColumnExp ix2, Comparable<?> val2, ColumnExp ix3,
                                                    Comparable<?> val3, QueryClause... clauses)
         throws DatabaseException
     {
@@ -448,7 +449,7 @@ public abstract class DepotRepository
                     updateKey(marsh.getPrimaryKey(_result, false));
                 }
 
-                builder.newQuery(new InsertClause<T>(pClass, _result, identityFields));
+                builder.newQuery(new InsertClause(pClass, _result, identityFields));
 
                 PreparedStatement stmt = builder.prepare(conn);
                 try {
@@ -515,7 +516,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> int update (T record, final String... modifiedFields)
+    protected <T extends PersistentRecord> int update (T record, final ColumnExp... modifiedFields)
         throws DatabaseException
     {
         @SuppressWarnings("unchecked") Class<T> pClass = (Class<T>) record.getClass();
@@ -527,7 +528,8 @@ public abstract class DepotRepository
             throw new IllegalArgumentException("Can't update record with null primary key.");
         }
 
-        UpdateClause<T> update = new UpdateClause<T>(pClass, key, modifiedFields, record);
+        UpdateClause<T> update = new UpdateClause<T>(
+            pClass, key, ColumnExp.toNames(modifiedFields), record);
         final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, update));
         builder.newQuery(update);
 
@@ -551,7 +553,7 @@ public abstract class DepotRepository
      *
      * @param type the type of the persistent object to be modified.
      * @param primaryKey the primary key to match in the update.
-     * @param updates an mapping from the names of the fields/columns ti the values to be assigned.
+     * @param updates an mapping from the columns to the values to be assigned.
      *
      * @return the number of rows modified by this action.
      *
@@ -560,12 +562,12 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updatePartial (
-        Class<T> type, Comparable<?> primaryKey, Map<String,Object> updates)
+        Class<T> type, Comparable<?> primaryKey, Map<ColumnExp,Object> updates)
         throws DatabaseException
     {
         Object[] fieldsValues = new Object[updates.size()*2];
         int idx = 0;
-        for (Map.Entry<String,Object> entry : updates.entrySet()) {
+        for (Map.Entry<ColumnExp,Object> entry : updates.entrySet()) {
             fieldsValues[idx++] = entry.getKey();
             fieldsValues[idx++] = entry.getValue();
         }
@@ -577,7 +579,7 @@ public abstract class DepotRepository
      *
      * @param type the type of the persistent object to be modified.
      * @param primaryKey the primary key to match in the update.
-     * @param fieldsValues an array containing the names of the fields/columns and the values to be
+     * @param fieldsValues an array containing the columns (as ColumnExp) and the values to be
      * assigned, in key, value, key, value, etc. order.
      *
      * @return the number of rows modified by this action.
@@ -598,7 +600,7 @@ public abstract class DepotRepository
      * primary key.
      *
      * @param type the type of the persistent object to be modified.
-     * @param fieldsValues an array containing the names of the fields/columns and the values to be
+     * @param fieldsValues an array containing the columns (as ColumnExp) and the values to be
      * assigned, in key, value, key, value, etc. order.
      *
      * @return the number of rows modified by this action.
@@ -608,7 +610,7 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updatePartial (
-        Class<T> type, String ix1, Comparable<?> val1, String ix2, Comparable<?> val2,
+        Class<T> type, ColumnExp ix1, Comparable<?> val1, ColumnExp ix2, Comparable<?> val2,
         Object... fieldsValues)
         throws DatabaseException
     {
@@ -620,7 +622,7 @@ public abstract class DepotRepository
      * primary key.
      *
      * @param type the type of the persistent object to be modified.
-     * @param fieldsValues an array containing the names of the fields/columns and the values to be
+     * @param fieldsValues an array containing the columns (as ColumnExp) and the values to be
      * assigned, in key, value, key, value, etc. order.
      *
      * @return the number of rows modified by this action.
@@ -630,8 +632,8 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updatePartial (
-        Class<T> type, String ix1, Comparable<?> val1, String ix2, Comparable<?> val2,
-        String ix3, Comparable<?> val3, Object... fieldsValues)
+        Class<T> type, ColumnExp ix1, Comparable<?> val1, ColumnExp ix2, Comparable<?> val2,
+        ColumnExp ix3, Comparable<?> val3, Object... fieldsValues)
         throws DatabaseException
     {
         return updatePartial(new Key<T>(type, ix1, val1, ix2, val2, ix3, val3), fieldsValues);
@@ -641,7 +643,7 @@ public abstract class DepotRepository
      * Updates the specified columns for all persistent objects matching the supplied key.
      *
      * @param key the key for the persistent objects to be modified.
-     * @param fieldsValues an array containing the names of the fields/columns and the values to be
+     * @param fieldsValues an array containing the columns (as ColumnExp) and the values to be
      * assigned, in key, value, key, value, etc. order.
      *
      * @return the number of rows modified by this action.
@@ -666,7 +668,7 @@ public abstract class DepotRepository
      * @param key the key to match in the update.
      * @param invalidator a cache invalidator that will be run prior to the update to flush the
      * relevant persistent objects from the cache, or null if no invalidation is needed.
-     * @param fieldsValues an array containing the names of the fields/columns and the values to be
+     * @param fieldsValues an array containing the columns (as ColumnExp) and the values to be
      * assigned, in key, value, key, value, etc. order.
      *
      * @return the number of rows modified by this action.
@@ -688,7 +690,7 @@ public abstract class DepotRepository
         final String[] fields = new String[fieldsValues.length/2];
         final SQLExpression[] values = new SQLExpression[fields.length];
         for (int ii = 0, idx = 0; ii < fields.length; ii++) {
-            fields[ii] = (String)fieldsValues[idx++];
+            fields[ii] = ((ColumnExp)fieldsValues[idx++]).name;
             values[ii] = new ValueExp(fieldsValues[idx++]);
         }
         UpdateClause<T> update = new UpdateClause<T>(type, key, fields, values);
@@ -720,8 +722,7 @@ public abstract class DepotRepository
      *
      * @param type the type of the persistent object to be modified.
      * @param primaryKey the key to match in the update.
-     * @param fieldsValues an array containing the names of the fields/columns and the values to be
-     * assigned, in key, literal value, key, literal value, etc. order.
+     * @param fieldsValues a map containing the columns and the values to be assigned.
      *
      * @return the number of rows modified by this action.
      *
@@ -730,7 +731,7 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updateLiteral (
-        Class<T> type, Comparable<?> primaryKey, Map<String, SQLExpression> fieldsValues)
+        Class<T> type, Comparable<?> primaryKey, Map<ColumnExp, SQLExpression> fieldsValues)
         throws DatabaseException
     {
         Key<T> key = _ctx.getMarshaller(type).makePrimaryKey(primaryKey);
@@ -748,8 +749,7 @@ public abstract class DepotRepository
      * </pre>
      *
      * @param type the type of the persistent object to be modified.
-     * @param fieldsValues an array containing the names of the fields/columns and the values to be
-     * assigned, in key, literal value, key, literal value, etc. order.
+     * @param fieldsValues a map containing the columns and the values to be assigned.
      *
      * @return the number of rows modified by this action.
      *
@@ -758,8 +758,8 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updateLiteral (
-        Class<T> type, String ix1, Comparable<?> val1, String ix2, Comparable<?> val2,
-        Map<String, SQLExpression> fieldsValues)
+        Class<T> type, ColumnExp ix1, Comparable<?> val1, ColumnExp ix2, Comparable<?> val2,
+        Map<ColumnExp, SQLExpression> fieldsValues)
         throws DatabaseException
     {
         Key<T> key = new Key<T>(type, ix1, val1, ix2, val2);
@@ -787,8 +787,8 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updateLiteral (
-        Class<T> type, String ix1, Comparable<?> val1, String ix2, Comparable<?> val2,
-        String ix3, Comparable<?> val3, Map<String, SQLExpression> fieldsValues)
+        Class<T> type, ColumnExp ix1, Comparable<?> val1, ColumnExp ix2, Comparable<?> val2,
+        ColumnExp ix3, Comparable<?> val3, Map<ColumnExp, SQLExpression> fieldsValues)
         throws DatabaseException
     {
         Key<T> key = new Key<T>(type, ix1, val1, ix2, val2, ix3, val3);
@@ -818,7 +818,7 @@ public abstract class DepotRepository
      */
     protected <T extends PersistentRecord> int updateLiteral (
         Class<T> type, final WhereClause key, CacheInvalidator invalidator,
-        Map<String, SQLExpression> fieldsValues)
+        Map<ColumnExp, SQLExpression> fieldsValues)
         throws DatabaseException
     {
         requireNotComputed(type, "updateLiteral");
@@ -832,8 +832,8 @@ public abstract class DepotRepository
         final String[] fields = new String[fieldsValues.size()];
         final SQLExpression[] values = new SQLExpression[fields.length];
         int ii = 0;
-        for (Map.Entry<String, SQLExpression> entry : fieldsValues.entrySet()) {
-            fields[ii] = entry.getKey();
+        for (Map.Entry<ColumnExp, SQLExpression> entry : fieldsValues.entrySet()) {
+            fields[ii] = entry.getKey().name;
             values[ii] = entry.getValue();
             ii ++;
         }
@@ -907,7 +907,7 @@ public abstract class DepotRepository
                         updateKey(marsh.getPrimaryKey(_result, false));
                     }
 
-                    builder.newQuery(new InsertClause<T>(pClass, _result, identityFields));
+                    builder.newQuery(new InsertClause(pClass, _result, identityFields));
 
                     stmt = builder.prepare(conn);
                     int mods = stmt.executeUpdate();
@@ -1012,7 +1012,7 @@ public abstract class DepotRepository
         }
         where.validateQueryType(type); // and another
 
-        DeleteClause<T> delete = new DeleteClause<T>(type, where);
+        DeleteClause delete = new DeleteClause(type, where);
         final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, delete));
         builder.newQuery(delete);
 

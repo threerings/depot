@@ -248,7 +248,7 @@ public class BindVisitor implements ExpressionVisitor
         updateClause.getWhereClause().accept(this);
     }
 
-    public void visit (InsertClause<? extends PersistentRecord> insertClause)
+    public void visit (InsertClause insertClause)
     {
         DepotMarshaller<?> marsh = _types.getMarshaller(insertClause.getPersistentClass());
         Object pojo = insertClause.getPojo();
@@ -266,12 +266,12 @@ public class BindVisitor implements ExpressionVisitor
         }
     }
 
-    public void visit (DeleteClause<? extends PersistentRecord> deleteClause)
+    public void visit (DeleteClause deleteClause)
     {
         deleteClause.getWhereClause().accept(this);
     }
 
-    public void visit (CreateIndexClause<? extends PersistentRecord> createIndexClause)
+    public void visit (CreateIndexClause createIndexClause)
     {
         for (Tuple<SQLExpression, Order> field : createIndexClause.getFields()) {
             field.left.accept(this);

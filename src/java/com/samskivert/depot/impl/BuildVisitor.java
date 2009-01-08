@@ -430,7 +430,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
         updateClause.getWhereClause().accept(this);
     }
 
-    public void visit (DeleteClause<? extends PersistentRecord> deleteClause)
+    public void visit (DeleteClause deleteClause)
     {
         _builder.append("delete from ");
         appendTableName(deleteClause.getPersistentClass());
@@ -440,7 +440,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
         deleteClause.getWhereClause().accept(this);
     }
 
-    public void visit (InsertClause<? extends PersistentRecord> insertClause)
+    public void visit (InsertClause insertClause)
     {
         Class<? extends PersistentRecord> pClass = insertClause.getPersistentClass();
         DepotMarshaller<?> marsh = _types.getMarshaller(pClass);
@@ -480,7 +480,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
         _builder.append(")");
     }
 
-    public void visit (CreateIndexClause<? extends PersistentRecord> createIndexClause)
+    public void visit (CreateIndexClause createIndexClause)
     {
         _builder.append("create ");
         if (createIndexClause.isUnique()) {

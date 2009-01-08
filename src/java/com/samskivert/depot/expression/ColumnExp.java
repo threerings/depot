@@ -31,11 +31,24 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 public class ColumnExp
     implements SQLExpression
 {
+    /** The name of the column we reference. */
+    public final String name;
+
+    /** Converts an array of column expressions to an array of just the bare names. */
+    public static String[] toNames (ColumnExp[] columns)
+    {
+        String[] names = new String[columns.length];
+        for (int ii = 0; ii < names.length; ii++) {
+            names[ii] = columns[ii].name;
+        }
+        return names;
+    }
+
     public ColumnExp (Class<? extends PersistentRecord> pClass, String field)
     {
         super();
         _pClass = pClass;
-        _pField = field;
+        this.name = field;
     }
 
     // from SQLExpression
@@ -57,18 +70,15 @@ public class ColumnExp
 
     public String getField ()
     {
-        return _pField;
+        return name;
     }
 
     @Override // from Object
     public String toString ()
     {
-        return "\"" + _pField + "\""; // TODO: qualify with record name and be uber verbose?
+        return "\"" + name + "\""; // TODO: qualify with record name and be uber verbose?
     }
 
     /** The table that hosts the column we reference, or null. */
     protected final Class<? extends PersistentRecord> _pClass;
-
-    /** The name of the column we reference. */
-    protected final String _pField;
 }

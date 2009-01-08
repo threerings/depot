@@ -26,7 +26,9 @@ import java.util.Map;
 
 import com.samskivert.jdbc.ColumnDefinition;
 import com.samskivert.jdbc.DatabaseLiaison;
+
 import com.samskivert.depot.annotation.Column;
+import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.impl.FieldMarshaller;
 import com.samskivert.depot.impl.Modifier;
 
@@ -74,10 +76,10 @@ public abstract class SchemaMigration extends Modifier
      */
     public static class Rename extends SchemaMigration
     {
-        public Rename (int targetVersion, String oldColumnName, String newColumnName) {
+        public Rename (int targetVersion, String oldColumnName, ColumnExp newColumn) {
             super(targetVersion);
             _oldColumnName = oldColumnName;
-            _newColumnName = newColumnName;
+            _newColumnName = newColumn.name;
         }
 
         @Override public boolean runBeforeDefault () {
@@ -132,9 +134,9 @@ public abstract class SchemaMigration extends Modifier
      */
     public static class Retype extends SchemaMigration
     {
-        public Retype (int targetVersion, String fieldName) {
+        public Retype (int targetVersion, ColumnExp column) {
             super(targetVersion);
-            _fieldName = fieldName;
+            _fieldName = column.name;
         }
 
         @Override public boolean runBeforeDefault () {
@@ -170,9 +172,9 @@ public abstract class SchemaMigration extends Modifier
      */
     public static class Add extends SchemaMigration
     {
-        public Add (int targetVersion, String fieldName, String defaultValue) {
+        public Add (int targetVersion, ColumnExp column, String defaultValue) {
             super(targetVersion);
-            _fieldName = fieldName;
+            _fieldName = column.name;
             _defaultValue = defaultValue;
         }
 

@@ -34,19 +34,9 @@ import com.samskivert.depot.expression.ColumnExp;
 public class DepotMigrationHistoryRecord extends PersistentRecord
 {
     // AUTO-GENERATED: FIELDS START
-    /** The column identifier for the {@link #ident} field. */
-    public static final String IDENT = "ident";
-
-    /** The qualified column identifier for the {@link #ident} field. */
-    public static final ColumnExp IDENT_C =
-        new ColumnExp(DepotMigrationHistoryRecord.class, IDENT);
-
-    /** The column identifier for the {@link #whenCompleted} field. */
-    public static final String WHEN_COMPLETED = "whenCompleted";
-
-    /** The qualified column identifier for the {@link #whenCompleted} field. */
-    public static final ColumnExp WHEN_COMPLETED_C =
-        new ColumnExp(DepotMigrationHistoryRecord.class, WHEN_COMPLETED);
+    public static final Class<DepotMigrationHistoryRecord> _R = DepotMigrationHistoryRecord.class;
+    public static final ColumnExp IDENT = colexp(_R, "ident");
+    public static final ColumnExp WHEN_COMPLETED = colexp(_R, "whenCompleted");
     // AUTO-GENERATED: FIELDS END
 
     /** Our schema version. Probably not likely to change. */
@@ -68,7 +58,7 @@ public class DepotMigrationHistoryRecord extends PersistentRecord
     {
         return new Key<DepotMigrationHistoryRecord>(
                 DepotMigrationHistoryRecord.class,
-                new String[] { IDENT },
+                new ColumnExp[] { IDENT },
                 new Comparable[] { ident });
     }
     // AUTO-GENERATED: METHODS END
