@@ -78,32 +78,37 @@ public abstract class DepotRepository
 
         /**
          * Resolve this collection query in two steps: first we enumerate the primary keys for
-         * all the records that satisfy the query, then we acquire the actual requested data for
-         * each key. The cache is consulted and updated in both steps: for the first, see if we've
-         * already executed precisely this query and cached the resulting key set. For the second
-         * phase, search the cache for each key in said set, and retrieve the corresponding data
-         * record from there when possible. Finally execute a database query to retrieve the data
-         * for any keys that were not in the cache, making sure to cache them in the process.
+         * all the records that satisfy the query, then we acquire the actual data corresponding
+         * to each key -- first by consulting the cache, and then only loading from the database
+         * the records for the keys that were not located in the cache.
          *
-         * Note: There is currently no cache invalidation of collection queries. If records are
-         * inserted, deleted or modified, cached keysets will not be updated. The keyset cannot be
-         * guaranteed to be up to date. For sensitive operations, use Cache.NONE.
+         * Note: This strategy may not be used on @Computed records, for records that do not in
+         * fact have a primary key, or for queries that use @FieldOverrides.
+         */
+        RECORDS,
+
+        /**
+         * This strategy is identical to {@link #RECORDS}, but we also cache the keyset fetched
+         * in the first pass. This makes it much more efficient, but also less reliable because
+         * there is no invalidation of the keyset query: If records are inserted, deleted or
+         * modified, cached keysets will not be updated.
          *
-         * Note: The KEYS strategy may not be used on @Computed records, for records that do not
-         * in fact have a primary key, or for queries that use @FieldOverrides.
+         * Note: This strategy may not be used on @Computed records, for records that do not in
+         * fact have a primary key, or for queries that use @FieldOverrides.
          */
         KEYS,
 
         /**
-         * This cache strategy is direct and explicit, eschewing the dual phases of the KEYS
-         * approach. However, before the database is invoked at all, we consult the cache hoping
-         * to find the entire result set already stashed away in there, using the entire query
-         * as the key. If we failed to find it, we execute the query and update the cache with the
-         * result.
+         * This cache strategy is direct and explicit, eschewing the dual phases of the
+         * {@link #RECORDS} and {@link #KEYS} approaches. However, before the database is invoked
+         * at all, we consult the cache hoping to find the entire result set already stashed away
+         * in there, using the entire query as the key. If we failed to find it, we execute the
+         * query and update the cache with the result.
          *
-         * This strategy has none of the limitations of KEYS and can be used with key-less and
-         * @Computed records and arbitrarily complicated queries. Note however that as with KEYS,
-         * there is currently no automatic invalidation and it is potentially very memory intensive.
+         * This strategy has none of the limitations of {@link #KEYS} and can be used with key-less
+         * and @Computed records and arbitrarily complicated queries. Note however that as with
+         * {@link #KEYS}, there is no automatic invalidation. It is also potentially very memory
+         * intensive.
          */
         CONTENTS
     };
@@ -345,7 +350,8 @@ public abstract class DepotRepository
     {
         DepotMarshaller<T> marsh = _ctx.getMarshaller(type);
 
-        if (cache == CacheStrategy.KEYS || cache == CacheStrategy.BEST) {
+        switch (cache) {
+        case KEYS: case BEST: case RECORDS:
             String reason = null;
             if (marsh.getTableName() == null) {
                 reason = type + " is computed";
@@ -365,8 +371,9 @@ public abstract class DepotRepository
                 cache = (reason != null) ? CacheStrategy.NONE : CacheStrategy.KEYS;
 
             } else if (reason != null) {
-                // if user explicitly asked for the KEYS strategy and we can't do it, protest
-                throw new IllegalArgumentException("Cannot use KEYS strategy because " + reason);
+                // if user explicitly asked for a strategy we can't do, protest
+                throw new IllegalArgumentException(
+                    "Cannot use " + cache + " strategy because " + reason);
             }
         }
 
@@ -374,8 +381,9 @@ public abstract class DepotRepository
             cache = CacheStrategy.NONE;
         }
 
-        if (cache == CacheStrategy.KEYS) {
-            return _ctx.invoke(new FindAllQuery.WithCache<T>(_ctx, type, clauses));
+        if (cache == CacheStrategy.KEYS || cache == CacheStrategy.RECORDS) {
+            return _ctx.invoke(new FindAllQuery.WithCache<T>(
+                    _ctx, type, clauses, cache == CacheStrategy.KEYS));
         }
         return _ctx.invoke(new FindAllQuery.Explicitly<T>(
                 _ctx, type, clauses, cache == CacheStrategy.CONTENTS));

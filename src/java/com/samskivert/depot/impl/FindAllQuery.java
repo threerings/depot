@@ -66,7 +66,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
     public static class WithCache<T extends PersistentRecord> extends FindAllQuery<T>
     {
         public WithCache (PersistenceContext ctx, Class<T> type,
-                          Collection<? extends QueryClause> clauses)
+                          Collection<? extends QueryClause> clauses, boolean cacheKeys)
             throws DatabaseException
         {
             super(ctx, type);
@@ -83,7 +83,11 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             }
 
             _select = new SelectClause<T>(_type, _marsh.getPrimaryKeyFields(), clauses);
-            _qkey = new SimpleCacheKey(_marsh.getTableName() + "Keys", _select.toString());
+            if (cacheKeys) {
+                _qkey = new SimpleCacheKey(_marsh.getTableName() + "Keys", _select.toString());
+            } else {
+                _qkey = null;
+            }
         }
 
         @Override // from Query
@@ -127,7 +131,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
                 _uncachedQueries++;
                 if (PersistenceContext.CACHE_DEBUG) {
                     log.info("Loaded " + _marsh.getTableName() + " keys", "query", _select,
-                             "keys", keysToString(_keys), "cacheable", (_qkey != null));
+                             "keys", keysToString(_keys), "cached", (_qkey != null));
                 }
                 if (_qkey != null) {
                     ctx.cacheStore(_qkey, _keys); // cache the resulting key set
