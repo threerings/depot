@@ -45,9 +45,11 @@ import static com.samskivert.depot.Log.log;
  */
 public class FindOneQuery<T extends PersistentRecord> extends Query<T>
 {
-    public FindOneQuery (PersistenceContext ctx, Class<T> type, QueryClause[] clauses)
+    public FindOneQuery (PersistenceContext ctx, Class<T> type,
+                         DepotRepository.CacheStrategy strategy, QueryClause[] clauses)
         throws DatabaseException
     {
+        _strategy = strategy;
         _marsh = ctx.getMarshaller(type);
         _select = new SelectClause<T>(type, _marsh.getFieldNames(), clauses);
         WhereClause where = _select.getWhereClause();
@@ -123,10 +125,14 @@ public class FindOneQuery<T extends PersistentRecord> extends Query<T>
 
     protected CacheKey getCacheKey ()
     {
+        if (_strategy == DepotRepository.CacheStrategy.NONE) {
+            return null;
+        }
         WhereClause where = _select.getWhereClause();
         return (where != null && where instanceof CacheKey) ? (CacheKey)where : null;
     }
 
+    protected DepotRepository.CacheStrategy _strategy;
     protected DepotMarshaller<T> _marsh;
     protected SelectClause<T> _select;
     protected SQLBuilder _builder;

@@ -271,7 +271,19 @@ public abstract class DepotRepository
     protected <T extends PersistentRecord> T load (Class<T> type, QueryClause... clauses)
         throws DatabaseException
     {
-        return _ctx.invoke(new FindOneQuery<T>(_ctx, type, clauses));
+        return load(type, CacheStrategy.BEST, clauses);
+    }
+
+    /**
+     * Loads the first persistent object that matches the supplied query clauses.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
+     */
+    protected <T extends PersistentRecord> T load (Class<T> type, CacheStrategy strategy,
+                                                   QueryClause... clauses)
+        throws DatabaseException
+    {
+        return _ctx.invoke(new FindOneQuery<T>(_ctx, type, strategy, clauses));
     }
 
     /**
@@ -1063,7 +1075,8 @@ public abstract class DepotRepository
         DepotMigrationHistoryRecord record;
         while (true) {
             // check to see if the migration has already been completed
-            record = load(DepotMigrationHistoryRecord.class, migration.getIdent());
+            record = load(DepotMigrationHistoryRecord.class, CacheStrategy.NONE,
+                          DepotMigrationHistoryRecord.getKey(migration.getIdent()));
             if (record != null && record.whenCompleted != null) {
                 return; // great, no need to do anything
             }
