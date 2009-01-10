@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -42,20 +42,20 @@ public class EHCacheAdapter
      * the supplied manager when it is shutdown. The caller is responsible for shutting down the
      * cache manager when it knows that Depot and any other clients no longer need it.
      */
-    public EHCacheAdapter (CacheManager cachemgr)
+    public EHCacheAdapter (EHCacheConfig config, CacheManager cachemgr)
     {
+        _config = config;
         _cachemgr = cachemgr;
 
-        CacheManagerPeerListener listener = _cachemgr.getCachePeerListener();
-        CacheManagerPeerProvider provider = _cachemgr.getCachePeerProvider();
-        if ((provider != null) != (listener != null)) {
-            // we want either both listener and provider, or neither
-            log.warning("EHCache misconfigured, distributed mode disabled [listener =" +
-                listener + ", provider=" + provider);
-            _distributed = false;
-
-        } else {
-            _distributed = (listener != null);
+        if (config.distributed) {
+            CacheManagerPeerListener listener = _cachemgr.getCachePeerListener();
+            CacheManagerPeerProvider provider = _cachemgr.getCachePeerProvider();
+            if (provider == null || listener == null) {
+                // we want either both listener and provider, or neither
+                log.warning("EHCache misconfigured, distributed mode disabled [listener =" +
+                    listener + ", provider=" + provider);
+                _config.distributed = false;
+            }
         }
     }
 
@@ -117,17 +117,22 @@ public class EHCacheAdapter
                     // create the cache programatically with reasonable settings
                     // TODO: we will eventually need this to be configurable in .properties
                     _cache = new Cache(id,
-                                       1000,   // keep 1000 elements in RAM
-                                       true,   // overflow the rest to disk
-                                       false,  // don't keep records around eternally
-                                       300,    // keep them for 5 minutes after they're created
-                                       20);    // or 20 seconds after last access
+                        _config.elementsInMemory,
+                        _config.overflowToDisk,
+                        false,
+                        _config.timeToLiveSeconds,
+                        _config.timeToIdleSeconds);
 
-                    if (_distributed) {
+                    if (_config.distributed) {
                         // a programatically created cache has to have its replicator event
                         // listener programatically added.
                         _cache.getCacheEventNotificationService().registerListener(
-                            new RMIAsynchronousCacheReplicator(true, true, true, true, 1000));
+                            new RMIAsynchronousCacheReplicator(
+                                _config.sendNewRecordsToPeers,
+                                _config.invalidateUpdatedRecordsOnPeers,
+                                _config.sendUpdatedRecordsToPeers,
+                                _config.invalidateRemovedRecordsOnPeers,
+                                _config.replicationInterval));
                     }
                     _cachemgr.addCache(_cache);
                 }
@@ -142,7 +147,7 @@ public class EHCacheAdapter
     {
     }
 
-    protected boolean _distributed;
+    protected EHCacheConfig _config;
     protected CacheManager _cachemgr;
 
     // this is just for convenience and memory use; we don't rely on pointer equality anywhere
