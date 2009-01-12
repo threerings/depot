@@ -51,9 +51,9 @@ public class EHCacheAdapter
             CacheManagerPeerListener listener = _cachemgr.getCachePeerListener();
             CacheManagerPeerProvider provider = _cachemgr.getCachePeerProvider();
             if (provider == null || listener == null) {
-                // we want either both listener and provider, or neither
-                log.warning("EHCache misconfigured, distributed mode disabled [listener =" +
-                    listener + ", provider=" + provider);
+                log.warning("Distributed mode disabled. Please set a CacheManagerPeerListener " +
+                            " and a CacheManagerPeerProvider in your ehcache.xml configuration",
+                            "listener", listener, "provider", provider);
                 _config.distributed = false;
             }
         }
@@ -115,7 +115,6 @@ public class EHCacheAdapter
                 _cache = _cachemgr.getCache(id);
                 if (_cache == null) {
                     // create the cache programatically with reasonable settings
-                    // TODO: we will eventually need this to be configurable in .properties
                     _cache = new Cache(id,
                         _config.elementsInMemory,
                         _config.overflowToDisk,
