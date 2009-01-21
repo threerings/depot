@@ -53,6 +53,11 @@ public class LiteralExp
         return _text;
     }
 
+    public String toString ()
+    {
+        return _text;
+    }
+
     /** The literal text of this expression, e.g. COUNT(*) */
     protected String _text;
 }

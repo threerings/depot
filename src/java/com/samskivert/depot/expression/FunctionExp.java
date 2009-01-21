@@ -20,6 +20,8 @@
 
 package com.samskivert.depot.expression;
 
+import com.samskivert.util.StringUtil;
+
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
@@ -61,6 +63,11 @@ public class FunctionExp implements SQLExpression
     public SQLExpression[] getArguments ()
     {
         return _arguments;
+    }
+
+    public String toString ()
+    {
+        return _function + "(" + StringUtil.join(_arguments, ", ") + ")";
     }
 
     /** The literal name of this function, e.g. FLOOR */
