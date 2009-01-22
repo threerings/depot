@@ -40,6 +40,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 import com.samskivert.util.ArrayUtil;
+import com.samskivert.util.StringUtil;
 import com.samskivert.util.Tuple;
 
 import com.samskivert.jdbc.ColumnDefinition;
@@ -229,14 +230,15 @@ public class DepotMarshaller<T extends PersistentRecord>
             if (entity != null) {
                 // add any indices needed for uniqueness constraints
                 for (UniqueConstraint constraint : entity.uniqueConstraints()) {
-                    List<ColumnExp> colExps = Lists.newArrayList();
+                    ColumnExp[] colExps = new ColumnExp[constraint.fields().length];
+                    int ii = 0;
                     for (String field : constraint.fields()) {
                         FieldMarshaller<?> fm = _fields.get(field);
                         if (fm == null) {
                             throw new IllegalArgumentException(
                                 "Unknown unique constraint field: " + field);
                         }
-                        colExps.add(new ColumnExp(_pClass, field));
+                        colExps[ii ++] = new ColumnExp(_pClass, field);
                     }
                     _indexes.add(buildIndex(constraint.name(), true, colExps));
                 }
@@ -496,7 +498,7 @@ public class DepotMarshaller<T extends PersistentRecord>
         if (getTableName() == null) {
             return;
         }
-
+        
         // figure out the list of fields that correspond to actual table columns and generate the
         // SQL used to create and migrate our table (unless we're a computed entity)
         _columnFields = new String[_allFields.length];
@@ -535,7 +537,7 @@ public class DepotMarshaller<T extends PersistentRecord>
                 return 0;
             }
         });
-
+        
         // fetch all relevant information regarding our table from the database
         TableMetaData metaData = TableMetaData.load(ctx, getTableName());
 
@@ -1117,6 +1119,11 @@ public class DepotMarshaller<T extends PersistentRecord>
                 pkName = rs.getString("PK_NAME");
                 pkColumns.add(rs.getString("COLUMN_NAME"));
             }
+        }
+        
+        public String toString ()
+        {
+            return StringUtil.fieldsToString(this);
         }
     }
 
