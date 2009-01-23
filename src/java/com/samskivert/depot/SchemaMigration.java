@@ -221,14 +221,14 @@ public abstract class SchemaMigration extends Modifier
     
         @Override
         protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-            if (!liaison.tableContainsIndex(conn, _tableName, _ixName)) {
+            String fullIxName = _tableName + "_" + _ixName;
+            if (!liaison.tableContainsIndex(conn, _tableName, fullIxName)) {
                 // we'll accept this inconsistency
-                log.warning(_tableName + " index '" + _ixName + "' does not exist.");
+                log.warning("No index '" + fullIxName + "' found on " + _tableName);
                 return 0;
             }
-
-            log.info("Dropping index '" + _ixName + "' from " + _tableName);
-            liaison.dropIndex(conn, _tableName, _ixName);
+            log.info("Dropping index '" + fullIxName + "' from " + _tableName);
+            liaison.dropIndex(conn, _tableName, fullIxName);
             return 1;
         }
     
