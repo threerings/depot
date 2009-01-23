@@ -29,6 +29,7 @@ import com.samskivert.depot.CacheKey;
 import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.Stats;
+import com.samskivert.depot.CacheAdapter.CacheCategory;
 import com.samskivert.jdbc.DatabaseLiaison;
 
 /**
@@ -97,7 +98,7 @@ public abstract class Modifier implements Operation<Integer>
             Integer rows = super.invoke(ctx, conn, liaison);
             // if we have both a key and a record, cache
             if (_key != null && _result != null) {
-                ctx.cacheStore(_key, _result.clone());
+                ctx.cacheStore(CacheCategory.RECORD, _key, _result.clone());
             }
             return rows;
         }

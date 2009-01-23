@@ -34,6 +34,7 @@ import com.samskivert.depot.DepotRepository;
 import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.Stats;
+import com.samskivert.depot.CacheAdapter.CacheCategory;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.SelectClause;
 import com.samskivert.depot.clause.WhereClause;
@@ -104,7 +105,7 @@ public class FindOneQuery<T extends PersistentRecord> extends Query<T>
                 log.info("Loaded " + (key != null ? key : _marsh.getTableName()));
             }
             if (key != null) {
-                ctx.cacheStore(key, (result != null) ? result.clone() : null);
+                ctx.cacheStore(CacheCategory.RECORD, key, (result != null) ? result.clone() : null);
                 if (PersistenceContext.CACHE_DEBUG) {
                     log.info("Cached " + key);
                 }

@@ -46,6 +46,7 @@ import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.SimpleCacheKey;
 import com.samskivert.depot.Stats;
+import com.samskivert.depot.CacheAdapter.CacheCategory;
 import com.samskivert.depot.clause.FieldOverride;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.SelectClause;
@@ -134,7 +135,8 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
                              "keys", keysToString(_keys), "cached", (_qkey != null));
                 }
                 if (_qkey != null) {
-                    ctx.cacheStore(_qkey, _keys); // cache the resulting key set
+                    // cache the resulting key set
+                    ctx.cacheStore(CacheCategory.KEYSET, _qkey, _keys);
                 }
                 // and fetch any records we can from the cache
                 _fetchKeys = loadFromCache(ctx, _keys, _entities);
@@ -239,7 +241,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
                     result.size(), "cacheKey", _qkey);
             }
             if (_qkey != null) {
-                ctx.cacheStore(_qkey, result); // cache the entire result set
+                ctx.cacheStore(CacheCategory.RESULT, _qkey, result); // cache the entire result set
             }
             return result;
         }
@@ -344,7 +346,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
                 if (entities.put(key, obj) != null) {
                     dups++;
                 }
-                ctx.cacheStore(key, obj.clone()); // cache our result
+                ctx.cacheStore(CacheCategory.RECORD, key, obj.clone()); // cache our result
                 got.add(key);
                 cnt++;
             }

@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -34,6 +34,7 @@ import com.google.common.collect.Sets;
 
 import com.samskivert.io.PersistenceException;
 import com.samskivert.util.StringUtil;
+import com.samskivert.util.Tuple;
 
 import com.samskivert.jdbc.ConnectionProvider;
 import com.samskivert.jdbc.DatabaseLiaison;
@@ -42,6 +43,8 @@ import com.samskivert.jdbc.LiaisonRegistry;
 import com.samskivert.jdbc.MySQLLiaison;
 import com.samskivert.jdbc.PostgreSQLLiaison;
 
+import com.samskivert.depot.CacheAdapter.CacheCategory;
+import com.samskivert.depot.CacheAdapter.CachedValue;
 import com.samskivert.depot.annotation.TableGenerator;
 import com.samskivert.depot.impl.DepotMarshaller;
 import com.samskivert.depot.impl.DepotTypes;
@@ -317,15 +320,14 @@ public class PersistenceContext
         if (_cache == null) {
             return null;
         }
-        CacheAdapter.CacheBin<T> bin = _cache.getCache(key.getCacheId());
-        CacheAdapter.CachedValue<T> ref = bin.lookup(key.getCacheKey());
+        CacheAdapter.CachedValue<T> ref = _cache.lookup(key.getCacheId(), key.getCacheKey());
         return (ref == null) ? null : ref.getValue();
     }
 
     /**
      * Stores a new entry indexed by the given key.
      */
-    public <T> void cacheStore (CacheKey key, T entry)
+    public <T> void cacheStore (CacheCategory category, CacheKey key, T entry)
     {
         if (_cache == null) {
             return;
@@ -337,12 +339,11 @@ public class PersistenceContext
         }
         log.debug("storing [key=" + key + ", value=" + entry + "]");
 
-        CacheAdapter.CacheBin<T> bin = _cache.getCache(key.getCacheId());
-        CacheAdapter.CachedValue<T> element = bin.lookup(key.getCacheKey());
+        CacheAdapter.CachedValue<T> element = _cache.lookup(key.getCacheId(), key.getCacheKey());
         T oldEntry = (element != null ? element.getValue() : null);
 
         // update the cache
-        bin.store(key.getCacheKey(), entry);
+        _cache.store(category, key.getCacheId(), key.getCacheKey(), entry);
 
         // then do cache invalidations
         Set<CacheListener<?>> listeners = _listenerSets.get(key.getCacheId());
@@ -392,8 +393,7 @@ public class PersistenceContext
             log.info("Invalidating", "id", cacheId, "key", cacheKey);
         }
 
-        CacheAdapter.CacheBin<T> bin = _cache.getCache(cacheId);
-        CacheAdapter.CachedValue<T> element = bin.lookup(cacheKey);
+        CacheAdapter.CachedValue<T> element = _cache.lookup(cacheId, cacheKey);
         if (element != null) {
             // find the old entry, if any
             T oldEntry = element.getValue();
@@ -413,7 +413,7 @@ public class PersistenceContext
         }
 
         // then remove the keyed entry from the cache system
-        bin.remove(cacheKey);
+        _cache.remove(cacheId, cacheKey);
     }
 
     /**
@@ -435,15 +435,10 @@ public class PersistenceContext
         if (_cache == null) {
             return;
         }
-        CacheAdapter.CacheBin<T> bin = _cache.getCache(cacheId);
-        if (bin != null) {
-            for (Object key : bin.enumerateKeys()) {
-                CacheAdapter.CachedValue<T> element = bin.lookup((Serializable) key);
-                T value;
-                if (element != null && (value = element.getValue()) != null) {
-                    filter.visitCacheEntry(this, cacheId, (Serializable) key, value);
-                }
-            }
+
+        Iterable<Tuple<Serializable, CachedValue<T>>> entries = _cache.<T>enumerate(cacheId);
+        for (Tuple<Serializable, CachedValue<T>> entry : entries) {
+            filter.visitCacheEntry(this, cacheId, entry.left, entry.right.getValue());
         }
     }
 
