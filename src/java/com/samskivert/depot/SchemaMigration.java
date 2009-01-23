@@ -210,6 +210,32 @@ public abstract class SchemaMigration extends Modifier
     }
 
     /**
+     * A convenient migration for dropping a column from an entity.
+     */
+    public static class DropIndex extends SchemaMigration
+    {
+        public DropIndex (int targetVersion, String ixName) {
+            super(targetVersion);
+            _ixName = ixName;
+        }
+    
+        @Override
+        protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+            if (!liaison.tableContainsIndex(conn, _tableName, _ixName)) {
+                // we'll accept this inconsistency
+                log.warning(_tableName + " index '" + _ixName + "' does not exist.");
+                return 0;
+            }
+
+            log.info("Dropping index '" + _ixName + "' from " + _tableName);
+            liaison.dropIndex(conn, _tableName, _ixName);
+            return 1;
+        }
+    
+        protected String _ixName;
+    }
+
+    /**
      * If this method returns true, this migration will be run <b>before</b> the default
      * migrations, if false it will be run after.
      */
