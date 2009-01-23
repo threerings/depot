@@ -198,28 +198,20 @@ public class EHCacheAdapter
             EHCacheKey key = (EHCacheKey)element.getKey();
             EHCacheBin<?> bin = _bins.get(key.getCacheId());
             if (bin == null) {
-                log.warning("Dropping element removal without cache bin", "key", key);
+                log.debug("Dropping element removal without cache bin", "key", key);
                 return;
             }
             bin.removeKey(key.getCacheKey());
-            for (Tuple<Serializable, CachedValue<Object>> tuple :
-                enumerate(((EHCacheKey) element.getKey()).getCacheId())) {
-                log.debug("Enumeration: " + tuple);
-            }
         }
         protected void addToBin (Ehcache cache, Element element)
         {
             EHCacheKey key = (EHCacheKey)element.getKey();
             EHCacheBin<?> bin = _bins.get(key.getCacheId());
             if (bin == null) {
-                log.warning("Dropping element addition without cache bin", "key", key);
+                log.debug("Dropping element addition without cache bin", "key", key);
                 return;
             }
             bin.addKey(key.getCacheKey());
-            for (Tuple<Serializable, CachedValue<Object>> tuple :
-                enumerate(((EHCacheKey) element.getKey()).getCacheId())) {
-                log.debug("Enumeration: " + tuple);
-            }
         }
     };
     
