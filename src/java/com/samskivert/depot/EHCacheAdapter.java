@@ -25,9 +25,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicates;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.samskivert.util.Tuple;
@@ -44,7 +41,7 @@ import static com.samskivert.depot.Log.log;
  * in one {@link Ehcache}. All (cacheId, key) combinations within one category is stuffed into the
  * same {@link Ehcache}, and all elements are cached under {@link EHCacheKey}, which basically
  * wraps just such a tuple.
- * 
+ *
  * Thus there are currently only three Ehcaches in play, called 'depotRecord', 'depotKeyset', and
  * 'depotResult'. These must be defined in your ehcache.xml configuration. If you use distributed
  * replication/invalidation, you should replicate updates and removes but not puts nor
@@ -72,17 +69,25 @@ public class EHCacheAdapter
     // from CacheAdapter
     public <T> CachedValue<T> lookup (String cacheId, Serializable key)
     {
+        long now = System.currentTimeMillis();
         @SuppressWarnings("unchecked")
         EHCacheBin<T> bin = (EHCacheBin<T>) _bins.get(cacheId);
         if (bin == null) {
             return null;
         }
-        return lookup(bin.getCache(), cacheId, key);
+        CachedValue<T> result = lookup(bin.getCache(), cacheId, key);
+        long dT = System.currentTimeMillis() - now;
+        if (dT > 50) {
+            log.warning("Aii! A simple ehcache lookup took over 50 ms!", "cacheId", cacheId,
+                "key", key, "dT", dT);
+        }
+        return result;
     }
 
     // from CacheAdapter
     public <T> void store (CacheCategory category, String cacheId, Serializable key, T value)
     {
+        long now = System.currentTimeMillis();
         Ehcache cache = _categories.get(category);
         if (cache == null) {
             throw new IllegalArgumentException("Unknown category: " + category);
@@ -94,35 +99,57 @@ public class EHCacheAdapter
             _bins.put(cacheId, bin);
         }
         bin.getCache().put(new Element(new EHCacheKey(cacheId, key), value != null ? value : NULL));
+        long dT = System.currentTimeMillis() - now;
+        if (dT > 50) {
+            log.warning("Aii! A simple ehcache store took over 50 ms!", "cacheId", cacheId,
+                "key", key, "dT", dT);
+        }
     }
 
     // from CacheAdapter
     public void remove (String cacheId, Serializable key)
     {
+        long now = System.currentTimeMillis();
         EHCacheBin<?> bin = _bins.get(cacheId);
         if (bin != null) {
             bin.getCache().remove(new EHCacheKey(cacheId, key));
+        }
+        long dT = System.currentTimeMillis() - now;
+        if (dT > 50) {
+            log.warning("Aii! A simple ehcache remove took over 50 ms!", "cacheId", cacheId,
+                "key", key, "dT", dT);
         }
     }
 
     // from CacheAdapter
     public <T> Iterable<Tuple<Serializable, CachedValue<T>>> enumerate (final String cacheId)
     {
+        if (_slowEnumerations > 5) {
+            return Collections.emptySet();
+        }
+        long now = System.currentTimeMillis();
+
         EHCacheBin<?> bin = _bins.get(cacheId);
         if (bin == null) {
             return Collections.emptySet();
         }
 
-        final Ehcache cache = bin.getCache();
-        Iterable<Tuple<Serializable, CachedValue<T>>> tuples = Iterables.transform(
-            bin.getKeys(), new Function<Serializable, Tuple<Serializable, CachedValue<T>>> () {
-                public Tuple<Serializable, CachedValue<T>> apply (Serializable key) {
-                    CachedValue<T> value = lookup(cache, cacheId, key);
-                    return (value != null) ? Tuple.newTuple(key, value) : null;
-                }
-            });
-        
-        return Iterables.filter(tuples, Predicates.notNull());
+        Set<Tuple<Serializable, CachedValue<T>>> result = Sets.newHashSet();
+        Ehcache cache = bin.getCache();
+
+        for (Serializable key : bin.getKeys()) {
+            CachedValue<T> value = lookup(cache, cacheId, key);
+            if (value != null) {
+                result.add(Tuple.newTuple(key, value));
+            }
+        }
+        long dT = System.currentTimeMillis() - now;
+        if (dT > 50) {
+            _slowEnumerations ++;
+            log.warning("Aii! Enumerating cache took a long time!", "cacheId", cacheId, "dT", dT,
+                "cacheSize", result.size(), "disabled", _slowEnumerations > 5);
+        }
+        return result;
     }
 
     // from CacheAdapter
@@ -163,8 +190,13 @@ public class EHCacheAdapter
         return cache;
     }
 
-    protected Map<CacheCategory, Ehcache> _categories = Maps.newConcurrentHashMap();
-    protected Map<String, EHCacheBin<?>> _bins = Maps.newConcurrentHashMap();
+    // TODO: To be removed when we're done investigating potential sluggishness
+    protected int _slowEnumerations = 0;
+
+    protected Map<CacheCategory, Ehcache> _categories =
+        Collections.synchronizedMap(Maps.<CacheCategory, Ehcache>newHashMap());
+    protected Map<String, EHCacheBin<?>> _bins =
+        Collections.synchronizedMap(Maps.<String, EHCacheBin<?>> newHashMap());
 
     protected CacheEventListener _cacheEventListener = new CacheEventListener() {
         public Object clone () throws CloneNotSupportedException {
@@ -214,7 +246,7 @@ public class EHCacheAdapter
             bin.addKey(key.getCacheKey());
         }
     };
-    
+
     protected static class EHCacheBin<T>
     {
         public EHCacheBin (Ehcache cache, String id)
@@ -242,7 +274,7 @@ public class EHCacheAdapter
         {
             return _cache;
         }
-        
+
         protected Ehcache _cache;
         protected String _id;
 
@@ -268,18 +300,18 @@ public class EHCacheAdapter
         public String getCacheId () {
             return _id;
         }
-        
+
         public Serializable getCacheKey ()
         {
             return _key;
         }
-        
+
         @Override
         public String toString ()
         {
             return "[" + _id + ", " + _key + "]";
         }
-        
+
         @Override
         public int hashCode ()
         {
