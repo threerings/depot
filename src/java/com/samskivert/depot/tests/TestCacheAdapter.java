@@ -69,15 +69,13 @@ public class TestCacheAdapter implements CacheAdapter
         // System.err.println("REMOVE " + key);
         _cache.remove(new Tuple<String, Serializable>(cacheId, key));
     }
-    public <T> Iterable<Tuple<Serializable, CachedValue<T>>> enumerate (String cacheId)
+    public <T> Iterable<Serializable> enumerate (String cacheId)
     {
         // in a real implementation this would be a lazily constructed iterable
-        List<Tuple<Serializable, CachedValue<T>>> result = Lists.newArrayList();
+        List<Serializable> result = Lists.newArrayList();
         for (Map.Entry<Tuple<String, Serializable>, CachedValue<?>> entry: _cache.entrySet()) {
             if (entry.getKey().left.equals(cacheId)) {
-                @SuppressWarnings("unchecked")
-                CachedValue<T> value = (CachedValue<T>) entry.getValue();
-                result.add(Tuple.newTuple(entry.getKey().right, value));
+                result.add(entry.getKey().right);
             }
         }
         return result;
