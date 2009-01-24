@@ -436,9 +436,11 @@ public class PersistenceContext
             return;
         }
 
-        Iterable<Tuple<Serializable, CachedValue<T>>> entries = _cache.<T>enumerate(cacheId);
-        for (Tuple<Serializable, CachedValue<T>> entry : entries) {
-            filter.visitCacheEntry(this, cacheId, entry.left, entry.right.getValue());
+        for (Serializable key : _cache.enumerate(cacheId)) {
+            CachedValue<T> result = _cache.lookup(cacheId, key);
+            if (result != null && result.getValue() != null) {
+                filter.visitCacheEntry(this, cacheId, key, result.getValue());
+            }
         }
     }
 

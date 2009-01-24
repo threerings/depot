@@ -27,7 +27,6 @@ import java.util.Set;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.samskivert.util.Tuple;
 
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
@@ -122,34 +121,14 @@ public class EHCacheAdapter
     }
 
     // from CacheAdapter
-    public <T> Iterable<Tuple<Serializable, CachedValue<T>>> enumerate (final String cacheId)
+    public <T> Iterable<Serializable> enumerate (final String cacheId)
     {
-        if (_slowEnumerations > 5) {
-            return Collections.emptySet();
-        }
-        long now = System.currentTimeMillis();
-
         EHCacheBin<?> bin = _bins.get(cacheId);
         if (bin == null) {
             return Collections.emptySet();
         }
 
-        Set<Tuple<Serializable, CachedValue<T>>> result = Sets.newHashSet();
-        Ehcache cache = bin.getCache();
-
-        for (Serializable key : bin.getKeys()) {
-            CachedValue<T> value = lookup(cache, cacheId, key);
-            if (value != null) {
-                result.add(Tuple.newTuple(key, value));
-            }
-        }
-        long dT = System.currentTimeMillis() - now;
-        if (dT > 50) {
-            _slowEnumerations ++;
-            log.warning("Aii! Enumerating cache took a long time!", "cacheId", cacheId, "dT", dT,
-                "cacheSize", result.size(), "disabled", _slowEnumerations > 5);
-        }
-        return result;
+        return Sets.newHashSet(bin.getKeys());
     }
 
     // from CacheAdapter
@@ -189,9 +168,6 @@ public class EHCacheAdapter
         _categories.put(category, cache);
         return cache;
     }
-
-    // TODO: To be removed when we're done investigating potential sluggishness
-    protected int _slowEnumerations = 0;
 
     protected Map<CacheCategory, Ehcache> _categories =
         Collections.synchronizedMap(Maps.<CacheCategory, Ehcache>newHashMap());
@@ -278,7 +254,8 @@ public class EHCacheAdapter
         protected Ehcache _cache;
         protected String _id;
 
-        protected Set<Serializable> _keys = Sets.newConcurrentHashSet();
+        protected Set<Serializable> _keys = Collections.synchronizedSet(
+            Sets.<Serializable>newHashSet());
     }
 
     // this is just for convenience and memory use; we don't rely on pointer equality anywhere

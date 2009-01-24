@@ -23,7 +23,6 @@ package com.samskivert.depot;
 import java.io.Serializable;
 
 import com.samskivert.depot.impl.FindAllQuery;
-import com.samskivert.util.Tuple;
 
 /**
  * Implementations of this interface are responsible for all the caching needs of Depot.
@@ -31,14 +30,14 @@ import com.samskivert.util.Tuple;
  * From the point of view of this interface, there are a potentially very large number of
  * caches available, each idenfided by a unique cacheId. Currently Depot creates up to three
  * caches for each record type:
- * 
+ *
  * Any record type with a primary key has a {@link CacheCategory#RECORD} cache, for storing
  * record instances by primary key.
- * 
+ *
  * Record types with primary keys may also have a {@link CacheCategory#KEYSET} cache wherein
  * {@link KeySet} instances are stored, identified by query strings. See {@link FindAllQuery}
  * for more on this.
- * 
+ *
  * Finally, clients may request {@link CacheCategory#RESULT} caching of entire result sets of
  * some record type -- which does not need to have a primary key, in contrast to the other two
  * categories. These are also identified by query strings, and end up in a third cache.
@@ -73,7 +72,7 @@ public interface CacheAdapter
     /**
      * Provides a way to enumerate the currently cached entries for the given cache.
      */
-    public <T> Iterable<Tuple<Serializable, CachedValue<T>>> enumerate (String cacheId);
+    public <T> Iterable<Serializable> enumerate (String cacheId);
 
     /**
      * Shut down all operations, e.g. persisting memory contents to disk.
