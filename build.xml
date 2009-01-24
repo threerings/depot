@@ -102,6 +102,7 @@
     <javac srcdir="${src.dir}" destdir="${classes.dir}" includeAntRuntime="false"
            debug="on" optimize="${build.optimize}" source="1.5" target="1.5" encoding="utf-8">
       <classpath refid="classpath"/>
+      <exclude name="com/samskivert/depot/OldEHCacheAdapter.java" unless="build.ehcache"/>
       <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="build.ehcache"/>
       <exclude name="com/samskivert/depot/tools/**" unless="build.tools"/>
       <exclude name="com/samskivert/depot/tests/**" unless="build.tests"/>
