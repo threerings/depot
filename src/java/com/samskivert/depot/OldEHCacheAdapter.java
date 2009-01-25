@@ -174,19 +174,17 @@ public class OldEHCacheAdapter
 
     public <T> CachedValue<T> lookup (String cacheId, Serializable key)
     {
-        // TODO Auto-generated method stub
-        return null;
+        EHCacheBin<T> bin = getCache(cacheId);
+        return bin.lookup(key);
     }
 
     public void remove (String cacheId, Serializable key)
     {
-        // TODO Auto-generated method stub
-
+        getCache(cacheId).remove(key);
     }
 
     public <T> void store (CacheCategory category, String cacheId, Serializable key, T value)
     {
-        // TODO Auto-generated method stub
-
+        getCache(cacheId).store(key, value);
     }
 }
