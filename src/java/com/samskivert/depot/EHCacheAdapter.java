@@ -22,6 +22,7 @@ package com.samskivert.depot;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -127,7 +128,8 @@ public class EHCacheAdapter
         if (bin == null) {
             return Collections.emptySet();
         }
-
+        
+        // let's return a simple copy of the bin's fancy concurrent hashset
         return Sets.newHashSet(bin.getKeys());
     }
 
@@ -254,8 +256,7 @@ public class EHCacheAdapter
         protected Ehcache _cache;
         protected String _id;
 
-        protected Set<Serializable> _keys = Collections.synchronizedSet(
-            Sets.<Serializable>newHashSet());
+        protected Set<Serializable> _keys = Sets.newConcurrentHashSet();
     }
 
     // this is just for convenience and memory use; we don't rely on pointer equality anywhere
