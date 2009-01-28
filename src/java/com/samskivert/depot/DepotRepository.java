@@ -711,8 +711,22 @@ public abstract class DepotRepository
         final String[] fields = new String[fieldsValues.length/2];
         final SQLExpression[] values = new SQLExpression[fields.length];
         for (int ii = 0, idx = 0; ii < fields.length; ii++) {
-            fields[ii] = ((ColumnExp)fieldsValues[idx++]).name;
-            values[ii] = new ValueExp(fieldsValues[idx++]);
+            if (fieldsValues[idx] instanceof ColumnExp) {
+                fields[ii] = ((ColumnExp) fieldsValues[idx]).name;
+            } else if (fieldsValues[idx] instanceof String) {
+                fields[ii] = (String) fieldsValues[idx];
+            } else {
+                throw new IllegalArgumentException(
+                    "Field identifier #" + (ii+1) + " is neither String nor ColumnExp");
+            }
+            idx ++;
+            
+            if (fieldsValues[idx] instanceof SQLExpression) {
+                values[ii] = (SQLExpression) fieldsValues[idx];
+            } else {
+                values[ii] = new ValueExp(fieldsValues[idx]);
+            }
+            idx ++;
         }
         UpdateClause<T> update = new UpdateClause<T>(type, key, fields, values);
         final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, update));
