@@ -79,8 +79,9 @@ public class EHCacheAdapter
         long dT = System.currentTimeMillis() - now;
         if (dT > 50) {
             log.warning("Aii! A simple ehcache lookup took over 50 ms!", "cacheId", cacheId,
-                "key", key, "dT", dT);
+                        "key", key, "dT", dT, "lookups", _lookups);
         }
+        _lookups ++;
         return result;
     }
 
@@ -102,8 +103,9 @@ public class EHCacheAdapter
         long dT = System.currentTimeMillis() - now;
         if (dT > 50) {
             log.warning("Aii! A simple ehcache store took over 50 ms!", "cacheId", cacheId,
-                "key", key, "dT", dT);
+                        "key", key, "dT", dT, "stores", _stores);
         }
+        _stores ++;
     }
 
     // from CacheAdapter
@@ -117,20 +119,29 @@ public class EHCacheAdapter
         long dT = System.currentTimeMillis() - now;
         if (dT > 50) {
             log.warning("Aii! A simple ehcache remove took over 50 ms!", "cacheId", cacheId,
-                "key", key, "dT", dT);
+                        "key", key, "dT", dT, "removes", _removes);
         }
+        _removes ++;
     }
 
     // from CacheAdapter
     public <T> Iterable<Serializable> enumerate (final String cacheId)
     {
+        long now = System.currentTimeMillis();
         EHCacheBin<?> bin = _bins.get(cacheId);
         if (bin == null) {
             return Collections.emptySet();
         }
         
         // let's return a simple copy of the bin's fancy concurrent hashset
-        return Sets.newHashSet(bin.getKeys());
+        Set<Serializable> result = Sets.newHashSet(bin.getKeys());
+        long dT = System.currentTimeMillis() - now;
+        if (dT > 250) {
+            log.warning("Aii! A cache enumeration took over 250 ms!", "cacheId", cacheId,
+                        "dT", dT, "enumerations", _enumerations);
+        }
+        _enumerations ++;
+        return result;
     }
 
     // from CacheAdapter
@@ -170,6 +181,8 @@ public class EHCacheAdapter
         _categories.put(category, cache);
         return cache;
     }
+
+    protected int _lookups, _stores, _removes, _enumerations;
 
     protected Map<CacheCategory, Ehcache> _categories =
         Collections.synchronizedMap(Maps.<CacheCategory, Ehcache>newHashMap());
