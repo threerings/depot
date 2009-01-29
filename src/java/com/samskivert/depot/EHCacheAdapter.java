@@ -22,7 +22,6 @@ package com.samskivert.depot;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -77,8 +76,8 @@ public class EHCacheAdapter
         }
         CachedValue<T> result = lookup(bin.getCache(), cacheId, key);
         long dT = System.currentTimeMillis() - now;
-        if (dT > 50) {
-            log.warning("Aii! A simple ehcache lookup took over 50 ms!", "cacheId", cacheId,
+        if (dT > 100) {
+            log.warning("Aii! A simple ehcache lookup took over 100 ms!", "cacheId", cacheId,
                         "key", key, "dT", dT, "lookups", _lookups);
         }
         _lookups ++;
@@ -101,8 +100,8 @@ public class EHCacheAdapter
         }
         bin.getCache().put(new Element(new EHCacheKey(cacheId, key), value != null ? value : NULL));
         long dT = System.currentTimeMillis() - now;
-        if (dT > 50) {
-            log.warning("Aii! A simple ehcache store took over 50 ms!", "cacheId", cacheId,
+        if (dT > 100) {
+            log.warning("Aii! A simple ehcache store took over 100 ms!", "cacheId", cacheId,
                         "key", key, "dT", dT, "stores", _stores);
         }
         _stores ++;
@@ -117,8 +116,8 @@ public class EHCacheAdapter
             bin.getCache().remove(new EHCacheKey(cacheId, key));
         }
         long dT = System.currentTimeMillis() - now;
-        if (dT > 50) {
-            log.warning("Aii! A simple ehcache remove took over 50 ms!", "cacheId", cacheId,
+        if (dT > 100) {
+            log.warning("Aii! A simple ehcache remove took over 100 ms!", "cacheId", cacheId,
                         "key", key, "dT", dT, "removes", _removes);
         }
         _removes ++;
