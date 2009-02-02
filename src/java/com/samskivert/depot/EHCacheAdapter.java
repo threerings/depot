@@ -27,6 +27,7 @@ import java.util.Set;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.samskivert.util.Histogram;
 
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
@@ -49,10 +50,18 @@ import static com.samskivert.depot.Log.log;
 public class EHCacheAdapter
     implements CacheAdapter
 {
-    protected static final String EHCACHE_RECORD_CACHE = "depotRecord";
-    protected static final String EHCACHE_KEYSET_CACHE = "depotKeyset";
-    protected static final String EHCACHE_RESULT_CACHE = "depotResult";
+    public static final String EHCACHE_RECORD_CACHE = "depotRecord";
+    public static final String EHCACHE_KEYSET_CACHE = "depotKeyset";
+    public static final String EHCACHE_RESULT_CACHE = "depotResult";
 
+    public static class EHCachePerformance
+    {
+        public Histogram lookups;
+        public Histogram stores;
+        public Histogram removes;
+        public Histogram enumerations;
+    }
+    
     /**
      * Creates an adapter using the supplied cache manager. Note: this adapter does not shut down
      * the supplied manager when it is shutdown. The caller is responsible for shutting down the
@@ -75,12 +84,7 @@ public class EHCacheAdapter
             return null;
         }
         CachedValue<T> result = lookup(bin.getCache(), cacheId, key);
-        long dT = System.currentTimeMillis() - now;
-        if (dT > 100) {
-            log.warning("Aii! A simple ehcache lookup took over 100 ms!", "cacheId", cacheId,
-                        "key", key, "dT", dT, "lookups", _lookups);
-        }
-        _lookups ++;
+        _lookups.addValue((int) (System.currentTimeMillis() - now));
         return result;
     }
 
@@ -99,12 +103,7 @@ public class EHCacheAdapter
             _bins.put(cacheId, bin);
         }
         bin.getCache().put(new Element(new EHCacheKey(cacheId, key), value != null ? value : NULL));
-        long dT = System.currentTimeMillis() - now;
-        if (dT > 100) {
-            log.warning("Aii! A simple ehcache store took over 100 ms!", "cacheId", cacheId,
-                        "key", key, "dT", dT, "stores", _stores);
-        }
-        _stores ++;
+        _stores.addValue((int) (System.currentTimeMillis() - now));
     }
 
     // from CacheAdapter
@@ -115,12 +114,7 @@ public class EHCacheAdapter
         if (bin != null) {
             bin.getCache().remove(new EHCacheKey(cacheId, key));
         }
-        long dT = System.currentTimeMillis() - now;
-        if (dT > 100) {
-            log.warning("Aii! A simple ehcache remove took over 100 ms!", "cacheId", cacheId,
-                        "key", key, "dT", dT, "removes", _removes);
-        }
-        _removes ++;
+        _removes.addValue((int) (System.currentTimeMillis() - now));
     }
 
     // from CacheAdapter
@@ -134,18 +128,29 @@ public class EHCacheAdapter
         
         // let's return a simple copy of the bin's fancy concurrent hashset
         Set<Serializable> result = Sets.newHashSet(bin.getKeys());
-        long dT = System.currentTimeMillis() - now;
-        if (dT > 250) {
-            log.warning("Aii! A cache enumeration took over 250 ms!", "cacheId", cacheId,
-                        "dT", dT, "enumerations", _enumerations);
-        }
-        _enumerations ++;
+        _enumerations.addValue((int) (System.currentTimeMillis() - now));
         return result;
     }
 
     // from CacheAdapter
     public void shutdown ()
     {
+        log.info("EHCacheAdapter shutting down", "lookups", _lookups, 
+            "stores", _stores, "removes", _removes, "enumerations", _enumerations);
+    }
+    
+    /**
+     * Return a snapshot of the current histograms detailing how much time the different
+     * operations lookup, store, remove and enumerate take.
+     */
+    public EHCachePerformance getPerformanceSnapshot ()
+    {
+        EHCachePerformance result = new EHCachePerformance();
+        result.lookups = _lookups.clone();
+        result.stores = _stores.clone();
+        result.removes = _removes.clone();
+        result.enumerations = _enumerations.clone();
+        return result;
     }
 
     protected <T> CachedValue<T> lookup (Ehcache cache, String cacheId, Serializable key)
@@ -166,7 +171,6 @@ public class EHCacheAdapter
                 return String.valueOf(value);
             }
         };
-
     }
 
     protected Ehcache bindEHCache (CacheManager cachemgr, CacheCategory category, String cacheName)
@@ -181,7 +185,10 @@ public class EHCacheAdapter
         return cache;
     }
 
-    protected int _lookups, _stores, _removes, _enumerations;
+    protected Histogram _lookups = new Histogram(0, 50, 20);
+    protected Histogram _stores = new Histogram(0, 50, 20);
+    protected Histogram _removes = new Histogram(0, 50, 20);
+    protected Histogram _enumerations = new Histogram(0, 50, 20);
 
     protected Map<CacheCategory, Ehcache> _categories =
         Collections.synchronizedMap(Maps.<CacheCategory, Ehcache>newHashMap());
