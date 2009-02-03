@@ -34,7 +34,6 @@ import com.google.common.collect.Sets;
 
 import com.samskivert.io.PersistenceException;
 import com.samskivert.util.StringUtil;
-import com.samskivert.util.Tuple;
 
 import com.samskivert.jdbc.ConnectionProvider;
 import com.samskivert.jdbc.DatabaseLiaison;
