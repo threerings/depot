@@ -93,10 +93,25 @@ public abstract class DepotRepository
          * there is no invalidation of the keyset query: If records are inserted, deleted or
          * modified, cached keysets will not be updated.
          *
+         * Keysets cached using this strategy should have a short time-to-live.
+         *
          * Note: This strategy may not be used on @Computed records, for records that do not in
          * fact have a primary key, or for queries that use @FieldOverrides.
          */
-        KEYS,
+        SHORT_KEYS,
+
+        /**
+         * This strategy is identical to {@link #RECORDS}, but we also cache the keyset fetched
+         * in the first pass. This makes it much more efficient, but also less reliable because
+         * there is no invalidation of the keyset query: If records are inserted, deleted or
+         * modified, cached keysets will not be updated.
+         * 
+         * Keysets cached using this strategy may have a long time-to-live.
+         *
+         * Note: This strategy may not be used on @Computed records, for records that do not in
+         * fact have a primary key, or for queries that use @FieldOverrides.
+         */
+        LONG_KEYS,
 
         /**
          * This cache strategy is direct and explicit, eschewing the dual phases of the
@@ -363,7 +378,7 @@ public abstract class DepotRepository
         DepotMarshaller<T> marsh = _ctx.getMarshaller(type);
 
         switch (cache) {
-        case KEYS: case BEST: case RECORDS:
+        case LONG_KEYS: case SHORT_KEYS: case BEST: case RECORDS:
             String reason = null;
             if (marsh.getTableName() == null) {
                 reason = type + " is computed";
@@ -380,7 +395,7 @@ public abstract class DepotRepository
                 }
             }
             if (cache == CacheStrategy.BEST) {
-                cache = (reason != null) ? CacheStrategy.NONE : CacheStrategy.KEYS;
+                cache = (reason != null) ? CacheStrategy.NONE : CacheStrategy.SHORT_KEYS;
 
             } else if (reason != null) {
                 // if user explicitly asked for a strategy we can't do, protest
@@ -393,12 +408,14 @@ public abstract class DepotRepository
             cache = CacheStrategy.NONE;
         }
 
-        if (cache == CacheStrategy.KEYS || cache == CacheStrategy.RECORDS) {
-            return _ctx.invoke(new FindAllQuery.WithCache<T>(
-                    _ctx, type, clauses, cache == CacheStrategy.KEYS));
+        switch(cache) {
+        case SHORT_KEYS: case LONG_KEYS: case RECORDS:
+            return _ctx.invoke(new FindAllQuery.WithCache<T>(_ctx, type, clauses, cache));
+            
+        default:
+            return _ctx.invoke(new FindAllQuery.Explicitly<T>(
+                    _ctx, type, clauses, cache == CacheStrategy.CONTENTS));
         }
-        return _ctx.invoke(new FindAllQuery.Explicitly<T>(
-                _ctx, type, clauses, cache == CacheStrategy.CONTENTS));
     }
 
     /**

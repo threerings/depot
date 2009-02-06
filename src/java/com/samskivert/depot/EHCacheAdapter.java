@@ -42,16 +42,17 @@ import static com.samskivert.depot.Log.log;
  * combinations within one category is stuffed into the same {@link Ehcache}, and all elements are
  * cached under {@link EHCacheKey}, which basically wraps just such a tuple.
  *
- * Thus there are currently only three Ehcaches in play, called 'depotRecord', 'depotKeyset', and
- * 'depotResult'. These must be defined in your ehcache.xml configuration. If you use distributed
- * replication/invalidation, you should replicate updates and removes but not puts nor
- * updates-via-copy.
+ * Thus there are currently only four Ehcaches in play, called 'depotRecord', 'depotLongKeyset',
+ * 'depotShortKeyset' and 'depotResult'. These must be defined in your ehcache.xml configuration.
+ * If you use distributed replication/invalidation, you should replicate updates and removes but
+ * not puts nor updates-via-copy.
  */
 public class EHCacheAdapter
     implements CacheAdapter
 {
     public static final String EHCACHE_RECORD_CACHE = "depotRecord";
-    public static final String EHCACHE_KEYSET_CACHE = "depotKeyset";
+    public static final String EHCACHE_SHORT_KEYSET_CACHE = "depotShortKeyset";
+    public static final String EHCACHE_LONG_KEYSET_CACHE = "depotLongKeyset";
     public static final String EHCACHE_RESULT_CACHE = "depotResult";
 
     public static class EHCachePerformance
@@ -70,7 +71,8 @@ public class EHCacheAdapter
     public EHCacheAdapter (CacheManager cachemgr)
     {
         bindEHCache(cachemgr, CacheCategory.RECORD, EHCACHE_RECORD_CACHE);
-        bindEHCache(cachemgr, CacheCategory.KEYSET, EHCACHE_KEYSET_CACHE);
+        bindEHCache(cachemgr, CacheCategory.SHORT_KEYSET, EHCACHE_SHORT_KEYSET_CACHE);
+        bindEHCache(cachemgr, CacheCategory.LONG_KEYSET, EHCACHE_LONG_KEYSET_CACHE);
         bindEHCache(cachemgr, CacheCategory.RESULT, EHCACHE_RESULT_CACHE);
     }
 

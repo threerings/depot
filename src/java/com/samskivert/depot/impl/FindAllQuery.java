@@ -47,6 +47,7 @@ import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.SimpleCacheKey;
 import com.samskivert.depot.Stats;
 import com.samskivert.depot.CacheAdapter.CacheCategory;
+import com.samskivert.depot.DepotRepository.CacheStrategy;
 import com.samskivert.depot.clause.FieldOverride;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.SelectClause;
@@ -67,7 +68,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
     public static class WithCache<T extends PersistentRecord> extends FindAllQuery<T>
     {
         public WithCache (PersistenceContext ctx, Class<T> type,
-                          Collection<? extends QueryClause> clauses, boolean cacheKeys)
+            Collection<? extends QueryClause> clauses, CacheStrategy strategy)
             throws DatabaseException
         {
             super(ctx, type);
@@ -84,11 +85,21 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             }
 
             _select = new SelectClause<T>(_type, _marsh.getPrimaryKeyFields(), clauses);
-            if (cacheKeys) {
+            switch(strategy) {
+            case SHORT_KEYS: case LONG_KEYS:
                 _qkey = new SimpleCacheKey(_marsh.getTableName() + "Keys", _select.toString());
-            } else {
+                _category = (strategy == CacheStrategy.SHORT_KEYS) ?
+                    CacheCategory.SHORT_KEYSET : CacheCategory.LONG_KEYSET;
+                break;
+                
+            case RECORDS:
                 _qkey = null;
+                break;
+                
+            default:
+                throw new IllegalArgumentException("Unexpected cache strategy: " + strategy);
             }
+
         }
 
         @Override // from Query
@@ -136,7 +147,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
                 }
                 if (_qkey != null) {
                     // cache the resulting key set
-                    ctx.cacheStore(CacheCategory.KEYSET, _qkey, _keys);
+                    ctx.cacheStore(_category, _qkey, _keys);
                 }
                 // and fetch any records we can from the cache
                 _fetchKeys = loadFromCache(ctx, _keys, _entities);
@@ -147,6 +158,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
         }
 
         protected SimpleCacheKey _qkey;
+        protected CacheCategory _category;
         protected SelectClause<T> _select;
         protected KeySet<T> _keys;
         protected Set<Key<T>> _fetchKeys;
