@@ -34,7 +34,7 @@ import com.samskivert.depot.impl.FindAllQuery;
  * Any record type with a primary key has a {@link CacheCategory#RECORD} cache, for storing
  * record instances by primary key.
  *
- * Record types with primary keys may also have a {@link CacheCategory#KEYSET} cache wherein
+ * Record types with primary keys may also have a {@link CacheCategory#SHORT_KEYSET} cache wherein
  * {@link KeySet} instances are stored, identified by query strings. See {@link FindAllQuery}
  * for more on this.
  *

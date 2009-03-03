@@ -73,7 +73,7 @@ public abstract class DepotRepository
         /** Completely bypass the cache for this query. */
         NONE,
 
-        /** Use the {@link #KEYS} strategy if possible, else revert to {@link #NONE}. */
+        /** Use the {@link #SHORT_KEYS} strategy if possible, else revert to {@link #NONE}. */
         BEST,
 
         /**
@@ -114,16 +114,16 @@ public abstract class DepotRepository
         LONG_KEYS,
 
         /**
-         * This cache strategy is direct and explicit, eschewing the dual phases of the
-         * {@link #RECORDS} and {@link #KEYS} approaches. However, before the database is invoked
-         * at all, we consult the cache hoping to find the entire result set already stashed away
-         * in there, using the entire query as the key. If we failed to find it, we execute the
-         * query and update the cache with the result.
+         * This cache strategy is direct and explicit, eschewing the dual phases of the {@link
+         * #RECORDS} and {@link #SHORT_KEYS} approaches. However, before the database is invoked at
+         * all, we consult the cache hoping to find the entire result set already stashed away in
+         * there, using the entire query as the key. If we failed to find it, we execute the query
+         * and update the cache with the result.
          *
-         * This strategy has none of the limitations of {@link #KEYS} and can be used with key-less
-         * and @Computed records and arbitrarily complicated queries. Note however that as with
-         * {@link #KEYS}, there is no automatic invalidation. It is also potentially very memory
-         * intensive.
+         * This strategy has none of the limitations of {@link #SHORT_KEYS} and can be used with
+         * key-less and @Computed records and arbitrarily complicated queries. Note however that as
+         * with {@link #SHORT_KEYS}, there is no automatic invalidation. It is also potentially
+         * very memory intensive.
          */
         CONTENTS
     };
@@ -1037,8 +1037,11 @@ public abstract class DepotRepository
     protected <T extends PersistentRecord> int deleteAll (Class<T> type, final WhereClause where)
         throws DatabaseException
     {
-        if (_ctx.getMarshaller(type).hasPrimaryKey()) {
-            // look up the primary keys for all rows matching our where clause and delete using those
+        if (where instanceof CacheInvalidator) {
+            // our where clause knows how to do its own deletion, yay!
+            return deleteAll(type, where, (CacheInvalidator)where);
+        } else if (_ctx.getMarshaller(type).hasPrimaryKey()) {
+            // look up the primary keys for all matching rows matching and delete using those
             KeySet<T> pwhere = KeySet.newKeySet(type, findAllKeys(type, true, where));
             return deleteAll(type, pwhere, pwhere);
         } else {
