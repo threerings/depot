@@ -634,50 +634,6 @@ public abstract class DepotRepository
     }
 
     /**
-     * Updates the specified columns for all persistent objects matching the supplied two-column
-     * primary key.
-     *
-     * @param type the type of the persistent object to be modified.
-     * @param fieldsValues an array containing the columns (as ColumnExp) and the values to be
-     * assigned, in key, value, key, value, etc. order.
-     *
-     * @return the number of rows modified by this action.
-     *
-     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
-     * values that duplicate another row already in the database.
-     * @throws DatabaseException if any problem is encountered communicating with the database.
-     */
-    protected <T extends PersistentRecord> int updatePartial (
-        Class<T> type, ColumnExp ix1, Comparable<?> val1, ColumnExp ix2, Comparable<?> val2,
-        Object... fieldsValues)
-        throws DatabaseException
-    {
-        return updatePartial(new Key<T>(type, ix1, val1, ix2, val2), fieldsValues);
-    }
-
-    /**
-     * Updates the specified columns for all persistent objects matching the supplied three-column
-     * primary key.
-     *
-     * @param type the type of the persistent object to be modified.
-     * @param fieldsValues an array containing the columns (as ColumnExp) and the values to be
-     * assigned, in key, value, key, value, etc. order.
-     *
-     * @return the number of rows modified by this action.
-     *
-     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
-     * values that duplicate another row already in the database.
-     * @throws DatabaseException if any problem is encountered communicating with the database.
-     */
-    protected <T extends PersistentRecord> int updatePartial (
-        Class<T> type, ColumnExp ix1, Comparable<?> val1, ColumnExp ix2, Comparable<?> val2,
-        ColumnExp ix3, Comparable<?> val3, Object... fieldsValues)
-        throws DatabaseException
-    {
-        return updatePartial(new Key<T>(type, ix1, val1, ix2, val2, ix3, val3), fieldsValues);
-    }
-
-    /**
      * Updates the specified columns for all persistent objects matching the supplied key.
      *
      * @param key the key for the persistent objects to be modified.
