@@ -218,6 +218,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
     public abstract void visit (EpochSeconds seconds);
 
     public abstract void visit (FullText.Match match);
+    public abstract void visit (FullText.Rank rank);
 
     public void visit (Case caseExp)
     {
