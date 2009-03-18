@@ -41,7 +41,7 @@ import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.expression.EpochSeconds;
-import com.samskivert.depot.operator.Conditionals.FullTextMatch;
+import com.samskivert.depot.operator.Conditionals.FullText;
 
 import static com.samskivert.Log.log;
 
@@ -50,9 +50,15 @@ public class PostgreSQLBuilder
 {
     public class PGBuildVisitor extends BuildVisitor
     {
-        @Override public void visit (FullTextMatch match) {
-            appendIdentifier("ftsCol_" + match.getName());
-            _builder.append(" @@ TO_TSQUERY('default', ?)");
+        @Override public void visit (FullText.Match match) {
+            appendIdentifier("ftsCol_" + match.getDefinition().getName());
+            _builder.append(" @@ to_tsquery('default', ?)");
+        }
+
+        @Override public void visit (FullText.Rank rank) {
+            _builder.append("rank(");
+            appendIdentifier("ftsCol_" + rank.getDefinition().getName());
+            _builder.append(", to_tsquery('default', ?), 32)");
         }
 
         @Override public void visit (EpochSeconds epochSeconds) {
@@ -78,7 +84,28 @@ public class PostgreSQLBuilder
 
     public class PGBindVisitor extends BindVisitor
     {
-        @Override public void visit (FullTextMatch match) {
+        @Override public void visit (FullText.Rank rank) {
+            String query = massageQuery(rank.getDefinition());
+            try {
+                _stmt.setString(_argIdx++, query);
+            } catch (SQLException sqe) {
+                throw new DatabaseException("Failed to configure full-text match column " +
+                                            "[idx=" + (_argIdx-1) + ", query=" + query + "]", sqe);
+            }
+        }
+
+        @Override public void visit (FullText.Match match) {
+            String query = massageQuery(match.getDefinition());
+            try {
+                _stmt.setString(_argIdx++, query);
+            } catch (SQLException sqe) {
+                throw new DatabaseException("Failed to configure full-text match column " +
+                                            "[idx=" + (_argIdx-1) + ", query=" + query + "]", sqe);
+            }
+        }
+        
+        protected String massageQuery (FullText match)
+        {
             // The tsearch2 engine takes queries on the form
             //   (foo&bar)|goop
             // so in this first simple implementation, we just take the user query, chop it into
@@ -88,13 +115,7 @@ public class PostgreSQLBuilder
             if (searchTerms.length > 0 && searchTerms[0].length() == 0) {
                 searchTerms = ArrayUtil.splice(searchTerms, 0, 1);
             }
-            String query = StringUtil.join(searchTerms, "|");
-            try {
-                _stmt.setString(_argIdx++, query);
-            } catch (SQLException sqe) {
-                throw new DatabaseException("Failed to configure full-text match column " +
-                                            "[idx=" + (_argIdx-1) + ", query=" + query + "]", sqe);
-            }
+            return StringUtil.join(searchTerms, "|");
         }
 
 // TODO: enable when we can require 1.6 support

@@ -41,10 +41,11 @@ import com.samskivert.depot.expression.FunctionExp;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.ValueExp;
 
+import com.samskivert.depot.operator.Conditionals.Case;
 import com.samskivert.depot.operator.Conditionals.Exists;
+import com.samskivert.depot.operator.Conditionals.FullText;
 import com.samskivert.depot.operator.Conditionals.In;
 import com.samskivert.depot.operator.Conditionals.IsNull;
-import com.samskivert.depot.operator.Conditionals.FullTextMatch;
 import com.samskivert.depot.operator.Logic.Not;
 import com.samskivert.depot.operator.SQLOperator.BinaryOperator;
 import com.samskivert.depot.operator.SQLOperator.MultiOperator;
@@ -67,7 +68,8 @@ public interface ExpressionVisitor
     public void visit (BinaryOperator binaryOperator);
     public void visit (IsNull isNull);
     public void visit (In in);
-    public void visit (FullTextMatch match);
+    public void visit (FullText.Match match);
+    public void visit (FullText.Rank rank);
     public void visit (ColumnExp columnExp);
     public void visit (Not not);
     public void visit (GroupBy groupBy);
@@ -87,4 +89,5 @@ public interface ExpressionVisitor
     public void visit (InsertClause insertClause);
     public void visit (CreateIndexClause createIndexClause);
     public void visit (DropIndexClause<? extends PersistentRecord> dropIndexClause);
+    public void visit (Case caseExp);
 }

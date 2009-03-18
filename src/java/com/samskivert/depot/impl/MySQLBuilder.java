@@ -41,7 +41,7 @@ import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.operator.Conditionals.FullTextMatch;
+import com.samskivert.depot.operator.Conditionals.FullText;
 
 import com.samskivert.depot.impl.FieldMarshaller.BooleanMarshaller;
 import com.samskivert.depot.impl.FieldMarshaller.ByteArrayMarshaller;
@@ -65,19 +65,14 @@ public class MySQLBuilder
 {
     public class MSBuildVisitor extends BuildVisitor
     {
-        @Override public void visit (FullTextMatch match)
+        @Override public void visit (FullText.Match match)
         {
-            _builder.append("match(");
-            Class<? extends PersistentRecord> pClass = match.getPersistentClass();
-            String[] fields =
-                _types.getMarshaller(pClass).getFullTextIndex(match.getName()).fields();
-            for (int ii = 0; ii < fields.length; ii ++) {
-                if (ii > 0) {
-                    _builder.append(", ");
-                }
-                new ColumnExp(pClass, fields[ii]).accept(this);
-            }
-            _builder.append(") against (? in boolean mode)");
+            renderMatch(match.getDefinition());
+        }
+
+        @Override public void visit (FullText.Rank rank)
+        {
+            renderMatch(rank.getDefinition());
         }
 
         @Override public void visit (DeleteClause deleteClause)
@@ -146,6 +141,21 @@ public class MySQLBuilder
         {
             _builder.append(field);
         }
+
+        protected void renderMatch (FullText fullText)
+        {
+            _builder.append("match(");
+            Class<? extends PersistentRecord> pClass = fullText.getPersistentClass();
+            String[] fields = _types.getMarshaller(pClass).getFullTextIndex(
+                    fullText.getName()).fields();
+            for (int ii = 0; ii < fields.length; ii ++) {
+                if (ii > 0) {
+                    _builder.append(", ");
+                }
+                new ColumnExp(pClass, fields[ii]).accept(this);
+            }
+            _builder.append(") against (? in boolean mode)");
+        }
     }
 
     public class MSBindVisitor extends BindVisitor
@@ -154,12 +164,22 @@ public class MySQLBuilder
             super(types, conn, stmt);
         }
 
-        @Override public void visit (FullTextMatch match) {
+        @Override public void visit (FullText.Match match) {
+            bindMatch(match.getDefinition());
+        }
+
+        @Override public void visit (FullText.Rank rank) {
+            bindMatch(rank.getDefinition());
+        }
+
+        protected void bindMatch (FullText fullText)
+        {
             try {
-                _stmt.setString(_argIdx++, match.getQuery());
+                _stmt.setString(_argIdx++, fullText.getQuery());
             } catch (SQLException sqe) {
-                throw new DatabaseException("Failed to configure full-text match column " +
-                                            "[idx=" + (_argIdx-1) + ", match=" + match + "]", sqe);
+                throw new DatabaseException(
+                    "Failed to configure full-text match column [idx=" + (_argIdx-1) +
+                    ", match=" + fullText + "]", sqe);
             }
         }
     }

@@ -50,8 +50,9 @@ import com.samskivert.depot.expression.FunctionExp;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.ValueExp;
+import com.samskivert.depot.operator.Conditionals.Case;
 import com.samskivert.depot.operator.Conditionals.Exists;
-import com.samskivert.depot.operator.Conditionals.FullTextMatch;
+import com.samskivert.depot.operator.Conditionals.FullText;
 import com.samskivert.depot.operator.Conditionals.In;
 import com.samskivert.depot.operator.Conditionals.IsNull;
 import com.samskivert.depot.operator.Logic.Not;
@@ -216,8 +217,25 @@ public abstract class BuildVisitor implements ExpressionVisitor
 
     public abstract void visit (EpochSeconds seconds);
 
-    public abstract void visit (FullTextMatch match);
+    public abstract void visit (FullText.Match match);
 
+    public void visit (Case caseExp)
+    {
+        _builder.append("(case ");
+        for (Tuple<SQLExpression, SQLExpression> tuple : caseExp.getWhenExps()) {
+            _builder.append(" when ");
+            tuple.left.accept(this);
+            _builder.append(" then ");
+            tuple.right.accept(this);
+        }
+        SQLExpression elseExp = caseExp.getElseExp();
+        if (elseExp != null) {
+            _builder.append(" else ");
+            elseExp.accept(this);
+        }
+        _builder.append(" end)");
+    }
+    
     public void visit (ColumnExp columnExp)
     {
         appendRhsColumn(columnExp.getPersistentClass(), columnExp.getField());

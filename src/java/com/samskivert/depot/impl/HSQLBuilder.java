@@ -50,10 +50,10 @@ import com.samskivert.depot.expression.FunctionExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.operator.Arithmetic.BitAnd;
 import com.samskivert.depot.operator.Arithmetic.BitOr;
-import com.samskivert.depot.operator.Conditionals.FullTextMatch;
+import com.samskivert.depot.operator.Conditionals.FullText;
 import com.samskivert.depot.operator.Conditionals.Like;
 import com.samskivert.depot.operator.Logic.Or;
-import com.samskivert.depot.operator.SQLOperator.BinaryOperator;
+import com.samskivert.depot.operator.SQLOperator.MultiOperator;
 
 import com.samskivert.depot.impl.clause.CreateIndexClause;
 
@@ -62,20 +62,20 @@ public class HSQLBuilder
 {
     public class HBuildVisitor extends BuildVisitor
     {
-        @Override public void visit (FullTextMatch match)
+        @Override public void visit (FullText.Match match)
         {
             // HSQL doesn't have real full text search, so we fake it by creating a condition like
             // (lower(COL1) like '%foo%') OR (lower(COL1) like '%bar%') OR ...
             // (lower(COL2) like '%foo%') OR (lower(COL2) like '%bar%') OR ...
             // ... and so on. Not efficient, but basically functional.
-            Class<? extends PersistentRecord> pClass = match.getPersistentClass();
+            Class<? extends PersistentRecord> pClass = match.getDefinition().getPersistentClass();
 
             // find the fields involved
             String[] fields = _types.getMarshaller(pClass).
-                getFullTextIndex(match.getName()).fields();
+                getFullTextIndex(match.getDefinition().getName()).fields();
 
             // explode the query into words
-            String[] ftsWords = match.getQuery().toLowerCase().split("\\W+");
+            String[] ftsWords = match.getDefinition().getQuery().toLowerCase().split("\\W+");
             if (ftsWords.length > 0 && ftsWords[0].length() == 0) {
                 // if the query led with whitespace, the first 'word' will be empty; strip it
                 ftsWords = ArrayUtil.splice(ftsWords, 0, 1);
@@ -95,19 +95,38 @@ public class HSQLBuilder
             _ftsCondition.accept(this);
         }
 
-        @Override
-        public void visit (BinaryOperator binaryOperator)
+        @Override public void visit (FullText.Rank rank)
         {
-            // HSQL doesn't handle & and | operators
-            if (binaryOperator instanceof BitAnd) {
-                _builder.append("BITAND(?, ?)");
+            // not implemented for HSQL
+            _builder.append("0");
+        }
 
-            } else if (binaryOperator instanceof BitOr) {
-                _builder.append("BITOR(?, ?)");
+        @Override
+        public void visit (MultiOperator operator)
+        {
+            String op;
+            // HSQL doesn't handle & and | operators
+            if (operator instanceof BitAnd) {
+                op = "bitand";
+
+            } else if (operator instanceof BitOr) {
+                op = "bitor";
 
             } else {
-                super.visit(binaryOperator);
+                super.visit(operator);
+                return;
             }
+            
+            _builder.append(op).append("(");
+            boolean virgin = true;
+            for (SQLExpression bit: operator.getConditions()) {
+                if (!virgin) {
+                    _builder.append(", ");
+                }
+                _builder.append("?");
+                virgin = false;
+            }
+            _builder.append(")");
         }
 
         public void visit (EpochSeconds epochSeconds)
@@ -146,7 +165,7 @@ public class HSQLBuilder
             super(types, conn, stmt);
         }
 
-        @Override public void visit (FullTextMatch match) {
+        @Override public void visit (FullText.Match match) {
             _ftsCondition.accept(this);
             _ftsCondition = null;
         }

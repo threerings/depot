@@ -21,7 +21,8 @@
 package com.samskivert.depot.operator;
 
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.operator.SQLOperator.BinaryOperator;
+import com.samskivert.depot.expression.ValueExp;
+import com.samskivert.depot.operator.SQLOperator.MultiOperator;
 
 /**
  * A convenient container for implementations of arithmetic operators. Classes that value brevity
@@ -30,16 +31,16 @@ import com.samskivert.depot.operator.SQLOperator.BinaryOperator;
 public abstract class Arithmetic
 {
     /** The SQL '+' operator. */
-    public static class Add extends BinaryOperator
+    public static class Add extends MultiOperator
     {
         public Add (SQLExpression column, Comparable<?> value)
         {
-            super(column, value);
+            super(column, new ValueExp(value));
         }
 
-        public Add (SQLExpression column, SQLExpression value)
+        public Add (SQLExpression... values)
         {
-            super(column, value);
+            super(values);
         }
 
         @Override public String operator()
@@ -49,16 +50,16 @@ public abstract class Arithmetic
     }
 
     /** The SQL '-' operator. */
-    public static class Sub extends BinaryOperator
+    public static class Sub extends MultiOperator
     {
         public Sub (SQLExpression column, Comparable<?> value)
         {
-            super(column, value);
+            super(column, new ValueExp(value));
         }
 
-        public Sub (SQLExpression column, SQLExpression value)
+        public Sub (SQLExpression... values)
         {
-            super(column, value);
+            super(values);
         }
 
         @Override public String operator()
@@ -68,16 +69,16 @@ public abstract class Arithmetic
     }
 
     /** The SQL '*' operator. */
-    public static class Mul extends BinaryOperator
+    public static class Mul extends MultiOperator
     {
         public Mul (SQLExpression column, Comparable<?> value)
         {
-            super(column, value);
+            super(column, new ValueExp(value));
         }
 
-        public Mul (SQLExpression column, SQLExpression value)
+        public Mul (SQLExpression... values)
         {
-            super(column, value);
+            super(values);
         }
 
         @Override public String operator()
@@ -87,16 +88,16 @@ public abstract class Arithmetic
     }
 
     /** The SQL '/' operator. */
-    public static class Div extends BinaryOperator
+    public static class Div extends MultiOperator
     {
         public Div (SQLExpression column, Comparable<?> value)
         {
-            super(column, value);
+            super(column, new ValueExp(value));
         }
 
-        public Div (SQLExpression column, SQLExpression value)
+        public Div (SQLExpression... values)
         {
-            super(column, value);
+            super(values);
         }
 
         @Override public String operator()
@@ -106,16 +107,16 @@ public abstract class Arithmetic
     }
 
     /** The SQL '&' operator. */
-    public static class BitAnd extends BinaryOperator
+    public static class BitAnd extends MultiOperator
     {
         public BitAnd (SQLExpression column, Comparable<?> value)
         {
-            super(column, value);
+            super(column, new ValueExp(value));
         }
 
-        public BitAnd (SQLExpression column, SQLExpression value)
+        public BitAnd (SQLExpression... values)
         {
-            super(column, value);
+            super(values);
         }
 
         @Override public String operator()
@@ -125,16 +126,16 @@ public abstract class Arithmetic
     }
 
     /** The SQL '|' operator. */
-    public static class BitOr extends BinaryOperator
+    public static class BitOr extends MultiOperator
     {
         public BitOr (SQLExpression column, Comparable<?> value)
         {
-            super(column, value);
+            super(column, new ValueExp(value));
         }
 
-        public BitOr (SQLExpression column, SQLExpression value)
+        public BitOr (SQLExpression... values)
         {
-            super(column, value);
+            super(values);
         }
 
         @Override public String operator()

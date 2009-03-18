@@ -55,8 +55,9 @@ import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.ValueExp;
 
+import com.samskivert.depot.operator.Conditionals.Case;
 import com.samskivert.depot.operator.Conditionals.Exists;
-import com.samskivert.depot.operator.Conditionals.FullTextMatch;
+import com.samskivert.depot.operator.Conditionals.FullText;
 import com.samskivert.depot.operator.Conditionals.In;
 import com.samskivert.depot.operator.Conditionals.IsNull;
 import com.samskivert.depot.operator.Logic.Not;
@@ -141,11 +142,28 @@ public class BindVisitor implements ExpressionVisitor
         }
     }
 
-    public void visit (FullTextMatch match)
+    public void visit (FullText.Match match)
     {
         // we never get here
     }
 
+    public void visit (FullText.Rank rank)
+    {
+        // we never get here
+    }
+
+    public void visit (Case caseExp)
+    {
+        for (Tuple<SQLExpression, SQLExpression> tuple : caseExp.getWhenExps()) {
+            tuple.left.accept(this);
+            tuple.right.accept(this);
+        }
+        SQLExpression elseExp = caseExp.getElseExp();
+        if (elseExp != null) {
+            elseExp.accept(this);
+        }
+    }
+    
     public void visit (ColumnExp columnExp)
     {
         // no arguments

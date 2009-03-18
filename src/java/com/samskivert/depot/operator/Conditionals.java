@@ -21,12 +21,15 @@
 package com.samskivert.depot.operator;
 
 import java.util.Collection;
+import java.util.List;
 
+import com.google.common.collect.Lists;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.clause.SelectClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.util.Tuple;
 
 /**
  * A convenient container for implementations of conditional operators.  Classes that value brevity
@@ -67,7 +70,7 @@ public abstract class Conditionals
 
         protected ColumnExp _column;
     }
-
+    
     /** The SQL '=' operator. */
     public static class Equals extends SQLOperator.BinaryOperator
     {
@@ -270,11 +273,13 @@ public abstract class Conditionals
             _clause = clause;
         }
 
+        // from SQLExpression
         public void accept (ExpressionVisitor builder)
         {
             builder.visit(this);
         }
 
+        // from SQLExpression
         public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
         {
             _clause.addClasses(classSet);
@@ -293,19 +298,141 @@ public abstract class Conditionals
 
         protected SelectClause<T> _clause;
     }
+    
+    public static class Case implements SQLOperator
+    {
+        public Case (SQLExpression... exps)
+        {
+            int i = 0;
+            while (i+1 < exps.length) {
+                _whenExps.add(Tuple.newTuple(exps[i], exps[i+1]));
+                i += 2;
+            }
+            _elseExp = (i < exps.length) ? exps[i] : null;
+        }
+        
+        // from SQLExpression
+        public void accept (ExpressionVisitor builder)
+        {
+            builder.visit(this);
+        }
+
+        // from SQLExpression
+        public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
+        {
+            for (Tuple<SQLExpression, SQLExpression> tuple : _whenExps) {
+                tuple.left.addClasses(classSet);
+                tuple.right.addClasses(classSet);
+            }
+            if (_elseExp != null) {
+                _elseExp.addClasses(classSet);
+            }
+        }
+        
+        public List<Tuple<SQLExpression, SQLExpression>> getWhenExps ()
+        {
+            return _whenExps;
+        }
+
+        public SQLExpression getElseExp ()
+        {
+            return _elseExp;
+        }
+       
+        @Override // from Object
+        public String toString ()
+        {
+            StringBuilder builder = new StringBuilder();
+            builder.append("Case(");
+            for (Tuple<SQLExpression, SQLExpression> tuple : _whenExps) {
+                builder.append(tuple.left.toString()).append("->");
+                builder.append(tuple.right.toString()).append(",");
+            }
+            if (_elseExp != null) {
+                builder.append(_elseExp.toString()).append(")");
+            }
+            return builder.toString();
+        }
+
+        protected List<Tuple<SQLExpression, SQLExpression>> _whenExps = Lists.newArrayList();
+        protected SQLExpression _elseExp;
+    }
+
+
 
     /**
      * An attempt at a dialect-agnostic full-text search condition, such as MySQL's MATCH() and
      * PostgreSQL's @@ TO_TSQUERY(...) abilities.
      */
-    public static class FullTextMatch
-        implements SQLOperator
+    public static class FullText
     {
-        public FullTextMatch (Class<? extends PersistentRecord> pClass, String name, String query)
+        public class Rank
+            implements SQLOperator
+        {
+           // from SQLExpression
+            public void accept (ExpressionVisitor builder)
+            {
+                builder.visit(this);
+            }
+
+            // from SQLExpression
+            public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
+            {
+            }
+            
+            @Override // from Object
+            public String toString ()
+            {
+                return FullText.this.toString("Rank");
+            }
+
+            public FullText getDefinition ()
+            {
+                return FullText.this;
+            }
+        }
+
+        public class Match
+            implements SQLOperator
+        {
+            // from SQLExpression
+            public void accept (ExpressionVisitor builder)
+            {
+                builder.visit(this);
+            }
+        
+            public FullText getDefinition ()
+            {
+                return FullText.this;
+            }
+
+            // from SQLExpression
+            public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
+            {
+            }
+            
+            @Override // from Object
+            public String toString ()
+            {
+                return FullText.this.toString("Match");
+            }
+        }
+
+        public FullText (Class<? extends PersistentRecord> pClass, String name, String query)
         {
             _pClass = pClass;
             _name = name;
             _query = query;
+        }
+
+        public SQLOperator match ()
+        {
+            return new Match();
+        }
+
+        public SQLOperator rank ()
+        {
+            return new Rank();
         }
 
         public Class<? extends PersistentRecord> getPersistentClass ()
@@ -323,23 +450,11 @@ public abstract class Conditionals
             return _name;
         }
 
-        // from SQLExpression
-        public void accept (ExpressionVisitor builder)
+        protected String toString (String subType)
         {
-            builder.visit(this);
+            return "FullText." + subType + "(" + _name + "=" + _query + ")";
         }
-
-        // from SQLExpression
-        public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
-        {
-        }
-
-        @Override // from Object
-        public String toString ()
-        {
-            return "FullText(" + _name + "=" + _query + ")";
-        }
-
+        
         protected Class<? extends PersistentRecord> _pClass;
         protected String _name;
         protected String _query;
