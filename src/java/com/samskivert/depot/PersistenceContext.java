@@ -332,8 +332,7 @@ public class PersistenceContext
             return;
         }
         if (key == null) {
-            log.warning("Cache key must not be null [entry=" + entry + "]");
-            Thread.dumpStack();
+            log.warning("Cache key must not be null [entry=" + entry + "]", new Exception());
             return;
         }
         log.debug("storing [key=" + key + ", value=" + entry + "]");
@@ -363,8 +362,7 @@ public class PersistenceContext
     public void cacheInvalidate (CacheKey key)
     {
         if (key == null) {
-            log.warning("Cache key to invalidate must not be null.");
-            Thread.dumpStack();
+            log.warning("Cache key to invalidate must not be null.", new Exception());
         } else {
             cacheInvalidate(key.getCacheId(), key.getCacheKey());
         }
