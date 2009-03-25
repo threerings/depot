@@ -236,7 +236,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
         }
         _builder.append(" end)");
     }
-    
+
     public void visit (ColumnExp columnExp)
     {
         appendRhsColumn(columnExp.getPersistentClass(), columnExp.getField());
@@ -347,23 +347,26 @@ public abstract class BuildVisitor implements ExpressionVisitor
 
         try {
             // iterate over the fields we're filling in and figure out whence each one comes
-            boolean skip = true;
+            boolean comma = false;
 
             // while expanding column names in the SELECT query, do aliasing and expansion
             _enableAliasing = _enableOverrides = true;
 
             for (String field : selectClause.getFields()) {
-                if (!skip) {
-                    _builder.append(", ");
-                }
-                skip = false;
-
-                int len = _builder.length();
+                // write column to a temporary buffer
+                StringBuilder saved = _builder;
+                _builder = new StringBuilder();
                 appendRhsColumn(pClass, field);
+                String column = _builder.toString();
+                _builder = saved;
 
-                // if nothing was added, don't add a comma
-                if (_builder.length() == len) {
-                    skip = true;
+                // append if non-empty
+                if (column.length() > 0) {
+                    if (comma) {
+                        _builder.append(", ");
+                    }
+                    comma = true;
+                    _builder.append(column);
                 }
             }
 
