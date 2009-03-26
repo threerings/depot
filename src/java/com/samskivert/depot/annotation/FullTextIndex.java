@@ -32,6 +32,13 @@ import java.lang.annotation.Target;
 @Retention(value=RetentionPolicy.RUNTIME)
 public @interface FullTextIndex
 {
+    public enum Configuration {
+        /** For searching generic strings; makes no linguistic/semantic assumptions. */
+        Simple,
+        /** For English text search; does basic stemming. */
+        English
+    }
+    
     /**
      * An identifier for this index, unique with the scope of the record.
      */
@@ -41,4 +48,9 @@ public @interface FullTextIndex
      * An array of the field names that should be indexed.
      */
     public String[] fields ();
+    
+    /**
+     * What parser/dictionary to use for this index.
+     */
+    public Configuration configuration () default Configuration.English;
 }

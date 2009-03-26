@@ -525,7 +525,9 @@ public abstract class BuildVisitor implements ExpressionVisitor
             }
             comma = true;
 
+            _builder.append("(");
             field.left.accept(this);
+            _builder.append(")");
             if (field.right == Order.DESC) {
                 // ascending is default, print nothing unless explicitly descending
                 _builder.append(" desc");

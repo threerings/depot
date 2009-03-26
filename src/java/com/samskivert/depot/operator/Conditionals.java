@@ -358,8 +358,6 @@ public abstract class Conditionals
         protected SQLExpression _elseExp;
     }
 
-
-
     /**
      * An attempt at a dialect-agnostic full-text search condition, such as MySQL's MATCH() and
      * PostgreSQL's @@ TO_TSQUERY(...) abilities.
@@ -440,14 +438,14 @@ public abstract class Conditionals
             return _pClass;
         }
 
-        public String getQuery ()
-        {
-            return _query;
-        }
-
         public String getName ()
         {
             return _name;
+        }
+        
+        public String getQuery ()
+        {
+            return _query;
         }
 
         protected String toString (String subType)
