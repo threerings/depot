@@ -67,7 +67,10 @@ public class PostgreSQLBuilder
             appendIdentifier("ftsCol_" + rank.getDefinition().getName());
             _builder.append(", to_tsquery('").
             append(translateFTConfig(getFTIndex(rank.getDefinition()).configuration())).
-            append("', ?), 32)");
+            // TODO: The normalization parameter is really quite important, and should
+            // TODO: perhaps be configurable, but for the moment we hard-code it to 1:
+            // TODO: "divides the rank by the 1 + logarithm of the document length"
+            append("', ?), 1)");
         }
 
         @Override public void visit (EpochSeconds epochSeconds) {
