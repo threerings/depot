@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -24,7 +24,6 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.Date;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
@@ -37,7 +36,6 @@ import com.samskivert.jdbc.LiaisonRegistry;
 import com.samskivert.util.ArrayUtil;
 import com.samskivert.util.StringUtil;
 
-import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.annotation.FullTextIndex.Configuration;
@@ -59,7 +57,9 @@ public class PostgreSQLBuilder
             appendIdentifier("ftsCol_" + match.getDefinition().getName());
             _builder.append(" @@ to_tsquery('").
             append(translateFTConfig(getFTIndex(match.getDefinition()).configuration())).
-            append("', ?)");
+            append("', ");
+            bindValue(massageFTQuery(match.getDefinition()));
+            _builder.append(")");
         }
 
         @Override public void visit (FullText.Rank rank) {
@@ -70,7 +70,9 @@ public class PostgreSQLBuilder
             // TODO: The normalization parameter is really quite important, and should
             // TODO: perhaps be configurable, but for the moment we hard-code it to 1:
             // TODO: "divides the rank by the 1 + logarithm of the document length"
-            append("', ?), 1)");
+            append("', ");
+            bindValue(massageFTQuery(rank.getDefinition()));
+            _builder.append("), 1)");
         }
 
         @Override public void visit (EpochSeconds epochSeconds) {
@@ -85,6 +87,29 @@ public class PostgreSQLBuilder
 //             _builder.append(" = any (?)");
 //         }
 
+//      @Override public void visit (In in) {
+//      Comparable<?>[] values = in.getValues();
+//      try {
+//          _stmt.setObject(
+//              _argIdx++, _conn.createArrayOf(getElementType(values), (Object[])values));
+//      } catch (SQLException sqe) {
+//          throw new DatabaseException(
+//              "Failed to write value to statement [idx=" + (_argIdx-1) +
+//              ", values=" + StringUtil.safeToString(values) + "]", sqe);
+//      }
+//  }
+
+//  protected String getElementType (Comparable<?>[] values) {
+//      if (values instanceof Integer[]) {
+//          return "integer";
+//      } else if (values instanceof String[]) {
+//          return "character varying";
+//      } else {
+//          throw new DatabaseException(
+//              "Don't know how to make Postgres array for " + values.getClass());
+//      }
+//  }
+
         protected FullTextIndex getFTIndex (FullText definition)
         {
             DepotMarshaller<?> marsh = _types.getMarshaller(definition.getPersistentClass());
@@ -94,76 +119,13 @@ public class PostgreSQLBuilder
         @Override protected void appendIdentifier (String field) {
             _builder.append("\"").append(field).append("\"");
         }
-        
+
+// TODO: enable when we can require 1.6 support
         protected PGBuildVisitor (DepotTypes types) {
             super(types);
         }
     }
 
-    public class PGBindVisitor extends BindVisitor
-    {
-        @Override public void visit (FullText.Rank rank) {
-            String query = massageQuery(rank.getDefinition());
-            try {
-                _stmt.setString(_argIdx++, query);
-            } catch (SQLException sqe) {
-                throw new DatabaseException("Failed to configure full-text match column " +
-                                            "[idx=" + (_argIdx-1) + ", query=" + query + "]", sqe);
-            }
-        }
-
-        @Override public void visit (FullText.Match match) {
-            String query = massageQuery(match.getDefinition());
-            try {
-                _stmt.setString(_argIdx++, query);
-            } catch (SQLException sqe) {
-                throw new DatabaseException("Failed to configure full-text match column " +
-                                            "[idx=" + (_argIdx-1) + ", query=" + query + "]", sqe);
-            }
-        }
-        
-        protected String massageQuery (FullText match)
-        {
-            // The tsearch2 engine takes queries on the form
-            //   (foo&bar)|goop
-            // so in this first simple implementation, we just take the user query, chop it into
-            // words by space/punctuation and 'or' those together like so:
-            //   'ho! who goes there?' -> 'ho|who|goes|there'
-            String[] searchTerms = match.getQuery().toLowerCase().split("\\W+");
-            if (searchTerms.length > 0 && searchTerms[0].length() == 0) {
-                searchTerms = ArrayUtil.splice(searchTerms, 0, 1);
-            }
-            return StringUtil.join(searchTerms, "|");
-        }
-
-// TODO: enable when we can require 1.6 support
-//         @Override public void visit (In in) {
-//             Comparable<?>[] values = in.getValues();
-//             try {
-//                 _stmt.setObject(
-//                     _argIdx++, _conn.createArrayOf(getElementType(values), (Object[])values));
-//             } catch (SQLException sqe) {
-//                 throw new DatabaseException(
-//                     "Failed to write value to statement [idx=" + (_argIdx-1) +
-//                     ", values=" + StringUtil.safeToString(values) + "]", sqe);
-//             }
-//         }
-
-//         protected String getElementType (Comparable<?>[] values) {
-//             if (values instanceof Integer[]) {
-//                 return "integer";
-//             } else if (values instanceof String[]) {
-//                 return "character varying";
-//             } else {
-//                 throw new DatabaseException(
-//                     "Don't know how to make Postgres array for " + values.getClass());
-//             }
-//         }
-
-        protected PGBindVisitor (DepotTypes types, Connection conn, PreparedStatement stmt) {
-            super(types, conn, stmt);
-        }
-    }
 
     public PostgreSQLBuilder (DepotTypes types)
     {
@@ -214,14 +176,14 @@ public class PostgreSQLBuilder
         initColumn.append(")");
 
         String triggerFun = PG83 ? "tsvector_update_trigger" : "tsearch2";
-        
+
         // build the CREATE TRIGGER
         StringBuilder createTrigger = new StringBuilder("CREATE TRIGGER ").
             append(liaison.columnSQL(trigger)).append(" BEFORE UPDATE OR INSERT ON ").
             append(liaison.tableSQL(table)).
             append(" FOR EACH ROW EXECUTE PROCEDURE ").append(triggerFun).append("(").
             append(liaison.columnSQL(column)).append(", ");
-        
+
             if (PG83) {
                 createTrigger.append("'").
                 append(translateFTConfig(fts.configuration())).
@@ -269,12 +231,6 @@ public class PostgreSQLBuilder
     protected BuildVisitor getBuildVisitor ()
     {
         return new PGBuildVisitor(_types);
-    }
-
-    @Override
-    protected BindVisitor getBindVisitor (Connection conn, PreparedStatement stmt)
-    {
-        return new PGBindVisitor(_types, conn, stmt);
     }
 
     @Override
@@ -337,7 +293,22 @@ public class PostgreSQLBuilder
             throw new IllegalArgumentException("Unknown field marshaller type: " + fm.getClass());
         }
     }
-    
+
+    protected static String massageFTQuery (FullText match)
+    {
+        // The tsearch2 engine takes queries on the form
+        //   (foo&bar)|goop
+        // so in this first simple implementation, we just take the user query, chop it into
+        // words by space/punctuation and 'or' those together like so:
+        //   'ho! who goes there?' -> 'ho|who|goes|there'
+        String[] searchTerms = match.getQuery().toLowerCase().split("\\W+");
+        if (searchTerms.length > 0 && searchTerms[0].length() == 0) {
+            searchTerms = ArrayUtil.splice(searchTerms, 0, 1);
+        }
+        return StringUtil.join(searchTerms, "|");
+    }
+
+
     // Translate the mildly abstracted full-text parser/dictionary configuration support
     // in FullText to actual PostgreSQL configuration identifiers.
     protected static String translateFTConfig (Configuration configuration)

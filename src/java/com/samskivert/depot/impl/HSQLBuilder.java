@@ -26,7 +26,6 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.Date;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -116,14 +115,14 @@ public class HSQLBuilder
                 super.visit(operator);
                 return;
             }
-            
+
             _builder.append(op).append("(");
             boolean virgin = true;
             for (SQLExpression bit: operator.getConditions()) {
                 if (!virgin) {
                     _builder.append(", ");
                 }
-                _builder.append("?");
+                bit.accept(this);
                 virgin = false;
             }
             _builder.append(")");
@@ -156,18 +155,6 @@ public class HSQLBuilder
 
         @Override protected void appendIdentifier (String field) {
             _builder.append("\"").append(field).append("\"");
-        }
-    }
-
-    public class HBindVisitor extends BindVisitor
-    {
-        protected HBindVisitor (DepotTypes types, Connection conn, PreparedStatement stmt) {
-            super(types, conn, stmt);
-        }
-
-        @Override public void visit (FullText.Match match) {
-            _ftsCondition.accept(this);
-            _ftsCondition = null;
         }
     }
 
@@ -210,12 +197,6 @@ public class HSQLBuilder
     protected BuildVisitor getBuildVisitor ()
     {
         return new HBuildVisitor(_types);
-    }
-
-    @Override
-    protected BindVisitor getBindVisitor (Connection conn, PreparedStatement stmt)
-    {
-        return new HBindVisitor(_types, conn, stmt);
     }
 
     @Override

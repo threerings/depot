@@ -39,10 +39,8 @@ import com.samskivert.depot.clause.QueryClause;
 import static com.samskivert.depot.Log.log;
 
 /**
- * At the heart of Depot's SQL generation, this object constructs two {@link ExpressionVisitor}
- * objects and executes them, one after another; the first one constructs SQL as it recurses, the
- * other binds arguments in the {@link PreparedStatement}. This class must be subclassed by the
- * database dialects we wish to support.
+ * At the heart of Depot's SQL generation, this object constructs an {@link ExpressionVisitor}
+ * object and executes it, constructing SQL and parameter bindings as it recurses.
  */
 public abstract class SQLBuilder
 {
@@ -81,8 +79,16 @@ public abstract class SQLBuilder
         }
 
         PreparedStatement stmt = conn.prepareStatement(_buildVisitor.getQuery());
-        _bindVisitor = getBindVisitor(conn, stmt);
-        _clause.accept(_bindVisitor);
+
+        int argIx = 1;
+        for (BuildVisitor.Bindable bindable : _buildVisitor.getBindables()) {
+            try {
+                bindable.doBind(stmt, argIx);
+            } catch (Exception e) {
+                log.warning("Failed to bind statement argument", "argIx", argIx);
+            }
+            argIx ++;
+        }
 
         if (PersistenceContext.DEBUG) {
             log.info("SQL: " + stmt.toString());
@@ -214,11 +220,6 @@ public abstract class SQLBuilder
     protected abstract BuildVisitor getBuildVisitor ();
 
     /**
-     * Overridden by subclasses to create a dialect-specific {@link BindVisitor}.
-     */
-    protected abstract BindVisitor getBindVisitor (Connection conn, PreparedStatement stmt);
-
-    /**
      * Overridden by subclasses to figure the dialect-specific SQL type of the given field.
      * @param length
      */
@@ -229,5 +230,4 @@ public abstract class SQLBuilder
 
     protected QueryClause _clause;
     protected BuildVisitor _buildVisitor;
-    protected BindVisitor _bindVisitor;
 }

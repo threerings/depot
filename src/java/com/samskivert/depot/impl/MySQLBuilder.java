@@ -24,7 +24,6 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.Date;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Time;
@@ -34,7 +33,6 @@ import java.util.Set;
 import com.samskivert.jdbc.JDBCUtil;
 import com.samskivert.util.Tuple;
 
-import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.clause.OrderBy.Order;
@@ -154,33 +152,9 @@ public class MySQLBuilder
                 }
                 new ColumnExp(pClass, fields[ii]).accept(this);
             }
-            _builder.append(") against (? in boolean mode)");
-        }
-    }
-
-    public class MSBindVisitor extends BindVisitor
-    {
-        protected MSBindVisitor (DepotTypes types, Connection conn, PreparedStatement stmt) {
-            super(types, conn, stmt);
-        }
-
-        @Override public void visit (FullText.Match match) {
-            bindMatch(match.getDefinition());
-        }
-
-        @Override public void visit (FullText.Rank rank) {
-            bindMatch(rank.getDefinition());
-        }
-
-        protected void bindMatch (FullText fullText)
-        {
-            try {
-                _stmt.setString(_argIdx++, fullText.getQuery());
-            } catch (SQLException sqe) {
-                throw new DatabaseException(
-                    "Failed to configure full-text match column [idx=" + (_argIdx-1) +
-                    ", match=" + fullText + "]", sqe);
-            }
+            _builder.append(") against (");
+            bindValue(fullText.getQuery());
+            _builder.append(" in boolean mode)");
         }
     }
 
@@ -245,12 +219,6 @@ public class MySQLBuilder
     protected BuildVisitor getBuildVisitor ()
     {
         return new MSBuildVisitor(_types);
-    }
-
-    @Override
-    protected BindVisitor getBindVisitor (Connection conn, PreparedStatement stmt)
-    {
-        return new MSBindVisitor(_types, conn, stmt);
     }
 
     @Override

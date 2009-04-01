@@ -20,14 +20,18 @@
 
 package com.samskivert.depot.impl;
 
+import java.nio.ByteBuffer;
+import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.samskivert.util.Tuple;
 
+import com.samskivert.depot.ByteEnum;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.MultiKey;
 import com.samskivert.depot.PersistentRecord;
@@ -67,14 +71,17 @@ import com.samskivert.depot.impl.clause.UpdateClause;
 /**
  * Implements the base functionality of the SQL-building pass of {@link SQLBuilder}. Dialectal
  * subclasses of this should be created and returned from {@link SQLBuilder#getBuildVisitor()}.
- *
- * This class is intimately paired with {#link BindVisitor}.
  */
 public abstract class BuildVisitor implements ExpressionVisitor
 {
     public String getQuery ()
     {
         return _builder.toString();
+    }
+
+    public Iterable<Bindable> getBindables ()
+    {
+        return _bindables;
     }
 
     public void visit (FromOverride override)
@@ -121,7 +128,12 @@ public abstract class BuildVisitor implements ExpressionVisitor
             _enableOverrides = true;
             appendRhsColumn(pClass, keyFields[ii]);
             _enableOverrides = saved;
-            _builder.append(values[ii] == null ? " is null " : " = ? ");
+            if (values[ii] == null) {
+                _builder.append(" is null ");
+            } else {
+                _builder.append(" = ");
+                bindValue(values[ii]);
+            }
         }
     }
 
@@ -141,7 +153,12 @@ public abstract class BuildVisitor implements ExpressionVisitor
             _enableOverrides = true;
             appendRhsColumn(key.getPersistentClass(), entry.getKey());
             _enableOverrides = saved;
-            _builder.append(entry.getValue() == null ? " is null " : " = ? ");
+            if (entry.getValue() == null) {
+                _builder.append(" is null ");
+            } else {
+                _builder.append(" = ");
+                bindValue(entry.getValue());
+            }
         }
         if (!first) {
             _builder.append(" and ");
@@ -154,7 +171,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
             if (ii > 0) {
                 _builder.append(", ");
             }
-            _builder.append("?");
+            bindValue(values[ii]);
         }
         _builder.append(")");
     }
@@ -210,7 +227,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
             if (ii > 0) {
                 _builder.append(", ");
             }
-            _builder.append("?");
+            bindValue(values[ii]);
         }
         _builder.append(")");
     }
@@ -304,7 +321,8 @@ public abstract class BuildVisitor implements ExpressionVisitor
 
     public void visit (Limit limit)
     {
-        _builder.append(" limit ? offset ? ");
+        _builder.append(" limit ").append(limit.getCount()).
+            append(" offset ").append(limit.getOffset());
     }
 
     public void visit (LiteralExp literalExp)
@@ -314,7 +332,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
 
     public void visit (ValueExp valueExp)
     {
-        _builder.append("?");
+        bindValue(valueExp.getValue());
     }
 
     public void visit (Exists<? extends PersistentRecord> exists)
@@ -446,7 +464,8 @@ public abstract class BuildVisitor implements ExpressionVisitor
 
             _builder.append(" = ");
             if (pojo != null) {
-                _builder.append("?");
+                bindField(pClass, fields[ii], pojo);
+
             } else {
                 values[ii].accept(this);
             }
@@ -467,6 +486,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
     public void visit (InsertClause insertClause)
     {
         Class<? extends PersistentRecord> pClass = insertClause.getPersistentClass();
+        Object pojo = insertClause.getPojo();
         DepotMarshaller<?> marsh = _types.getMarshaller(pClass);
         _innerClause = true;
 
@@ -499,7 +519,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
                 _builder.append(", ");
             }
             comma = true;
-            _builder.append("?");
+            bindField(pClass, field, pojo);
         }
         _builder.append(")");
     }
@@ -543,6 +563,20 @@ public abstract class BuildVisitor implements ExpressionVisitor
     {
         _builder.append("drop index ");
         appendIdentifier(dropIndexClause.getName());
+    }
+
+    protected void bindValue (Object object)
+    {
+        _bindables.add(newBindable(object));
+        _builder.append("?");
+    }
+
+    protected void bindField (Class<? extends PersistentRecord> pClass, String field, Object pojo)
+    {
+        final DepotMarshaller<?> marshaller = _types.getMarshaller(pClass);
+
+        _bindables.add(newBindable(marshaller, field, pojo));
+        _builder.append("?");
     }
 
     protected abstract void appendIdentifier (String field);
@@ -677,6 +711,9 @@ public abstract class BuildVisitor implements ExpressionVisitor
 
     protected DepotTypes _types;
 
+    /** For each SQL parameter ? we add an {@link Comparable} to bind to this list. */
+    protected List<Bindable> _bindables = Lists.newLinkedList();
+
     /** A StringBuilder to hold the constructed SQL. */
     protected StringBuilder _builder = new StringBuilder();
 
@@ -693,4 +730,40 @@ public abstract class BuildVisitor implements ExpressionVisitor
     protected boolean _enableOverrides = false;
 
     protected boolean _enableAliasing = false;
+
+    protected static interface Bindable
+    {
+        void doBind (PreparedStatement stmt, int argIx) throws Exception;
+    }
+
+    protected static Bindable newBindable (
+        final DepotMarshaller<?> marshaller, final String field, final Object pojo)
+    {
+        return new Bindable() {
+            public void doBind (PreparedStatement stmt, int argIx) throws Exception {
+                marshaller.getFieldMarshaller(field).getAndWriteToStatement(stmt, argIx, pojo);
+            }
+        };
+    }
+
+    protected static Bindable newBindable (final Object value)
+    {
+        return new Bindable() {
+            public void doBind (PreparedStatement stmt, int argIx) throws Exception {
+                // TODO: how can we abstract this fieldless marshalling
+                if (value instanceof ByteEnum) {
+                    // byte enums require special conversion
+                    stmt.setByte(argIx++, ((ByteEnum)value).toByte());
+                } else if (value instanceof int[]) {
+                    // int arrays require conversion to byte arrays
+                    int[] data = (int[])value;
+                    ByteBuffer bbuf = ByteBuffer.allocate(data.length * 4);
+                    bbuf.asIntBuffer().put(data);
+                    stmt.setObject(argIx++, bbuf.array());
+                } else {
+                    stmt.setObject(argIx++, value);
+                }
+            }
+        };
+    }
 }
