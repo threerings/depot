@@ -545,9 +545,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
             }
             comma = true;
 
-            _builder.append("(");
-            field.left.accept(this);
-            _builder.append(")");
+            appendIndexComponent(field.left);
             if (field.right == Order.DESC) {
                 // ascending is default, print nothing unless explicitly descending
                 _builder.append(" desc");
@@ -702,6 +700,15 @@ public abstract class BuildVisitor implements ExpressionVisitor
         // else owie
         throw new IllegalArgumentException(
             "Persistent field has no definition [class=" + type + ", field=" + field + "]");
+    }
+
+    // output one of potentially many fields in an index expression
+    protected void appendIndexComponent (SQLExpression expression)
+    {
+        // the standard builder wraps each field in its own parens
+        _builder.append("(");
+        expression.accept(this);
+        _builder.append(")");
     }
 
     protected BuildVisitor (DepotTypes types)

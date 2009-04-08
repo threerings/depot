@@ -140,6 +140,13 @@ public class MySQLBuilder
             _builder.append(field);
         }
 
+        @Override
+        protected void appendIndexComponent (SQLExpression expression)
+        {
+            // MySQL is never given complex expressions and hates parens, so just recurse
+            expression.accept(this);
+        }
+
         protected void renderMatch (FullText fullText)
         {
             _builder.append("match(");
