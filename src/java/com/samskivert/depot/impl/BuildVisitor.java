@@ -220,6 +220,11 @@ public abstract class BuildVisitor implements ExpressionVisitor
 
     public void visit (In in)
     {
+        // if the In() expression is empty, replace it with a 'false'
+        if (in.getValues().length == 0) {
+            new ValueExp(false).accept(this);
+            return;
+        }
         in.getColumn().accept(this);
         _builder.append(" in (");
         Comparable<?>[] values = in.getValues();

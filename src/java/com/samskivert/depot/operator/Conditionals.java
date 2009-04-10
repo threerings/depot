@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -30,6 +30,8 @@ import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
 import com.samskivert.util.Tuple;
+
+import static com.samskivert.Log.log;
 
 /**
  * A convenient container for implementations of conditional operators.  Classes that value brevity
@@ -70,7 +72,7 @@ public abstract class Conditionals
 
         protected ColumnExp _column;
     }
-    
+
     /** The SQL '=' operator. */
     public static class Equals extends SQLOperator.BinaryOperator
     {
@@ -195,7 +197,7 @@ public abstract class Conditionals
         public In (ColumnExp column, Comparable<?>... values)
         {
             if (values.length == 0) {
-                throw new IllegalArgumentException("In() condition needs at least one value.");
+                log.warning("Grouchily allowing empty In() operator", "column", column.name);
             }
             _column = column;
             _values = values;
@@ -298,7 +300,7 @@ public abstract class Conditionals
 
         protected SelectClause<T> _clause;
     }
-    
+
     public static class Case implements SQLOperator
     {
         public Case (SQLExpression... exps)
@@ -310,7 +312,7 @@ public abstract class Conditionals
             }
             _elseExp = (i < exps.length) ? exps[i] : null;
         }
-        
+
         // from SQLExpression
         public void accept (ExpressionVisitor builder)
         {
@@ -328,7 +330,7 @@ public abstract class Conditionals
                 _elseExp.addClasses(classSet);
             }
         }
-        
+
         public List<Tuple<SQLExpression, SQLExpression>> getWhenExps ()
         {
             return _whenExps;
@@ -338,7 +340,7 @@ public abstract class Conditionals
         {
             return _elseExp;
         }
-       
+
         @Override // from Object
         public String toString ()
         {
@@ -377,7 +379,7 @@ public abstract class Conditionals
             public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
             {
             }
-            
+
             @Override // from Object
             public String toString ()
             {
@@ -398,7 +400,7 @@ public abstract class Conditionals
             {
                 builder.visit(this);
             }
-        
+
             public FullText getDefinition ()
             {
                 return FullText.this;
@@ -408,7 +410,7 @@ public abstract class Conditionals
             public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
             {
             }
-            
+
             @Override // from Object
             public String toString ()
             {
@@ -442,7 +444,7 @@ public abstract class Conditionals
         {
             return _name;
         }
-        
+
         public String getQuery ()
         {
             return _query;
@@ -452,7 +454,7 @@ public abstract class Conditionals
         {
             return "FullText." + subType + "(" + _name + "=" + _query + ")";
         }
-        
+
         protected Class<? extends PersistentRecord> _pClass;
         protected String _name;
         protected String _query;
