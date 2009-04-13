@@ -145,8 +145,8 @@ public abstract class Arithmetic extends MultiOperator
         @Override
         public Object evaluate (Object[] operands)
         {
-            for (int i = 1; i < operands.length; i ++) {
-                if (NUMERICAL.apply(operands[i]) == Double.valueOf(0)) {
+            for (int ii = 1; ii < operands.length; ii ++) {
+                if (Double.valueOf(0).equals(NUMERICAL.apply(operands[ii]))) {
                     return new NoValue("Division by zero in: " + StringUtil.toString(operands));
                 }
             }
