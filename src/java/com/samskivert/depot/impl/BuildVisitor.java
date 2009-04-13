@@ -33,7 +33,6 @@ import com.samskivert.util.Tuple;
 
 import com.samskivert.depot.ByteEnum;
 import com.samskivert.depot.Key;
-import com.samskivert.depot.MultiKey;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.clause.FieldDefinition;
@@ -135,45 +134,6 @@ public abstract class BuildVisitor implements ExpressionVisitor
                 bindValue(values[ii]);
             }
         }
-    }
-
-    public void visit (MultiKey<? extends PersistentRecord> key)
-    {
-        _builder.append(" where ");
-        boolean first = true;
-        for (Map.Entry<String, Comparable<?>> entry : key.getSingleFieldsMap().entrySet()) {
-            if (first) {
-                first = false;
-            } else {
-                _builder.append(" and ");
-            }
-            // A MultiKey's WHERE clause must mirror what's actually retrieved for the persistent
-            // object, so we turn on overrides here just as we do when expanding SELECT fields
-            boolean saved = _enableOverrides;
-            _enableOverrides = true;
-            appendRhsColumn(key.getPersistentClass(), entry.getKey());
-            _enableOverrides = saved;
-            if (entry.getValue() == null) {
-                _builder.append(" is null ");
-            } else {
-                _builder.append(" = ");
-                bindValue(entry.getValue());
-            }
-        }
-        if (!first) {
-            _builder.append(" and ");
-        }
-        appendRhsColumn(key.getPersistentClass(), key.getMultiField());
-        _builder.append(" in (");
-
-        Comparable<?>[] values = key.getMultiValues();
-        for (int ii = 0; ii < values.length; ii ++) {
-            if (ii > 0) {
-                _builder.append(", ");
-            }
-            bindValue(values[ii]);
-        }
-        _builder.append(")");
     }
 
     public void visit (FunctionExp functionExp)

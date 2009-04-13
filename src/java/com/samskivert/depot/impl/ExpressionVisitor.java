@@ -21,7 +21,6 @@
 package com.samskivert.depot.impl;
 
 import com.samskivert.depot.Key;
-import com.samskivert.depot.MultiKey;
 import com.samskivert.depot.PersistentRecord;
 
 import com.samskivert.depot.clause.FieldDefinition;
@@ -81,7 +80,6 @@ public interface ExpressionVisitor
     public void visit (ValueExp valueExp);
     public void visit (WhereClause where);
     public void visit (Key.Expression<? extends PersistentRecord> key);
-    public void visit (MultiKey<? extends PersistentRecord> key);
     public void visit (Exists<? extends PersistentRecord> exists);
     public void visit (SelectClause<? extends PersistentRecord> selectClause);
     public void visit (UpdateClause<? extends PersistentRecord> updateClause);
