@@ -71,7 +71,7 @@ import com.samskivert.depot.impl.clause.UpdateClause;
  * Implements the base functionality of the SQL-building pass of {@link SQLBuilder}. Dialectal
  * subclasses of this should be created and returned from {@link SQLBuilder#getBuildVisitor()}.
  */
-public abstract class BuildVisitor implements ExpressionVisitor
+public abstract class BuildVisitor implements ExpressionVisitor<Void>
 {
     public String getQuery ()
     {
@@ -83,7 +83,7 @@ public abstract class BuildVisitor implements ExpressionVisitor
         return _bindables;
     }
 
-    public void visit (FromOverride override)
+    public Void visit (FromOverride override)
     {
         _builder.append(" from " );
         List<Class<? extends PersistentRecord>> from = override.getFromClasses();
@@ -95,24 +95,27 @@ public abstract class BuildVisitor implements ExpressionVisitor
             _builder.append(" as ");
             appendTableAbbreviation(from.get(ii));
         }
+        return null;
     }
 
-    public void visit (FieldDefinition definition)
+    public Void visit (FieldDefinition definition)
     {
         definition.getDefinition().accept(this);
         if (_enableAliasing) {
             _builder.append(" as ");
             appendIdentifier(definition.getField());
         }
+        return null;
     }
 
-    public void visit (WhereClause where)
+    public Void visit (WhereClause where)
     {
         _builder.append(" where ");
         where.getWhereExpression().accept(this);
+        return null;
     }
 
-    public void visit (Key.Expression<? extends PersistentRecord> key)
+    public Void visit (Key.Expression<? extends PersistentRecord> key)
     {
         Class<? extends PersistentRecord> pClass = key.getPersistentClass();
         String[] keyFields = DepotUtil.getKeyFields(pClass);
@@ -134,9 +137,10 @@ public abstract class BuildVisitor implements ExpressionVisitor
                 bindValue(values[ii]);
             }
         }
+        return null;
     }
 
-    public void visit (FunctionExp functionExp)
+    public Void visit (FunctionExp functionExp)
     {
         _builder.append(functionExp.getFunction());
         _builder.append("(");
@@ -148,11 +152,12 @@ public abstract class BuildVisitor implements ExpressionVisitor
             arguments[ii].accept(this);
         }
         _builder.append(")");
+        return null;
     }
 
-    public void visit (MultiOperator multiOperator)
+    public Void visit (MultiOperator multiOperator)
     {
-        SQLExpression[] conditions = multiOperator.getConditions();
+        SQLExpression[] conditions = multiOperator.getOperands();
         for (int ii = 0; ii < conditions.length; ii++) {
             if (ii > 0) {
                 _builder.append(" ").append(multiOperator.operator()).append(" ");
@@ -161,29 +166,32 @@ public abstract class BuildVisitor implements ExpressionVisitor
             conditions[ii].accept(this);
             _builder.append(")");
         }
+        return null;
     }
 
-    public void visit (BinaryOperator binaryOperator)
+    public Void visit (BinaryOperator binaryOperator)
     {
         _builder.append('(');
         binaryOperator.getLeftHandSide().accept(this);
         _builder.append(binaryOperator.operator());
         binaryOperator.getRightHandSide().accept(this);
         _builder.append(')');
+        return null;
     }
 
-    public void visit (IsNull isNull)
+    public Void visit (IsNull isNull)
     {
         isNull.getColumn().accept(this);
         _builder.append(" is null");
+        return null;
     }
 
-    public void visit (In in)
+    public Void visit (In in)
     {
         // if the In() expression is empty, replace it with a 'false'
         if (in.getValues().length == 0) {
             new ValueExp(false).accept(this);
-            return;
+            return null;
         }
         in.getColumn().accept(this);
         _builder.append(" in (");
@@ -195,14 +203,15 @@ public abstract class BuildVisitor implements ExpressionVisitor
             bindValue(values[ii]);
         }
         _builder.append(")");
+        return null;
     }
 
-    public abstract void visit (EpochSeconds seconds);
+    public abstract Void visit (EpochSeconds seconds);
 
-    public abstract void visit (FullText.Match match);
-    public abstract void visit (FullText.Rank rank);
+    public abstract Void visit (FullText.Match match);
+    public abstract Void visit (FullText.Rank rank);
 
-    public void visit (Case caseExp)
+    public Void visit (Case caseExp)
     {
         _builder.append("(case ");
         for (Tuple<SQLExpression, SQLExpression> tuple : caseExp.getWhenExps()) {
@@ -217,21 +226,24 @@ public abstract class BuildVisitor implements ExpressionVisitor
             elseExp.accept(this);
         }
         _builder.append(" end)");
+        return null;
     }
 
-    public void visit (ColumnExp columnExp)
+    public Void visit (ColumnExp columnExp)
     {
         appendRhsColumn(columnExp.getPersistentClass(), columnExp.getField());
+        return null;
     }
 
-    public void visit (Not not)
+    public Void visit (Not not)
     {
         _builder.append(" not (");
         not.getCondition().accept(this);
         _builder.append(")");
+        return null;
     }
 
-    public void visit (GroupBy groupBy)
+    public Void visit (GroupBy groupBy)
     {
         _builder.append(" group by ");
 
@@ -242,14 +254,16 @@ public abstract class BuildVisitor implements ExpressionVisitor
             }
             values[ii].accept(this);
         }
+        return null;
     }
 
-    public void visit (ForUpdate forUpdate)
+    public Void visit (ForUpdate forUpdate)
     {
         _builder.append(" for update ");
+        return null;
     }
 
-    public void visit (OrderBy orderBy)
+    public Void visit (OrderBy orderBy)
     {
         _builder.append(" order by ");
 
@@ -262,9 +276,10 @@ public abstract class BuildVisitor implements ExpressionVisitor
             values[ii].accept(this);
             _builder.append(" ").append(orders[ii]);
         }
+        return null;
     }
 
-    public void visit (Join join)
+    public Void visit (Join join)
     {
         switch (join.getType()) {
         case INNER:
@@ -282,31 +297,36 @@ public abstract class BuildVisitor implements ExpressionVisitor
         appendTableAbbreviation(join.getJoinClass());
         _builder.append(" on ");
         join.getJoinCondition().accept(this);
+        return null;
     }
 
-    public void visit (Limit limit)
+    public Void visit (Limit limit)
     {
         _builder.append(" limit ").append(limit.getCount()).
             append(" offset ").append(limit.getOffset());
+        return null;
     }
 
-    public void visit (LiteralExp literalExp)
+    public Void visit (LiteralExp literalExp)
     {
         _builder.append(literalExp.getText());
+        return null;
     }
 
-    public void visit (ValueExp valueExp)
+    public Void visit (ValueExp valueExp)
     {
         bindValue(valueExp.getValue());
+        return null;
     }
 
-    public void visit (Exists<? extends PersistentRecord> exists)
+    public Void visit (Exists<? extends PersistentRecord> exists)
     {
         _builder.append("exists ");
         exists.getSubClause().accept(this);
+        return null;
     }
 
-    public void visit (SelectClause<? extends PersistentRecord> selectClause)
+    public Void visit (SelectClause<? extends PersistentRecord> selectClause)
     {
         Class<? extends PersistentRecord> pClass = selectClause.getPersistentClass();
         boolean isInner = _innerClause;
@@ -401,9 +421,10 @@ public abstract class BuildVisitor implements ExpressionVisitor
         if (isInner) {
             _builder.append(")");
         }
+        return null;
     }
 
-    public void visit (UpdateClause<? extends PersistentRecord> updateClause)
+    public Void visit (UpdateClause<? extends PersistentRecord> updateClause)
     {
         if (updateClause.getWhereClause() == null) {
             throw new IllegalArgumentException(
@@ -436,9 +457,10 @@ public abstract class BuildVisitor implements ExpressionVisitor
             }
         }
         updateClause.getWhereClause().accept(this);
+        return null;
     }
 
-    public void visit (DeleteClause deleteClause)
+    public Void visit (DeleteClause deleteClause)
     {
         _builder.append("delete from ");
         appendTableName(deleteClause.getPersistentClass());
@@ -446,9 +468,10 @@ public abstract class BuildVisitor implements ExpressionVisitor
         appendTableAbbreviation(deleteClause.getPersistentClass());
         _builder.append(" ");
         deleteClause.getWhereClause().accept(this);
+        return null;
     }
 
-    public void visit (InsertClause insertClause)
+    public Void visit (InsertClause insertClause)
     {
         Class<? extends PersistentRecord> pClass = insertClause.getPersistentClass();
         Object pojo = insertClause.getPojo();
@@ -487,9 +510,10 @@ public abstract class BuildVisitor implements ExpressionVisitor
             bindField(pClass, field, pojo);
         }
         _builder.append(")");
+        return null;
     }
 
-    public void visit (CreateIndexClause createIndexClause)
+    public Void visit (CreateIndexClause createIndexClause)
     {
         _builder.append("create ");
         if (createIndexClause.isUnique()) {
@@ -520,12 +544,14 @@ public abstract class BuildVisitor implements ExpressionVisitor
         _defaultType = null;
 
         _builder.append(")");
+        return null;
     }
 
-    public void visit (DropIndexClause<? extends PersistentRecord> dropIndexClause)
+    public Void visit (DropIndexClause<? extends PersistentRecord> dropIndexClause)
     {
         _builder.append("drop index ");
         appendIdentifier(dropIndexClause.getName());
+        return null;
     }
 
     protected void bindValue (Object object)

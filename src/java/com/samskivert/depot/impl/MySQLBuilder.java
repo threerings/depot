@@ -63,17 +63,19 @@ public class MySQLBuilder
 {
     public class MSBuildVisitor extends BuildVisitor
     {
-        @Override public void visit (FullText.Match match)
+        @Override public Void visit (FullText.Match match)
         {
             renderMatch(match.getDefinition());
+            return null;
         }
 
-        @Override public void visit (FullText.Rank rank)
+        @Override public Void visit (FullText.Rank rank)
         {
             renderMatch(rank.getDefinition());
+            return null;
         }
 
-        @Override public void visit (DeleteClause deleteClause)
+        @Override public Void visit (DeleteClause deleteClause)
         {
             _builder.append("delete from ");
             appendTableName(deleteClause.getPersistentClass());
@@ -87,30 +89,33 @@ public class MySQLBuilder
             } finally {
                 _types.setUseTableAbbreviations(savedFlag);
             }
+            return null;
         }
 
-        public void visit (EpochSeconds epochSeconds)
+        public Void visit (EpochSeconds epochSeconds)
         {
             _builder.append("unix_timestamp(");
             epochSeconds.getArgument().accept(this);
             _builder.append(")");
+            return null;
         }
 
         @Override
-        public void visit (CreateIndexClause createIndexClause)
+        public Void visit (CreateIndexClause createIndexClause)
         {
             for (Tuple<SQLExpression, Order> field : createIndexClause.getFields()) {
                 if (!(field.left instanceof ColumnExp)) {
                     log.warning("This database can't handle complex indexes. Aborting creation.",
                         "ixName", createIndexClause.getName());
-                    return;
+                    return null;
                 }
             }
             super.visit(createIndexClause);
+            return null;
         }
 
         @Override
-        public void visit (DropIndexClause<? extends PersistentRecord> dropIndexClause)
+        public Void visit (DropIndexClause<? extends PersistentRecord> dropIndexClause)
         {
             // MySQL's indexes are scoped on the table, not on the database, and the
             // SQL syntax reflects it: DROP INDEX fooIx on fooTable
@@ -118,6 +123,7 @@ public class MySQLBuilder
             appendIdentifier(dropIndexClause.getName());
             _builder.append(" on ");
             appendTableName(dropIndexClause.getPersistentClass());
+            return null;
         }
 
         protected MSBuildVisitor (DepotTypes types)

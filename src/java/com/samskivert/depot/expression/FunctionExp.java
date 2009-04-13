@@ -20,9 +20,9 @@
 
 package com.samskivert.depot.expression;
 
-import com.samskivert.util.StringUtil;
-
 import java.util.Collection;
+
+import com.samskivert.util.StringUtil;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.impl.ExpressionVisitor;
@@ -42,9 +42,9 @@ public class FunctionExp implements SQLExpression
     }
 
     // from SQLExpression
-    public void accept (ExpressionVisitor builder)
+    public Object accept (ExpressionVisitor<?> builder)
     {
-        builder.visit(this);
+        return builder.visit(this);
     }
 
     // from SQLExpression

@@ -20,8 +20,13 @@
 
 package com.samskivert.depot.operator;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 
+import com.google.common.base.Function;
+import com.google.common.base.Predicates;
+import com.google.common.collect.Iterables;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.ValueExp;
@@ -37,31 +42,30 @@ public interface SQLOperator extends SQLExpression
     /**
      * Represents an operator with any number of operands.
      */
-    public abstract static class MultiOperator
-        implements SQLOperator
+    public abstract static class MultiOperator extends BaseOperator
     {
-        public MultiOperator (SQLExpression ... conditions)
+        public MultiOperator (SQLExpression ... operands)
         {
-            _conditions = conditions;
+            _operands = operands;
         }
 
         // from SQLExpression
-        public void accept (ExpressionVisitor builder)
+        public Object accept (ExpressionVisitor<?> builder)
         {
-            builder.visit(this);
+            return builder.visit(this);
         }
 
         // from SQLExpression
         public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
         {
-            for (int ii = 0; ii < _conditions.length; ii ++) {
-                _conditions[ii].addClasses(classSet);
+            for (int ii = 0; ii < _operands.length; ii ++) {
+                _operands[ii].addClasses(classSet);
             }
         }
 
-        public SQLExpression[] getConditions ()
+        public SQLExpression[] getOperands ()
         {
-            return _conditions;
+            return _operands;
         }
 
         /**
@@ -69,26 +73,31 @@ public interface SQLOperator extends SQLExpression
          */
         public abstract String operator ();
 
+        /**
+         * Calculates a value
+         */
+        public abstract Object evaluate (Object[] values);
+
         @Override // from Object
         public String toString ()
         {
             StringBuilder builder = new StringBuilder("(");
-            for (SQLExpression condition : _conditions) {
+            for (SQLExpression operand : _operands) {
                 if (builder.length() > 1) {
                     builder.append(operator());
                 }
-                builder.append(condition);
+                builder.append(operand);
             }
             return builder.append(")").toString();
         }
 
-        protected SQLExpression[] _conditions;
+        protected SQLExpression[] _operands;
     }
 
     /**
      * Does the real work for simple binary operators such as Equals.
      */
-    public abstract static class BinaryOperator implements SQLOperator
+    public abstract static class BinaryOperator extends BaseOperator
     {
         public BinaryOperator (SQLExpression lhs, SQLExpression rhs)
         {
@@ -102,9 +111,9 @@ public interface SQLOperator extends SQLExpression
         }
 
         // from SQLExpression
-        public void accept (ExpressionVisitor builder)
+        public Object accept (ExpressionVisitor<?> builder)
         {
-            builder.visit(this);
+            return builder.visit(this);
         }
 
         // from SQLExpression
@@ -113,6 +122,8 @@ public interface SQLOperator extends SQLExpression
             _lhs.addClasses(classSet);
             _rhs.addClasses(classSet);
         }
+
+        public abstract Object evaluate (Object left, Object right);
 
         /**
          * Returns the string representation of the operator.
@@ -138,4 +149,54 @@ public interface SQLOperator extends SQLExpression
         protected SQLExpression _lhs;
         protected SQLExpression _rhs;
     }
+
+    public static abstract class BaseOperator implements SQLOperator
+    {
+        public static Function<Object, Long> INTEGRAL = new Function<Object, Long>() {
+            @Override public Long apply (Object o) {
+                if ((o instanceof Integer) || (o instanceof Long)) {
+                    return ((Number) o).longValue();
+                }
+                return null;
+            }
+        };
+
+        public static Function<Object, Double> NUMERICAL = new Function<Object, Double>() {
+            @Override public Double apply (Object o) {
+                return (o instanceof Number) ? ((Number) o).doubleValue() : null;
+            }
+        };
+
+        public static Function<Object, String> STRING = new Function<Object, String>() {
+            @Override public String apply (Object o) {
+                return (o instanceof String) ? (String) o : null;
+            }
+        };
+
+        public static Function<Object, Date> DATE = new Function<Object, Date>() {
+            @Override public Date apply (Object o) {
+                return (o instanceof Date) ? (Date) o : null;
+            }
+        };
+
+        public static <S, T> boolean all (Function<S, T> fun, S... obj) {
+            return Iterables.all(Arrays.asList(obj), Predicates.compose(Predicates.isNull(), fun));
+        }
+
+        public static <S, T extends Comparable<T>> int compare (Function<S, T> fun, S lhs, S rhs) {
+            return fun.apply(lhs).compareTo(fun.apply(rhs));
+        }
+
+        public static <S, T> T accumulate (Function<S, T> fun, S[] ops, T v, Accumulator<T> acc) {
+            for (S op : ops) {
+                v = acc.accumulate(v, fun.apply(op));
+            }
+            return v;
+        }
+
+        protected static interface Accumulator<T>
+        {
+            T accumulate (T left, T right);
+        }
+}
 }

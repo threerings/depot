@@ -95,9 +95,9 @@ public class UpdateClause<T extends PersistentRecord>
     }
 
     // from SQLExpression
-    public void accept (ExpressionVisitor builder)
+    public Object accept (ExpressionVisitor<?> builder)
     {
-        builder.visit(this);
+        return builder.visit(this);
     }
 
     /** The class we're updating. */

@@ -54,9 +54,9 @@ public abstract class Conditionals
         }
 
         // from SQLExpression
-        public void accept (ExpressionVisitor builder)
+        public Object accept (ExpressionVisitor<?> builder)
         {
-            builder.visit(this);
+            return builder.visit(this);
         }
 
         // from SQLExpression
@@ -90,6 +90,15 @@ public abstract class Conditionals
         {
             return "=";
         }
+
+        @Override
+        public Object evaluate (Object left, Object right)
+        {
+            if (left == null || right == null) {
+                return new NoValue("Null operand to '=': (" + left + ", " + right + ")");
+            }
+            return left.equals(right);
+        }
     }
 
     /** The SQL '!=' operator. */
@@ -108,6 +117,15 @@ public abstract class Conditionals
         @Override public String operator()
         {
             return "!=";
+        }
+
+        @Override
+        public Object evaluate (Object left, Object right)
+        {
+            if (left == null || right == null) {
+                return new NoValue("Null operand to '!=': (" + left + ", " + right + ")");
+            }
+            return !left.equals(right);
         }
     }
 
@@ -128,6 +146,18 @@ public abstract class Conditionals
         {
             return "<";
         }
+
+        @Override
+        public Object evaluate (Object left, Object right)
+        {
+            if (all(NUMERICAL, left, right)) {
+                return NUMERICAL.apply(left) < NUMERICAL.apply(right);
+            }
+            if (all(STRING, left, right) || all(DATE, left, right)) {
+                return compare(STRING, left, right) < 0;
+            }
+            return new NoValue("Non-comparable operand to '<': (" + left + ", " + right + ")");
+        }
     }
 
     /** The SQL '<=' operator. */
@@ -147,7 +177,19 @@ public abstract class Conditionals
         {
             return "<=";
         }
-    }
+
+        @Override
+        public Object evaluate (Object left, Object right)
+        {
+            if (all(NUMERICAL, left, right)) {
+                return NUMERICAL.apply(left) <= NUMERICAL.apply(right);
+            }
+            if (all(STRING, left, right) || all(DATE, left, right)) {
+                return compare(STRING, left, right) <= 0;
+            }
+            return new NoValue("Non-comparable operand to '<=': (" + left + ", " + right + ")");
+        }
+}
 
     /** The SQL '>' operator. */
     public static class GreaterThan extends SQLOperator.BinaryOperator
@@ -165,6 +207,18 @@ public abstract class Conditionals
         @Override public String operator()
         {
             return ">";
+        }
+
+        @Override
+        public Object evaluate (Object left, Object right)
+        {
+            if (all(NUMERICAL, left, right)) {
+                return NUMERICAL.apply(left) > NUMERICAL.apply(right);
+            }
+            if (all(STRING, left, right) || all(DATE, left, right)) {
+                return compare(STRING, left, right) > 0;
+            }
+            return new NoValue("Non-comparable operand to '>': (" + left + ", " + right + ")");
         }
     }
 
@@ -184,6 +238,18 @@ public abstract class Conditionals
         @Override public String operator()
         {
             return ">=";
+        }
+
+        @Override
+        public Object evaluate (Object left, Object right)
+        {
+            if (all(NUMERICAL, left, right)) {
+                return NUMERICAL.apply(left) >= NUMERICAL.apply(right);
+            }
+            if (all(STRING, left, right) || all(DATE, left, right)) {
+                return compare(STRING, left, right) >= 0;
+            }
+            return new NoValue("Non-comparable operand to '>=': (" + left + ", " + right + ")");
         }
     }
 
@@ -219,9 +285,9 @@ public abstract class Conditionals
         }
 
         // from SQLExpression
-        public void accept (ExpressionVisitor builder)
+        public Object accept (ExpressionVisitor<?> builder)
         {
-            builder.visit(this);
+            return builder.visit(this);
         }
 
         // from SQLExpression
@@ -265,6 +331,12 @@ public abstract class Conditionals
         {
             return " like ";
         }
+
+        @Override
+        public Object evaluate (Object left, Object right)
+        {
+            return new NoValue("Like operator not implemented");
+        }
     }
 
     /** The SQL ' exists' operator. */
@@ -275,13 +347,11 @@ public abstract class Conditionals
             _clause = clause;
         }
 
-        // from SQLExpression
-        public void accept (ExpressionVisitor builder)
+        public Object accept (ExpressionVisitor<?> builder)
         {
-            builder.visit(this);
+            return builder.visit(this);
         }
 
-        // from SQLExpression
         public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
         {
             _clause.addClasses(classSet);
@@ -314,9 +384,9 @@ public abstract class Conditionals
         }
 
         // from SQLExpression
-        public void accept (ExpressionVisitor builder)
+        public Object accept (ExpressionVisitor<?> builder)
         {
-            builder.visit(this);
+            return builder.visit(this);
         }
 
         // from SQLExpression
@@ -370,9 +440,9 @@ public abstract class Conditionals
             implements SQLOperator
         {
            // from SQLExpression
-            public void accept (ExpressionVisitor builder)
+            public Object accept (ExpressionVisitor<?> builder)
             {
-                builder.visit(this);
+                return builder.visit(this);
             }
 
             // from SQLExpression
@@ -396,9 +466,9 @@ public abstract class Conditionals
             implements SQLOperator
         {
             // from SQLExpression
-            public void accept (ExpressionVisitor builder)
+            public Object accept (ExpressionVisitor<?> builder)
             {
-                builder.visit(this);
+                return builder.visit(this);
             }
 
             public FullText getDefinition ()

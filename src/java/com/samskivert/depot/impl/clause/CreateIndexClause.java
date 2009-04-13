@@ -78,9 +78,9 @@ public class CreateIndexClause
     }
 
     // from SQLExpression
-    public void accept (ExpressionVisitor builder)
+    public Object accept (ExpressionVisitor<?> builder)
     {
-        builder.visit(this);
+        return builder.visit(this);
     }
 
     protected Class<? extends PersistentRecord> _pClass;

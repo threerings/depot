@@ -53,16 +53,17 @@ public class PostgreSQLBuilder
 
     public class PGBuildVisitor extends BuildVisitor
     {
-        @Override public void visit (FullText.Match match) {
+        @Override public Void visit (FullText.Match match) {
             appendIdentifier("ftsCol_" + match.getDefinition().getName());
             _builder.append(" @@ to_tsquery('").
             append(translateFTConfig(getFTIndex(match.getDefinition()).configuration())).
             append("', ");
             bindValue(massageFTQuery(match.getDefinition()));
             _builder.append(")");
+            return null;
         }
 
-        @Override public void visit (FullText.Rank rank) {
+        @Override public Void visit (FullText.Rank rank) {
             _builder.append(PG83 ? "ts_rank" : "rank").append("(");
             appendIdentifier("ftsCol_" + rank.getDefinition().getName());
             _builder.append(", to_tsquery('").
@@ -73,12 +74,14 @@ public class PostgreSQLBuilder
             append("', ");
             bindValue(massageFTQuery(rank.getDefinition()));
             _builder.append("), 1)");
+            return null;
         }
 
-        @Override public void visit (EpochSeconds epochSeconds) {
+        @Override public Void visit (EpochSeconds epochSeconds) {
             _builder.append("date_part('epoch', ");
             epochSeconds.getArgument().accept(this);
             _builder.append(")");
+            return null;
         }
 
 // TODO: enable when we can require 1.6 support
@@ -120,12 +123,11 @@ public class PostgreSQLBuilder
             _builder.append("\"").append(field).append("\"");
         }
 
-// TODO: enable when we can require 1.6 support
-        protected PGBuildVisitor (DepotTypes types) {
+        protected PGBuildVisitor (DepotTypes types)
+        {
             super(types);
         }
     }
-
 
     public PostgreSQLBuilder (DepotTypes types)
     {

@@ -57,9 +57,9 @@ public class DeleteClause
     }
 
     // from SQLExpression
-    public void accept (ExpressionVisitor builder)
+    public Object accept (ExpressionVisitor<?> builder)
     {
-        builder.visit(this);
+        return builder.visit(this);
     }
 
     /** The type of persistent record on which we operate. */

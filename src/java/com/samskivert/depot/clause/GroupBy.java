@@ -42,15 +42,14 @@ public class GroupBy implements QueryClause
     }
 
     // from SQLExpression
-    public void accept (ExpressionVisitor builder)
+    public Object accept (ExpressionVisitor<?> builder)
     {
-        builder.visit(this);
+        return builder.visit(this);
     }
 
     // from SQLExpression
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
-        // I can't imagine a GROUP BY clause bringing in new tables... ?
     }
 
     /** The expressions that are generated for the clause. */

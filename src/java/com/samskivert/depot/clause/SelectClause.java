@@ -189,9 +189,9 @@ public class SelectClause<T extends PersistentRecord> implements QueryClause
     }
 
     // from SQLExpression
-    public void accept (ExpressionVisitor builder)
+    public Object accept (ExpressionVisitor<?> builder)
     {
-        builder.visit(this);
+        return builder.visit(this);
     }
 
     @Override // from Object

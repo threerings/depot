@@ -51,6 +51,23 @@ public abstract class Logic
         {
             return " or ";
         }
+
+        @Override
+        public Object evaluate (Object[] values)
+        {
+            boolean anyTrue = false;
+            for (Object value : values) {
+                if (value instanceof NoValue) {
+                    return value;
+                }
+                if (Boolean.TRUE.equals(value)) {
+                    anyTrue = true;
+                } else if (!Boolean.FALSE.equals(value)) {
+                    return new NoValue("Non-boolean operand to OR: " + value);
+                }
+            }
+            return anyTrue;
+        }
     }
 
     /**
@@ -72,6 +89,25 @@ public abstract class Logic
         {
             return " and ";
         }
+
+        @Override
+        public Object evaluate (Object[] values)
+        {
+            // if all operands are true, return true, else if all operands are boolean, return
+            // false, else return NO_VALUE
+            boolean allTrue = true;
+            for (Object value : values) {
+                if (value instanceof NoValue) {
+                    return value;
+                }
+                if (Boolean.FALSE.equals(value)) {
+                    allTrue = false;
+                } else if (!Boolean.TRUE.equals(value)) {
+                    return new NoValue("Non-boolean operand to AND: " + value);
+                }
+            }
+            return allTrue;
+        }
     }
 
     /**
@@ -91,9 +127,9 @@ public abstract class Logic
         }
 
         // from SQLExpression
-        public void accept (ExpressionVisitor builder)
+        public Object accept (ExpressionVisitor<?> builder)
         {
-            builder.visit(this);
+            return builder.visit(this);
         }
 
         // from SQLExpression

@@ -31,13 +31,27 @@ import com.samskivert.depot.impl.SQLBuilder;
  */
 public interface SQLExpression
 {
+    public static final class NoValue
+    {
+        public NoValue (String reason)
+        {
+            _reason = reason;
+        }
+
+        public String toString () {
+            return "[unknown value, reason=" + _reason + "]";
+        }
+
+        protected String _reason;
+    }
+
     /**
      * Most uses of this class have been implemented with a visitor pattern. Create your own
      * {@link ExpressionVisitor} and call this method with it.
      *
      * @see SQLBuilder
      */
-    public void accept (ExpressionVisitor builder);
+    public Object accept (ExpressionVisitor<?> visitor);
 
     /**
      * Adds all persistent classes that are brought into the SQL context by this clause: FROM

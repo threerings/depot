@@ -23,15 +23,16 @@ package com.samskivert.depot.operator;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.ValueExp;
 import com.samskivert.depot.operator.SQLOperator.MultiOperator;
+import com.samskivert.util.StringUtil;
 
 /**
  * A convenient container for implementations of arithmetic operators. Classes that value brevity
  * that feel otherwise will use Arithmetic.Add() and Arithmetic.Sub().
  */
-public abstract class Arithmetic
+public abstract class Arithmetic extends MultiOperator
 {
     /** The SQL '+' operator. */
-    public static class Add extends MultiOperator
+    public static class Add extends Arithmetic
     {
         public Add (SQLExpression column, Comparable<?> value)
         {
@@ -47,10 +48,22 @@ public abstract class Arithmetic
         {
             return "+";
         }
+
+        @Override
+        public Object evaluate (Object[] operands)
+        {
+            return evaluate(operands, "+", new Accumulator<Double>() {
+                @Override public Double accumulate (Double left, Double right) {
+                    return left + right;
+                }}, new Accumulator<Long>() {
+                @Override public Long accumulate (Long left, Long right) {
+                    return left + right;
+                }});
+        }
     }
 
     /** The SQL '-' operator. */
-    public static class Sub extends MultiOperator
+    public static class Sub extends Arithmetic
     {
         public Sub (SQLExpression column, Comparable<?> value)
         {
@@ -66,10 +79,22 @@ public abstract class Arithmetic
         {
             return "-";
         }
+
+        @Override
+        public Object evaluate (Object[] operands)
+        {
+            return evaluate(operands, "-", new Accumulator<Double>() {
+                @Override public Double accumulate (Double left, Double right) {
+                    return left - right;
+                }}, new Accumulator<Long>() {
+                @Override public Long accumulate (Long left, Long right) {
+                    return left - right;
+                }});
+        }
     }
 
     /** The SQL '*' operator. */
-    public static class Mul extends MultiOperator
+    public static class Mul extends Arithmetic
     {
         public Mul (SQLExpression column, Comparable<?> value)
         {
@@ -85,10 +110,22 @@ public abstract class Arithmetic
         {
             return "*";
         }
+
+        @Override
+        public Object evaluate (Object[] operands)
+        {
+            return evaluate(operands, "*", new Accumulator<Double>() {
+                @Override public Double accumulate (Double left, Double right) {
+                    return left * right;
+                }}, new Accumulator<Long>() {
+                @Override public Long accumulate (Long left, Long right) {
+                    return left * right;
+                }});
+        }
     }
 
     /** The SQL '/' operator. */
-    public static class Div extends MultiOperator
+    public static class Div extends Arithmetic
     {
         public Div (SQLExpression column, Comparable<?> value)
         {
@@ -104,10 +141,27 @@ public abstract class Arithmetic
         {
             return " / "; // Pad with spaces to work-around a MySQL bug.
         }
+
+        @Override
+        public Object evaluate (Object[] operands)
+        {
+            for (int i = 1; i < operands.length; i ++) {
+                if (NUMERICAL.apply(operands[i]) == Double.valueOf(0)) {
+                    return new NoValue("Division by zero in: " + StringUtil.toString(operands));
+                }
+            }
+            return evaluate(operands, "/", new Accumulator<Double>() {
+                @Override public Double accumulate (Double left, Double right) {
+                    return left / right;
+                }}, new Accumulator<Long>() {
+                @Override public Long accumulate (Long left, Long right) {
+                    return left / right;
+                }});
+        }
     }
 
     /** The SQL '&' operator. */
-    public static class BitAnd extends MultiOperator
+    public static class BitAnd extends Arithmetic
     {
         public BitAnd (SQLExpression column, Comparable<?> value)
         {
@@ -123,10 +177,19 @@ public abstract class Arithmetic
         {
             return "&";
         }
+
+        @Override
+        public Object evaluate (Object[] operands)
+        {
+            return evaluate(operands, "&", null, new Accumulator<Long>() {
+                @Override public Long accumulate (Long left, Long right) {
+                    return left & right;
+                }});
+        }
     }
 
     /** The SQL '|' operator. */
-    public static class BitOr extends MultiOperator
+    public static class BitOr extends Arithmetic
     {
         public BitOr (SQLExpression column, Comparable<?> value)
         {
@@ -142,5 +205,37 @@ public abstract class Arithmetic
         {
             return "|";
         }
+
+        @Override
+        public Object evaluate (Object[] operands)
+        {
+            return evaluate(operands, "|", null, new Accumulator<Long>() {
+                @Override public Long accumulate (Long left, Long right) {
+                    return left | right;
+                }});
+        }
+    }
+
+    public Arithmetic (SQLExpression column, Comparable<?> value)
+    {
+        super(column, new ValueExp(value));
+    }
+
+    public Arithmetic (SQLExpression... values)
+    {
+        super(values);
+    }
+
+    protected Object evaluate (
+        Object[] ops, String name, Accumulator<Double> dAcc, Accumulator<Long> iAcc)
+    {
+        if (dAcc != null && all(NUMERICAL, ops)) {
+            return accumulate(NUMERICAL, ops, 0.0, dAcc);
+        }
+
+        if (iAcc != null && all(INTEGRAL, ops)) {
+            return accumulate(INTEGRAL, ops, 0L, iAcc);
+        }
+        return new NoValue("Non-numeric operand for '" + name + "' (" + ops + ")");
     }
 }

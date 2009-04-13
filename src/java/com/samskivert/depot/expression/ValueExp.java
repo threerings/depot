@@ -31,15 +31,15 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 public class ValueExp
     implements SQLExpression
 {
-    public ValueExp (Object _value)
+    public ValueExp (Object value)
     {
-        this._value = _value;
+        _value = value;
     }
 
     // from SQLExpression
-    public void accept (ExpressionVisitor builder)
+    public Object accept (ExpressionVisitor<?> builder)
     {
-        builder.visit(this);
+        return builder.visit(this);
     }
 
     // from SQLExpression

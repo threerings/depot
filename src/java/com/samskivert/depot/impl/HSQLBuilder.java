@@ -61,7 +61,7 @@ public class HSQLBuilder
 {
     public class HBuildVisitor extends BuildVisitor
     {
-        @Override public void visit (FullText.Match match)
+        @Override public Void visit (FullText.Match match)
         {
             // HSQL doesn't have real full text search, so we fake it by creating a condition like
             // (lower(COL1) like '%foo%') OR (lower(COL1) like '%bar%') OR ...
@@ -92,16 +92,17 @@ public class HSQLBuilder
             // then just OR them all together and we have our query
             _ftsCondition = new Or(bits);
             _ftsCondition.accept(this);
+            return null;
         }
 
-        @Override public void visit (FullText.Rank rank)
+        @Override public Void visit (FullText.Rank rank)
         {
             // not implemented for HSQL
             _builder.append("0");
+            return null;
         }
 
-        @Override
-        public void visit (MultiOperator operator)
+        public Void visit (MultiOperator operator)
         {
             String op;
             // HSQL doesn't handle & and | operators
@@ -112,13 +113,12 @@ public class HSQLBuilder
                 op = "bitor";
 
             } else {
-                super.visit(operator);
-                return;
+                return super.visit(operator);
             }
 
             _builder.append(op).append("(");
             boolean virgin = true;
-            for (SQLExpression bit: operator.getConditions()) {
+            for (SQLExpression bit: operator.getOperands()) {
                 if (!virgin) {
                     _builder.append(", ");
                 }
@@ -126,26 +126,29 @@ public class HSQLBuilder
                 virgin = false;
             }
             _builder.append(")");
+            return null;
         }
 
-        public void visit (EpochSeconds epochSeconds)
+        public Void visit (EpochSeconds epochSeconds)
         {
             _builder.append("datediff('ss', ");
             epochSeconds.getArgument().accept(this);
             _builder.append(", '1970-01-01')");
+            return null;
         }
 
         @Override
-        public void visit (CreateIndexClause createIndexClause)
+        public Void visit (CreateIndexClause createIndexClause)
         {
             for (Tuple<SQLExpression, Order> field : createIndexClause.getFields()) {
                 if (!(field.left instanceof ColumnExp)) {
                     log.warning("This database can't handle complex indexes. Aborting creation.",
                         "ixName", createIndexClause.getName());
-                    return;
+                    return null;
                 }
             }
             super.visit(createIndexClause);
+            return null;
         }
 
         protected HBuildVisitor (DepotTypes types)

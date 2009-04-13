@@ -46,7 +46,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
     implements SQLExpression, CacheKey, ValidatingCacheInvalidator, Serializable
 {
     /** Handles the matching of the key columns to its bound values. This is needed so that we can
-     * combine a buncy of keys into a {@link KeySet}. */
+     * combine a bunch of keys into a {@link KeySet}. */
     public static class Expression<U extends PersistentRecord> implements SQLExpression
     {
         public Expression (Class<U> pClass, Comparable<?>[] values) {
@@ -59,8 +59,8 @@ public class Key<T extends PersistentRecord> extends WhereClause
         public Comparable<?>[] getValues () {
             return _values;
         }
-        public void accept (ExpressionVisitor builder) {
-            builder.visit(this);
+        public Object accept (ExpressionVisitor<?> builder) {
+            return builder.visit(this);
         }
         public void addClasses (Collection<Class<? extends PersistentRecord>> classSet) {
             classSet.add(getPersistentClass());
@@ -186,9 +186,9 @@ public class Key<T extends PersistentRecord> extends WhereClause
     }
 
     // from SQLExpression
-    public void accept (ExpressionVisitor builder)
+    public Object accept (ExpressionVisitor<?> builder)
     {
-        builder.visit(this);
+        return builder.visit(this);
     }
 
     // from CacheKey

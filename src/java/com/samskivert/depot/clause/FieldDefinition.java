@@ -81,9 +81,9 @@ public class FieldDefinition implements QueryClause
     }
 
     // from SQLExpression
-    public void accept (ExpressionVisitor visitor)
+    public Object accept (ExpressionVisitor<?> visitor)
     {
-        visitor.visit(this);
+        return visitor.visit(this);
     }
 
     /** The name of the field on the persistent object to override. */
