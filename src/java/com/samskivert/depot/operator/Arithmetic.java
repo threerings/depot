@@ -53,10 +53,10 @@ public abstract class Arithmetic extends MultiOperator
         public Object evaluate (Object[] operands)
         {
             return evaluate(operands, "+", new Accumulator<Double>() {
-                @Override public Double accumulate (Double left, Double right) {
+                public Double accumulate (Double left, Double right) {
                     return left + right;
                 }}, new Accumulator<Long>() {
-                @Override public Long accumulate (Long left, Long right) {
+                public Long accumulate (Long left, Long right) {
                     return left + right;
                 }});
         }
@@ -84,10 +84,10 @@ public abstract class Arithmetic extends MultiOperator
         public Object evaluate (Object[] operands)
         {
             return evaluate(operands, "-", new Accumulator<Double>() {
-                @Override public Double accumulate (Double left, Double right) {
+                public Double accumulate (Double left, Double right) {
                     return left - right;
                 }}, new Accumulator<Long>() {
-                @Override public Long accumulate (Long left, Long right) {
+                public Long accumulate (Long left, Long right) {
                     return left - right;
                 }});
         }
@@ -115,10 +115,10 @@ public abstract class Arithmetic extends MultiOperator
         public Object evaluate (Object[] operands)
         {
             return evaluate(operands, "*", new Accumulator<Double>() {
-                @Override public Double accumulate (Double left, Double right) {
+                public Double accumulate (Double left, Double right) {
                     return left * right;
                 }}, new Accumulator<Long>() {
-                @Override public Long accumulate (Long left, Long right) {
+                public Long accumulate (Long left, Long right) {
                     return left * right;
                 }});
         }
@@ -151,10 +151,10 @@ public abstract class Arithmetic extends MultiOperator
                 }
             }
             return evaluate(operands, "/", new Accumulator<Double>() {
-                @Override public Double accumulate (Double left, Double right) {
+                public Double accumulate (Double left, Double right) {
                     return left / right;
                 }}, new Accumulator<Long>() {
-                @Override public Long accumulate (Long left, Long right) {
+                public Long accumulate (Long left, Long right) {
                     return left / right;
                 }});
         }
@@ -182,7 +182,7 @@ public abstract class Arithmetic extends MultiOperator
         public Object evaluate (Object[] operands)
         {
             return evaluate(operands, "&", null, new Accumulator<Long>() {
-                @Override public Long accumulate (Long left, Long right) {
+                public Long accumulate (Long left, Long right) {
                     return left & right;
                 }});
         }
@@ -210,7 +210,7 @@ public abstract class Arithmetic extends MultiOperator
         public Object evaluate (Object[] operands)
         {
             return evaluate(operands, "|", null, new Accumulator<Long>() {
-                @Override public Long accumulate (Long left, Long right) {
+                public Long accumulate (Long left, Long right) {
                     return left | right;
                 }});
         }

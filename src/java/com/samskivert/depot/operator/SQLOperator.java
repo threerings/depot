@@ -153,7 +153,7 @@ public interface SQLOperator extends SQLExpression
     public static abstract class BaseOperator implements SQLOperator
     {
         public static Function<Object, Long> INTEGRAL = new Function<Object, Long>() {
-            @Override public Long apply (Object o) {
+            public Long apply (Object o) {
                 if ((o instanceof Integer) || (o instanceof Long)) {
                     return ((Number) o).longValue();
                 }
@@ -162,19 +162,19 @@ public interface SQLOperator extends SQLExpression
         };
 
         public static Function<Object, Double> NUMERICAL = new Function<Object, Double>() {
-            @Override public Double apply (Object o) {
+            public Double apply (Object o) {
                 return (o instanceof Number) ? ((Number) o).doubleValue() : null;
             }
         };
 
         public static Function<Object, String> STRING = new Function<Object, String>() {
-            @Override public String apply (Object o) {
+            public String apply (Object o) {
                 return (o instanceof String) ? (String) o : null;
             }
         };
 
         public static Function<Object, Date> DATE = new Function<Object, Date>() {
-            @Override public Date apply (Object o) {
+            public Date apply (Object o) {
                 return (o instanceof Date) ? (Date) o : null;
             }
         };
