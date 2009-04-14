@@ -263,7 +263,8 @@ public abstract class Conditionals
         public In (ColumnExp column, Comparable<?>... values)
         {
             if (values.length == 0) {
-                log.warning("Grouchily allowing empty In() operator", "column", column.name);
+                log.warning("Grouchily allowing empty In() operator", "column", column.name,
+                            new Exception());
             }
             _column = column;
             _values = values;
