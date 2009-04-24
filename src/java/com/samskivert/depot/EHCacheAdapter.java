@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -62,7 +63,7 @@ public class EHCacheAdapter
         public Histogram removes;
         public Histogram enumerations;
     }
-    
+
     /**
      * Creates an adapter using the supplied cache manager. Note: this adapter does not shut down
      * the supplied manager when it is shutdown. The caller is responsible for shutting down the
@@ -127,7 +128,7 @@ public class EHCacheAdapter
         if (bin == null) {
             return Collections.emptySet();
         }
-        
+
         // let's return a simple copy of the bin's fancy concurrent hashset
         Set<Serializable> result = Sets.newHashSet(bin.getKeys());
         _enumerations.addValue((int) (System.currentTimeMillis() - now));
@@ -137,10 +138,10 @@ public class EHCacheAdapter
     // from CacheAdapter
     public void shutdown ()
     {
-        log.info("EHCacheAdapter shutting down", "lookups", _lookups, 
+        log.info("EHCacheAdapter shutting down", "lookups", _lookups,
             "stores", _stores, "removes", _removes, "enumerations", _enumerations);
     }
-    
+
     /**
      * Return a snapshot of the current histograms detailing how much time the different
      * operations lookup, store, remove and enumerate take.
@@ -277,7 +278,8 @@ public class EHCacheAdapter
         protected Ehcache _cache;
         protected String _id;
 
-        protected Set<Serializable> _keys = Sets.newConcurrentHashSet();
+        protected Set<Serializable> _keys =
+            Sets.newSetFromMap(new ConcurrentHashMap<Serializable, Boolean>());
     }
 
     // this is just for convenience and memory use; we don't rely on pointer equality anywhere
