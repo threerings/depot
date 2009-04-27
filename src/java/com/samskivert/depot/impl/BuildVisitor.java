@@ -754,15 +754,15 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
                 // TODO: how can we abstract this fieldless marshalling
                 if (value instanceof ByteEnum) {
                     // byte enums require special conversion
-                    stmt.setByte(argIx++, ((ByteEnum)value).toByte());
+                    stmt.setByte(argIx, ((ByteEnum)value).toByte());
                 } else if (value instanceof int[]) {
                     // int arrays require conversion to byte arrays
                     int[] data = (int[])value;
                     ByteBuffer bbuf = ByteBuffer.allocate(data.length * 4);
                     bbuf.asIntBuffer().put(data);
-                    stmt.setObject(argIx++, bbuf.array());
+                    stmt.setObject(argIx, bbuf.array());
                 } else {
-                    stmt.setObject(argIx++, value);
+                    stmt.setObject(argIx, value);
                 }
             }
         };
