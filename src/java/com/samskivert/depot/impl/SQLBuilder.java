@@ -85,7 +85,7 @@ public abstract class SQLBuilder
             try {
                 bindable.doBind(conn, stmt, argIx);
             } catch (Exception e) {
-                log.warning("Failed to bind statement argument", "argIx", argIx);
+                log.warning("Failed to bind statement argument", "argIx", argIx, e);
             }
             argIx ++;
         }
