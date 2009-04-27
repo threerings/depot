@@ -53,7 +53,7 @@ public class PostgreSQL4Builder extends PostgreSQLBuilder
                     if (value instanceof Integer) {
                         return "integer";
                     } else if (value instanceof String) {
-                        return "character varying";
+                        return "varchar";
                     } else {
                         throw new DatabaseException(
                             "Don't know how to make Postgres array for " + value.getClass());
