@@ -37,8 +37,8 @@ import com.samskivert.util.ArrayUtil;
 import com.samskivert.util.StringUtil;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.annotation.FullTextIndex.Configuration;
+import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.operator.Conditionals.FullText;
 
@@ -83,35 +83,6 @@ public class PostgreSQLBuilder
             _builder.append(")");
             return null;
         }
-
-// TODO: enable when we can require 1.6 support
-//         @Override public void visit (In in) {
-//             in.getColumn().accept(this);
-//             _builder.append(" = any (?)");
-//         }
-
-//      @Override public void visit (In in) {
-//      Comparable<?>[] values = in.getValues();
-//      try {
-//          _stmt.setObject(
-//              _argIdx++, _conn.createArrayOf(getElementType(values), (Object[])values));
-//      } catch (SQLException sqe) {
-//          throw new DatabaseException(
-//              "Failed to write value to statement [idx=" + (_argIdx-1) +
-//              ", values=" + StringUtil.safeToString(values) + "]", sqe);
-//      }
-//  }
-
-//  protected String getElementType (Comparable<?>[] values) {
-//      if (values instanceof Integer[]) {
-//          return "integer";
-//      } else if (values instanceof String[]) {
-//          return "character varying";
-//      } else {
-//          throw new DatabaseException(
-//              "Don't know how to make Postgres array for " + values.getClass());
-//      }
-//  }
 
         protected FullTextIndex getFTIndex (FullText definition)
         {

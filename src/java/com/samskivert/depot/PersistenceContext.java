@@ -51,6 +51,7 @@ import com.samskivert.depot.impl.HSQLBuilder;
 import com.samskivert.depot.impl.Modifier;
 import com.samskivert.depot.impl.MySQLBuilder;
 import com.samskivert.depot.impl.Operation;
+import com.samskivert.depot.impl.PostgreSQL4Builder;
 import com.samskivert.depot.impl.PostgreSQLBuilder;
 import com.samskivert.depot.impl.Query;
 import com.samskivert.depot.impl.SQLBuilder;
@@ -66,7 +67,8 @@ public class PersistenceContext
     public static final boolean DEBUG = Boolean.getBoolean("com.samskivert.depot.debug");
 
     /** Allow toggling of cache-related logging via a system property. */
-    public static final boolean CACHE_DEBUG = Boolean.getBoolean("com.samskivert.depot.cache_debug");
+    public static final boolean CACHE_DEBUG =
+        Boolean.getBoolean("com.samskivert.depot.cache_debug");
 
     /** Map {@link TableGenerator} instances by name. */
     public Map<String, TableGenerator> tableGenerators = Maps.newHashMap();
@@ -170,6 +172,19 @@ public class PersistenceContext
         _conprov = conprov;
         _liaison = LiaisonRegistry.getLiaison(conprov.getURL(ident));
         _cache = adapter;
+
+        // determine our JDBC major version
+        Connection conn = null;
+        try {
+            conn = _conprov.getConnection(_ident, true);
+            _jdbcMajorVersion = conn.getMetaData().getJDBCMajorVersion();
+        } catch (Exception e) {
+            throw new DatabaseException("getJDBCMajorVersion failed [ident=" + ident + "].", e);
+        } finally {
+            if (conn != null) {
+                _conprov.releaseConnection(_ident, true, conn);
+            }
+        }
     }
 
     /**
@@ -204,7 +219,11 @@ public class PersistenceContext
     public SQLBuilder getSQLBuilder (DepotTypes types)
     {
         if (_liaison instanceof PostgreSQLLiaison) {
-            return new PostgreSQLBuilder(types);
+            if (_jdbcMajorVersion >= 4) {
+                return new PostgreSQL4Builder(types);
+            } else {
+                return new PostgreSQLBuilder(types);
+            }
         }
         if (_liaison instanceof MySQLLiaison) {
             return new MySQLBuilder(types);
@@ -603,6 +622,7 @@ public class PersistenceContext
     protected ConnectionProvider _conprov;
     protected DatabaseLiaison _liaison;
     protected boolean _warnOnLazyInit;
+    protected int _jdbcMajorVersion;
 
     /** Used to track various statistics. */
     protected Stats _stats = new Stats();
