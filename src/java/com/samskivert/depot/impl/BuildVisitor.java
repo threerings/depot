@@ -21,6 +21,7 @@
 package com.samskivert.depot.impl;
 
 import java.nio.ByteBuffer;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Map;
@@ -731,14 +732,15 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
 
     protected static interface Bindable
     {
-        void doBind (PreparedStatement stmt, int argIx) throws Exception;
+        void doBind (Connection conn, PreparedStatement stmt, int argIx) throws Exception;
     }
 
     protected static Bindable newBindable (
         final DepotMarshaller<?> marshaller, final String field, final Object pojo)
     {
         return new Bindable() {
-            public void doBind (PreparedStatement stmt, int argIx) throws Exception {
+            public void doBind (Connection conn, PreparedStatement stmt, int argIx)
+                throws Exception {
                 marshaller.getFieldMarshaller(field).getAndWriteToStatement(stmt, argIx, pojo);
             }
         };
@@ -747,7 +749,8 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
     protected static Bindable newBindable (final Object value)
     {
         return new Bindable() {
-            public void doBind (PreparedStatement stmt, int argIx) throws Exception {
+            public void doBind (Connection conn, PreparedStatement stmt, int argIx)
+                throws Exception {
                 // TODO: how can we abstract this fieldless marshalling
                 if (value instanceof ByteEnum) {
                     // byte enums require special conversion

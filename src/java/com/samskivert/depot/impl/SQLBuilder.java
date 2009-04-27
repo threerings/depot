@@ -83,7 +83,7 @@ public abstract class SQLBuilder
         int argIx = 1;
         for (BuildVisitor.Bindable bindable : _buildVisitor.getBindables()) {
             try {
-                bindable.doBind(stmt, argIx);
+                bindable.doBind(conn, stmt, argIx);
             } catch (Exception e) {
                 log.warning("Failed to bind statement argument", "argIx", argIx);
             }
