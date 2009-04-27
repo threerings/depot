@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 import com.samskivert.depot.DatabaseException;
+import com.samskivert.depot.expression.ValueExp;
 import com.samskivert.depot.operator.Conditionals.In;
 
 /**
@@ -34,23 +35,28 @@ public class PostgreSQL4Builder extends PostgreSQLBuilder
     public class PG4BuildVisitor extends PGBuildVisitor
     {
         @Override public Void visit (In in) {
+            // if the In() expression is empty, replace it with a 'false'
+            final Comparable<?>[] values = in.getValues();
+            if (values.length == 0) {
+                new ValueExp(false).accept(this);
+                return null;
+            }
             in.getColumn().accept(this);
             _builder.append(" = any (?)");
-            final Comparable<?>[] values = in.getValues();
             _bindables.add(new Bindable() {
                 public void doBind (Connection conn, PreparedStatement stmt, int argIdx)
                     throws Exception {
-                    stmt.setObject(argIdx, conn.createArrayOf(getElementType(values),
+                    stmt.setObject(argIdx, conn.createArrayOf(getElementType(values[0]),
                                                               (Object[])values));
                 }
-                protected String getElementType (Comparable<?>[] values) {
-                    if (values instanceof Integer[]) {
+                protected String getElementType (Object value) {
+                    if (value instanceof Integer) {
                         return "integer";
-                    } else if (values instanceof String[]) {
+                    } else if (value instanceof String) {
                         return "character varying";
                     } else {
                         throw new DatabaseException(
-                            "Don't know how to make Postgres array for " + values.getClass());
+                            "Don't know how to make Postgres array for " + value.getClass());
                     }
                 }
             });
