@@ -51,6 +51,16 @@ public class ColumnExp
         this.name = field;
     }
 
+    /**
+     * Returns a column expression for the supplied persistent class with the same name as this
+     * expression. This is useful for "casting" a column expression from a parent class to a
+     * derived class.
+     */
+    public ColumnExp as (Class<? extends PersistentRecord> oClass)
+    {
+        return new ColumnExp(oClass, name);
+    }
+
     // from SQLExpression
     public Object accept (ExpressionVisitor<?> builder)
     {
