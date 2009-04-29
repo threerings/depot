@@ -834,8 +834,8 @@ public class DepotMarshaller<T extends PersistentRecord>
         if (hasPrimaryKey() && metaData.pkName == null) {
             log.info("Adding primary key.");
             ctx.invoke(new Modifier() {
-                @Override
-                protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+                @Override protected int invoke (Connection conn, DatabaseLiaison liaison)
+                    throws SQLException {
                     liaison.addPrimaryKey(
                         conn, getTableName(), fieldsToColumns(getPrimaryKeyFields()));
                     return 0;
@@ -846,8 +846,8 @@ public class DepotMarshaller<T extends PersistentRecord>
             final String pkName = metaData.pkName;
             log.info("Dropping primary key: " + pkName);
             ctx.invoke(new Modifier() {
-                @Override
-                protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+                @Override protected int invoke (Connection conn, DatabaseLiaison liaison)
+                    throws SQLException {
                     liaison.dropPrimaryKey(conn, getTableName(), pkName);
                     return 0;
                 }
@@ -863,8 +863,8 @@ public class DepotMarshaller<T extends PersistentRecord>
             // but this is a new, named index, so we create it
             log.info("Creating new index: " + iclause.getName());
             ctx.invoke(new Modifier() {
-                @Override
-                protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+                @Override protected int invoke (Connection conn, DatabaseLiaison liaison)
+                    throws SQLException {
                     execute(conn, builder, iclause);
                     return 0;
                 }
@@ -885,8 +885,8 @@ public class DepotMarshaller<T extends PersistentRecord>
 
             // but not this one, so let's create it
             ctx.invoke(new Modifier() {
-                @Override
-                protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+                @Override protected int invoke (Connection conn, DatabaseLiaison liaison)
+                    throws SQLException {
                     builder.addFullTextSearch(conn, DepotMarshaller.this, recordFts);
                     return 0;
                 }
@@ -931,8 +931,8 @@ public class DepotMarshaller<T extends PersistentRecord>
             // initialValue which will use the new column name to obtain the sequence name which
             // ain't going to work either; we punt!
             ctx.invoke(new Modifier() {
-                @Override
-                protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+                @Override protected int invoke (Connection conn, DatabaseLiaison liaison)
+                    throws SQLException {
                     valgen.create(conn, liaison);
                     return 0;
                 }
@@ -1004,7 +1004,8 @@ public class DepotMarshaller<T extends PersistentRecord>
     /**
      * Checks that there are no database columns for which we no longer have Java fields.
      */
-    protected void checkForStaleness (TableMetaData meta, PersistenceContext ctx, SQLBuilder builder)
+    protected void checkForStaleness (
+        TableMetaData meta, PersistenceContext ctx, SQLBuilder builder)
         throws DatabaseException
     {
         for (String fname : _columnFields) {

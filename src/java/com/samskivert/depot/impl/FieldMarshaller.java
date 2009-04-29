@@ -409,7 +409,6 @@ public abstract class FieldMarshaller<T>
             ByteBuffer bbuf = ByteBuffer.allocate(values.length * 4);
             bbuf.asIntBuffer().put(values);
             return bbuf.array();
-
         }
         @Override public byte[] getFromSet (ResultSet rs)
             throws SQLException {
