@@ -20,9 +20,12 @@
 
 package com.samskivert.depot.impl;
 
+import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
+import com.samskivert.depot.ByteEnum;
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.expression.ValueExp;
 import com.samskivert.depot.operator.Conditionals.In;
@@ -45,19 +48,31 @@ public class PostgreSQL4Builder extends PostgreSQLBuilder
             _builder.append(" = any (?)");
             _bindables.add(new Bindable() {
                 public void doBind (Connection conn, PreparedStatement stmt, int argIdx)
-                    throws Exception {
-                    stmt.setObject(argIdx, conn.createArrayOf(getElementType(values[0]),
-                                                              (Object[])values));
+                    throws Exception
+                {
+                    stmt.setObject(argIdx, createArray(conn, values));
                 }
-                protected String getElementType (Object value) {
-                    if (value instanceof Integer) {
-                        return "integer";
-                    } else if (value instanceof String) {
-                        return "varchar";
+                protected Array createArray (Connection conn, Object[] values)
+                    throws SQLException
+                {
+                    String type;
+                    Object testValue = values[0];
+                    if (testValue instanceof Integer) {
+                        type = "integer";
+                    } else if (testValue instanceof String) {
+                        type = "varchar";
+                    } else if (testValue instanceof ByteEnum) {
+                        Byte[] bytes = new Byte[values.length];
+                        for (int ii = 0; ii < bytes.length; ii ++) {
+                            bytes[ii] = ((ByteEnum) values[ii]).toByte();
+                        }
+                        values = bytes;
+                        type = "smallint";  // tinyint is in the spec, but PG doesn't recognize?
                     } else {
                         throw new DatabaseException(
-                            "Don't know how to make Postgres array for " + value.getClass());
+                            "Don't know how to make Postgres array for " + testValue.getClass());
                     }
+                    return conn.createArrayOf(type, values);
                 }
             });
             return null;
