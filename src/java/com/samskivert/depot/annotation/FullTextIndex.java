@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -38,7 +38,7 @@ public @interface FullTextIndex
         /** For English text search; does basic stemming. */
         English
     }
-    
+
     /**
      * An identifier for this index, unique with the scope of the record.
      */
@@ -48,7 +48,7 @@ public @interface FullTextIndex
      * An array of the field names that should be indexed.
      */
     public String[] fields ();
-    
+
     /**
      * What parser/dictionary to use for this index.
      */

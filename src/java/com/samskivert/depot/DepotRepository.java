@@ -105,7 +105,7 @@ public abstract class DepotRepository
          * in the first pass. This makes it much more efficient, but also less reliable because
          * there is no invalidation of the keyset query: If records are inserted, deleted or
          * modified, cached keysets will not be updated.
-         * 
+         *
          * Keysets cached using this strategy may have a long time-to-live.
          *
          * Note: This strategy may not be used on @Computed records, for records that do not in
@@ -411,7 +411,7 @@ public abstract class DepotRepository
         switch(cache) {
         case SHORT_KEYS: case LONG_KEYS: case RECORDS:
             return _ctx.invoke(new FindAllQuery.WithCache<T>(_ctx, type, clauses, cache));
-            
+
         default:
             return _ctx.invoke(new FindAllQuery.Explicitly<T>(
                     _ctx, type, clauses, cache == CacheStrategy.CONTENTS));
@@ -693,7 +693,7 @@ public abstract class DepotRepository
                     "Field identifier #" + (ii+1) + " is neither String nor ColumnExp");
             }
             idx ++;
-            
+
             if (fieldsValues[idx] instanceof SQLExpression) {
                 values[ii] = (SQLExpression) fieldsValues[idx];
             } else {

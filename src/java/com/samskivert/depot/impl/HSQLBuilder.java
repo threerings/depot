@@ -102,6 +102,7 @@ public class HSQLBuilder
             return null;
         }
 
+        @Override
         public Void visit (MultiOperator operator)
         {
             String op;
@@ -129,6 +130,7 @@ public class HSQLBuilder
             return null;
         }
 
+        @Override
         public Void visit (EpochSeconds epochSeconds)
         {
             _builder.append("datediff('ss', ");

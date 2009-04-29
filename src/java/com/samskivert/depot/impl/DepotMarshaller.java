@@ -498,18 +498,18 @@ public class DepotMarshaller<T extends PersistentRecord>
         if (getTableName() == null) {
             return;
         }
-        
+
         // figure out the list of fields that correspond to actual table columns and generate the
         // SQL used to create and migrate our table (unless we're a computed entity)
         _columnFields = new String[_allFields.length];
         ColumnDefinition[] declarations = new ColumnDefinition[_allFields.length];
         int jj = 0;
-        for (int ii = 0; ii < _allFields.length; ii++) {
-            FieldMarshaller<?> fm = _fields.get(_allFields[ii]);
+        for (String field : _allFields) {
+            FieldMarshaller<?> fm = _fields.get(field);
             // include all persistent non-computed fields
             ColumnDefinition colDef = fm.getColumnDefinition();
             if (colDef != null) {
-                _columnFields[jj] = _allFields[ii];
+                _columnFields[jj] = field;
                 declarations[jj] = colDef;
                 jj ++;
             }
@@ -537,7 +537,7 @@ public class DepotMarshaller<T extends PersistentRecord>
                 return 0;
             }
         });
-        
+
         // fetch all relevant information regarding our table from the database
         TableMetaData metaData = TableMetaData.load(ctx, getTableName());
 
@@ -547,6 +547,7 @@ public class DepotMarshaller<T extends PersistentRecord>
             log.info("Creating initial version record for " + _pClass.getName() + ".");
             // if not, create a version entry with version zero
             ctx.invoke(new SimpleModifier() {
+                @Override
                 protected int invoke (DatabaseLiaison liaison, Statement stmt) throws SQLException {
                     try {
                         return stmt.executeUpdate(
@@ -605,6 +606,7 @@ public class DepotMarshaller<T extends PersistentRecord>
 
             // and update our version in the schema version table
             ctx.invoke(new SimpleModifier() {
+                @Override
                 protected int invoke (DatabaseLiaison liaison, Statement stmt) throws SQLException {
                     return stmt.executeUpdate(
                         "update " + liaison.tableSQL(SCHEMA_VERSION_TABLE) +
@@ -1035,6 +1037,7 @@ public class DepotMarshaller<T extends PersistentRecord>
     // server to whom we would talk if we were doing a modification (ie. the master, not a
     // read-only slave)
     protected class ReadVersion extends SimpleModifier {
+        @Override
         protected int invoke (DatabaseLiaison liaison, Statement stmt) throws SQLException {
             ResultSet rs = stmt.executeQuery(
                 " select " + liaison.columnSQL(V_COLUMN) +
@@ -1049,6 +1052,7 @@ public class DepotMarshaller<T extends PersistentRecord>
             _newMigratingVersion = newMigratingVersion;
             _guardVersion = guardVersion;
         }
+        @Override
         protected int invoke (DatabaseLiaison liaison, Statement stmt) throws SQLException {
             return stmt.executeUpdate(
                 "update " + liaison.tableSQL(SCHEMA_VERSION_TABLE) +
@@ -1120,7 +1124,8 @@ public class DepotMarshaller<T extends PersistentRecord>
                 pkColumns.add(rs.getString("COLUMN_NAME"));
             }
         }
-        
+
+        @Override
         public String toString ()
         {
             return StringUtil.fieldsToString(this);

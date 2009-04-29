@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -50,8 +50,8 @@ public class FunctionExp implements SQLExpression
     // from SQLExpression
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
-        for (int ii = 0; ii < _arguments.length; ii ++) {
-            _arguments[ii].addClasses(classSet);
+        for (SQLExpression _argument : _arguments) {
+            _argument.addClasses(classSet);
         }
     }
 
@@ -65,6 +65,7 @@ public class FunctionExp implements SQLExpression
         return _arguments;
     }
 
+    @Override
     public String toString ()
     {
         return _function + "(" + StringUtil.join(_arguments, ", ") + ")";

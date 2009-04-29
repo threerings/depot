@@ -91,11 +91,11 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
                 _category = (strategy == CacheStrategy.SHORT_KEYS) ?
                     CacheCategory.SHORT_KEYSET : CacheCategory.LONG_KEYSET;
                 break;
-                
+
             case RECORDS:
                 _qkey = null;
                 break;
-                
+
             default:
                 throw new IllegalArgumentException("Unexpected cache strategy: " + strategy);
             }

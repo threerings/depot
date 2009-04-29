@@ -92,6 +92,7 @@ public class MySQLBuilder
             return null;
         }
 
+        @Override
         public Void visit (EpochSeconds epochSeconds)
         {
             _builder.append("unix_timestamp(");

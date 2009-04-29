@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -30,6 +30,7 @@ import java.util.Iterator;
 import com.google.common.collect.Iterators;
 import com.google.common.base.Function;
 
+import com.samskivert.util.Logger;
 import com.samskivert.util.StringUtil;
 
 import com.samskivert.depot.clause.WhereClause;
@@ -127,8 +128,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             super(pClass);
         }
 
-        // from WhereClause
-        public SQLExpression getWhereExpression () {
+        @Override public SQLExpression getWhereExpression () {
             return new LiteralExp("(1 = 0)");
         }
 
@@ -169,8 +169,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             _keys = keys;
         }
 
-        // from WhereClause
-        public SQLExpression getWhereExpression () {
+        @Override public SQLExpression getWhereExpression () {
             // Single-column keys result in the compact IN(keyVal1, keyVal2, ...)
             ColumnExp column = new ColumnExp(_pClass, DepotUtil.getKeyFields(_pClass)[0]);
             return new Conditionals.In(column, _keys);
@@ -220,8 +219,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             _keys = keys;
         }
 
-        // from WhereClause
-        public SQLExpression getWhereExpression () {
+        @Override public SQLExpression getWhereExpression () {
             // Multi-column keys result in OR'd AND's, of unknown efficiency (TODO check).
             SQLExpression[] keyexps = new SQLExpression[_keys.length];
             int ii = 0;
@@ -273,10 +271,10 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
     public Collection<Key<T>> toCollection ()
     {
         return new AbstractCollection<Key<T>>() {
-            public Iterator<Key<T>> iterator () {
+            @Override public Iterator<Key<T>> iterator () {
                 return KeySet.this.iterator();
             }
-            public int size () {
+            @Override public int size () {
                 return KeySet.this.size();
             }
         };
@@ -310,9 +308,9 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
     public void validateFlushType (Class<?> pClass)
     {
         if (!pClass.equals(_pClass)) {
-            throw new IllegalArgumentException(
-                "Class mismatch between persistent record and cache invalidator " +
-                "[record=" + pClass.getSimpleName() + ", invtype=" + _pClass.getSimpleName() + "].");
+            throw new IllegalArgumentException(Logger.format(
+                "Class mismatch between persistent record and cache invalidator",
+                "record", pClass.getSimpleName(), "invtype", _pClass.getSimpleName()));
         }
     }
 

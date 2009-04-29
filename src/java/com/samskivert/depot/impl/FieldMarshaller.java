@@ -3,7 +3,7 @@
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
-// 
+//
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation; either version 2.1 of the License, or
@@ -409,7 +409,7 @@ public abstract class FieldMarshaller<T>
             ByteBuffer bbuf = ByteBuffer.allocate(values.length * 4);
             bbuf.asIntBuffer().put(values);
             return bbuf.array();
-            
+
         }
         @Override public byte[] getFromSet (ResultSet rs)
             throws SQLException {

@@ -51,7 +51,8 @@ public class TestRepository extends DepotRepository
     {
         public int recordId;
         public String name;
-        public String toString () {
+
+        @Override public String toString () {
             return recordId + ":" + name;
         }
     }
