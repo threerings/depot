@@ -24,6 +24,7 @@ import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 
 import com.samskivert.depot.ByteEnum;
 import com.samskivert.depot.DatabaseException;
@@ -67,7 +68,9 @@ public class PostgreSQL4Builder extends PostgreSQLBuilder
                             bytes[ii] = ((ByteEnum) values[ii]).toByte();
                         }
                         values = bytes;
-                        type = "smallint";  // tinyint is in the spec, but PG doesn't recognize?
+                        type = "smallint"; // tinyint is in the spec, but PG doesn't recognize?
+                    } else if (testValue instanceof Timestamp) {
+                        type = "timestamp";
                     } else {
                         throw new DatabaseException(
                             "Don't know how to make Postgres array for " + testValue.getClass());
