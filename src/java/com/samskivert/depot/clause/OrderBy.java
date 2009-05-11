@@ -23,6 +23,7 @@ package com.samskivert.depot.clause;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.util.ArrayUtil;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
@@ -73,6 +74,24 @@ public class OrderBy implements QueryClause
     public Order[] getOrders ()
     {
         return _orders;
+    }
+
+    /**
+     * Concatenates the supplied order expression to this one, returns a new expression.
+     */
+    public OrderBy thenAscending (SQLExpression value)
+    {
+        return new OrderBy(ArrayUtil.append(_values, value),
+                           ArrayUtil.append(_orders, Order.ASC));
+    }
+
+    /**
+     * Creates and returns a descending order by clause on the supplied expression.
+     */
+    public OrderBy thenDescending (SQLExpression value)
+    {
+        return new OrderBy(ArrayUtil.append(_values, value),
+                           ArrayUtil.append(_orders, Order.DESC));
     }
 
     // from SQLExpression
