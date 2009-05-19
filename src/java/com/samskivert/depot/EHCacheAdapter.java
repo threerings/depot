@@ -138,8 +138,8 @@ public class EHCacheAdapter
     // from CacheAdapter
     public void shutdown ()
     {
-        log.info("EHCacheAdapter shutting down", "lookups", _lookups,
-            "stores", _stores, "removes", _removes, "enumerations", _enumerations);
+        log.debug("EHCacheAdapter shutting down", "lookups", _lookups,
+                  "stores", _stores, "removes", _removes, "enumerations", _enumerations);
     }
 
     /**
