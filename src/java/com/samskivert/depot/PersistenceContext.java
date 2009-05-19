@@ -46,6 +46,7 @@ import com.samskivert.depot.CacheAdapter.CacheCategory;
 import com.samskivert.depot.CacheAdapter.CachedValue;
 import com.samskivert.depot.annotation.TableGenerator;
 import com.samskivert.depot.impl.DepotMarshaller;
+import com.samskivert.depot.impl.DepotMetaData;
 import com.samskivert.depot.impl.DepotTypes;
 import com.samskivert.depot.impl.HSQLBuilder;
 import com.samskivert.depot.impl.Modifier;
@@ -173,18 +174,8 @@ public class PersistenceContext
         _liaison = LiaisonRegistry.getLiaison(conprov.getURL(ident));
         _cache = adapter;
 
-        // determine our JDBC major version
-        Connection conn = null;
-        try {
-            conn = _conprov.getConnection(_ident, true);
-            _jdbcMajorVersion = conn.getMetaData().getJDBCMajorVersion();
-        } catch (Exception e) {
-            throw new DatabaseException("getJDBCMajorVersion failed [ident=" + ident + "].", e);
-        } finally {
-            if (conn != null) {
-                _conprov.releaseConnection(_ident, true, conn);
-            }
-        }
+        // set up some basic meta-meta-data
+        _meta.init(this);
     }
 
     /**
@@ -212,26 +203,11 @@ public class PersistenceContext
     }
 
     /**
-     * Create and return a new {@link SQLBuilder} for the appropriate dialect.
-     *
-     * TODO: At some point perhaps use a more elegant way of discerning our dialect.
+     * Creates and return a new {@link SQLBuilder} for the appropriate dialect.
      */
     public SQLBuilder getSQLBuilder (DepotTypes types)
     {
-        if (_liaison instanceof PostgreSQLLiaison) {
-            if (_jdbcMajorVersion >= 4) {
-                return new PostgreSQL4Builder(types);
-            } else {
-                return new PostgreSQLBuilder(types);
-            }
-        }
-        if (_liaison instanceof MySQLLiaison) {
-            return new MySQLBuilder(types);
-        }
-        if (_liaison instanceof HsqldbLiaison) {
-            return new HSQLBuilder(types);
-        }
-        throw new IllegalArgumentException("Unknown liaison type: " + _liaison.getClass());
+        return _meta.getSQLBuilder(types, _liaison);
     }
 
     /**
@@ -284,7 +260,7 @@ public class PersistenceContext
             if (!marshaller.isInitialized()) {
                 // initialize the marshaller which may create or migrate the table for its
                 // underlying persistent object
-                marshaller.init(this);
+                marshaller.init(this, _meta);
                 if (marshaller.getTableName() != null && _warnOnLazyInit) {
                     log.warning("Record initialized lazily", "type", type.getName(),
                                 new Exception());
@@ -621,8 +597,8 @@ public class PersistenceContext
     protected String _ident;
     protected ConnectionProvider _conprov;
     protected DatabaseLiaison _liaison;
+    protected DepotMetaData _meta = new DepotMetaData();
     protected boolean _warnOnLazyInit;
-    protected int _jdbcMajorVersion;
 
     /** Used to track various statistics. */
     protected Stats _stats = new Stats();

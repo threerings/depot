@@ -469,7 +469,7 @@ public class DepotMarshaller<T extends PersistentRecord>
      */
     public boolean isInitialized ()
     {
-        return _initialized;
+        return _meta != null;
     }
 
     /**
@@ -478,14 +478,14 @@ public class DepotMarshaller<T extends PersistentRecord>
      * be created. If the schema version specified by the persistent object is newer than the
      * database schema, it will be migrated.
      */
-    public void init (PersistenceContext ctx)
+    public void init (PersistenceContext ctx, DepotMetaData meta)
         throws DatabaseException
     {
-        if (_initialized) { // sanity check
+        if (_meta != null) { // sanity check
             throw new IllegalStateException(
                 "Cannot re-initialize marshaller [type=" + _pClass + "].");
         }
-        _initialized = true;
+        _meta = meta;
 
         final SQLBuilder builder = ctx.getSQLBuilder(new DepotTypes(ctx, _pClass));
 
@@ -517,67 +517,26 @@ public class DepotMarshaller<T extends PersistentRecord>
         _columnFields = ArrayUtil.splice(_columnFields, jj);
         declarations = ArrayUtil.splice(declarations, jj);
 
-        // check to see if our schema version table exists, create it if not
-        ctx.invoke(new Modifier() {
-            @Override
-            protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-                liaison.createTableIfMissing(
-                    conn, SCHEMA_VERSION_TABLE,
-                    new String[] { P_COLUMN, V_COLUMN, MV_COLUMN },
-                    new ColumnDefinition[] {
-                        new ColumnDefinition("VARCHAR(255)", false, true, null),
-                        new ColumnDefinition("INTEGER", false, false, null),
-                        new ColumnDefinition("INTEGER", false, false, null)
-                    },
-                    null,
-                    new String[] { P_COLUMN });
-                // add our new "migratingVersion" column if it's not already there
-                liaison.addColumn(conn, SCHEMA_VERSION_TABLE, MV_COLUMN,
-                                  "integer not null default 0", true);
-                return 0;
-            }
-        });
-
-        // fetch all relevant information regarding our table from the database
-        TableMetaData metaData = TableMetaData.load(ctx, getTableName());
-
         // determine whether or not this record has ever been seen
-        int currentVersion = ctx.invoke(new ReadVersion());
+        int currentVersion = _meta.getVersion(getTableName(), false);
         if (currentVersion == -1) {
             log.info("Creating initial version record for " + _pClass.getName() + ".");
             // if not, create a version entry with version zero
-            ctx.invoke(new SimpleModifier() {
-                @Override
-                protected int invoke (DatabaseLiaison liaison, Statement stmt) throws SQLException {
-                    try {
-                        return stmt.executeUpdate(
-                            "insert into " + liaison.tableSQL(SCHEMA_VERSION_TABLE) +
-                            " values('" + getTableName() + "', 0 , 0)");
-                    } catch (SQLException e) {
-                        // someone else might be doing this at the exact same time which is OK,
-                        // we'll coordinate with that other process in the next phase
-                        if (liaison.isDuplicateRowException(e)) {
-                            return 0;
-                        } else {
-                            throw e;
-                        }
-                    }
-                }
-            });
+            _meta.initializeVersion(getTableName());
         }
 
         // now check whether we need to migrate our database schema
-        boolean gotMigrationLock = false;
-        while (!gotMigrationLock) {
-            currentVersion = ctx.invoke(new ReadVersion());
+        while (true) {
             if (currentVersion >= _schemaVersion) {
-                checkForStaleness(metaData, ctx, builder);
+                // TODO: we used to check for staleness here, but that's slow; currently we do it
+                // only after migration, we should reinstate a check maybe the first time a table
+                // is read or something so that developers are more likely to get the warning
                 return;
             }
 
             // try to update migratingVersion to the new version to indicate to other processes
             // that we are handling the migration and that they should wait
-            if (ctx.invoke(new UpdateMigratingVersion(_schemaVersion, 0)) > 0) {
+            if (_meta.updateMigratingVersion(getTableName(), _schemaVersion, 0)) {
                 break; // we got the lock, let's go
             }
 
@@ -589,7 +548,12 @@ public class DepotMarshaller<T extends PersistentRecord>
             } catch (InterruptedException ie) {
                 throw new DatabaseException("Interrupted while waiting on migration lock.");
             }
+
+            currentVersion = _meta.getVersion(getTableName(), true);
         }
+
+        // fetch all relevant information regarding our table from the database
+        TableMetaData metaData = TableMetaData.load(ctx, getTableName());
 
         try {
             if (!metaData.tableExists) {
@@ -605,20 +569,12 @@ public class DepotMarshaller<T extends PersistentRecord>
             checkForStaleness(metaData, ctx, builder);
 
             // and update our version in the schema version table
-            ctx.invoke(new SimpleModifier() {
-                @Override
-                protected int invoke (DatabaseLiaison liaison, Statement stmt) throws SQLException {
-                    return stmt.executeUpdate(
-                        "update " + liaison.tableSQL(SCHEMA_VERSION_TABLE) +
-                        "   set " + liaison.columnSQL(V_COLUMN) + " = " + _schemaVersion +
-                        " where " + liaison.columnSQL(P_COLUMN) + " = '" + getTableName() + "'");
-                }
-            });
+            _meta.updateVersion(getTableName(), _schemaVersion);
 
         } finally {
             // set our migrating version back to zero
             try {
-                if (ctx.invoke(new UpdateMigratingVersion(0, _schemaVersion)) == 0) {
+                if (!_meta.updateMigratingVersion(getTableName(), 0, _schemaVersion)) {
                     log.warning("Failed to restore migrating version to zero!", "record", _pClass);
                 }
             } catch (Exception e) {
@@ -1020,50 +976,6 @@ public class DepotMarshaller<T extends PersistentRecord>
         }
     }
 
-    protected abstract class SimpleModifier extends Modifier {
-        @Override
-        protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-            Statement stmt = conn.createStatement();
-            try {
-                return invoke(liaison, stmt);
-            } finally {
-                stmt.close();
-            }
-        }
-
-        protected abstract int invoke (DatabaseLiaison liaison, Statement stmt) throws SQLException;
-    }
-
-    // this is a Modifier not a Query because we want to be sure we're talking to the database
-    // server to whom we would talk if we were doing a modification (ie. the master, not a
-    // read-only slave)
-    protected class ReadVersion extends SimpleModifier {
-        @Override
-        protected int invoke (DatabaseLiaison liaison, Statement stmt) throws SQLException {
-            ResultSet rs = stmt.executeQuery(
-                " select " + liaison.columnSQL(V_COLUMN) +
-                "   from " + liaison.tableSQL(SCHEMA_VERSION_TABLE) +
-                "  where " + liaison.columnSQL(P_COLUMN) + " = '" + getTableName() + "'");
-            return (rs.next()) ? rs.getInt(1) : -1;
-        }
-    }
-
-    protected class UpdateMigratingVersion extends SimpleModifier {
-        public UpdateMigratingVersion (int newMigratingVersion, int guardVersion) {
-            _newMigratingVersion = newMigratingVersion;
-            _guardVersion = guardVersion;
-        }
-        @Override
-        protected int invoke (DatabaseLiaison liaison, Statement stmt) throws SQLException {
-            return stmt.executeUpdate(
-                "update " + liaison.tableSQL(SCHEMA_VERSION_TABLE) +
-                "   set " + liaison.columnSQL(MV_COLUMN) + " = " + _newMigratingVersion +
-                " where " + liaison.columnSQL(P_COLUMN) + " = '" + getTableName() + "'" +
-                " and " + liaison.columnSQL(MV_COLUMN) + " = " + _guardVersion);
-        }
-        protected int _newMigratingVersion, _guardVersion;
-    }
-
     protected static class TableMetaData
     {
         public boolean tableExists;
@@ -1133,6 +1045,9 @@ public class DepotMarshaller<T extends PersistentRecord>
         }
     }
 
+    /** Provides access to certain internal metadata. */
+    protected DepotMetaData _meta;
+
     /** The persistent object class that we manage. */
     protected Class<T> _pClass;
 
@@ -1167,21 +1082,6 @@ public class DepotMarshaller<T extends PersistentRecord>
     /** The version of our persistent object schema as specified in the class definition. */
     protected int _schemaVersion = -1;
 
-    /** Indicates that we have been initialized (created or migrated our tables). */
-    protected boolean _initialized;
-
     /** A list of hand registered schema migrations to run prior to doing the default migration. */
     protected List<SchemaMigration> _schemaMigs = Lists.newArrayList();
-
-    /** The name of the table we use to track schema versions. */
-    protected static final String SCHEMA_VERSION_TABLE = "DepotSchemaVersion";
-
-    /** The name of the 'persistentClass' column in the {@link #SCHEMA_VERSION_TABLE}. */
-    protected static final String P_COLUMN = "persistentClass";
-
-    /** The name of the 'version' column in the {@link #SCHEMA_VERSION_TABLE}. */
-    protected static final String V_COLUMN = "version";
-
-    /** The name of the 'migratingVersion' column in the {@link #SCHEMA_VERSION_TABLE}. */
-    protected static final String MV_COLUMN = "migratingVersion";
 }
