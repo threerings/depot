@@ -2,7 +2,7 @@
 // $Id$
 //
 // Depot library - a Java relational persistence library
-// Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
+// Copyright (C) 2006-2009 Michael Bayne and Pär Winzell
 //
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
@@ -20,35 +20,44 @@
 
 package com.samskivert.depot.operator;
 
+import java.util.Collection;
+
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.expression.ValueExp;
-import com.samskivert.depot.operator.SQLOperator.MultiOperator;
 
 /**
- * A convenient container for implementations of arithmetic operators.
+ * Represents a condition that is false iff all its subconditions are false.
  */
-public abstract class Arithmetic extends MultiOperator
+public class Or extends SQLOperator.MultiOperator
 {
-    public Arithmetic (SQLExpression column, Comparable<?> value)
+    public Or (Collection<? extends SQLExpression> conditions)
     {
-        super(column, new ValueExp(value));
+        super(conditions.toArray(new SQLExpression[conditions.size()]));
     }
 
-    public Arithmetic (SQLExpression... values)
+    public Or (SQLExpression... conditions)
     {
-        super(values);
+        super(conditions);
     }
 
-    protected Object evaluate (
-        Object[] ops, String name, Accumulator<Double> dAcc, Accumulator<Long> iAcc)
+    @Override public String operator()
     {
-        if (dAcc != null && all(NUMERICAL, ops)) {
-            return accumulate(NUMERICAL, ops, 0.0, dAcc);
-        }
+        return " or ";
+    }
 
-        if (iAcc != null && all(INTEGRAL, ops)) {
-            return accumulate(INTEGRAL, ops, 0L, iAcc);
+    @Override
+    public Object evaluate (Object[] values)
+    {
+        boolean anyTrue = false;
+        for (Object value : values) {
+            if (value instanceof NoValue) {
+                return value;
+            }
+            if (Boolean.TRUE.equals(value)) {
+                anyTrue = true;
+            } else if (!Boolean.FALSE.equals(value)) {
+                return new NoValue("Non-boolean operand to OR: " + value);
+            }
         }
-        return new NoValue("Non-numeric operand for '" + name + "' (" + ops + ")");
+        return anyTrue;
     }
 }

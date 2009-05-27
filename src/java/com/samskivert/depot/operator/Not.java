@@ -2,7 +2,7 @@
 // $Id$
 //
 // Depot library - a Java relational persistence library
-// Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
+// Copyright (C) 2006-2009 Michael Bayne and Pär Winzell
 //
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
@@ -20,35 +20,45 @@
 
 package com.samskivert.depot.operator;
 
+import java.util.Collection;
+
+import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.expression.ValueExp;
-import com.samskivert.depot.operator.SQLOperator.MultiOperator;
+import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
- * A convenient container for implementations of arithmetic operators.
+ * Represents the truth negation of another conditon.
  */
-public abstract class Arithmetic extends MultiOperator
+public class Not
+    implements SQLOperator
 {
-    public Arithmetic (SQLExpression column, Comparable<?> value)
+    public Not (SQLExpression condition)
     {
-        super(column, new ValueExp(value));
+        _condition = condition;
     }
 
-    public Arithmetic (SQLExpression... values)
+    public SQLExpression getCondition ()
     {
-        super(values);
+        return _condition;
     }
 
-    protected Object evaluate (
-        Object[] ops, String name, Accumulator<Double> dAcc, Accumulator<Long> iAcc)
+    // from SQLExpression
+    public Object accept (ExpressionVisitor<?> builder)
     {
-        if (dAcc != null && all(NUMERICAL, ops)) {
-            return accumulate(NUMERICAL, ops, 0.0, dAcc);
-        }
-
-        if (iAcc != null && all(INTEGRAL, ops)) {
-            return accumulate(INTEGRAL, ops, 0L, iAcc);
-        }
-        return new NoValue("Non-numeric operand for '" + name + "' (" + ops + ")");
+        return builder.visit(this);
     }
+
+    // from SQLExpression
+    public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
+    {
+        _condition.addClasses(classSet);
+    }
+
+    @Override // from Object
+    public String toString ()
+    {
+        return "Not(" + _condition + ")";
+    }
+
+    protected SQLExpression _condition;
 }

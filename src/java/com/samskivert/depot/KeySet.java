@@ -34,13 +34,13 @@ import com.samskivert.util.Logger;
 import com.samskivert.util.StringUtil;
 
 import com.samskivert.depot.clause.WhereClause;
+import com.samskivert.depot.operator.In;
+import com.samskivert.depot.operator.Or;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.DepotUtil;
 import com.samskivert.depot.impl.ExpressionVisitor;
-import com.samskivert.depot.operator.Conditionals;
-import com.samskivert.depot.operator.Logic;
 
 /**
  * Contains a set of primary keys that match a set of persistent records. This is used internally
@@ -162,9 +162,9 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
         public SingleKeySet (Class<T> pClass, Comparable<?>[] keys) {
             super(pClass);
             // TODO: remove when we update to 1.6 and change Postgres In handling
-            if (keys.length > Conditionals.In.MAX_KEYS) {
+            if (keys.length > In.MAX_KEYS) {
                 throw new IllegalArgumentException("Cannot create where clause for more than " +
-                                                   Conditionals.In.MAX_KEYS + " at a time.");
+                                                   In.MAX_KEYS + " at a time.");
             }
             _keys = keys;
         }
@@ -172,7 +172,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
         @Override public SQLExpression getWhereExpression () {
             // Single-column keys result in the compact IN(keyVal1, keyVal2, ...)
             ColumnExp column = new ColumnExp(_pClass, DepotUtil.getKeyFields(_pClass)[0]);
-            return new Conditionals.In(column, _keys);
+            return new In(column, _keys);
         }
 
         // from Iterable<Key<T>>
@@ -226,16 +226,16 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             for (Comparable<?>[] kvals : _keys) {
                 keyexps[ii++] = new Key.Expression<T>(_pClass, kvals);
             }
-            return new Logic.Or(keyexps);
+            return new Or(keyexps);
         }
 
         // from Iterable<Key<T>>
         public Iterator<Key<T>> iterator () {
-            return Iterators.transform(
-                Iterators.forArray(_keys, 0, _keys.length), new Function<Comparable<?>[], Key<T>>() {
+            return Iterators.transform(Iterators.forArray(_keys, 0, _keys.length),
+                                       new Function<Comparable<?>[], Key<T>>() {
                 public Key<T> apply (Comparable<?>[] key) {
                     return new Key<T>(_pClass, key);
-               }
+                }
             });
         }
 

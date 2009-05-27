@@ -2,7 +2,7 @@
 // $Id$
 //
 // Depot library - a Java relational persistence library
-// Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
+// Copyright (C) 2006-2009 Michael Bayne and Pär Winzell
 //
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
@@ -21,34 +21,39 @@
 package com.samskivert.depot.operator;
 
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.expression.ValueExp;
-import com.samskivert.depot.operator.SQLOperator.MultiOperator;
 
 /**
- * A convenient container for implementations of arithmetic operators.
+ * The SQL '-' operator.
  */
-public abstract class Arithmetic extends MultiOperator
+public class Sub extends Arithmetic
 {
-    public Arithmetic (SQLExpression column, Comparable<?> value)
+    public Sub (SQLExpression column, Comparable<?> value)
     {
-        super(column, new ValueExp(value));
+        super(column, value);
     }
 
-    public Arithmetic (SQLExpression... values)
+    public Sub (SQLExpression... values)
     {
         super(values);
     }
 
-    protected Object evaluate (
-        Object[] ops, String name, Accumulator<Double> dAcc, Accumulator<Long> iAcc)
+    @Override // from Arithmetic
+    public String operator()
     {
-        if (dAcc != null && all(NUMERICAL, ops)) {
-            return accumulate(NUMERICAL, ops, 0.0, dAcc);
-        }
+        return "-";
+    }
 
-        if (iAcc != null && all(INTEGRAL, ops)) {
-            return accumulate(INTEGRAL, ops, 0L, iAcc);
-        }
-        return new NoValue("Non-numeric operand for '" + name + "' (" + ops + ")");
+    @Override // from Arithmetic
+    public Object evaluate (Object[] operands)
+    {
+        return evaluate(operands, "-", new Accumulator<Double>() {
+            public Double accumulate (Double left, Double right) {
+                return left - right;
+            }
+        }, new Accumulator<Long>() {
+            public Long accumulate (Long left, Long right) {
+                return left - right;
+            }
+        });
     }
 }

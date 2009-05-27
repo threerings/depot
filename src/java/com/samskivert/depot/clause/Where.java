@@ -27,9 +27,9 @@ import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.ValueExp;
 import com.samskivert.depot.impl.ExpressionVisitor;
-import com.samskivert.depot.operator.Conditionals.Equals;
-import com.samskivert.depot.operator.Conditionals.IsNull;
-import com.samskivert.depot.operator.Logic.And;
+import com.samskivert.depot.operator.And;
+import com.samskivert.depot.operator.Equals;
+import com.samskivert.depot.operator.IsNull;
 
 /**
  * Represents a where clause: the condition can be any comparison operator or logical combination

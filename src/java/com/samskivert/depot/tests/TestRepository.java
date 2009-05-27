@@ -39,7 +39,8 @@ import com.samskivert.depot.SchemaMigration;
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.clause.Where;
 import com.samskivert.depot.expression.LiteralExp;
-import com.samskivert.depot.operator.Conditionals;
+import com.samskivert.depot.operator.GreaterThan;
+import com.samskivert.depot.operator.LessThan;
 
 /**
  * A test tool for the Depot repository services.
@@ -120,7 +121,7 @@ public class TestRepository extends DepotRepository
         System.out.println("Delete none " + repo.deleteAll(TestRecord.class, none) + ".");
 
         // test collection caching
-        Where where = new Where(new Conditionals.GreaterThan(TestRecord.RECORD_ID, 100));
+        Where where = new Where(new GreaterThan(TestRecord.RECORD_ID, 100));
         System.out.println("100 and up: " + repo.findAll(TestRecord.class, where).size());
         System.out.println("100 and up again: " + repo.findAll(TestRecord.class, where).size());
 
@@ -131,13 +132,13 @@ public class TestRepository extends DepotRepository
 
         System.out.println("Names " + repo.findAll(TestNameRecord.class) + ".");
         System.out.println("Have " + repo.findAll(TestRecord.class).size() + " records.");
-        repo.deleteAll(TestRecord.class, new Where(new Conditionals.LessThan(
+        repo.deleteAll(TestRecord.class, new Where(new LessThan(
                                                        TestRecord.RECORD_ID, CREATE_RECORDS/2)));
         System.out.println("Now have " + repo.findAll(TestRecord.class).size() + " records.");
         repo.deleteAll(TestRecord.class, new Where(new LiteralExp("true")));
 //         // TODO: try to break our In() clause
 //         Set<Integer> ids = Sets.newHashSet();
-//         for (int ii = 1; ii <= Conditionals.In.MAX_KEYS*2+3; ii++) {
+//         for (int ii = 1; ii <= In.MAX_KEYS*2+3; ii++) {
 //             ids.add(ii);
 //         }
 //         repo.deleteAll(TestRecord.class, KeySet.newSimpleKeySet(TestRecord.class, ids));

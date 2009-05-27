@@ -39,7 +39,7 @@ import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.operator.Conditionals.FullText;
+import com.samskivert.depot.operator.FullText;
 
 import com.samskivert.depot.impl.FieldMarshaller.BooleanMarshaller;
 import com.samskivert.depot.impl.FieldMarshaller.ByteArrayMarshaller;

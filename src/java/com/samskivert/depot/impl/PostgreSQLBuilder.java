@@ -40,7 +40,7 @@ import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex.Configuration;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.expression.EpochSeconds;
-import com.samskivert.depot.operator.Conditionals.FullText;
+import com.samskivert.depot.operator.FullText;
 
 import static com.samskivert.Log.log;
 

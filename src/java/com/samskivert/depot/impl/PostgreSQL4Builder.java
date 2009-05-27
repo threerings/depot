@@ -29,7 +29,7 @@ import java.sql.Timestamp;
 import com.samskivert.depot.ByteEnum;
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.expression.ValueExp;
-import com.samskivert.depot.operator.Conditionals.In;
+import com.samskivert.depot.operator.In;
 
 /**
  * Specializes our PostgreSQL builder for JDBC4.

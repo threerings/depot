@@ -38,7 +38,9 @@ import com.google.common.collect.Maps;
 import com.samskivert.jdbc.DatabaseLiaison;
 import com.samskivert.jdbc.JDBCUtil;
 
+import com.samskivert.depot.CacheAdapter.CacheCategory;
 import com.samskivert.depot.DatabaseException;
+import com.samskivert.depot.DepotRepository.CacheStrategy;
 import com.samskivert.depot.DepotRepository;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.KeySet;
@@ -46,12 +48,10 @@ import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.SimpleCacheKey;
 import com.samskivert.depot.Stats;
-import com.samskivert.depot.CacheAdapter.CacheCategory;
-import com.samskivert.depot.DepotRepository.CacheStrategy;
 import com.samskivert.depot.clause.FieldOverride;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.SelectClause;
-import com.samskivert.depot.operator.Conditionals.*;
+import com.samskivert.depot.operator.In;
 
 import static com.samskivert.depot.Log.log;
 

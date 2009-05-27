@@ -47,11 +47,11 @@ import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.expression.FunctionExp;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.operator.Arithmetic.BitAnd;
-import com.samskivert.depot.operator.Arithmetic.BitOr;
-import com.samskivert.depot.operator.Conditionals.FullText;
-import com.samskivert.depot.operator.Conditionals.Like;
-import com.samskivert.depot.operator.Logic.Or;
+import com.samskivert.depot.operator.BitAnd;
+import com.samskivert.depot.operator.BitOr;
+import com.samskivert.depot.operator.FullText;
+import com.samskivert.depot.operator.Like;
+import com.samskivert.depot.operator.Or;
 import com.samskivert.depot.operator.SQLOperator.MultiOperator;
 
 import com.samskivert.depot.impl.clause.CreateIndexClause;

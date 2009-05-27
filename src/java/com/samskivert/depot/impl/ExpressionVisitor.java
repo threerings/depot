@@ -40,12 +40,12 @@ import com.samskivert.depot.expression.FunctionExp;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.ValueExp;
 
-import com.samskivert.depot.operator.Conditionals.Case;
-import com.samskivert.depot.operator.Conditionals.Exists;
-import com.samskivert.depot.operator.Conditionals.FullText;
-import com.samskivert.depot.operator.Conditionals.In;
-import com.samskivert.depot.operator.Conditionals.IsNull;
-import com.samskivert.depot.operator.Logic.Not;
+import com.samskivert.depot.operator.Case;
+import com.samskivert.depot.operator.Exists;
+import com.samskivert.depot.operator.FullText;
+import com.samskivert.depot.operator.In;
+import com.samskivert.depot.operator.IsNull;
+import com.samskivert.depot.operator.Not;
 import com.samskivert.depot.operator.SQLOperator.BinaryOperator;
 import com.samskivert.depot.operator.SQLOperator.MultiOperator;
 
