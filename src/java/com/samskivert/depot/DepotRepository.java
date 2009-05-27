@@ -739,7 +739,8 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updateLiteral (
-        Class<T> type, Comparable<?> primaryKey, Map<ColumnExp, SQLExpression> fieldsValues)
+        Class<T> type, Comparable<?> primaryKey,
+        Map<ColumnExp, ? extends SQLExpression> fieldsValues)
         throws DatabaseException
     {
         Key<T> key = _ctx.getMarshaller(type).makePrimaryKey(primaryKey);
@@ -767,7 +768,7 @@ public abstract class DepotRepository
      */
     protected <T extends PersistentRecord> int updateLiteral (
         Class<T> type, ColumnExp ix1, Comparable<?> val1, ColumnExp ix2, Comparable<?> val2,
-        Map<ColumnExp, SQLExpression> fieldsValues)
+        Map<ColumnExp, ? extends SQLExpression> fieldsValues)
         throws DatabaseException
     {
         Key<T> key = new Key<T>(type, ix1, val1, ix2, val2);
@@ -796,7 +797,7 @@ public abstract class DepotRepository
      */
     protected <T extends PersistentRecord> int updateLiteral (
         Class<T> type, ColumnExp ix1, Comparable<?> val1, ColumnExp ix2, Comparable<?> val2,
-        ColumnExp ix3, Comparable<?> val3, Map<ColumnExp, SQLExpression> fieldsValues)
+        ColumnExp ix3, Comparable<?> val3, Map<ColumnExp, ? extends SQLExpression> fieldsValues)
         throws DatabaseException
     {
         Key<T> key = new Key<T>(type, ix1, val1, ix2, val2, ix3, val3);
@@ -826,7 +827,7 @@ public abstract class DepotRepository
      */
     protected <T extends PersistentRecord> int updateLiteral (
         Class<T> type, final WhereClause key, CacheInvalidator invalidator,
-        Map<ColumnExp, SQLExpression> fieldsValues)
+        Map<ColumnExp, ? extends SQLExpression> fieldsValues)
         throws DatabaseException
     {
         requireNotComputed(type, "updateLiteral");
@@ -840,7 +841,7 @@ public abstract class DepotRepository
         final String[] fields = new String[fieldsValues.size()];
         final SQLExpression[] values = new SQLExpression[fields.length];
         int ii = 0;
-        for (Map.Entry<ColumnExp, SQLExpression> entry : fieldsValues.entrySet()) {
+        for (Map.Entry<ColumnExp, ? extends SQLExpression> entry : fieldsValues.entrySet()) {
             fields[ii] = entry.getKey().name;
             values[ii] = entry.getValue();
             ii ++;
