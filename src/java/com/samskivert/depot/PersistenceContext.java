@@ -244,7 +244,12 @@ public class PersistenceContext
     public <T extends PersistentRecord> void registerMigration (
         Class<T> type, SchemaMigration migration)
     {
-        getRawMarshaller(type).registerMigration(migration);
+        DepotMarshaller<T> marshaller = getRawMarshaller(type);
+        if (marshaller.isInitialized()) {
+            throw new IllegalStateException(
+                "Migrations must be registered before initializeRepositories() is called.");
+        }
+        marshaller.registerMigration(migration);
     }
 
     /**
