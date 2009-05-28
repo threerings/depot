@@ -40,6 +40,54 @@ public class IntervalExp
     /** The number of units for this interval. */
     public final int amount;
 
+    /**
+     * Creates an interval for the specified number of years.
+     */
+    public static IntervalExp years (int amount)
+    {
+        return new IntervalExp(Unit.YEAR, amount);
+    }
+
+    /**
+     * Creates an interval for the specified number of months.
+     */
+    public static IntervalExp months (int amount)
+    {
+        return new IntervalExp(Unit.MONTH, amount);
+    }
+
+    /**
+     * Creates an interval for the specified number of days.
+     */
+    public static IntervalExp days (int amount)
+    {
+        return new IntervalExp(Unit.DAY, amount);
+    }
+
+    /**
+     * Creates an interval for the specified number of hours.
+     */
+    public static IntervalExp hours (int amount)
+    {
+        return new IntervalExp(Unit.HOUR, amount);
+    }
+
+    /**
+     * Creates an interval for the specified number of minutes.
+     */
+    public static IntervalExp minutes (int amount)
+    {
+        return new IntervalExp(Unit.MINUTE, amount);
+    }
+
+    /**
+     * Creates an interval for the specified number of seconds.
+     */
+    public static IntervalExp seconds (int amount)
+    {
+        return new IntervalExp(Unit.SECOND, amount);
+    }
+
     public IntervalExp (Unit unit, int amount)
     {
         this.unit = unit;
