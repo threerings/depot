@@ -37,6 +37,7 @@ import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.expression.FunctionExp;
+import com.samskivert.depot.expression.IntervalExp;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.ValueExp;
 
@@ -76,8 +77,9 @@ public interface ExpressionVisitor<T>
     public T visit (OrderBy orderBy);
     public T visit (Join join);
     public T visit (Limit limit);
-    public T visit (LiteralExp literalExp);
-    public T visit (ValueExp valueExp);
+    public T visit (LiteralExp literal);
+    public T visit (ValueExp value);
+    public T visit (IntervalExp interval);
     public T visit (WhereClause where);
     public T visit (Key.Expression<? extends PersistentRecord> key);
     public T visit (Exists<? extends PersistentRecord> exists);

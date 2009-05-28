@@ -40,6 +40,7 @@ import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.expression.FunctionExp;
+import com.samskivert.depot.expression.IntervalExp;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.SQLExpression.NoValue;
@@ -212,6 +213,11 @@ public class ExpressionEvaluator
     public Object visit (ValueExp valueExp)
     {
         return valueExp.getValue();
+    }
+
+    public Object visit (IntervalExp interval)
+    {
+        return new NoValue("Cannot evaluate IntervalExp: " + interval);
     }
 
     public Object visit (WhereClause where)

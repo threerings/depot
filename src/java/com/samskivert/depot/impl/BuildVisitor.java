@@ -51,6 +51,7 @@ import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.expression.FunctionExp;
+import com.samskivert.depot.expression.IntervalExp;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.ValueExp;
@@ -317,6 +318,12 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
     public Void visit (ValueExp valueExp)
     {
         bindValue(valueExp.getValue());
+        return null;
+    }
+
+    public Void visit (IntervalExp interval)
+    {
+        _builder.append("interval ").append(interval.amount).append(" ").append(interval.unit);
         return null;
     }
 

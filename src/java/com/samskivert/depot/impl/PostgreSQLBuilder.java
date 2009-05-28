@@ -40,6 +40,7 @@ import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex.Configuration;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.expression.EpochSeconds;
+import com.samskivert.depot.expression.IntervalExp;
 import com.samskivert.depot.operator.FullText;
 
 import static com.samskivert.Log.log;
@@ -53,6 +54,12 @@ public class PostgreSQLBuilder
 
     public class PGBuildVisitor extends BuildVisitor
     {
+        @Override public Void visit (IntervalExp interval) {
+            _builder.append("interval '").append(interval.amount);
+            _builder.append(" ").append(interval.unit).append("'");
+            return null;
+        }
+
         @Override public Void visit (FullText.Match match) {
             appendIdentifier("ftsCol_" + match.getDefinition().getName());
             _builder.append(" @@ to_tsquery('").
