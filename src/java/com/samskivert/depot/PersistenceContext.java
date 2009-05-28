@@ -37,10 +37,7 @@ import com.samskivert.util.StringUtil;
 
 import com.samskivert.jdbc.ConnectionProvider;
 import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.jdbc.HsqldbLiaison;
 import com.samskivert.jdbc.LiaisonRegistry;
-import com.samskivert.jdbc.MySQLLiaison;
-import com.samskivert.jdbc.PostgreSQLLiaison;
 
 import com.samskivert.depot.CacheAdapter.CacheCategory;
 import com.samskivert.depot.CacheAdapter.CachedValue;
@@ -48,12 +45,8 @@ import com.samskivert.depot.annotation.TableGenerator;
 import com.samskivert.depot.impl.DepotMarshaller;
 import com.samskivert.depot.impl.DepotMetaData;
 import com.samskivert.depot.impl.DepotTypes;
-import com.samskivert.depot.impl.HSQLBuilder;
 import com.samskivert.depot.impl.Modifier;
-import com.samskivert.depot.impl.MySQLBuilder;
 import com.samskivert.depot.impl.Operation;
-import com.samskivert.depot.impl.PostgreSQL4Builder;
-import com.samskivert.depot.impl.PostgreSQLBuilder;
 import com.samskivert.depot.impl.Query;
 import com.samskivert.depot.impl.SQLBuilder;
 
