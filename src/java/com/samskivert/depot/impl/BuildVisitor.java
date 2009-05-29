@@ -619,7 +619,7 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
         FieldMarshaller<?> fm = dm.getFieldMarshaller(field.name);
         Map<String, FieldDefinition> fieldDefs = _definitions.get(type);
         if (fieldDefs != null) {
-            FieldDefinition fieldDef = fieldDefs.get(field);
+            FieldDefinition fieldDef = fieldDefs.get(field.name);
             if (fieldDef != null) {
                 boolean useOverride;
                 if (fieldDef instanceof FieldOverride) {
