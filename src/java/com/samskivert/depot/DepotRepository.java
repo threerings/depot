@@ -217,6 +217,17 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
+    protected <T extends PersistentRecord> T load (Key<T> key)
+        throws DatabaseException
+    {
+        return load(key.getPersistentClass(), key);
+    }
+
+    /**
+     * Loads the persistent object that matches the specified primary key.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
+     */
     protected <T extends PersistentRecord> T load (Class<T> type, Comparable<?> primaryKey,
                                                    QueryClause... clauses)
         throws DatabaseException
@@ -234,35 +245,7 @@ public abstract class DepotRepository
                                                    QueryClause... clauses)
         throws DatabaseException
     {
-        clauses = ArrayUtil.append(clauses, new Key<T>(type, ix, val));
-        return load(type, clauses);
-    }
-
-    /**
-     * Loads the persistent object that matches the specified two-column primary key.
-     *
-     * @throws DatabaseException if any problem is encountered communicating with the database.
-     */
-    protected <T extends PersistentRecord> T load (Class<T> type, ColumnExp ix1, Comparable<?> val1,
-                                                   ColumnExp ix2, Comparable<?> val2,
-                                                   QueryClause... clauses)
-        throws DatabaseException
-    {
-        clauses = ArrayUtil.append(clauses, new Key<T>(type, ix1, val1, ix2, val2));
-        return load(type, clauses);
-    }
-
-    /**
-     * Loads the persistent object that matches the specified three-column primary key.
-     *
-     * @throws DatabaseException if any problem is encountered communicating with the database.
-     */
-    protected <T extends PersistentRecord> T load (Class<T> type, ColumnExp ix1, Comparable<?> val1,
-                                                   ColumnExp ix2, Comparable<?> val2, ColumnExp ix3,
-                                                   Comparable<?> val3, QueryClause... clauses)
-        throws DatabaseException
-    {
-        clauses = ArrayUtil.append(clauses, new Key<T>(type, ix1, val1, ix2, val2, ix3, val3));
+        clauses = ArrayUtil.append(clauses, Key.newKey(type, ix, val));
         return load(type, clauses);
     }
 
@@ -740,8 +723,7 @@ public abstract class DepotRepository
      * update BAZ set BIF = NOW();
      * </pre>
      *
-     * @param type the type of the persistent object to be modified.
-     * @param primaryKey the key to match in the update.
+     * @param key the key to match in the update.
      * @param fieldsValues a map containing the columns and the values to be assigned.
      *
      * @return the number of rows modified by this action.
@@ -751,69 +733,10 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updateLiteral (
-        Class<T> type, Comparable<?> primaryKey,
-        Map<ColumnExp, ? extends SQLExpression> fieldsValues)
+        Key<T> key, Map<ColumnExp, ? extends SQLExpression> fieldsValues)
         throws DatabaseException
     {
-        Key<T> key = _ctx.getMarshaller(type).makePrimaryKey(primaryKey);
-        return updateLiteral(type, key, key, fieldsValues);
-    }
-
-    /**
-     * Updates the specified columns for all persistent objects matching the supplied two-column
-     * primary key. The values in this case must be literal SQL to be inserted into the update
-     * statement. In general this is used when you want to do something like the following:
-     *
-     * <pre>
-     * update FOO set BAR = BAR + 1;
-     * update BAZ set BIF = NOW();
-     * </pre>
-     *
-     * @param type the type of the persistent object to be modified.
-     * @param fieldsValues a map containing the columns and the values to be assigned.
-     *
-     * @return the number of rows modified by this action.
-     *
-     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
-     * values that duplicate another row already in the database.
-     * @throws DatabaseException if any problem is encountered communicating with the database.
-     */
-    protected <T extends PersistentRecord> int updateLiteral (
-        Class<T> type, ColumnExp ix1, Comparable<?> val1, ColumnExp ix2, Comparable<?> val2,
-        Map<ColumnExp, ? extends SQLExpression> fieldsValues)
-        throws DatabaseException
-    {
-        Key<T> key = new Key<T>(type, ix1, val1, ix2, val2);
-        return updateLiteral(type, key, key, fieldsValues);
-    }
-
-    /**
-     * Updates the specified columns for all persistent objects matching the supplied three-column
-     * primary key. The values in this case must be literal SQL to be inserted into the update
-     * statement. In general this is used when you want to do something like the following:
-     *
-     * <pre>
-     * update FOO set BAR = BAR + 1;
-     * update BAZ set BIF = NOW();
-     * </pre>
-     *
-     * @param type the type of the persistent object to be modified.
-     * @param fieldsValues an array containing the names of the fields/columns and the values to be
-     * assigned, in key, literal value, key, literal value, etc. order.
-     *
-     * @return the number of rows modified by this action.
-     *
-     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
-     * values that duplicate another row already in the database.
-     * @throws DatabaseException if any problem is encountered communicating with the database.
-     */
-    protected <T extends PersistentRecord> int updateLiteral (
-        Class<T> type, ColumnExp ix1, Comparable<?> val1, ColumnExp ix2, Comparable<?> val2,
-        ColumnExp ix3, Comparable<?> val3, Map<ColumnExp, ? extends SQLExpression> fieldsValues)
-        throws DatabaseException
-    {
-        Key<T> key = new Key<T>(type, ix1, val1, ix2, val2, ix3, val3);
-        return updateLiteral(type, key, key, fieldsValues);
+        return updateLiteral(key.getPersistentClass(), key, key, fieldsValues);
     }
 
     /**
@@ -950,8 +873,8 @@ public abstract class DepotRepository
     }
 
     /**
-     * Deletes all persistent objects from the database with a primary key matching the primary key
-     * of the supplied object.
+     * Deletes all persistent objects from the database matching the primary key of the supplied
+     * object (which should be one or zero).
      *
      * @return the number of rows deleted by this action.
      *
@@ -965,35 +888,21 @@ public abstract class DepotRepository
         if (primaryKey == null) {
             throw new IllegalArgumentException("Can't delete record with null primary key.");
         }
-        return delete(type, primaryKey);
+        return delete(primaryKey);
     }
 
     /**
-     * Deletes all persistent objects from the database with a primary key matching the supplied
-     * primary key.
+     * Deletes all persistent objects from the database matching the supplied primary key (which
+     * should be one or zero).
      *
      * @return the number of rows deleted by this action.
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> int delete (Class<T> type, Comparable<?> primaryKeyValue)
+    protected <T extends PersistentRecord> int delete (Key<T> primaryKey)
         throws DatabaseException
     {
-        return delete(type, _ctx.getMarshaller(type).makePrimaryKey(primaryKeyValue));
-    }
-
-    /**
-     * Deletes all persistent objects from the database with a primary key matching the supplied
-     * primary key.
-     *
-     * @return the number of rows deleted by this action.
-     *
-     * @throws DatabaseException if any problem is encountered communicating with the database.
-     */
-    protected <T extends PersistentRecord> int delete (Class<T> type, Key<T> primaryKey)
-        throws DatabaseException
-    {
-        return deleteAll(type, primaryKey, primaryKey);
+        return deleteAll(primaryKey.getPersistentClass(), primaryKey, primaryKey);
     }
 
     /**

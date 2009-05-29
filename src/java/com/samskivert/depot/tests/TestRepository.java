@@ -75,7 +75,7 @@ public class TestRepository extends DepotRepository
         TestRepository repo = new TestRepository(perCtx);
 
         System.out.println("Deleting old record.");
-        repo.delete(TestRecord.class, 1);
+        repo.delete(TestRecord.getKey(1));
 
         Date now = new Date(System.currentTimeMillis());
         Timestamp tnow = new Timestamp(System.currentTimeMillis());

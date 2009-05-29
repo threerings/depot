@@ -36,11 +36,11 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 import com.samskivert.util.StringUtil;
 
 /**
- * A special form of {@link WhereClause} that uniquely specifies a single database row and
- * thus also a single persistent object. Because it implements both {@link CacheKey} and
- * {@link CacheInvalidator} it also uniquely indexes into the cache and knows how to invalidate
- * itself upon modification. This class is created by many {@link DepotMarshaller} methods as
- * a convenience, and may also be instantiated explicitly.
+ * A special form of {@link WhereClause} that uniquely specifies a single database row and thus
+ * also a single persistent object. Because it implements both {@link CacheKey} and {@link
+ * CacheInvalidator} it also uniquely indexes into the cache and knows how to invalidate itself
+ * upon modification. This class is created by many {@link DepotMarshaller} methods as a
+ * convenience, and may also be instantiated explicitly.
  */
 public class Key<T extends PersistentRecord> extends WhereClause
     implements SQLExpression, CacheKey, ValidatingCacheInvalidator, Serializable
@@ -70,38 +70,32 @@ public class Key<T extends PersistentRecord> extends WhereClause
     }
 
     /**
-     * Constructs a new single-column {@code Key} with the given value.
+     * Creates a single column key.
      */
-    public Key (Class<T> pClass, ColumnExp ix, Comparable<?> val)
+    public static <T extends PersistentRecord> Key<T> newKey (
+        Class<T> pClass, ColumnExp ix, Comparable<?> val)
     {
-        this(pClass, new ColumnExp[] { ix }, new Comparable[] { val });
+        return new Key<T>(pClass, new ColumnExp[] { ix }, new Comparable[] { val });
     }
 
     /**
-     * Constructs a new two-column {@code Key} with the given values.
+     * Creates a two column key.
      */
-    public Key (Class<T> pClass, ColumnExp ix1, Comparable<?> val1,
-                ColumnExp ix2, Comparable<?> val2)
+    public static <T extends PersistentRecord> Key<T> newKey (
+        Class<T> pClass, ColumnExp ix1, Comparable<?> val1, ColumnExp ix2, Comparable<?> val2)
     {
-        this(pClass, new ColumnExp[] { ix1, ix2 }, new Comparable[] { val1, val2 });
+        return new Key<T>(pClass, new ColumnExp[] { ix1, ix2 }, new Comparable[] { val1, val2 });
     }
 
     /**
-     * Constructs a new three-column {@code Key} with the given values.
+     * Creates a three column key.
      */
-    public Key (Class<T> pClass, ColumnExp ix1, Comparable<?> val1,
-                ColumnExp ix2, Comparable<?> val2, ColumnExp ix3, Comparable<?> val3)
+    public static <T extends PersistentRecord> Key<T> newKey (
+        Class<T> pClass, ColumnExp ix1, Comparable<?> val1, ColumnExp ix2, Comparable<?> val2,
+        ColumnExp ix3, Comparable<?> val3)
     {
-        this(pClass, new ColumnExp[] { ix1, ix2, ix3 }, new Comparable[] { val1, val2, val3 });
-    }
-
-    /**
-     * TEMP: legacy foo bar!
-     */
-    public Key (Class<T> pClass, String[] fields, Comparable<?>[] values)
-    {
-        _pClass = pClass;
-        _values = values;
+        return new Key<T>(pClass, new ColumnExp[] { ix1, ix2, ix3 },
+                          new Comparable[] { val1, val2, val3 });
     }
 
     /**
