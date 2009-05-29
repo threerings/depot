@@ -90,7 +90,7 @@ public class TestRepository extends DepotRepository
         record.numbers = new int[] { 9, 0, 2, 1, 0 };
 
         repo.insert(record);
-        System.out.println("Record: " + repo.load(TestRecord.class, record.recordId));
+        System.out.println("Record: " + repo.load(TestRecord.getKey(record.recordId)));
 
 //         record.age = 25;
 //         record.name = "Bob";
@@ -100,7 +100,7 @@ public class TestRepository extends DepotRepository
         repo.updatePartial(TestRecord.class, record.recordId,
                            TestRecord.AGE, 25, TestRecord.NAME, "Bob",
                            TestRecord.NUMBERS, new int[] { 1, 2, 3, 4, 5 });
-        System.out.println("Updated " + repo.load(TestRecord.class, record.recordId));
+        System.out.println("Updated " + repo.load(TestRecord.getKey(record.recordId)));
 
         for (int ii = 2; ii < CREATE_RECORDS; ii++) {
             record = new TestRecord();

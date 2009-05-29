@@ -217,10 +217,10 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> T load (Key<T> key)
+    protected <T extends PersistentRecord> T load (Key<T> key, QueryClause... clauses)
         throws DatabaseException
     {
-        return load(key.getPersistentClass(), key);
+        return load(key, CacheStrategy.BEST, clauses);
     }
 
     /**
@@ -228,37 +228,12 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> T load (Class<T> type, Comparable<?> primaryKey,
+    protected <T extends PersistentRecord> T load (Key<T> key, CacheStrategy strategy,
                                                    QueryClause... clauses)
         throws DatabaseException
     {
-        clauses = ArrayUtil.append(clauses, _ctx.getMarshaller(type).makePrimaryKey(primaryKey));
-        return load(type, clauses);
-    }
-
-    /**
-     * Loads the persistent object that matches the specified primary key.
-     *
-     * @throws DatabaseException if any problem is encountered communicating with the database.
-     */
-    protected <T extends PersistentRecord> T load (Class<T> type, ColumnExp ix, Comparable<?> val,
-                                                   QueryClause... clauses)
-        throws DatabaseException
-    {
-        clauses = ArrayUtil.append(clauses, Key.newKey(type, ix, val));
-        return load(type, clauses);
-    }
-
-    /**
-     * Loads the first persistent object that matches the supplied query clauses.
-     *
-     * @throws DatabaseException if any problem is encountered communicating with the database.
-     */
-    protected <T extends PersistentRecord> T load (
-        Class<T> type, Collection<? extends QueryClause> clauses)
-        throws DatabaseException
-    {
-        return load(type, clauses.toArray(new QueryClause[clauses.size()]));
+        clauses = ArrayUtil.append(clauses, key);
+        return _ctx.invoke(new FindOneQuery<T>(_ctx, key.getPersistentClass(), strategy, clauses));
     }
 
     /**
@@ -983,8 +958,8 @@ public abstract class DepotRepository
         DepotMigrationHistoryRecord record;
         while (true) {
             // check to see if the migration has already been completed
-            record = load(DepotMigrationHistoryRecord.class, CacheStrategy.NONE,
-                          DepotMigrationHistoryRecord.getKey(migration.getIdent()));
+            record = load(DepotMigrationHistoryRecord.getKey(migration.getIdent()),
+                          CacheStrategy.NONE);
             if (record != null && record.whenCompleted != null) {
                 return; // great, no need to do anything
             }
