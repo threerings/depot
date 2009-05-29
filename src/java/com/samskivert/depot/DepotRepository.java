@@ -621,13 +621,13 @@ public abstract class DepotRepository
         throws DatabaseException
     {
         // separate the updates into keys and values
-        final ColumnExp[] fields = new ColumnExp[more.length/2+1];
-        final SQLExpression[] values = new SQLExpression[fields.length+1];
+        final ColumnExp[] fields = new ColumnExp[1+more.length/2];
+        final SQLExpression[] values = new SQLExpression[fields.length];
         fields[0] = field;
         values[0] = makeValue(value);
-        for (int ii = 0, idx = 0; ii < fields.length; ii++) {
-            fields[ii+1] = (ColumnExp)more[idx++];
-            values[ii+1] = makeValue(more[idx++]);
+        for (int ii = 1, idx = 0; ii < fields.length; ii++) {
+            fields[ii] = (ColumnExp)more[idx++];
+            values[ii] = makeValue(more[idx++]);
         }
         return updatePartial(type, key, invalidator, fields, values);
     }
