@@ -360,10 +360,6 @@ public abstract class DepotRepository
     /**
      * Loads all persistent objects that match the specified clauses.
      *
-     * @param skipCache if true, our normal mixed select strategy that allows cached records to be
-     * loaded from the cache will not be used even if it otherwise could. See {@link
-     * #findAll(Class,Collection)} for details on the mixed strategy.
-     *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> List<T> findAll (
