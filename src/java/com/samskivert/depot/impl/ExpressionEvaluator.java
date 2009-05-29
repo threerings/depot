@@ -179,15 +179,15 @@ public class ExpressionEvaluator
             return new NoValue("Column lookup on unknown persistent class: " + pClass);
         }
         try {
-            Field field = pClass.getField(columnExp.getField());
+            Field field = pClass.getField(columnExp.name);
             if (field == null) {
-                log.warning("Couldn't locate field on class", "field", columnExp.getField(),
+                log.warning("Couldn't locate field on class", "field", columnExp.name,
                     "class", pClass);
                 return new NoValue("Internal Error");
             }
             return field.get(_pRec);
         } catch (Exception e) {
-            log.warning("Failed to retrieve field value", "field", columnExp.getField(), e);
+            log.warning("Failed to retrieve field value", "field", columnExp.name, e);
             return new NoValue("Internal Error");
         }
     }
@@ -237,13 +237,13 @@ public class ExpressionEvaluator
             return new NoValue("Column lookup on unknown persistent class: " + pClass);
         }
 
-        String[] keyFields = DepotUtil.getKeyFields(pClass);
+        ColumnExp[] keyFields = DepotUtil.getKeyFields(pClass);
         Comparable<?>[] values = key.getValues();
 
         for (int ii = 0; ii < keyFields.length; ii ++) {
             Object value;
             try {
-                value = pClass.getDeclaredField(keyFields[ii]).get(_pRec);
+                value = pClass.getDeclaredField(keyFields[ii].name).get(_pRec);
             } catch (Exception e) {
                 log.warning("Failed to retrieve field value", "field", keyFields[ii], e);
                 return new NoValue("Internal Error");

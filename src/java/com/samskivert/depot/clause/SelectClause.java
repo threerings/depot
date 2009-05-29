@@ -29,23 +29,34 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
- * Builds actual SQL given a main persistent type and some {@link QueryClause} objects.
+ * Represents a complete select clause.
  */
-public class SelectClause implements QueryClause
+public class SelectClause
+    implements QueryClause
 {
     /**
-     * Creates a new Query object to generate one or more instances of the specified persistent
-     * class, as dictated by the key and query clauses.  A persistence context is supplied for
-     * instantiation of marshallers, which may trigger table creations and schema migrations.
+     * Creates a new select clause, selecting the supplied columns from the specified persistent
+     * class for rows that match the supplied clauses.
      */
-    public SelectClause (Class<? extends PersistentRecord> pClass, String[] fields,
+    public SelectClause (Class<? extends PersistentRecord> pClass,
+                         ColumnExp[] columns, QueryClause... clauses)
+    {
+        this(pClass, columns, Arrays.asList(clauses));
+    }
+
+    /**
+     * Creates a new select clause, selecting the supplied columns from the specified persistent
+     * class for rows that match the supplied clauses.
+     */
+    public SelectClause (Class<? extends PersistentRecord> pClass, ColumnExp[] columns,
                          Collection<? extends QueryClause> clauses)
     {
         _pClass = pClass;
-        _fields = fields;
+        _fields = columns;
 
         // iterate over the clauses and sort them into the different types we understand
         for (QueryClause clause : clauses) {
@@ -107,15 +118,6 @@ public class SelectClause implements QueryClause
         }
     }
 
-    /**
-     * A varargs version of the constructor.
-     */
-    public SelectClause (Class<? extends PersistentRecord> pClass,
-                         String[] fields, QueryClause... clauses)
-    {
-        this(pClass, fields, Arrays.asList(clauses));
-    }
-
     public FieldDefinition lookupDefinition (String field)
     {
         return _disMap.get(field);
@@ -131,7 +133,7 @@ public class SelectClause implements QueryClause
         return _pClass;
     }
 
-    public String[] getFields ()
+    public ColumnExp[] getFields ()
     {
         return _fields;
     }
@@ -229,7 +231,7 @@ public class SelectClause implements QueryClause
     protected Class<? extends PersistentRecord> _pClass;
 
     /** The persistent fields to select. */
-    protected String[] _fields;
+    protected ColumnExp[] _fields;
 
     /** The from override clause, if any. */
     protected FromOverride _fromOverride;

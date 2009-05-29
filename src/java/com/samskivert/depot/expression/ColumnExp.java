@@ -34,16 +34,6 @@ public class ColumnExp
     /** The name of the column we reference. */
     public final String name;
 
-    /** Converts an array of column expressions to an array of just the bare names. */
-    public static String[] toNames (ColumnExp[] columns)
-    {
-        String[] names = new String[columns.length];
-        for (int ii = 0; ii < names.length; ii++) {
-            names[ii] = columns[ii].name;
-        }
-        return names;
-    }
-
     public ColumnExp (Class<? extends PersistentRecord> pClass, String field)
     {
         super();
@@ -78,9 +68,18 @@ public class ColumnExp
         return _pClass;
     }
 
-    public String getField ()
+    @Override // from Object
+    public int hashCode ()
     {
-        return name;
+        return _pClass.hashCode() ^ this.name.hashCode();
+    }
+
+    @Override // from Object
+    public boolean equals (Object other)
+    {
+        return (other instanceof ColumnExp) &&
+            ((ColumnExp)other)._pClass.equals(_pClass) &&
+            ((ColumnExp)other).name.equals(this.name);
     }
 
     @Override // from Object

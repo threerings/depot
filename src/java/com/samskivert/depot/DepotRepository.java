@@ -513,8 +513,7 @@ public abstract class DepotRepository
         if (key == null) {
             throw new IllegalArgumentException("Can't update record with null primary key.");
         }
-        String[] fields = ColumnExp.toNames(modifiedFields);
-        return doUpdate(key, new UpdateClause(pClass, key, fields, record));
+        return doUpdate(key, new UpdateClause(pClass, key, modifiedFields, record));
     }
 
     /**
@@ -566,12 +565,12 @@ public abstract class DepotRepository
         key.validateQueryType(type); // and another
 
         // separate the arguments into keys and values
-        final String[] fields = new String[fieldsValues.length/2];
+        final ColumnExp[] fields = new ColumnExp[fieldsValues.length/2];
         final SQLExpression[] values = new SQLExpression[fields.length];
         for (int ii = 0, idx = 0; ii < fields.length; ii++) {
-            fields[ii] = ((ColumnExp) fieldsValues[idx++]).name;
+            fields[ii] = (ColumnExp)fieldsValues[idx++];
             if (fieldsValues[idx] instanceof SQLExpression) {
-                values[ii] = (SQLExpression) fieldsValues[idx++];
+                values[ii] = (SQLExpression)fieldsValues[idx++];
             } else {
                 values[ii] = new ValueExp(fieldsValues[idx++]);
             }
@@ -639,11 +638,11 @@ public abstract class DepotRepository
         key.validateQueryType(type); // and another
 
         // separate the arguments into keys and values
-        final String[] fields = new String[fieldsValues.size()];
+        final ColumnExp[] fields = new ColumnExp[fieldsValues.size()];
         final SQLExpression[] values = new SQLExpression[fields.length];
         int ii = 0;
         for (Map.Entry<ColumnExp, ? extends SQLExpression> entry : fieldsValues.entrySet()) {
-            fields[ii] = entry.getKey().name;
+            fields[ii] = entry.getKey();
             values[ii] = entry.getValue();
             ii ++;
         }

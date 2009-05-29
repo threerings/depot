@@ -111,13 +111,13 @@ public class Key<T extends PersistentRecord> extends WhereClause
         _pClass = pClass;
 
         // build a local map of field name -> field value
-        Map<String, Comparable<?>> map = Maps.newHashMap();
+        Map<ColumnExp, Comparable<?>> map = Maps.newHashMap();
         for (int i = 0; i < fields.length; i ++) {
-            map.put(fields[i].name, values[i]);
+            map.put(fields[i], values[i]);
         }
 
         // look up the cached primary key fields for this object
-        String[] keyFields = DepotUtil.getKeyFields(pClass);
+        ColumnExp[] keyFields = DepotUtil.getKeyFields(pClass);
 
         // now extract the values in field order and ensure none are extra or missing
         _values = new Comparable<?>[values.length];
@@ -219,12 +219,12 @@ public class Key<T extends PersistentRecord> extends WhereClause
      */
     public void toShortString (StringBuilder builder)
     {
-        String[] keyFields = DepotUtil.getKeyFields(_pClass);
+        ColumnExp[] keyFields = DepotUtil.getKeyFields(_pClass);
         for (int ii = 0; ii < keyFields.length; ii ++) {
             if (ii > 0) {
                 builder.append(":");
             }
-            builder.append(keyFields[ii]).append("=").append(_values[ii]);
+            builder.append(keyFields[ii].name).append("=").append(_values[ii]);
         }
     }
 

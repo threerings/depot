@@ -120,7 +120,7 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
     public Void visit (Key.Expression key)
     {
         Class<? extends PersistentRecord> pClass = key.getPersistentClass();
-        String[] keyFields = DepotUtil.getKeyFields(pClass);
+        ColumnExp[] keyFields = DepotUtil.getKeyFields(pClass);
         Comparable<?>[] values = key.getValues();
         for (int ii = 0; ii < keyFields.length; ii ++) {
             if (ii > 0) {
@@ -233,7 +233,7 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
 
     public Void visit (ColumnExp columnExp)
     {
-        appendRhsColumn(columnExp.getPersistentClass(), columnExp.getField());
+        appendRhsColumn(columnExp.getPersistentClass(), columnExp);
         return null;
     }
 
@@ -363,7 +363,7 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
             // while expanding column names in the SELECT query, do aliasing and expansion
             _enableAliasing = _enableOverrides = true;
 
-            for (String field : selectClause.getFields()) {
+            for (ColumnExp field : selectClause.getFields()) {
                 // write column to a temporary buffer
                 StringBuilder saved = _builder;
                 _builder = new StringBuilder();
@@ -447,7 +447,7 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
         appendTableAbbreviation(pClass);
         _builder.append(" set ");
 
-        String[] fields = updateClause.getFields();
+        ColumnExp[] fields = updateClause.getFields();
         Object pojo = updateClause.getPojo();
         SQLExpression[] values = updateClause.getValues();
         for (int ii = 0; ii < fields.length; ii ++) {
@@ -487,15 +487,15 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
         _innerClause = true;
 
         Set<String> idFields = insertClause.getIdentityFields();
-        String[] fields = marsh.getColumnFieldNames();
+        ColumnExp[] fields = marsh.getColumnFieldNames();
 
         _builder.append("insert into ");
         appendTableName(insertClause.getPersistentClass());
         _builder.append(" (");
 
         boolean comma = false;
-        for (String field : fields) {
-            if (idFields.contains(field)) {
+        for (ColumnExp field : fields) {
+            if (idFields.contains(field.name)) {
                 continue;
             }
             if (comma) {
@@ -507,8 +507,8 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
         _builder.append(") values (");
 
         comma = false;
-        for (String field : fields) {
-            if (idFields.contains(field)) {
+        for (ColumnExp field : fields) {
+            if (idFields.contains(field.name)) {
                 continue;
             }
             if (comma) {
@@ -568,10 +568,10 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
         _builder.append("?");
     }
 
-    protected void bindField (Class<? extends PersistentRecord> pClass, String field, Object pojo)
+    protected void bindField (
+        Class<? extends PersistentRecord> pClass, ColumnExp field, Object pojo)
     {
         final DepotMarshaller<?> marshaller = _types.getMarshaller(pClass);
-
         _bindables.add(newBindable(marshaller, field, pojo));
         _builder.append("?");
     }
@@ -592,21 +592,22 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
     // equivalent of an lvalue; something that can appear to the left of an equals sign.
     // We do not prepend this identifier with a table abbreviation, nor do we expand
     // field overrides, shadowOf declarations, or the like: it is just a column name.
-    protected void appendLhsColumn (Class<? extends PersistentRecord> type, String field)
+    protected void appendLhsColumn (Class<? extends PersistentRecord> type, ColumnExp field)
     {
+        // TODO: nix type and use the class from the supplied ColumnExp
         DepotMarshaller<?> dm = _types.getMarshaller(type);
         if (dm == null) {
             throw new IllegalArgumentException(
                 "Unknown field on persistent record [record=" + type + ", field=" + field + "]");
         }
 
-        FieldMarshaller<?> fm = dm.getFieldMarshaller(field);
+        FieldMarshaller<?> fm = dm.getFieldMarshaller(field.name);
         appendIdentifier(fm.getColumnName());
     }
 
     // Appends an expression for the given field on the given persistent record; this can
     // appear in a SELECT list, in WHERE clauses, etc, etc.
-    protected void appendRhsColumn (Class<? extends PersistentRecord> type, String field)
+    protected void appendRhsColumn (Class<? extends PersistentRecord> type, ColumnExp field)
     {
         DepotMarshaller<?> dm = _types.getMarshaller(type);
         if (dm == null) {
@@ -615,7 +616,7 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
         }
 
         // first, see if there's a field definition
-        FieldMarshaller<?> fm = dm.getFieldMarshaller(field);
+        FieldMarshaller<?> fm = dm.getFieldMarshaller(field.name);
         Map<String, FieldDefinition> fieldDefs = _definitions.get(type);
         if (fieldDefs != null) {
             FieldDefinition fieldDef = fieldDefs.get(field);
@@ -670,7 +671,7 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
                 _builder.append(fieldComputed.fieldDefinition());
                 if (_enableAliasing) {
                     _builder.append(" as ");
-                    appendIdentifier(field);
+                    appendIdentifier(field.name);
                 }
                 return;
             }
@@ -715,40 +716,18 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
         _types = types;
     }
 
-    protected DepotTypes _types;
-
-    /** For each SQL parameter ? we add an {@link Comparable} to bind to this list. */
-    protected List<Bindable> _bindables = Lists.newLinkedList();
-
-    /** A StringBuilder to hold the constructed SQL. */
-    protected StringBuilder _builder = new StringBuilder();
-
-    /** A mapping of field overrides per persistent record. */
-    protected Map<Class<? extends PersistentRecord>, Map<String, FieldDefinition>> _definitions=
-        Maps.newHashMap();
-
-    /** Set this to non-null to suppress table abbreviations from being prepended for a class. */
-    protected Class<? extends PersistentRecord> _defaultType;
-
-    /** A flag that's set to true for inner SELECT's */
-    protected boolean _innerClause = false;
-
-    protected boolean _enableOverrides = false;
-
-    protected boolean _enableAliasing = false;
-
     protected static interface Bindable
     {
         void doBind (Connection conn, PreparedStatement stmt, int argIx) throws Exception;
     }
 
     protected static Bindable newBindable (
-        final DepotMarshaller<?> marshaller, final String field, final Object pojo)
+        final DepotMarshaller<?> marshaller, final ColumnExp field, final Object pojo)
     {
         return new Bindable() {
             public void doBind (Connection conn, PreparedStatement stmt, int argIx)
                 throws Exception {
-                marshaller.getFieldMarshaller(field).getAndWriteToStatement(stmt, argIx, pojo);
+                marshaller.getFieldMarshaller(field.name).getAndWriteToStatement(stmt, argIx, pojo);
             }
         };
     }
@@ -774,4 +753,24 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
             }
         };
     }
+
+    protected DepotTypes _types;
+
+    /** For each SQL parameter ? we add an {@link Comparable} to bind to this list. */
+    protected List<Bindable> _bindables = Lists.newLinkedList();
+
+    /** A StringBuilder to hold the constructed SQL. */
+    protected StringBuilder _builder = new StringBuilder();
+
+    /** A mapping of field overrides per persistent record. */
+    protected Map<Class<? extends PersistentRecord>, Map<String, FieldDefinition>> _definitions=
+        Maps.newHashMap();
+
+    /** Set this to non-null to suppress table abbreviations from being prepended for a class. */
+    protected Class<? extends PersistentRecord> _defaultType;
+
+    /** A flag that's set to true for inner SELECT's */
+    protected boolean _innerClause = false;
+    protected boolean _enableOverrides = false;
+    protected boolean _enableAliasing = false;
 }

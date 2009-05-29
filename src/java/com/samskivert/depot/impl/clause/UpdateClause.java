@@ -25,6 +25,7 @@ import java.util.Collection;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.WhereClause;
+import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 
 import com.samskivert.depot.impl.ExpressionVisitor;
@@ -36,7 +37,7 @@ public class UpdateClause
     implements QueryClause
 {
     public UpdateClause (Class<? extends PersistentRecord> pClass, WhereClause where,
-                         String[] fields, PersistentRecord pojo)
+                         ColumnExp[] fields, PersistentRecord pojo)
     {
         _pClass = pClass;
         _where = where;
@@ -46,7 +47,7 @@ public class UpdateClause
     }
 
     public UpdateClause (Class<? extends PersistentRecord> pClass, WhereClause where,
-                         String[] fields, SQLExpression[] values)
+                         ColumnExp[] fields, SQLExpression[] values)
     {
         _pClass = pClass;
         _fields = fields;
@@ -60,7 +61,7 @@ public class UpdateClause
         return _where;
     }
 
-    public String[] getFields ()
+    public ColumnExp[] getFields ()
     {
         return _fields;
     }
@@ -107,7 +108,7 @@ public class UpdateClause
     protected WhereClause _where;
 
     /** The persistent fields to update. */
-    protected String[] _fields;
+    protected ColumnExp[] _fields;
 
     /** The field values, or null. */
     protected SQLExpression[] _values;

@@ -27,7 +27,9 @@ import java.util.Map;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.Id;
+import com.samskivert.depot.expression.ColumnExp;
 
 /**
  * Simple utility methods used by various things.
@@ -38,18 +40,18 @@ public class DepotUtil
      * Returns an array containing the names of the primary key fields for the supplied persistent
      * class. The values are introspected and cached for the lifetime of the VM.
      */
-    public static String[] getKeyFields (Class<?> pClass)
+    public static ColumnExp[] getKeyFields (Class<? extends PersistentRecord> pClass)
     {
-        String[] fields = _keyFields.get(pClass);
+        ColumnExp[] fields = _keyFields.get(pClass);
         if (fields == null) {
-            List<String> kflist = Lists.newArrayList();
+            List<ColumnExp> kflist = Lists.newArrayList();
             for (Field field : pClass.getFields()) {
                 // look for @Id fields
                 if (field.getAnnotation(Id.class) != null) {
-                    kflist.add(field.getName());
+                    kflist.add(new ColumnExp(pClass, field.getName()));
                 }
             }
-            _keyFields.put(pClass, fields = kflist.toArray(new String[kflist.size()]));
+            _keyFields.put(pClass, fields = kflist.toArray(new ColumnExp[kflist.size()]));
         }
         return fields;
     }
@@ -64,5 +66,5 @@ public class DepotUtil
 
     /** A (never expiring) cache of primary key field names for all persistent classes (of which
      * there are merely dozens, so we don't need to worry about expiring). */
-    protected static Map<Class<?>,String[]> _keyFields = Maps.newHashMap();
+    protected static Map<Class<?>, ColumnExp[]> _keyFields = Maps.newHashMap();
 }
