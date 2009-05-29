@@ -32,11 +32,11 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  * Builds actual SQL given a main persistent type and some {@link QueryClause} objects.
  */
-public class UpdateClause<T extends PersistentRecord>
+public class UpdateClause
     implements QueryClause
 {
     public UpdateClause (Class<? extends PersistentRecord> pClass, WhereClause where,
-                         String[] fields, T pojo)
+                         String[] fields, PersistentRecord pojo)
     {
         _pClass = pClass;
         _where = where;
@@ -70,7 +70,7 @@ public class UpdateClause<T extends PersistentRecord>
         return _values;
     }
 
-    public Object getPojo ()
+    public PersistentRecord getPojo ()
     {
         return _pojo;
     }
@@ -113,5 +113,5 @@ public class UpdateClause<T extends PersistentRecord>
     protected SQLExpression[] _values;
 
     /** The object from which to fetch values, or null. */
-    protected Object _pojo;
+    protected PersistentRecord _pojo;
 }

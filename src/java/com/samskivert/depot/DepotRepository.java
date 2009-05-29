@@ -480,34 +480,17 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> int update (T record)
+    protected int update (PersistentRecord record)
         throws DatabaseException
     {
-        @SuppressWarnings("unchecked") Class<T> pClass = (Class<T>) record.getClass();
+        Class<? extends PersistentRecord> pClass = record.getClass();
         requireNotComputed(pClass, "update");
-
-        DepotMarshaller<T> marsh = _ctx.getMarshaller(pClass);
-        Key<T> key = marsh.getPrimaryKey(record);
+        DepotMarshaller<? extends PersistentRecord> marsh = _ctx.getMarshaller(pClass);
+        Key<? extends PersistentRecord> key = marsh.getPrimaryKey(record);
         if (key == null) {
             throw new IllegalArgumentException("Can't update record with null primary key.");
         }
-
-        UpdateClause<T> update =
-            new UpdateClause<T>(pClass, key, marsh.getColumnFieldNames(), record);
-        final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, update));
-        builder.newQuery(update);
-
-        return _ctx.invoke(new CachingModifier<T>(record, key, key) {
-            @Override
-            protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-                PreparedStatement stmt = builder.prepare(conn);
-                try {
-                    return stmt.executeUpdate();
-                } finally {
-                    JDBCUtil.close(stmt);
-                }
-            }
-        });
+        return doUpdate(key, new UpdateClause(pClass, key, marsh.getColumnFieldNames(), record));
     }
 
     /**
@@ -525,31 +508,13 @@ public abstract class DepotRepository
     {
         @SuppressWarnings("unchecked") Class<T> pClass = (Class<T>) record.getClass();
         requireNotComputed(pClass, "update");
-
         DepotMarshaller<T> marsh = _ctx.getMarshaller(pClass);
         Key<T> key = marsh.getPrimaryKey(record);
         if (key == null) {
             throw new IllegalArgumentException("Can't update record with null primary key.");
         }
-
-        UpdateClause<T> update = new UpdateClause<T>(
-            pClass, key, ColumnExp.toNames(modifiedFields), record);
-        final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, update));
-        builder.newQuery(update);
-
-        return _ctx.invoke(new CachingModifier<T>(record, key, key) {
-            @Override
-            protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-                PreparedStatement stmt = builder.prepare(conn);
-                // clear out _result so that we don't rewrite this partial record to the cache
-                _result = null;
-                try {
-                    return stmt.executeUpdate();
-                } finally {
-                    JDBCUtil.close(stmt);
-                }
-            }
-        });
+        String[] fields = ColumnExp.toNames(modifiedFields);
+        return doUpdate(key, new UpdateClause(pClass, key, fields, record));
     }
 
     /**
@@ -594,6 +559,7 @@ public abstract class DepotRepository
         Class<T> type, final WhereClause key, CacheInvalidator invalidator, Object... fieldsValues)
         throws DatabaseException
     {
+        requireNotComputed(type, "updateLiteral");
         if (invalidator instanceof ValidatingCacheInvalidator) {
             ((ValidatingCacheInvalidator)invalidator).validateFlushType(type); // sanity check
         }
@@ -603,38 +569,15 @@ public abstract class DepotRepository
         final String[] fields = new String[fieldsValues.length/2];
         final SQLExpression[] values = new SQLExpression[fields.length];
         for (int ii = 0, idx = 0; ii < fields.length; ii++) {
-            if (fieldsValues[idx] instanceof ColumnExp) {
-                fields[ii] = ((ColumnExp) fieldsValues[idx]).name;
-            } else if (fieldsValues[idx] instanceof String) {
-                fields[ii] = (String) fieldsValues[idx];
-            } else {
-                throw new IllegalArgumentException(
-                    "Field identifier #" + (ii+1) + " is neither String nor ColumnExp");
-            }
-            idx ++;
-
+            fields[ii] = ((ColumnExp) fieldsValues[idx++]).name;
             if (fieldsValues[idx] instanceof SQLExpression) {
-                values[ii] = (SQLExpression) fieldsValues[idx];
+                values[ii] = (SQLExpression) fieldsValues[idx++];
             } else {
-                values[ii] = new ValueExp(fieldsValues[idx]);
+                values[ii] = new ValueExp(fieldsValues[idx++]);
             }
-            idx ++;
         }
-        UpdateClause<T> update = new UpdateClause<T>(type, key, fields, values);
-        final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, update));
-        builder.newQuery(update);
 
-        return _ctx.invoke(new Modifier(invalidator) {
-            @Override
-            protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-                PreparedStatement stmt = builder.prepare(conn);
-                try {
-                    return stmt.executeUpdate();
-                } finally {
-                    JDBCUtil.close(stmt);
-                }
-            }
-        });
+        return doUpdate(invalidator, new UpdateClause(type, key, fields, values));
     }
 
     /**
@@ -690,7 +633,6 @@ public abstract class DepotRepository
         throws DatabaseException
     {
         requireNotComputed(type, "updateLiteral");
-
         if (invalidator instanceof ValidatingCacheInvalidator) {
             ((ValidatingCacheInvalidator)invalidator).validateFlushType(type); // sanity check
         }
@@ -706,21 +648,7 @@ public abstract class DepotRepository
             ii ++;
         }
 
-        UpdateClause<T> update = new UpdateClause<T>(type, key, fields, values);
-        final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, update));
-        builder.newQuery(update);
-
-        return _ctx.invoke(new Modifier(invalidator) {
-            @Override
-            protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-                PreparedStatement stmt = builder.prepare(conn);
-                try {
-                    return stmt.executeUpdate();
-                } finally {
-                    JDBCUtil.close(stmt);
-                }
-            }
-        });
+        return doUpdate(invalidator, new UpdateClause(type, key, fields, values));
     }
 
     /**
@@ -740,8 +668,8 @@ public abstract class DepotRepository
 
         final DepotMarshaller<T> marsh = _ctx.getMarshaller(pClass);
         Key<T> key = marsh.hasPrimaryKey() ? marsh.getPrimaryKey(record) : null;
-        final UpdateClause<T> update =
-            new UpdateClause<T>(pClass, key, marsh.getColumnFieldNames(), record);
+        final UpdateClause update =
+            new UpdateClause(pClass, key, marsh.getColumnFieldNames(), record);
         final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, update));
 
         // if our primary key isn't null, we start by trying to update rather than insert
@@ -898,6 +826,26 @@ public abstract class DepotRepository
             throw new DatabaseException(
                 "Can't " + action + " computed entities [class=" + type + "]");
         }
+    }
+
+    /**
+     * A helper method for the various partial update methods.
+     */
+    protected int doUpdate (CacheInvalidator invalidator, UpdateClause update)
+    {
+        final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, update));
+        builder.newQuery(update);
+        return _ctx.invoke(new Modifier(invalidator) {
+            @Override
+            protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
+                PreparedStatement stmt = builder.prepare(conn);
+                try {
+                    return stmt.executeUpdate();
+                } finally {
+                    JDBCUtil.close(stmt);
+                }
+            }
+        });
     }
 
     /**

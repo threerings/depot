@@ -84,7 +84,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
                 }
             }
 
-            _select = new SelectClause<T>(_type, _marsh.getPrimaryKeyFields(), clauses);
+            _select = new SelectClause(_type, _marsh.getPrimaryKeyFields(), clauses);
             switch(strategy) {
             case SHORT_KEYS: case LONG_KEYS:
                 _qkey = new SimpleCacheKey(_marsh.getTableName() + "Keys", _select.toString());
@@ -159,7 +159,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
 
         protected SimpleCacheKey _qkey;
         protected CacheCategory _category;
-        protected SelectClause<T> _select;
+        protected SelectClause _select;
         protected KeySet<T> _keys;
         protected Set<Key<T>> _fetchKeys;
         protected Map<Key<T>, T> _entities = Maps.newHashMap();
@@ -212,7 +212,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
         {
             super(ctx, type);
 
-            _select = new SelectClause<T>(type, _marsh.getFieldNames(), clauses);
+            _select = new SelectClause(type, _marsh.getFieldNames(), clauses);
 
             if (cachedContents) {
                 _qkey = new SimpleCacheKey(_marsh.getTableName() + "Contents", _select.toString());
@@ -258,7 +258,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             return result;
         }
 
-        protected SelectClause<T> _select;
+        protected SelectClause _select;
         protected SimpleCacheKey _qkey;
     }
 
@@ -343,7 +343,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
                                 Map<Key<T>, T> entities, String origStmt)
         throws SQLException
     {
-        SelectClause<T> select = new SelectClause<T>(
+        SelectClause select = new SelectClause(
             _type, _marsh.getFieldNames(), KeySet.newKeySet(_type, keys));
         SQLBuilder builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, select));
         builder.newQuery(select);

@@ -299,12 +299,12 @@ public class ExpressionEvaluator
         throw new IllegalArgumentException("Can't evaluate expression: " + fromOverride);
     }
 
-    public Object visit (SelectClause<? extends PersistentRecord> selectClause)
+    public Object visit (SelectClause selectClause)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + selectClause);
     }
 
-    public Object visit (UpdateClause<? extends PersistentRecord> updateClause)
+    public Object visit (UpdateClause updateClause)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + updateClause);
     }

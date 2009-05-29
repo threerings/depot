@@ -34,14 +34,15 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  * Builds actual SQL given a main persistent type and some {@link QueryClause} objects.
  */
-public class SelectClause<T extends PersistentRecord> implements QueryClause
+public class SelectClause implements QueryClause
 {
     /**
      * Creates a new Query object to generate one or more instances of the specified persistent
      * class, as dictated by the key and query clauses.  A persistence context is supplied for
      * instantiation of marshallers, which may trigger table creations and schema migrations.
      */
-    public SelectClause (Class<T> pClass, String[] fields, Collection<? extends QueryClause> clauses)
+    public SelectClause (Class<? extends PersistentRecord> pClass, String[] fields,
+                         Collection<? extends QueryClause> clauses)
     {
         _pClass = pClass;
         _fields = fields;
@@ -109,7 +110,8 @@ public class SelectClause<T extends PersistentRecord> implements QueryClause
     /**
      * A varargs version of the constructor.
      */
-    public SelectClause (Class<T> pClass, String[] fields, QueryClause... clauses)
+    public SelectClause (Class<? extends PersistentRecord> pClass,
+                         String[] fields, QueryClause... clauses)
     {
         this(pClass, fields, Arrays.asList(clauses));
     }
@@ -124,7 +126,7 @@ public class SelectClause<T extends PersistentRecord> implements QueryClause
         return _disMap.values();
     }
 
-    public Class<T> getPersistentClass ()
+    public Class<? extends PersistentRecord> getPersistentClass ()
     {
         return _pClass;
     }
@@ -224,7 +226,7 @@ public class SelectClause<T extends PersistentRecord> implements QueryClause
     protected Map<String, FieldDefinition> _disMap = Maps.newHashMap();
 
     /** The persistent class this select defines. */
-    protected Class<T> _pClass;
+    protected Class<? extends PersistentRecord> _pClass;
 
     /** The persistent fields to select. */
     protected String[] _fields;

@@ -54,7 +54,7 @@ public class FindAllKeysQuery<T extends PersistentRecord> extends Query<List<Key
     {
         _forUpdate = forUpdate;
         _marsh = ctx.getMarshaller(type);
-        _select = new SelectClause<T>(type, _marsh.getPrimaryKeyFields(), clauses);
+        _select = new SelectClause(type, _marsh.getPrimaryKeyFields(), clauses);
         _builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, _select));
         _builder.newQuery(_select);
     }
@@ -101,5 +101,5 @@ public class FindAllKeysQuery<T extends PersistentRecord> extends Query<List<Key
     protected boolean _forUpdate;
     protected SQLBuilder _builder;
     protected DepotMarshaller<T> _marsh;
-    protected SelectClause<T> _select;
+    protected SelectClause _select;
 }

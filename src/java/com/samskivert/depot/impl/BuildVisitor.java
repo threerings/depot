@@ -334,7 +334,7 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
         return null;
     }
 
-    public Void visit (SelectClause<? extends PersistentRecord> selectClause)
+    public Void visit (SelectClause selectClause)
     {
         Class<? extends PersistentRecord> pClass = selectClause.getPersistentClass();
         boolean isInner = _innerClause;
@@ -432,7 +432,7 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
         return null;
     }
 
-    public Void visit (UpdateClause<? extends PersistentRecord> updateClause)
+    public Void visit (UpdateClause updateClause)
     {
         if (updateClause.getWhereClause() == null) {
             throw new IllegalArgumentException(

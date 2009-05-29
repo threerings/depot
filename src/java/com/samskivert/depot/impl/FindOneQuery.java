@@ -52,7 +52,7 @@ public class FindOneQuery<T extends PersistentRecord> extends Query<T>
     {
         _strategy = strategy;
         _marsh = ctx.getMarshaller(type);
-        _select = new SelectClause<T>(type, _marsh.getFieldNames(), clauses);
+        _select = new SelectClause(type, _marsh.getFieldNames(), clauses);
         WhereClause where = _select.getWhereClause();
         if (where != null) {
             _select.getWhereClause().validateQueryType(type); // sanity check
@@ -135,7 +135,7 @@ public class FindOneQuery<T extends PersistentRecord> extends Query<T>
 
     protected DepotRepository.CacheStrategy _strategy;
     protected DepotMarshaller<T> _marsh;
-    protected SelectClause<T> _select;
+    protected SelectClause _select;
     protected SQLBuilder _builder;
     protected int _cachedRecords;
 }

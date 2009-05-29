@@ -83,8 +83,8 @@ public interface ExpressionVisitor<T>
     public T visit (WhereClause where);
     public T visit (Key.Expression<? extends PersistentRecord> key);
     public T visit (Exists<? extends PersistentRecord> exists);
-    public T visit (SelectClause<? extends PersistentRecord> selectClause);
-    public T visit (UpdateClause<? extends PersistentRecord> updateClause);
+    public T visit (SelectClause selectClause);
+    public T visit (UpdateClause updateClause);
     public T visit (DeleteClause deleteClause);
     public T visit (InsertClause insertClause);
     public T visit (CreateIndexClause createIndexClause);

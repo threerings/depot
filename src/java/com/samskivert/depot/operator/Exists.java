@@ -32,7 +32,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 public class Exists<T extends PersistentRecord>
     implements SQLOperator
 {
-    public Exists (SelectClause<T> clause)
+    public Exists (SelectClause clause)
     {
         _clause = clause;
     }
@@ -47,7 +47,7 @@ public class Exists<T extends PersistentRecord>
         _clause.addClasses(classSet);
     }
 
-    public SelectClause<T> getSubClause ()
+    public SelectClause getSubClause ()
     {
         return _clause;
     }
@@ -58,5 +58,5 @@ public class Exists<T extends PersistentRecord>
         return "Exists(" + _clause + ")";
     }
 
-    protected SelectClause<T> _clause;
+    protected SelectClause _clause;
 }
