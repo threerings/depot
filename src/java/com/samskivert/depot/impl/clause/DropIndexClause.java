@@ -30,7 +30,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  * Represents an DROP INDEX instruction to the database.
  */
-public class DropIndexClause<T extends PersistentRecord>
+public class DropIndexClause
     implements QueryClause
 {
     public DropIndexClause (Class<? extends PersistentRecord> pClass, String name)

@@ -116,7 +116,7 @@ public class MySQLBuilder
         }
 
         @Override
-        public Void visit (DropIndexClause<? extends PersistentRecord> dropIndexClause)
+        public Void visit (DropIndexClause dropIndexClause)
         {
             // MySQL's indexes are scoped on the table, not on the database, and the
             // SQL syntax reflects it: DROP INDEX fooIx on fooTable

@@ -229,7 +229,7 @@ public class ExpressionEvaluator
         return new NoValue("Non-boolean result from Where expression: " + result);
     }
 
-    public Object visit (Key.Expression<? extends PersistentRecord> key)
+    public Object visit (Key.Expression key)
     {
         Class<? extends PersistentRecord> pClass = key.getPersistentClass();
         if (pClass != _pClass) {
@@ -259,7 +259,7 @@ public class ExpressionEvaluator
         return true;
     }
 
-    public Object visit (Exists<? extends PersistentRecord> exists)
+    public Object visit (Exists exists)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exists);
     }
@@ -324,7 +324,7 @@ public class ExpressionEvaluator
         throw new IllegalArgumentException("Can't evaluate expression: " + createIndexClause);
     }
 
-    public Object visit (DropIndexClause<? extends PersistentRecord> dropIndexClause)
+    public Object visit (DropIndexClause dropIndexClause)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + dropIndexClause);
     }

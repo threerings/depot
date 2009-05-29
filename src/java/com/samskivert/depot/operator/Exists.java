@@ -29,7 +29,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  * The SQL 'exists' operator.
  */
-public class Exists<T extends PersistentRecord>
+public class Exists
     implements SQLOperator
 {
     public Exists (SelectClause clause)

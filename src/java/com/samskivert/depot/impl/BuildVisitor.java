@@ -117,7 +117,7 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
         return null;
     }
 
-    public Void visit (Key.Expression<? extends PersistentRecord> key)
+    public Void visit (Key.Expression key)
     {
         Class<? extends PersistentRecord> pClass = key.getPersistentClass();
         String[] keyFields = DepotUtil.getKeyFields(pClass);
@@ -327,7 +327,7 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
         return null;
     }
 
-    public Void visit (Exists<? extends PersistentRecord> exists)
+    public Void visit (Exists exists)
     {
         _builder.append("exists ");
         exists.getSubClause().accept(this);
@@ -555,7 +555,7 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
         return null;
     }
 
-    public Void visit (DropIndexClause<? extends PersistentRecord> dropIndexClause)
+    public Void visit (DropIndexClause dropIndexClause)
     {
         _builder.append("drop index ");
         appendIdentifier(dropIndexClause.getName());

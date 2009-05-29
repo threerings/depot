@@ -81,13 +81,13 @@ public interface ExpressionVisitor<T>
     public T visit (ValueExp value);
     public T visit (IntervalExp interval);
     public T visit (WhereClause where);
-    public T visit (Key.Expression<? extends PersistentRecord> key);
-    public T visit (Exists<? extends PersistentRecord> exists);
+    public T visit (Key.Expression key);
+    public T visit (Exists exists);
     public T visit (SelectClause selectClause);
     public T visit (UpdateClause updateClause);
     public T visit (DeleteClause deleteClause);
     public T visit (InsertClause insertClause);
     public T visit (CreateIndexClause createIndexClause);
-    public T visit (DropIndexClause<? extends PersistentRecord> dropIndexClause);
+    public T visit (DropIndexClause dropIndexClause);
     public T visit (Case caseExp);
 }

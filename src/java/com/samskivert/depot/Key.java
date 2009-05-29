@@ -47,13 +47,13 @@ public class Key<T extends PersistentRecord> extends WhereClause
 {
     /** Handles the matching of the key columns to its bound values. This is needed so that we can
      * combine a bunch of keys into a {@link KeySet}. */
-    public static class Expression<U extends PersistentRecord> implements SQLExpression
+    public static class Expression implements SQLExpression
     {
-        public Expression (Class<U> pClass, Comparable<?>[] values) {
+        public Expression (Class<? extends PersistentRecord> pClass, Comparable<?>[] values) {
             _pClass = pClass;
             _values = values;
         }
-        public Class<U> getPersistentClass () {
+        public Class<? extends PersistentRecord> getPersistentClass () {
             return _pClass;
         }
         public Comparable<?>[] getValues () {
@@ -65,7 +65,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
         public void addClasses (Collection<Class<? extends PersistentRecord>> classSet) {
             classSet.add(getPersistentClass());
         }
-        protected Class<U> _pClass;
+        protected Class<? extends PersistentRecord> _pClass;
         protected Comparable<?>[] _values;
     }
 
@@ -167,11 +167,10 @@ public class Key<T extends PersistentRecord> extends WhereClause
         return _values;
     }
 
-    // from WhereClause
-    @Override
+    @Override // from WhereClause
     public SQLExpression getWhereExpression ()
     {
-        return new Expression<T>(_pClass, _values);
+        return new Expression(_pClass, _values);
     }
 
     // from SQLExpression
@@ -204,7 +203,8 @@ public class Key<T extends PersistentRecord> extends WhereClause
         if (!pClass.equals(_pClass)) {
             throw new IllegalArgumentException(
                 "Class mismatch between persistent record and cache invalidator " +
-                "[record=" + pClass.getSimpleName() + ", invtype=" + _pClass.getSimpleName() + "].");
+                "[record=" + pClass.getSimpleName() +
+                ", invtype=" + _pClass.getSimpleName() + "].");
         }
     }
 

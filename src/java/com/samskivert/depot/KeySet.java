@@ -224,7 +224,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             SQLExpression[] keyexps = new SQLExpression[_keys.length];
             int ii = 0;
             for (Comparable<?>[] kvals : _keys) {
-                keyexps[ii++] = new Key.Expression<T>(_pClass, kvals);
+                keyexps[ii++] = new Key.Expression(_pClass, kvals);
             }
             return new Or(keyexps);
         }
