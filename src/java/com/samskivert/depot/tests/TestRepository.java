@@ -97,7 +97,7 @@ public class TestRepository extends DepotRepository
 //         record.numbers = new int[] { 1, 2, 3, 4, 5 };
 //         repo.update(record, TestRecord.AGE, TestRecord.NAME, TestRecord.NUMBERS);
 
-        repo.updatePartial(TestRecord.class, record.recordId,
+        repo.updatePartial(TestRecord.getKey(record.recordId),
                            TestRecord.AGE, 25, TestRecord.NAME, "Bob",
                            TestRecord.NUMBERS, new int[] { 1, 2, 3, 4, 5 });
         System.out.println("Updated " + repo.load(TestRecord.getKey(record.recordId)));

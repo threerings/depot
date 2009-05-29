@@ -553,53 +553,6 @@ public abstract class DepotRepository
     }
 
     /**
-     * Updates the specified columns for all persistent objects matching the supplied primary key.
-     *
-     * @param type the type of the persistent object to be modified.
-     * @param primaryKey the primary key to match in the update.
-     * @param updates an mapping from the columns to the values to be assigned.
-     *
-     * @return the number of rows modified by this action.
-     *
-     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
-     * values that duplicate another row already in the database.
-     * @throws DatabaseException if any problem is encountered communicating with the database.
-     */
-    protected <T extends PersistentRecord> int updatePartial (
-        Class<T> type, Comparable<?> primaryKey, Map<ColumnExp,Object> updates)
-        throws DatabaseException
-    {
-        Object[] fieldsValues = new Object[updates.size()*2];
-        int idx = 0;
-        for (Map.Entry<ColumnExp,Object> entry : updates.entrySet()) {
-            fieldsValues[idx++] = entry.getKey();
-            fieldsValues[idx++] = entry.getValue();
-        }
-        return updatePartial(type, primaryKey, fieldsValues);
-    }
-
-    /**
-     * Updates the specified columns for all persistent objects matching the supplied primary key.
-     *
-     * @param type the type of the persistent object to be modified.
-     * @param primaryKey the primary key to match in the update.
-     * @param fieldsValues an array containing the columns (as ColumnExp) and the values to be
-     * assigned, in key, value, key, value, etc. order.
-     *
-     * @return the number of rows modified by this action.
-     *
-     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
-     * values that duplicate another row already in the database.
-     * @throws DatabaseException if any problem is encountered communicating with the database.
-     */
-    protected <T extends PersistentRecord> int updatePartial (
-        Class<T> type, Comparable<?> primaryKey, Object... fieldsValues)
-        throws DatabaseException
-    {
-        return updatePartial(_ctx.getMarshaller(type).makePrimaryKey(primaryKey), fieldsValues);
-    }
-
-    /**
      * Updates the specified columns for all persistent objects matching the supplied key.
      *
      * @param key the key for the persistent objects to be modified.
