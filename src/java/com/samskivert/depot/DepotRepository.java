@@ -520,10 +520,10 @@ public abstract class DepotRepository
      * Updates the specified columns for all persistent objects matching the supplied key.
      *
      * @param key the key for the persistent objects to be modified.
-     * @param fieldsValues an array containing the columns (as ColumnExp) and the values to be
-     * assigned, in (key, value, key, value, etc.) order. The values may be primitives (Integer,
-     * String, etc.) which will be wrapped in ValueExp instances or SQLExpression instances
-     * defining the value.
+     * @param field the first field to be updated.
+     * @param value the value to assign to the first field. This may be a primitive (Integer,
+     * String, etc.) which will be wrapped in ValueExp or a SQLExpression instance.
+     * @param more additional (field, value) pairs to be updated.
      *
      * @return the number of rows modified by this action.
      *
@@ -532,18 +532,18 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updatePartial (
-        Key<T> key, ColumnExp field, Object value, Object... fieldsValues)
+        Key<T> key, ColumnExp field, Object value, Object... more)
         throws DatabaseException
     {
-        return updatePartial(key.getPersistentClass(), key, key, field, value, fieldsValues);
+        return updatePartial(key.getPersistentClass(), key, key, field, value, more);
     }
 
     /**
      * Updates the specified columns for all persistent objects matching the supplied key.
      *
      * @param key the key for the persistent objects to be modified.
-     * @param fieldsValues a mapping from field to value for all values to be changed. The values
-     * may be primitives (Integer, String, etc.) which will be wrapped in ValueExp instances or
+     * @param updates a mapping from field to value for all values to be changed. The values may be
+     * primitives (Integer, String, etc.) which will be wrapped in ValueExp instances or
      * SQLExpression instances defining the value.
      *
      * @return the number of rows modified by this action.
@@ -552,11 +552,10 @@ public abstract class DepotRepository
      * values that duplicate another row already in the database.
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> int updatePartial (
-        Key<T> key, Map<ColumnExp, ?> fieldsValues)
+    protected <T extends PersistentRecord> int updatePartial (Key<T> key, Map<ColumnExp, ?> updates)
         throws DatabaseException
     {
-        return updatePartial(key.getPersistentClass(), key, key, fieldsValues);
+        return updatePartial(key.getPersistentClass(), key, key, updates);
     }
 
     /**
@@ -569,8 +568,8 @@ public abstract class DepotRepository
      * @param key the key to match in the update.
      * @param invalidator a cache invalidator that will be run prior to the update to flush the
      * relevant persistent objects from the cache, or null if no invalidation is needed.
-     * @param fieldsValues a mapping from field to value for all values to be changed. The values
-     * may be primitives (Integer, String, etc.) which will be wrapped in ValueExp instances or
+     * @param updates a mapping from field to value for all values to be changed. The values may be
+     * primitives (Integer, String, etc.) which will be wrapped in ValueExp instances or
      * SQLExpression instances defining the value.
      *
      * @return the number of rows modified by this action.
@@ -581,14 +580,14 @@ public abstract class DepotRepository
      */
     protected <T extends PersistentRecord> int updatePartial (
         Class<T> type, final WhereClause key, CacheInvalidator invalidator,
-        Map<ColumnExp, ?> fieldsValues)
+        Map<ColumnExp, ?> updates)
         throws DatabaseException
     {
         // separate the arguments into keys and values
-        final ColumnExp[] fields = new ColumnExp[fieldsValues.size()];
+        final ColumnExp[] fields = new ColumnExp[updates.size()];
         final SQLExpression[] values = new SQLExpression[fields.length];
         int ii = 0;
-        for (Map.Entry<ColumnExp, ?> entry : fieldsValues.entrySet()) {
+        for (Map.Entry<ColumnExp, ?> entry : updates.entrySet()) {
             fields[ii] = entry.getKey();
             values[ii++] = makeValue(entry.getValue());
         }
@@ -605,10 +604,10 @@ public abstract class DepotRepository
      * @param key the key to match in the update.
      * @param invalidator a cache invalidator that will be run prior to the update to flush the
      * relevant persistent objects from the cache, or null if no invalidation is needed.
-     * @param fieldsValues an array containing the columns (as ColumnExp) and the values to be
-     * assigned, in (key, value, key, value, etc.) order. The values may be primitives (Integer,
-     * String, etc.) which will be wrapped in ValueExp instances or SQLExpression instances
-     * defining the value.
+     * @param field the first field to be updated.
+     * @param value the value to assign to the first field. This may be a primitive (Integer,
+     * String, etc.) which will be wrapped in ValueExp or a SQLExpression instance.
+     * @param more additional (field, value) pairs to be updated.
      *
      * @return the number of rows modified by this action.
      *
@@ -618,17 +617,17 @@ public abstract class DepotRepository
      */
     protected <T extends PersistentRecord> int updatePartial (
         Class<T> type, final WhereClause key, CacheInvalidator invalidator,
-        ColumnExp field, Object value, Object... fieldsValues)
+        ColumnExp field, Object value, Object... more)
         throws DatabaseException
     {
-        // separate the arguments into keys and values
-        final ColumnExp[] fields = new ColumnExp[fieldsValues.length/2+1];
+        // separate the updates into keys and values
+        final ColumnExp[] fields = new ColumnExp[more.length/2+1];
         final SQLExpression[] values = new SQLExpression[fields.length+1];
         fields[0] = field;
         values[0] = makeValue(value);
         for (int ii = 0, idx = 0; ii < fields.length; ii++) {
-            fields[ii+1] = (ColumnExp)fieldsValues[idx++];
-            values[ii+1] = makeValue(fieldsValues[idx++]);
+            fields[ii+1] = (ColumnExp)more[idx++];
+            values[ii+1] = makeValue(more[idx++]);
         }
         return updatePartial(type, key, invalidator, fields, values);
     }
