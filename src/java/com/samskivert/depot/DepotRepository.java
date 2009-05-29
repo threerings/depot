@@ -521,7 +521,9 @@ public abstract class DepotRepository
      *
      * @param key the key for the persistent objects to be modified.
      * @param fieldsValues an array containing the columns (as ColumnExp) and the values to be
-     * assigned, in key, value, key, value, etc. order.
+     * assigned, in (key, value, key, value, etc.) order. The values may be primitives (Integer,
+     * String, etc.) which will be wrapped in ValueExp instances or SQLExpression instances
+     * defining the value.
      *
      * @return the number of rows modified by this action.
      *
@@ -530,6 +532,27 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updatePartial (Key<T> key, Object... fieldsValues)
+        throws DatabaseException
+    {
+        return updatePartial(key.getPersistentClass(), key, key, fieldsValues);
+    }
+
+    /**
+     * Updates the specified columns for all persistent objects matching the supplied key.
+     *
+     * @param key the key for the persistent objects to be modified.
+     * @param fieldsValues a mapping from field to value for all values to be changed. The values
+     * may be primitives (Integer, String, etc.) which will be wrapped in ValueExp instances or
+     * SQLExpression instances defining the value.
+     *
+     * @return the number of rows modified by this action.
+     *
+     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
+     * values that duplicate another row already in the database.
+     * @throws DatabaseException if any problem is encountered communicating with the database.
+     */
+    protected <T extends PersistentRecord> int updatePartial (
+        Key<T> key, Map<ColumnExp, ? extends SQLExpression> fieldsValues)
         throws DatabaseException
     {
         return updatePartial(key.getPersistentClass(), key, key, fieldsValues);
@@ -545,8 +568,47 @@ public abstract class DepotRepository
      * @param key the key to match in the update.
      * @param invalidator a cache invalidator that will be run prior to the update to flush the
      * relevant persistent objects from the cache, or null if no invalidation is needed.
+     * @param fieldsValues a mapping from field to value for all values to be changed. The values
+     * may be primitives (Integer, String, etc.) which will be wrapped in ValueExp instances or
+     * SQLExpression instances defining the value.
+     *
+     * @return the number of rows modified by this action.
+     *
+     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
+     * values that duplicate another row already in the database.
+     * @throws DatabaseException if any problem is encountered communicating with the database.
+     */
+    protected <T extends PersistentRecord> int updatePartial (
+        Class<T> type, final WhereClause key, CacheInvalidator invalidator,
+        Map<ColumnExp, ? extends SQLExpression> fieldsValues)
+        throws DatabaseException
+    {
+        // separate the arguments into keys and values
+        final ColumnExp[] fields = new ColumnExp[fieldsValues.size()];
+        final SQLExpression[] values = new SQLExpression[fields.length];
+        int ii = 0;
+        for (Map.Entry<ColumnExp, ? extends SQLExpression> entry : fieldsValues.entrySet()) {
+            fields[ii] = entry.getKey();
+            values[ii] = entry.getValue();
+            ii ++;
+        }
+        return updatePartial(type, key, invalidator, fields, values);
+    }
+
+    /**
+     * Updates the specified columns for all persistent objects matching the supplied key. This
+     * method currently flushes the associated record from the cache, but in the future it should
+     * be modified to update the modified fields in the cached value iff the record exists in the
+     * cache.
+     *
+     * @param type the type of the persistent object to be modified.
+     * @param key the key to match in the update.
+     * @param invalidator a cache invalidator that will be run prior to the update to flush the
+     * relevant persistent objects from the cache, or null if no invalidation is needed.
      * @param fieldsValues an array containing the columns (as ColumnExp) and the values to be
-     * assigned, in key, value, key, value, etc. order.
+     * assigned, in (key, value, key, value, etc.) order. The values may be primitives (Integer,
+     * String, etc.) which will be wrapped in ValueExp instances or SQLExpression instances
+     * defining the value.
      *
      * @return the number of rows modified by this action.
      *
@@ -558,12 +620,6 @@ public abstract class DepotRepository
         Class<T> type, final WhereClause key, CacheInvalidator invalidator, Object... fieldsValues)
         throws DatabaseException
     {
-        requireNotComputed(type, "updateLiteral");
-        if (invalidator instanceof ValidatingCacheInvalidator) {
-            ((ValidatingCacheInvalidator)invalidator).validateFlushType(type); // sanity check
-        }
-        key.validateQueryType(type); // and another
-
         // separate the arguments into keys and values
         final ColumnExp[] fields = new ColumnExp[fieldsValues.length/2];
         final SQLExpression[] values = new SQLExpression[fields.length];
@@ -575,50 +631,21 @@ public abstract class DepotRepository
                 values[ii] = new ValueExp(fieldsValues[idx++]);
             }
         }
-
-        return doUpdate(invalidator, new UpdateClause(type, key, fields, values));
+        return updatePartial(type, key, invalidator, fields, values);
     }
 
     /**
-     * Updates the specified columns for all persistent objects matching the supplied primary
-     * key. The values in this case must be literal SQL to be inserted into the update statement.
-     * In general this is used when you want to do something like the following:
-     *
-     * <pre>
-     * update FOO set BAR = BAR + 1;
-     * update BAZ set BIF = NOW();
-     * </pre>
-     *
-     * @param key the key to match in the update.
-     * @param fieldsValues a map containing the columns and the values to be assigned.
-     *
-     * @return the number of rows modified by this action.
-     *
-     * @throws DuplicateKeyException if the update attempts to change the key columns of a row to
-     * values that duplicate another row already in the database.
-     * @throws DatabaseException if any problem is encountered communicating with the database.
-     */
-    protected <T extends PersistentRecord> int updateLiteral (
-        Key<T> key, Map<ColumnExp, ? extends SQLExpression> fieldsValues)
-        throws DatabaseException
-    {
-        return updateLiteral(key.getPersistentClass(), key, key, fieldsValues);
-    }
-
-    /**
-     * Updates the specified columns for all persistent objects matching the supplied primary
-     * key. The values in this case must be literal SQL to be inserted into the update statement.
-     * In general this is used when you want to do something like the following:
-     *
-     * <pre>
-     * update FOO set BAR = BAR + 1;
-     * update BAZ set BIF = NOW();
-     * </pre>
+     * Updates the specified columns for all persistent objects matching the supplied key. This
+     * method currently flushes the associated record from the cache, but in the future it should
+     * be modified to update the modified fields in the cached value iff the record exists in the
+     * cache.
      *
      * @param type the type of the persistent object to be modified.
      * @param key the key to match in the update.
-     * @param fieldsValues an array containing the names of the fields/columns and the values to be
-     * assigned, in key, literal value, key, literal value, etc. order.
+     * @param invalidator a cache invalidator that will be run prior to the update to flush the
+     * relevant persistent objects from the cache, or null if no invalidation is needed.
+     * @param fields the fields in the objects to be updated.
+     * @param values the values to be assigned to the fields.
      *
      * @return the number of rows modified by this action.
      *
@@ -626,27 +653,16 @@ public abstract class DepotRepository
      * values that duplicate another row already in the database.
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> int updateLiteral (
+    protected <T extends PersistentRecord> int updatePartial (
         Class<T> type, final WhereClause key, CacheInvalidator invalidator,
-        Map<ColumnExp, ? extends SQLExpression> fieldsValues)
+        ColumnExp[] fields, SQLExpression[] values)
         throws DatabaseException
     {
-        requireNotComputed(type, "updateLiteral");
+        requireNotComputed(type, "updatePartial");
         if (invalidator instanceof ValidatingCacheInvalidator) {
             ((ValidatingCacheInvalidator)invalidator).validateFlushType(type); // sanity check
         }
         key.validateQueryType(type); // and another
-
-        // separate the arguments into keys and values
-        final ColumnExp[] fields = new ColumnExp[fieldsValues.size()];
-        final SQLExpression[] values = new SQLExpression[fields.length];
-        int ii = 0;
-        for (Map.Entry<ColumnExp, ? extends SQLExpression> entry : fieldsValues.entrySet()) {
-            fields[ii] = entry.getKey();
-            values[ii] = entry.getValue();
-            ii ++;
-        }
-
         return doUpdate(invalidator, new UpdateClause(type, key, fields, values));
     }
 
