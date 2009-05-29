@@ -531,10 +531,11 @@ public abstract class DepotRepository
      * values that duplicate another row already in the database.
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> int updatePartial (Key<T> key, Object... fieldsValues)
+    protected <T extends PersistentRecord> int updatePartial (
+        Key<T> key, ColumnExp field, Comparable<?> value, Object... fieldsValues)
         throws DatabaseException
     {
-        return updatePartial(key.getPersistentClass(), key, key, fieldsValues);
+        return updatePartial(key.getPersistentClass(), key, key, field, value, fieldsValues);
     }
 
     /**
@@ -552,7 +553,7 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updatePartial (
-        Key<T> key, Map<ColumnExp, ? extends SQLExpression> fieldsValues)
+        Key<T> key, Map<ColumnExp, ?> fieldsValues)
         throws DatabaseException
     {
         return updatePartial(key.getPersistentClass(), key, key, fieldsValues);
@@ -580,17 +581,16 @@ public abstract class DepotRepository
      */
     protected <T extends PersistentRecord> int updatePartial (
         Class<T> type, final WhereClause key, CacheInvalidator invalidator,
-        Map<ColumnExp, ? extends SQLExpression> fieldsValues)
+        Map<ColumnExp, ?> fieldsValues)
         throws DatabaseException
     {
         // separate the arguments into keys and values
         final ColumnExp[] fields = new ColumnExp[fieldsValues.size()];
         final SQLExpression[] values = new SQLExpression[fields.length];
         int ii = 0;
-        for (Map.Entry<ColumnExp, ? extends SQLExpression> entry : fieldsValues.entrySet()) {
+        for (Map.Entry<ColumnExp, ?> entry : fieldsValues.entrySet()) {
             fields[ii] = entry.getKey();
-            values[ii] = entry.getValue();
-            ii ++;
+            values[ii++] = makeValue(entry.getValue());
         }
         return updatePartial(type, key, invalidator, fields, values);
     }
@@ -617,19 +617,18 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updatePartial (
-        Class<T> type, final WhereClause key, CacheInvalidator invalidator, Object... fieldsValues)
+        Class<T> type, final WhereClause key, CacheInvalidator invalidator,
+        ColumnExp field, Comparable<?> value, Object... fieldsValues)
         throws DatabaseException
     {
         // separate the arguments into keys and values
-        final ColumnExp[] fields = new ColumnExp[fieldsValues.length/2];
-        final SQLExpression[] values = new SQLExpression[fields.length];
+        final ColumnExp[] fields = new ColumnExp[fieldsValues.length/2+1];
+        final SQLExpression[] values = new SQLExpression[fields.length+1];
+        fields[0] = field;
+        values[0] = makeValue(value);
         for (int ii = 0, idx = 0; ii < fields.length; ii++) {
-            fields[ii] = (ColumnExp)fieldsValues[idx++];
-            if (fieldsValues[idx] instanceof SQLExpression) {
-                values[ii] = (SQLExpression)fieldsValues[idx++];
-            } else {
-                values[ii] = new ValueExp(fieldsValues[idx++]);
-            }
+            fields[ii+1] = (ColumnExp)fieldsValues[idx++];
+            values[ii+1] = makeValue(fieldsValues[idx++]);
         }
         return updatePartial(type, key, invalidator, fields, values);
     }
@@ -923,6 +922,11 @@ public abstract class DepotRepository
                 }
             }
         }
+    }
+
+    protected SQLExpression makeValue (Object value)
+    {
+        return (value instanceof SQLExpression) ? (SQLExpression)value : new ValueExp(value);
     }
 
     protected PersistenceContext _ctx;

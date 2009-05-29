@@ -25,6 +25,7 @@ import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 
 import com.samskivert.jdbc.StaticConnectionProvider;
@@ -98,8 +99,8 @@ public class TestRepository extends DepotRepository
 //         repo.update(record, TestRecord.AGE, TestRecord.NAME, TestRecord.NUMBERS);
 
         repo.updatePartial(TestRecord.getKey(record.recordId),
-                           TestRecord.AGE, 25, TestRecord.NAME, "Bob",
-                           TestRecord.NUMBERS, new int[] { 1, 2, 3, 4, 5 });
+                           ImmutableMap.of(TestRecord.AGE, 25, TestRecord.NAME, "Bob",
+                                           TestRecord.NUMBERS, new int[] { 1, 2, 3, 4, 5 }));
         System.out.println("Updated " + repo.load(TestRecord.getKey(record.recordId)));
 
         for (int ii = 2; ii < CREATE_RECORDS; ii++) {
