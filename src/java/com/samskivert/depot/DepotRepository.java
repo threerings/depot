@@ -532,7 +532,7 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     protected <T extends PersistentRecord> int updatePartial (
-        Key<T> key, ColumnExp field, Comparable<?> value, Object... fieldsValues)
+        Key<T> key, ColumnExp field, Object value, Object... fieldsValues)
         throws DatabaseException
     {
         return updatePartial(key.getPersistentClass(), key, key, field, value, fieldsValues);
@@ -618,7 +618,7 @@ public abstract class DepotRepository
      */
     protected <T extends PersistentRecord> int updatePartial (
         Class<T> type, final WhereClause key, CacheInvalidator invalidator,
-        ColumnExp field, Comparable<?> value, Object... fieldsValues)
+        ColumnExp field, Object value, Object... fieldsValues)
         throws DatabaseException
     {
         // separate the arguments into keys and values
