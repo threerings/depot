@@ -103,9 +103,9 @@ public class Stats
         boolean isReadOnly, long preConnect, long preInvoke, long postInvoke)
     {
         _totalOps++;
-        _connectionWaitTime += (preInvoke - preConnect) / 1000L;
+        _connectionWaitTime += (preInvoke - preConnect) / 1000000L;
 
-        long opTime = (postInvoke - preInvoke) / 1000L;
+        long opTime = (postInvoke - preInvoke) / 1000000L;
         if (opTime > Integer.MAX_VALUE) {
             log.warning("ZOMG! A database operation took " + opTime + "ms to complete!");
             opTime = Integer.MAX_VALUE;
