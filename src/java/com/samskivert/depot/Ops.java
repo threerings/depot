@@ -33,26 +33,41 @@ import com.samskivert.depot.operator.Or;
  */
 public class Ops
 {
+    /**
+     * Creates a {@link Not} with the supplied target expression.
+     */
     public static Not not (SQLExpression expr)
     {
         return new Not(expr);
     }
 
+    /**
+     * Creates an {@link And} with the supplied target expressions.
+     */
     public static And and (Collection<? extends SQLExpression> conditions)
     {
         return new And(conditions);
     }
 
+    /**
+     * Creates an {@link And} with the supplied target expressions.
+     */
     public static And and (SQLExpression... conditions)
     {
         return new And(conditions);
     }
 
+    /**
+     * Creates an {@link Or} with the supplied target expressions.
+     */
     public static Or or (Collection<? extends SQLExpression> conditions)
     {
         return new Or(conditions);
     }
 
+    /**
+     * Creates an {@link Or} with the supplied target expressions.
+     */
     public static Or or (SQLExpression... conditions)
     {
         return new Or(conditions);
