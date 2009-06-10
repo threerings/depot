@@ -23,13 +23,13 @@ package com.samskivert.depot.expression;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.operator.IsNull;
 import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
  * An expression that unambiguously identifies a field of a class, e.g. GameRecord.itemId.
  */
-public class ColumnExp
-    implements SQLExpression
+public class ColumnExp extends FluentExpression
 {
     /** The name of the column we reference. */
     public final String name;
@@ -49,6 +49,12 @@ public class ColumnExp
     public ColumnExp as (Class<? extends PersistentRecord> oClass)
     {
         return new ColumnExp(oClass, name);
+    }
+
+    /** Returns an {@link IsNull} with this expression as its target. */
+    public IsNull isNull ()
+    {
+        return new IsNull(this);
     }
 
     // from SQLExpression
