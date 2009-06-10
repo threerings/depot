@@ -35,7 +35,7 @@ public class Exps
     /**
      * Wraps the supplied object in a {@link ValueExp}.
      */
-    public ValueExp value (Object value)
+    public static ValueExp value (Object value)
     {
         return new ValueExp(value);
     }
@@ -44,7 +44,7 @@ public class Exps
      * Creates a {@link LiteralExp} with the supplied SQL snippet. Note: you're probably breaking
      * cross platform compatibility by using this construction.
      */
-    public LiteralExp literal (String text)
+    public static LiteralExp literal (String text)
     {
         return new LiteralExp(text);
     }
