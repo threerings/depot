@@ -18,48 +18,43 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.expression;
+package com.samskivert.depot;
 
 import java.util.Collection;
 
-import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.operator.And;
+import com.samskivert.depot.operator.Not;
+import com.samskivert.depot.operator.Or;
 
 /**
- * A code for representing a date interval.
+ * Provides static methods for operator construction that don't fit nicely into the fluent style.
+ * For example: Ops.and(), Ops.or() and Ops.not().
  */
-public class IntervalExp
-    implements SQLExpression
+public class Ops
 {
-    /** The units that can be used for an interval. */
-    public enum Unit { YEAR, MONTH, DAY, HOUR, MINUTE, SECOND };
-
-    /** The unit for this interval. */
-    public final Unit unit;
-
-    /** The number of units for this interval. */
-    public final int amount;
-
-    public IntervalExp (Unit unit, int amount)
+    public static Not not (SQLExpression expr)
     {
-        this.unit = unit;
-        this.amount = amount;
+        return new Not(expr);
     }
 
-    // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    public static And and (Collection<? extends SQLExpression> conditions)
     {
-        return builder.visit(this);
+        return new And(conditions);
     }
 
-    // from SQLExpression
-    public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
+    public static And and (SQLExpression... conditions)
     {
+        return new And(conditions);
     }
 
-    @Override
-    public String toString ()
+    public static Or or (Collection<? extends SQLExpression> conditions)
     {
-        return amount + " " + unit;
+        return new Or(conditions);
+    }
+
+    public static Or or (SQLExpression... conditions)
+    {
+        return new Or(conditions);
     }
 }
