@@ -22,6 +22,8 @@ package com.samskivert.depot.expression;
 
 import com.samskivert.depot.operator.Add;
 import com.samskivert.depot.operator.And;
+import com.samskivert.depot.operator.BitAnd;
+import com.samskivert.depot.operator.BitOr;
 import com.samskivert.depot.operator.Div;
 import com.samskivert.depot.operator.Equals;
 import com.samskivert.depot.operator.GreaterThan;
@@ -122,6 +124,30 @@ public abstract class FluentExpression
     public Or or (SQLExpression expr)
     {
         return new Or(this, expr);
+    }
+
+    /** Returns an {@link BitAnd} with this expression and the supplied target. */
+    public BitAnd bitAnd (Comparable<?> value)
+    {
+        return new BitAnd(this, value);
+    }
+
+    /** Returns an {@link BitAnd} with this expression and the supplied target. */
+    public BitAnd bitAnd (SQLExpression expr)
+    {
+        return new BitAnd(this, expr);
+    }
+
+    /** Returns an {@link BitOr} with this expression and the supplied target. */
+    public BitOr bitOr (Comparable<?> value)
+    {
+        return new BitOr(this, value);
+    }
+
+    /** Returns an {@link BitOr} with this expression and the supplied target. */
+    public BitOr bitOr (SQLExpression expr)
+    {
+        return new BitOr(this, expr);
     }
 
     /** Returns an {@link Add} with this expression and the supplied target. */
