@@ -23,6 +23,7 @@ package com.samskivert.depot.expression;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.clause.Join;
 import com.samskivert.depot.operator.In;
 import com.samskivert.depot.operator.IsNull;
 import com.samskivert.depot.impl.ExpressionVisitor;
@@ -68,6 +69,12 @@ public class ColumnExp extends FluentExp
     public In in (Collection<? extends Comparable<?>> values)
     {
         return new In(this, values);
+    }
+
+    /** Returns a {@link Join} on this column and the supplied target. */
+    public Join join (ColumnExp join)
+    {
+        return new Join(this, join);
     }
 
     // from SQLExpression
