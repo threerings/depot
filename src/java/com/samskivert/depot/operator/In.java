@@ -39,10 +39,6 @@ public class In
 
     public In (ColumnExp column, Comparable<?>... values)
     {
-        if (values.length == 0) {
-            log.warning("Grouchily allowing empty In() operator", "column", column.name,
-                        new Exception());
-        }
         _column = column;
         _values = values;
     }
