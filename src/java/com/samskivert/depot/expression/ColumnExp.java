@@ -23,6 +23,7 @@ package com.samskivert.depot.expression;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.operator.In;
 import com.samskivert.depot.operator.IsNull;
 import com.samskivert.depot.impl.ExpressionVisitor;
 
@@ -51,10 +52,22 @@ public class ColumnExp extends FluentExpression
         return new ColumnExp(oClass, name);
     }
 
-    /** Returns an {@link IsNull} with this expression as its target. */
+    /** Returns an {@link IsNull} with this column as its target. */
     public IsNull isNull ()
     {
         return new IsNull(this);
+    }
+
+    /** Returns an {@link In} with this column and the supplied values. */
+    public In in (Comparable<?>... values)
+    {
+        return new In(this, values);
+    }
+
+    /** Returns an {@link In} with this column and the supplied values. */
+    public In in (Collection<? extends Comparable<?>> values)
+    {
+        return new In(this, values);
     }
 
     // from SQLExpression
