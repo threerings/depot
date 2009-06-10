@@ -21,7 +21,6 @@
 package com.samskivert.depot.impl;
 
 import com.samskivert.depot.Key;
-import com.samskivert.depot.PersistentRecord;
 
 import com.samskivert.depot.clause.FieldDefinition;
 import com.samskivert.depot.clause.ForUpdate;
