@@ -23,6 +23,7 @@ package com.samskivert.depot.operator;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
@@ -31,7 +32,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
  */
 public class FullText
 {
-    public class Rank
+    public class Rank extends FluentExp
         implements SQLOperator
     {
         // from SQLExpression
@@ -57,7 +58,7 @@ public class FullText
         }
     }
 
-    public class Match
+    public class Match extends FluentExp
         implements SQLOperator
     {
         // from SQLExpression
@@ -90,12 +91,12 @@ public class FullText
         _query = query;
     }
 
-    public SQLOperator match ()
+    public Match match ()
     {
         return new Match();
     }
 
-    public SQLOperator rank ()
+    public Rank rank ()
     {
         return new Rank();
     }
