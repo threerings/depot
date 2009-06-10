@@ -28,7 +28,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  * An expression for extracting the seconds since the epoch from a date expression.
  */
-public class EpochSeconds implements SQLExpression
+public class EpochSeconds extends FluentExp
 {
     /**
      * Create a new EpochSeconds with the given argument.
