@@ -39,7 +39,7 @@ import com.samskivert.depot.operator.Sub;
  * A base class for {@link SQLExpression} implementations that provides a plethora of combinators
  * for composing expressions.
  */
-public abstract class FluentExpression
+public abstract class FluentExp
     implements SQLExpression
 {
     /** Returns an {@link Equals} with this expression and the supplied target. */

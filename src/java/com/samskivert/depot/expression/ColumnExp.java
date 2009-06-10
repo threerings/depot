@@ -30,7 +30,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  * An expression that unambiguously identifies a field of a class, e.g. GameRecord.itemId.
  */
-public class ColumnExp extends FluentExpression
+public class ColumnExp extends FluentExp
 {
     /** The name of the column we reference. */
     public final String name;

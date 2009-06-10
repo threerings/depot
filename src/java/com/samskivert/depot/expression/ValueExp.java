@@ -28,8 +28,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  * A Java value that is bound as a parameter to the query, e.g. 1 or 'abc'.
  */
-public class ValueExp
-    implements SQLExpression
+public class ValueExp extends FluentExp
 {
     public ValueExp (Object value)
     {

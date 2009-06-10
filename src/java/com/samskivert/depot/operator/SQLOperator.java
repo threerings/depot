@@ -28,7 +28,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.expression.FluentExpression;
+import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.ValueExp;
 import com.samskivert.depot.impl.ExpressionVisitor;
@@ -151,7 +151,7 @@ public interface SQLOperator extends SQLExpression
         protected SQLExpression _rhs;
     }
 
-    public static abstract class BaseOperator extends FluentExpression
+    public static abstract class BaseOperator extends FluentExp
         implements SQLOperator
     {
         public static Function<Object, Long> INTEGRAL = new Function<Object, Long>() {
