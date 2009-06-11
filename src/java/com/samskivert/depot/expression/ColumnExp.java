@@ -24,9 +24,10 @@ import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.clause.Join;
+import com.samskivert.depot.impl.ExpressionVisitor;
 import com.samskivert.depot.operator.In;
 import com.samskivert.depot.operator.IsNull;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.operator.Like;
 
 /**
  * An expression that unambiguously identifies a field of a class, e.g. GameRecord.itemId.
@@ -75,6 +76,18 @@ public class ColumnExp extends FluentExp
     public Join join (ColumnExp join)
     {
         return new Join(this, join);
+    }
+
+    /** Returns a {@link Like} on this column and the supplied target. */
+    public Like like (Comparable<?> value)
+    {
+        return new Like(this, value);
+    }
+
+    /** Returns a {@link Like} on this column and the supplied target. */
+    public Like like (SQLExpression expr)
+    {
+        return new Like(this, expr);
     }
 
     // from SQLExpression
