@@ -184,7 +184,9 @@ public class PersistenceContext
         } catch (Throwable t) {
             log.warning("Failure shutting down Depot cache.", t);
         }
-        _conprov.shutdown();
+        if (_conprov != null) {
+            _conprov.shutdown();
+        }
     }
 
     /**
