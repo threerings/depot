@@ -21,8 +21,11 @@
 package com.samskivert.depot.util;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.List;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 
 import com.samskivert.depot.PersistentRecord;
 
@@ -39,7 +42,7 @@ public class RuntimeUtil
     public static <P extends PersistentRecord, R> Function<P, R> makeToRuntime (
         Class<P> pclass, final Class<R> rclass)
     {
-        final Field[] rfields = rclass.getFields();
+        final Field[] rfields = getRuntimeFields(rclass);
         final Field[] pfields = getPersistentFields(pclass, rfields);
         return new Function<P, R>() {
             public R apply (P record) {
@@ -64,7 +67,7 @@ public class RuntimeUtil
     public static <R, P extends PersistentRecord> Function<R, P> makeToRecord (
         Class<R> rclass, final Class<P> pclass)
     {
-        final Field[] rfields = rclass.getFields();
+        final Field[] rfields = getRuntimeFields(rclass);
         final Field[] pfields = getPersistentFields(pclass, rfields);
         return new Function<R, P>() {
             public P apply (R object) {
@@ -79,6 +82,18 @@ public class RuntimeUtil
                 }
             }
         };
+    }
+
+    protected static Field[] getRuntimeFields (Class<?> rclass)
+    {
+        List<Field> fields = Lists.newArrayList();
+        for (Field field : rclass.getFields()) {
+            int mods = field.getModifiers();
+            if (!Modifier.isStatic(mods) && Modifier.isPublic(mods)) {
+                fields.add(field);
+            }
+        }
+        return fields.toArray(new Field[fields.size()]);
     }
 
     protected static Field[] getPersistentFields (
