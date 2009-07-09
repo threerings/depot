@@ -68,9 +68,10 @@ public class RuntimeUtil
 {
     /**
      * Creates a function that creates an instance of R and initializes all accessible (ie. public)
-     * fields of R from fields of P with matching name. Fields of P that do not exist in R will be
-     * ignored. See the class documentation for a list of field conversions that will be made
-     * automatically and the mechanism for performing other conversions.
+     * fields of R from fields of P with matching name. If the function is applied to null, null
+     * will be returned. Fields of P that do not exist in R will be ignored. See the class
+     * documentation for a list of field conversions that will be made automatically and the
+     * mechanism for performing other conversions.
      */
     public static <P extends PersistentRecord, R> Function<P, R> makeToRuntime (
         Class<P> pclass, final Class<R> rclass)
@@ -79,6 +80,9 @@ public class RuntimeUtil
         final Getter[] getters = getPersistentGetters(pclass, rfields);
         return new Function<P, R>() {
             public R apply (P record) {
+                if (record == null) {
+                    return null;
+                }
                 try {
                     R object = rclass.newInstance();
                     for (int ii = 0, ll = rfields.length; ii < ll; ii++) {
@@ -94,8 +98,9 @@ public class RuntimeUtil
 
     /**
      * Creates a function that creates an instance of P and initializes all accessible (ie. public)
-     * fields of P from fields of R with matching name. Fields of P that do not exist in R will be
-     * left as default. Note: the types of the fields must match exactly.
+     * fields of P from fields of R with matching name. If the function is applied to null a
+     * NullPointerException will be thrown. Fields of P that do not exist in R will be left as
+     * default. Note: the types of the fields must match exactly.
      */
     public static <R, P extends PersistentRecord> Function<R, P> makeToRecord (
         Class<R> rclass, final Class<P> pclass)
@@ -104,6 +109,10 @@ public class RuntimeUtil
         final Setter[] setters = getPersistentSetters(pclass, rfields);
         return new Function<R, P>() {
             public P apply (R object) {
+                if (object == null) {
+                    throw new NullPointerException(
+                        "Cannot convert null runtime record to " + pclass.getSimpleName());
+                }
                 try {
                     P record = pclass.newInstance();
                     for (int ii = 0, ll = rfields.length; ii < ll; ii++) {
