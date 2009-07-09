@@ -264,7 +264,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> List<T> loadAll (
+    protected <T extends PersistentRecord> XList<T> loadAll (
         Class<T> type, Collection<? extends Comparable<?>> primaryKeys)
         throws DatabaseException
     {
@@ -282,10 +282,10 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> List<T> loadAll (Collection<Key<T>> keys)
+    protected <T extends PersistentRecord> XList<T> loadAll (Collection<Key<T>> keys)
         throws DatabaseException
     {
-        return (keys.size() == 0) ? Collections.<T>emptyList() :
+        return (keys.size() == 0) ? new XArrayList<T>() :
             _ctx.invoke(new FindAllQuery.WithKeys<T>(_ctx, keys));
     }
 
@@ -294,7 +294,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> List<T> findAll (Class<T> type, QueryClause... clauses)
+    protected <T extends PersistentRecord> XList<T> findAll (Class<T> type, QueryClause... clauses)
         throws DatabaseException
     {
         return findAll(type, Arrays.asList(clauses));
@@ -313,7 +313,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> List<T> findAll (
+    protected <T extends PersistentRecord> XList<T> findAll (
         Class<T> type, Collection<? extends QueryClause> clauses)
         throws DatabaseException
     {
@@ -325,7 +325,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> List<T> findAll (
+    protected <T extends PersistentRecord> XList<T> findAll (
         Class<T> type, CacheStrategy strategy, QueryClause... clauses)
         throws DatabaseException
     {
@@ -337,7 +337,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> List<T> findAll (
+    protected <T extends PersistentRecord> XList<T> findAll (
         Class<T> type, CacheStrategy cache, Collection<? extends QueryClause> clauses)
         throws DatabaseException
     {
@@ -395,7 +395,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> List<Key<T>> findAllKeys (
+    protected <T extends PersistentRecord> XList<Key<T>> findAllKeys (
         Class<T> type, boolean forUpdate, QueryClause... clause)
         throws DatabaseException
     {
@@ -413,7 +413,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    protected <T extends PersistentRecord> List<Key<T>> findAllKeys (
+    protected <T extends PersistentRecord> XList<Key<T>> findAllKeys (
         Class<T> type, boolean forUpdate, Collection<? extends QueryClause> clauses)
         throws DatabaseException
     {
