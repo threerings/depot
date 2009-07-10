@@ -162,7 +162,7 @@ public class RuntimeUtil
     {
         // if there's a custom getter method for the field, use that foremost
         try {
-            final Method method = pclass.getMethod(makeMethodName("get", pfield.getName()));
+            final Method method = pclass.getMethod(makeMethodName("get", rfield.getName()));
             if (method.getReturnType().equals(rfield.getType())) {
                 return new Getter() {
                     public Object get (Object object) throws Exception {
@@ -172,6 +172,12 @@ public class RuntimeUtil
             }
         } catch (NoSuchMethodException nsme) {
             // no problem, keep on truckin'
+        }
+
+        // if we have no persistent field for the runtime field, we're now out of luck
+        if (pfield == null) {
+            throw new IllegalArgumentException("Cannot create mapping for " + rfield + ". " +
+                                               "No corresponding field exists in " + pclass + ".");
         }
 
         // if the fields match exactly, return a getter that just gets the field
@@ -202,7 +208,7 @@ public class RuntimeUtil
         // check for a custom setter method for the field (with the correct argument type)
         try {
             final Method method = pclass.getMethod(
-                makeMethodName("set", pfield.getName()), rfield.getType());
+                makeMethodName("set", rfield.getName()), rfield.getType());
             return new Setter() {
                 public void set (Object object, Object value) throws Exception {
                     method.invoke(object, value);
@@ -210,6 +216,12 @@ public class RuntimeUtil
             };
         } catch (NoSuchMethodException nsme) {
             // no problem, keep on truckin'
+        }
+
+        // if we have no persistent field for this runtime field, we're now out of luck
+        if (pfield == null) {
+            throw new IllegalArgumentException("Cannot create setter for " + rfield + ". " +
+                                               "No corresponding field exists in " + pclass + ".");
         }
 
         // if the fields match exactly, return a setter that just sets the field
@@ -242,13 +254,7 @@ public class RuntimeUtil
             try {
                 pfields[ii] = pclass.getField(rfields[ii].getName());
             } catch (NoSuchFieldException nsfe) {
-                throw new IllegalArgumentException(
-                    "Cannot create mapping for " + rfields[ii] + ". " +
-                    "No corresponding field exists in " + pclass + ".");
-            }
-            if (!pfields[ii].getType().equals(rfields[ii].getType())) {
-                throw new IllegalArgumentException("Cannot create mapping from " + pfields[ii] +
-                                                   " to " + rfields[ii] + ".");
+                // we may have a magical method that handles this field, so leave this null
             }
         }
         return pfields;
