@@ -203,7 +203,7 @@ public class RuntimeUtil
         throw new IllegalArgumentException("Cannot map " + pfield + " to " + rfield + ".");
     }
 
-    protected static Setter makeSetter (Class<?> pclass, Field pfield, final Field rfield)
+    protected static Setter makeSetter (Class<?> pclass, final Field pfield, Field rfield)
     {
         // check for a custom setter method for the field (with the correct argument type)
         try {
@@ -228,7 +228,7 @@ public class RuntimeUtil
         if (rfield.getType().equals(pfield.getType())) {
             return new Setter() {
                 public void set (Object object, Object value) throws Exception {
-                    rfield.set(object, value);
+                    pfield.set(object, value);
                 }
             };
         }
@@ -238,7 +238,7 @@ public class RuntimeUtil
         if (converter != null) {
             return new Setter() {
                 public void set (Object object, Object value) throws Exception {
-                    rfield.set(object, converter.apply(value));
+                    pfield.set(object, converter.apply(value));
                 }
             };
         }
