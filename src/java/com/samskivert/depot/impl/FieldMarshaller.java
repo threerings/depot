@@ -23,6 +23,7 @@ package com.samskivert.depot.impl;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.EnumSet;
 import java.nio.ByteBuffer;
 
 import java.sql.Blob;
@@ -102,7 +103,14 @@ public abstract class FieldMarshaller<T>
 
         // special Enum types
         } else if (ByteEnum.class.isAssignableFrom(ftype)) {
-            marshaller = new ByteEnumMarshaller(ftype);
+            // do some sanity checking so that the unsafe business we do below is safer
+            if (!Enum.class.isAssignableFrom(ftype)) {
+                throw new IllegalArgumentException(
+                    "ByteEnum not implemented by real Enum: " + field);
+            }
+            @SuppressWarnings("unchecked") ByteEnumMarshaller<?> bem =
+                new ByteEnumMarshaller(ftype);
+            marshaller = bem;
 
         } else {
             throw new IllegalArgumentException(
@@ -429,34 +437,24 @@ public abstract class FieldMarshaller<T>
         }
     }
 
-    protected static class ByteEnumMarshaller extends FieldMarshaller<ByteEnum> {
-        public ByteEnumMarshaller (Class<?> clazz) {
-            try {
-                _factmeth = clazz.getMethod("fromByte", new Class[] { Byte.TYPE });
-            } catch (Exception e) {
-                throw new IllegalArgumentException(
-                    "Could not locate fromByte() method on enum field " + _field.getType() + ".");
-            }
-            if (!Modifier.isPublic(_factmeth.getModifiers()) ||
-                !Modifier.isStatic(_factmeth.getModifiers())) {
-                throw new IllegalArgumentException(
-                    _field.getType() + ".fromByte() must be public and static.");
-            }
+    protected static class ByteEnumMarshaller<E extends Enum<E>> extends FieldMarshaller<ByteEnum> {
+        public ByteEnumMarshaller (Class<E> clazz) {
+            _eclass = clazz;
         }
 
         @Override public ByteEnum getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
             return (ByteEnum) _field.get(po);
         }
-        @Override public ByteEnum getFromSet (ResultSet rs)
-            throws SQLException {
-            try {
-                return (ByteEnum) _factmeth.invoke(null, rs.getByte(getColumnName()));
-            } catch (SQLException se) {
-                throw se;
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+        @Override public ByteEnum getFromSet (ResultSet rs) throws SQLException {
+            byte code = rs.getByte(getColumnName());
+            for (E value : EnumSet.allOf(_eclass)) {
+                ByteEnum bvalue = (ByteEnum)value;
+                if (bvalue.toByte() == code) {
+                    return bvalue;
+                }
             }
+            return null;
         }
         @Override public void writeToObject (Object po, ByteEnum value)
             throws IllegalArgumentException, IllegalAccessException {
@@ -467,7 +465,7 @@ public abstract class FieldMarshaller<T>
             ps.setByte(column, value.toByte());
         }
 
-        protected Method _factmeth;
+        protected Class<E> _eclass;
     }
 
     protected Field _field;

@@ -21,14 +21,7 @@
 package com.samskivert.depot;
 
 /**
- * An enum value can be used as a field in a persistent object if it implements this interface and
- * also declares a public static method with the following signature:
- *
- * <code>
- * public static YourEnum fromByte (byte value)
- * </code>
- *
- * which must return the appropriate instance of your enum for the supplied byte.
+ * An enum value can be used as a field in a persistent object if it implements this interface.
  */
 public interface ByteEnum
 {
