@@ -23,7 +23,6 @@ package com.samskivert.depot.impl;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.EnumSet;
 import java.nio.ByteBuffer;
 
 import java.sql.Blob;
@@ -35,12 +34,13 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 
-import com.samskivert.jdbc.ColumnDefinition;
 import com.samskivert.depot.ByteEnum;
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.annotation.GeneratedValue;
+import com.samskivert.depot.util.ByteEnumUtil;
+import com.samskivert.jdbc.ColumnDefinition;
 
 import com.samskivert.util.StringUtil;
 
@@ -437,7 +437,8 @@ public abstract class FieldMarshaller<T>
         }
     }
 
-    protected static class ByteEnumMarshaller<E extends Enum<E>> extends FieldMarshaller<ByteEnum> {
+    protected static class ByteEnumMarshaller<E extends Enum<E> & ByteEnum>
+        extends FieldMarshaller<ByteEnum> {
         public ByteEnumMarshaller (Class<E> clazz) {
             _eclass = clazz;
         }
@@ -447,14 +448,7 @@ public abstract class FieldMarshaller<T>
             return (ByteEnum) _field.get(po);
         }
         @Override public ByteEnum getFromSet (ResultSet rs) throws SQLException {
-            byte code = rs.getByte(getColumnName());
-            for (E value : EnumSet.allOf(_eclass)) {
-                ByteEnum bvalue = (ByteEnum)value;
-                if (bvalue.toByte() == code) {
-                    return bvalue;
-                }
-            }
-            return null;
+            return ByteEnumUtil.fromByte(_eclass, rs.getByte(getColumnName()));
         }
         @Override public void writeToObject (Object po, ByteEnum value)
             throws IllegalArgumentException, IllegalAccessException {

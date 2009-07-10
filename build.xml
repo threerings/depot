@@ -165,6 +165,7 @@
     <copy todir="${gwtjar.dir}">
       <fileset dir="src/java" includes="com/samskivert/Depot.gwt.xml"/>
       <fileset dir="src/java" includes="com/samskivert/depot/ByteEnum.java"/>
+      <fileset dir="src/java" includes="com/samskivert/depot/util/ByteEnumUtil.java"/>
     </copy>
     <jar basedir="${gwtjar.dir}" destfile="${deploy.dir}/${lib.name}-gwt.jar"/>
     <delete dir="${gwtjar.dir}"/>
