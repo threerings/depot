@@ -161,8 +161,9 @@ public class RuntimeUtil
     protected static Getter makeGetter (Class<?> pclass, final Field pfield, Field rfield)
     {
         // if there's a custom getter method for the field, use that foremost
+        String getter = makeMethodName("get", rfield.getName());
         try {
-            final Method method = pclass.getMethod(makeMethodName("get", rfield.getName()));
+            final Method method = pclass.getMethod(getter);
             if (method.getReturnType().equals(rfield.getType())) {
                 return new Getter() {
                     public Object get (Object object) throws Exception {
@@ -176,8 +177,10 @@ public class RuntimeUtil
 
         // if we have no persistent field for the runtime field, we're now out of luck
         if (pfield == null) {
-            throw new IllegalArgumentException("Cannot create mapping for " + rfield + ". " +
-                                               "No corresponding field exists in " + pclass + ".");
+            throw new IllegalArgumentException(
+                "Cannot create mapping for " + rfield + ". Neither " +
+                pclass.getSimpleName() + "." + rfield.getName() + " nor " +
+                rfield.getType() + " " + getter + "() exist.");
         }
 
         // if the fields match exactly, return a getter that just gets the field
