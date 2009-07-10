@@ -140,6 +140,13 @@ public class EHCacheAdapter
     {
         log.debug("EHCacheAdapter shutting down", "lookups", _lookups,
                   "stores", _stores, "removes", _removes, "enumerations", _enumerations);
+
+        // go through and flush all of the caches we resolved
+        for (Ehcache cache : _categories.values()) {
+            cache.flush();
+        }
+        _categories.clear();
+        _bins.clear();
     }
 
     /**
