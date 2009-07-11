@@ -125,6 +125,7 @@ public class GenRecordTask extends Task
             name = readClassName(source);
         } catch (Exception e) {
             System.err.println("Failed to parse " + source + ": " + e.getMessage());
+            return;
         }
 
         try {
@@ -389,14 +390,13 @@ public class GenRecordTask extends Task
     /** Helper function for generating our boilerplate code. */
     protected String mergeTemplate (String tmpl, VelocityContext ctx)
     {
-        StringWriter writer = new StringWriter();
         try {
+            StringWriter writer = new StringWriter();
             _velocity.mergeTemplate(tmpl, "UTF-8", ctx, writer);
+            return writer.toString();
         } catch (Exception e) {
-            System.err.println("Failed processing template [tmpl=" + tmpl + "]");
-            e.printStackTrace(System.err);
+            throw new BuildException("Failed processing template [tmpl=" + tmpl + "]", e);
         }
-        return writer.toString();
     }
 
     protected static boolean hasAnnotation (Field field, Class<?> annotation)
