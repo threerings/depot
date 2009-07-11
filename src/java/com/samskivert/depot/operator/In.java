@@ -26,8 +26,6 @@ import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.impl.ExpressionVisitor;
 
-import static com.samskivert.depot.Log.log;
-
 /**
  * The SQL 'in (...)' operator.
  */
