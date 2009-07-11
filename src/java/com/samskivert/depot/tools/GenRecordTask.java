@@ -33,12 +33,16 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import org.apache.commons.io.IOUtils;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
@@ -47,9 +51,6 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Reference;
 import org.apache.tools.ant.util.ClasspathUtils;
 
-import org.apache.velocity.VelocityContext;
-import org.apache.velocity.app.VelocityEngine;
-
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.annotation.Transient;
@@ -57,7 +58,6 @@ import com.samskivert.depot.impl.DepotUtil;
 import com.samskivert.util.ClassUtil;
 import com.samskivert.util.GenUtil;
 import com.samskivert.util.StringUtil;
-import com.samskivert.velocity.VelocityUtil;
 
 /**
  * An ant task that updates the column constants for a persistent record.
@@ -87,12 +87,6 @@ public class GenRecordTask extends Task
             String errmsg = "This task requires a 'classpathref' attribute " +
                 "to be set to the project's classpath.";
             throw new BuildException(errmsg);
-        }
-
-        try {
-            _velocity = VelocityUtil.createEngine();
-        } catch (Exception e) {
-            throw new BuildException("Failure initializing Velocity", e);
         }
 
         // resolve the PersistentRecord class using our classloader
@@ -257,22 +251,22 @@ public class GenRecordTask extends Task
         StringBuilder fsection = new StringBuilder();
 
         // add our prototype declaration
-        VelocityContext ctx = new VelocityContext();
-        ctx.put("record", rname);
-        fsection.append(mergeTemplate(PROTO_TMPL, ctx));
+        Map<String, String> subs = Maps.newHashMap();
+        subs.put("record", rname);
+        fsection.append(mergeTemplate(PROTO_TMPL, subs));
 
         // add our ColumnExp constants
         for (int ii = 0; ii < flist.size(); ii++) {
             Field f = flist.get(ii);
             String fname = f.getName();
 
-            // create our velocity context
-            VelocityContext fctx = (VelocityContext)ctx.clone();
-            fctx.put("field", fname);
-            fctx.put("capfield", StringUtil.unStudlyName(fname).toUpperCase());
+            // create our substitution mappings
+            Map<String, String> fsubs = Maps.newHashMap(subs);
+            fsubs.put("field", fname);
+            fsubs.put("capfield", StringUtil.unStudlyName(fname).toUpperCase());
 
             // now generate our bits
-            fsection.append(mergeTemplate(COL_TMPL, fctx));
+            fsection.append(mergeTemplate(COL_TMPL, fsubs));
         }
 
         // generate our methods section
@@ -295,12 +289,12 @@ public class GenRecordTask extends Task
                 fieldNameList.append(StringUtil.unStudlyName(name));
             }
 
-            ctx.put("argList", argList.toString());
-            ctx.put("argNameList", argNameList.toString());
-            ctx.put("fieldNameList", fieldNameList.toString());
+            subs.put("argList", argList.toString());
+            subs.put("argNameList", argNameList.toString());
+            subs.put("fieldNameList", fieldNameList.toString());
 
             // generate our bits and append them as appropriate to the string buffers
-            msection.append(mergeTemplate(KEY_TMPL, ctx));
+            msection.append(mergeTemplate(KEY_TMPL, subs));
         }
 
         // now bolt everything back together into a class declaration
@@ -388,12 +382,15 @@ public class GenRecordTask extends Task
     }
 
     /** Helper function for generating our boilerplate code. */
-    protected String mergeTemplate (String tmpl, VelocityContext ctx)
+    protected String mergeTemplate (String tmpl, Map<String, String> subs)
     {
         try {
-            StringWriter writer = new StringWriter();
-            _velocity.mergeTemplate(tmpl, "UTF-8", ctx, writer);
-            return writer.toString();
+            String text = IOUtils.toString(
+                getClass().getClassLoader().getResourceAsStream(tmpl), "UTF-8");
+            for (Map.Entry<String, String> entry : subs.entrySet()) {
+                text = text.replaceAll("@"+entry.getKey()+"@", entry.getValue());
+            }
+            return text;
         } catch (Exception e) {
             throw new BuildException("Failed processing template [tmpl=" + tmpl + "]", e);
         }
@@ -452,9 +449,6 @@ public class GenRecordTask extends Task
 
     /** Used to do our own classpath business. */
     protected ClassLoader _cloader;
-
-    /** Used to generate source files from templates. */
-    protected VelocityEngine _velocity;
 
     /** {@link PersistentRecord} resolved with the proper classloader so that we can compare it to
      * loaded derived classes. */
