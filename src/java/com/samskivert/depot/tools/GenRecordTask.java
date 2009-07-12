@@ -42,8 +42,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import org.apache.commons.io.IOUtils;
-
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Task;
@@ -51,13 +49,15 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Reference;
 import org.apache.tools.ant.util.ClasspathUtils;
 
+import com.samskivert.io.StreamUtil;
+import com.samskivert.util.ClassUtil;
+import com.samskivert.util.GenUtil;
+import com.samskivert.util.StringUtil;
+
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.annotation.Transient;
 import com.samskivert.depot.impl.DepotUtil;
-import com.samskivert.util.ClassUtil;
-import com.samskivert.util.GenUtil;
-import com.samskivert.util.StringUtil;
 
 /**
  * An ant task that updates the column constants for a persistent record.
@@ -385,7 +385,7 @@ public class GenRecordTask extends Task
     protected String mergeTemplate (String tmpl, Map<String, String> subs)
     {
         try {
-            String text = IOUtils.toString(
+            String text = StreamUtil.toString(
                 getClass().getClassLoader().getResourceAsStream(tmpl), "UTF-8");
             for (Map.Entry<String, String> entry : subs.entrySet()) {
                 text = text.replaceAll("@"+entry.getKey()+"@", entry.getValue());
