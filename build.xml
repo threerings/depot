@@ -50,17 +50,13 @@
     <available property="junit.present" classpathref="classpath"
      classname="junit.framework.Test"/>
     <echo level="info">JUnit: ${junit.present}</echo>
-    <available property="jakarta.velocity.present" classpathref="classpath"
-     classname="org.apache.velocity.Template"/>
-    <echo level="info">Velocity: ${jakarta.velocity.present}</echo>
 
     <!-- combines package availability into build controls -->
     <condition property="build.ehcache">
       <and><isset property="ehcache.present"/></and>
     </condition>
     <condition property="build.tools">
-      <and><isset property="ant.present"/>
-      <isset property="jakarta.velocity.present"/></and>
+      <and><isset property="ant.present"/></and>
     </condition>
     <condition property="build.tests">
       <and><isset property="junit.present"/></and>
