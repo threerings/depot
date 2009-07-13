@@ -169,7 +169,7 @@
 
   <!-- builds a snapshot zip file -->
   <target name="snapshot" depends="dist"
-          description="Generates a snapshot zip containing the Depot jar file and its dependencies.">
+          description="Generates a snapshot zip containing the jar file and its dependencies.">
     <tstamp><format property="date" pattern="yyyyMMdd" /></tstamp>
     <mkdir dir="${deploy.dir}/depot-${date}"/>
     <copy todir="${deploy.dir}/depot-${date}">
