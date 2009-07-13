@@ -25,6 +25,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 
 import com.samskivert.depot.clause.WhereClause;
@@ -96,6 +97,19 @@ public class Key<T extends PersistentRecord> extends WhereClause
     {
         return new Key<T>(pClass, new ColumnExp[] { ix1, ix2, ix3 },
                           new Comparable[] { val1, val2, val3 });
+    }
+
+    /**
+     * Extracts an integer key from a record's {@link Key}. This should only be used on records
+     * whose primary key is a single integer.
+     */
+    public static <T extends PersistentRecord> Function<Key<T>,Integer> toInt ()
+    {
+        return new Function<Key<T>,Integer>() {
+            public Integer apply (Key<T> key) {
+                return (Integer)key.getValues()[0];
+            }
+        };
     }
 
     /**
