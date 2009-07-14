@@ -21,9 +21,10 @@
 package com.samskivert.depot;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 /**
  * An array list specialization that implements {@link XList}. Depot returns this list from all of
@@ -33,8 +34,8 @@ public class XArrayList<T> extends ArrayList<T>
     implements XList<T>
 {
     // from interface XList<T>
-    public <R> Iterable<R> map (Function<T, R> mapper)
+    public <R> Collection<R> map (Function<T, R> mapper)
     {
-        return Iterables.transform(this, mapper);
+        return Lists.transform(this, mapper);
     }
 }

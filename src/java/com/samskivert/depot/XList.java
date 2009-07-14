@@ -20,19 +20,23 @@
 
 package com.samskivert.depot;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.google.common.base.Function;
 
 /**
  * Extends the {@link List} interface with a method {@link #map} that makes it easy to convert the
- * contents of the list to an {@link Iterable} of a different type via the application of a {@link
- * Function}.
+ * contents of the list to an ordered {@link Collection} of a different type via the application of
+ * a {@link Function}.
  */
 public interface XList<T> extends List<T>
 {
     /**
-     * Returns an iterable over a mapping of this list via the specified mapping function.
+     * Returns mapping of this list via the specified mapping function. The result is a {@link
+     * Collection} to remind the caller that it is not an {@link ArrayList} but rather a lazy list
+     * that will call the mapping function on the fly each time an element is read. Caveat coder.
      */
-    public <R> Iterable<R> map (Function<T, R> mapper);
+    public <R> Collection<R> map (Function<T, R> mapper);
 }
