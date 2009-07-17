@@ -23,6 +23,7 @@ package com.samskivert.depot;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,10 +31,14 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.samskivert.util.Histogram;
 
+import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
+import net.sf.ehcache.distribution.RMICacheReplicatorFactory;
 import net.sf.ehcache.event.CacheEventListener;
+import net.sf.ehcache.event.RegisteredEventListeners;
+import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 
 import static com.samskivert.depot.Log.log;
 
@@ -51,11 +56,6 @@ import static com.samskivert.depot.Log.log;
 public class EHCacheAdapter
     implements CacheAdapter
 {
-    public static final String EHCACHE_RECORD_CACHE = "depotRecord";
-    public static final String EHCACHE_SHORT_KEYSET_CACHE = "depotShortKeyset";
-    public static final String EHCACHE_LONG_KEYSET_CACHE = "depotLongKeyset";
-    public static final String EHCACHE_RESULT_CACHE = "depotResult";
-
     public static class EHCachePerformance
     {
         public Histogram lookups;
@@ -64,6 +64,41 @@ public class EHCacheAdapter
         public Histogram enumerations;
     }
 
+    public static class EHCacheConfig
+    {
+        public String name;
+        public int maxElementsInMemory;
+        public int timeToIdleSeconds;
+        public int timeToLiveSeconds;
+
+        public boolean overflowToDisk = false;
+        public int maxElementsOnDisk = 0;
+        public boolean eternal = false;
+        public MemoryStoreEvictionPolicy msep = MemoryStoreEvictionPolicy.LRU;
+
+        public EHCacheConfig (String name, int maxElementsInMemory, int timeToIdleSeconds,
+                              int timeToLiveSeconds) {
+            this.name = name;
+            this.maxElementsInMemory = maxElementsInMemory;
+            this.timeToIdleSeconds = timeToIdleSeconds;
+            this.timeToLiveSeconds = timeToLiveSeconds;
+        }
+
+        public Ehcache createCache (String uid) {
+            return new Cache(name + "." + uid, maxElementsInMemory, msep, overflowToDisk, null,
+                             eternal, timeToLiveSeconds, timeToIdleSeconds, false, 0, null);
+        }
+    }
+
+    public static final EHCacheConfig EHCACHE_RECORD_CONFIG =
+        new EHCacheConfig("depotRecord", 200000, 300, 600);
+    public static final EHCacheConfig EHCACHE_SHORT_KEYSET_CONFIG =
+        new EHCacheConfig("depotShortKeyset", 25000, 10, 10);
+    public static final EHCacheConfig EHCACHE_LONG_KEYSET_CONFIG =
+        new EHCacheConfig("depotLongKeyset", 25000, 300, 300);
+    public static final EHCacheConfig EHCACHE_RESULT_CONFIG =
+        new EHCacheConfig("depotResult", 5000, 300, 300);
+
     /**
      * Creates an adapter using the supplied cache manager. Note: this adapter does not shut down
      * the supplied manager when it is shutdown. The caller is responsible for shutting down the
@@ -71,10 +106,11 @@ public class EHCacheAdapter
      */
     public EHCacheAdapter (CacheManager cachemgr)
     {
-        bindEHCache(cachemgr, CacheCategory.RECORD, EHCACHE_RECORD_CACHE);
-        bindEHCache(cachemgr, CacheCategory.SHORT_KEYSET, EHCACHE_SHORT_KEYSET_CACHE);
-        bindEHCache(cachemgr, CacheCategory.LONG_KEYSET, EHCACHE_LONG_KEYSET_CACHE);
-        bindEHCache(cachemgr, CacheCategory.RESULT, EHCACHE_RESULT_CACHE);
+        _cachemgr = cachemgr;
+        createEHCache(CacheCategory.RECORD, EHCACHE_RECORD_CONFIG);
+        createEHCache(CacheCategory.SHORT_KEYSET, EHCACHE_SHORT_KEYSET_CONFIG);
+        createEHCache(CacheCategory.LONG_KEYSET, EHCACHE_LONG_KEYSET_CONFIG);
+        createEHCache(CacheCategory.RESULT, EHCACHE_RESULT_CONFIG);
     }
 
     // from CacheAdapter
@@ -141,9 +177,10 @@ public class EHCacheAdapter
         log.debug("EHCacheAdapter shutting down", "lookups", _lookups,
                   "stores", _stores, "removes", _removes, "enumerations", _enumerations);
 
-        // go through and flush all of the caches we resolved
+        // go through and remove all of the caches we resolved
         for (Ehcache cache : _categories.values()) {
-            cache.flush();
+            log.debug("Removing ehcache " + cache.getName());
+            _cachemgr.removeCache(cache.getName());
         }
         _categories.clear();
         _bins.clear();
@@ -183,27 +220,137 @@ public class EHCacheAdapter
         };
     }
 
-    protected Ehcache bindEHCache (CacheManager cachemgr, CacheCategory category, String cacheName)
+    protected Ehcache createEHCache (CacheCategory category, EHCacheConfig config)
     {
-        Ehcache cache = cachemgr.getCache(cacheName);
-        if (cache == null) {
-            throw new IllegalStateException(
-            "Could not find Ehcache '" + cacheName + "'. Please fix your ehcache configuration.");
-        }
-        cache.getCacheEventNotificationService().registerListener(_cacheEventListener);
+        Ehcache cache = config.createCache(String.valueOf(hashCode()));
+        addCacheListeners(cache);
+        _cachemgr.addCache(cache);
+        log.debug("Added new ehcache " + cache.getName());
         _categories.put(category, cache);
         return cache;
     }
 
-    protected Histogram _lookups = new Histogram(0, 50, 20);
-    protected Histogram _stores = new Histogram(0, 50, 20);
-    protected Histogram _removes = new Histogram(0, 50, 20);
-    protected Histogram _enumerations = new Histogram(0, 50, 20);
+    protected void addCacheListeners (Ehcache cache)
+    {
+        // add a listener that updates our local cache
+        cache.getCacheEventNotificationService().registerListener(_cacheEventListener);
 
-    protected Map<CacheCategory, Ehcache> _categories =
-        Collections.synchronizedMap(Maps.<CacheCategory, Ehcache>newHashMap());
-    protected Map<String, EHCacheBin<?>> _bins =
-        Collections.synchronizedMap(Maps.<String, EHCacheBin<?>> newHashMap());
+        // add an RMI replicator (TODO: this should be optional) (TODO: do we want only one of
+        // these and to register the same one with all caches?)
+        Properties props = new Properties();
+        props.setProperty("replicateAsynchronously", "true");
+        props.setProperty("replicatePuts", "false");
+        props.setProperty("replicateUpdates", "true");
+        props.setProperty("replicateUpdatesViaCopy", "false");
+        props.setProperty("replicateRemovals", "true");
+        cache.getCacheEventNotificationService().registerListener(
+            new RMICacheReplicatorFactory().createCacheEventListener(props));
+    }
+
+    protected static class EHCacheBin<T>
+    {
+        public EHCacheBin (Ehcache cache, String id)
+        {
+            _cache = cache;
+            _id = id;
+        }
+
+        public Set<Serializable> getKeys ()
+        {
+            return _keys;
+        }
+
+        public void addKey (Serializable key)
+        {
+            _keys.add(key);
+        }
+
+        public void removeKey (Serializable key)
+        {
+            _keys.remove(key);
+        }
+
+        protected Ehcache getCache ()
+        {
+            return _cache;
+        }
+
+        protected Ehcache _cache;
+        protected String _id;
+
+        protected Set<Serializable> _keys =
+            Sets.newSetFromMap(new ConcurrentHashMap<Serializable, Boolean>());
+    }
+
+    /** A class to wrap a Depot id/key into an EHCache key. */
+    protected static class EHCacheKey
+        implements Serializable
+    {
+        public EHCacheKey (String id, Serializable key)
+        {
+            if (id == null || key == null) {
+                throw new IllegalArgumentException("Can't handle null key or id");
+            }
+            _id = id;
+            _key = key;
+        }
+
+        public String getCacheId () {
+            return _id;
+        }
+
+        public Serializable getCacheKey ()
+        {
+            return _key;
+        }
+
+        @Override
+        public String toString ()
+        {
+            return "[" + _id + ", " + _key + "]";
+        }
+
+        @Override
+        public int hashCode ()
+        {
+            return 31 * _id.hashCode() + _key.hashCode();
+        }
+
+        @Override
+        public boolean equals (Object obj)
+        {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null || getClass() != obj.getClass()) {
+                return false;
+            }
+            EHCacheKey okey = (EHCacheKey) obj;
+            return _id.equals(okey._id) && _key.equals(okey._key);
+        }
+
+        protected String _id;
+        protected Serializable _key;
+    }
+
+    /** A class to represent an explicitly Serializable concept of null for EHCache. */
+    protected static class NullValue implements Serializable
+    {
+        @Override public String toString ()
+        {
+            return "<EHCache Null>";
+        }
+
+        @Override public boolean equals (Object other)
+        {
+            return other != null && other.getClass().equals(NullValue.class);
+        }
+
+        @Override public int hashCode ()
+        {
+            return 1;
+        }
+    }
 
     protected CacheEventListener _cacheEventListener = new CacheEventListener() {
         public Object clone () throws CloneNotSupportedException {
@@ -254,110 +401,17 @@ public class EHCacheAdapter
         }
     };
 
-    protected static class EHCacheBin<T>
-    {
-        public EHCacheBin (Ehcache cache, String id)
-        {
-            _cache = cache;
-            _id = id;
-        }
+    protected CacheManager _cachemgr;
+    protected Histogram _lookups = new Histogram(0, 50, 20);
+    protected Histogram _stores = new Histogram(0, 50, 20);
+    protected Histogram _removes = new Histogram(0, 50, 20);
+    protected Histogram _enumerations = new Histogram(0, 50, 20);
 
-        public Set<Serializable> getKeys ()
-        {
-            return _keys;
-        }
-
-        public void addKey (Serializable key)
-        {
-            _keys.add(key);
-        }
-
-        public void removeKey (Serializable key)
-        {
-            _keys.remove(key);
-        }
-
-        protected Ehcache getCache ()
-        {
-            return _cache;
-        }
-
-        protected Ehcache _cache;
-        protected String _id;
-
-        protected Set<Serializable> _keys =
-            Sets.newSetFromMap(new ConcurrentHashMap<Serializable, Boolean>());
-    }
+    protected Map<CacheCategory, Ehcache> _categories =
+        Collections.synchronizedMap(Maps.<CacheCategory, Ehcache>newHashMap());
+    protected Map<String, EHCacheBin<?>> _bins =
+        Collections.synchronizedMap(Maps.<String, EHCacheBin<?>> newHashMap());
 
     // this is just for convenience and memory use; we don't rely on pointer equality anywhere
     protected static Serializable NULL = new NullValue() {};
-
-    /** A class to wrap a Depot id/key into an EHCache key. */
-    protected static class EHCacheKey
-        implements Serializable
-    {
-        public EHCacheKey (String id, Serializable key)
-        {
-            if (id == null || key == null) {
-                throw new IllegalArgumentException("Can't handle null key or id");
-            }
-            _id = id;
-            _key = key;
-        }
-
-        public String getCacheId () {
-            return _id;
-        }
-
-        public Serializable getCacheKey ()
-        {
-            return _key;
-        }
-
-        @Override
-        public String toString ()
-        {
-            return "[" + _id + ", " + _key + "]";
-        }
-
-        @Override
-        public int hashCode ()
-        {
-            return 31 * _id.hashCode() + _key.hashCode();
-        }
-
-        @Override
-        public boolean equals (Object obj)
-        {
-            if (this == obj) {
-                return true;
-            }
-            if (obj == null || getClass() != obj.getClass()) {
-                return false;
-            }
-            return _id.equals(((EHCacheKey) obj)._id) && _key.equals(((EHCacheKey) obj)._key);
-        }
-
-        protected String _id;
-        protected Serializable _key;
-    }
-
-    /** A class to represent an explicitly Serializable concept of null for EHCache. */
-    protected static class NullValue implements Serializable
-    {
-        @Override public String toString ()
-        {
-            return "<EHCache Null>";
-        }
-
-        @Override public boolean equals (Object other)
-        {
-            return other != null && other.getClass().equals(NullValue.class);
-        }
-
-        @Override public int hashCode ()
-        {
-            return 1;
-        }
-    }
 }
