@@ -85,7 +85,8 @@ public class EHCacheAdapter
         }
 
         public Ehcache createCache (String uid) {
-            return new Cache(name + "." + uid, maxElementsInMemory, msep, overflowToDisk, null,
+            String cacheName = this.name + (uid == null ? "" : ("." + uid));
+            return new Cache(cacheName, maxElementsInMemory, msep, overflowToDisk, null,
                              eternal, timeToLiveSeconds, timeToIdleSeconds, false, 0, null);
         }
     }
@@ -104,13 +105,13 @@ public class EHCacheAdapter
      * the supplied manager when it is shutdown. The caller is responsible for shutting down the
      * cache manager when it knows that Depot and any other clients no longer need it.
      */
-    public EHCacheAdapter (CacheManager cachemgr)
+    public EHCacheAdapter (CacheManager cachemgr, String ident)
     {
         _cachemgr = cachemgr;
-        createEHCache(CacheCategory.RECORD, EHCACHE_RECORD_CONFIG);
-        createEHCache(CacheCategory.SHORT_KEYSET, EHCACHE_SHORT_KEYSET_CONFIG);
-        createEHCache(CacheCategory.LONG_KEYSET, EHCACHE_LONG_KEYSET_CONFIG);
-        createEHCache(CacheCategory.RESULT, EHCACHE_RESULT_CONFIG);
+        createEHCache(ident, CacheCategory.RECORD, EHCACHE_RECORD_CONFIG);
+        createEHCache(ident, CacheCategory.SHORT_KEYSET, EHCACHE_SHORT_KEYSET_CONFIG);
+        createEHCache(ident, CacheCategory.LONG_KEYSET, EHCACHE_LONG_KEYSET_CONFIG);
+        createEHCache(ident, CacheCategory.RESULT, EHCACHE_RESULT_CONFIG);
     }
 
     // from CacheAdapter
@@ -220,9 +221,9 @@ public class EHCacheAdapter
         };
     }
 
-    protected Ehcache createEHCache (CacheCategory category, EHCacheConfig config)
+    protected Ehcache createEHCache (String ident, CacheCategory category, EHCacheConfig config)
     {
-        Ehcache cache = config.createCache(String.valueOf(hashCode()));
+        Ehcache cache = config.createCache(ident);
         addCacheListeners(cache);
         _cachemgr.addCache(cache);
         log.debug("Added new ehcache " + cache.getName());
