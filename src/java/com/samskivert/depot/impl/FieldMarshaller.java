@@ -21,8 +21,6 @@
 package com.samskivert.depot.impl;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.nio.ByteBuffer;
 
 import java.sql.Blob;
