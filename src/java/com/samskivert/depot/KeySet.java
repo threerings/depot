@@ -300,7 +300,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
     // from ValidatingCacheInvalidator
     public void invalidate (PersistenceContext ctx) {
         for (Key<T> key : this) {
-            ctx.cacheInvalidate(new KeyCacheKey(key));
+            ctx.cacheInvalidate(key);
         }
     }
 

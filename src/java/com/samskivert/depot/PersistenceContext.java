@@ -45,6 +45,7 @@ import com.samskivert.depot.annotation.TableGenerator;
 import com.samskivert.depot.impl.DepotMarshaller;
 import com.samskivert.depot.impl.DepotMetaData;
 import com.samskivert.depot.impl.DepotTypes;
+import com.samskivert.depot.impl.KeyCacheKey;
 import com.samskivert.depot.impl.Modifier;
 import com.samskivert.depot.impl.Operation;
 import com.samskivert.depot.impl.Query;
@@ -346,6 +347,19 @@ public class PersistenceContext
                     CacheListener<T> casted = (CacheListener<T>)listener;
                 casted.entryCached(entry, oldEntry);
             }
+        }
+    }
+
+    /**
+     * Evicts the cache entry indexed under the given key, if there is one.  The eviction may
+     * trigger further cache invalidations.
+     */
+    public void cacheInvalidate (Key<?> key)
+    {
+        if (key == null) {
+            log.warning("Cache key to invalidate must not be null.", new Exception());
+        } else {
+            cacheInvalidate(new KeyCacheKey(key));
         }
     }
 

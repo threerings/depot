@@ -35,8 +35,10 @@ public interface CacheKey
     public String getCacheId ();
 
     /**
-     * Returns the actual opaque serializable cache key under which results are stored
-     * in the cache identified by {@link #getCacheId}.
+     * Returns the actual opaque serializable cache key under which results are stored in the cache
+     * identified by {@link #getCacheId}. The object returned by this method should <em>only</em>
+     * reference system classes (not application classes). Depot takes care to ensure this and you
+     * probably aren't implementing your own cache keys so this should be fine.
      */
     public Serializable getCacheKey ();
 }

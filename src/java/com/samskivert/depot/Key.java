@@ -214,7 +214,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
     // from CacheInvalidator
     public void invalidate (PersistenceContext ctx)
     {
-        ctx.cacheInvalidate(new KeyCacheKey(this));
+        ctx.cacheInvalidate(this);
     }
 
     /**
