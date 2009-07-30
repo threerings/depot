@@ -18,10 +18,11 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot;
+package com.samskivert.depot.impl;
 
 import java.io.Serializable;
 
+import com.samskivert.depot.CacheKey;
 import com.samskivert.util.ObjectUtil;
 
 /**
@@ -33,26 +34,9 @@ public class SimpleCacheKey
     implements CacheKey
 {
     /**
-     * Construct a {@link SimpleCacheKey} for a query that has no parameters whatsoever.
-     */
-    public SimpleCacheKey (String cacheId)
-    {
-        this(cacheId, Boolean.TRUE);
-    }
-
-    /**
-     * Construct a {@link SimpleCacheKey} associated with the given persistent class with
-     * the given cache key.
-     */
-    public SimpleCacheKey (Class<?> cacheClass, Serializable cacheKey)
-    {
-        this(cacheClass.getName(), cacheKey);
-    }
-
-    /**
      * Construct a {@link SimpleCacheKey} for the given cache id with the given cache key.
      */
-    public SimpleCacheKey (String cacheId, Serializable cacheKey)
+    public SimpleCacheKey (String cacheId, String cacheKey)
     {
         _cacheId = cacheId;
         _cacheKey = cacheKey;
@@ -98,5 +82,5 @@ public class SimpleCacheKey
     }
 
     protected String _cacheId;
-    protected Serializable _cacheKey;
+    protected String _cacheKey;
 }

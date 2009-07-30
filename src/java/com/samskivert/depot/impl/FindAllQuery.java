@@ -46,7 +46,6 @@ import com.samskivert.depot.Key;
 import com.samskivert.depot.KeySet;
 import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.SimpleCacheKey;
 import com.samskivert.depot.Stats;
 import com.samskivert.depot.XArrayList;
 import com.samskivert.depot.XList;
@@ -283,7 +282,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<XLi
     {
         Set<Key<T>> fetchKeys = Sets.newHashSet();
         for (Key<T> key : allKeys) {
-            T value = ctx.<T>cacheLookup(key);
+            T value = ctx.<T>cacheLookup(new KeyCacheKey(key));
             if (value != null) {
                 @SuppressWarnings("unchecked") T newValue = (T) value.clone();
                 entities.put(key, newValue);
@@ -360,7 +359,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<XLi
                 if (entities.put(key, obj) != null) {
                     dups++;
                 }
-                ctx.cacheStore(CacheCategory.RECORD, key, obj.clone()); // cache our result
+                ctx.cacheStore(CacheCategory.RECORD, new KeyCacheKey(key), obj.clone());
                 got.add(key);
                 cnt++;
             }

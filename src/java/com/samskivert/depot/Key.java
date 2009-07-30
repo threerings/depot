@@ -28,23 +28,24 @@ import java.util.Map;
 import com.google.common.base.Function;
 import com.google.common.collect.Maps;
 
+import com.samskivert.util.StringUtil;
+
 import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.DepotMarshaller;
 import com.samskivert.depot.impl.DepotUtil;
 import com.samskivert.depot.impl.ExpressionVisitor;
-import com.samskivert.util.StringUtil;
+import com.samskivert.depot.impl.KeyCacheKey;
 
 /**
  * A special form of {@link WhereClause} that uniquely specifies a single database row and thus
- * also a single persistent object. Because it implements both {@link CacheKey} and {@link
- * CacheInvalidator} it also uniquely indexes into the cache and knows how to invalidate itself
- * upon modification. This class is created by many {@link DepotMarshaller} methods as a
- * convenience, and may also be instantiated explicitly.
+ * also a single persistent object. It knows how to invalidate itself upon modification. This class
+ * is created by many {@link DepotMarshaller} methods as a convenience, and may also be
+ * instantiated explicitly.
  */
 public class Key<T extends PersistentRecord> extends WhereClause
-    implements SQLExpression, CacheKey, ValidatingCacheInvalidator, Serializable
+    implements SQLExpression, ValidatingCacheInvalidator
 {
     /** Handles the matching of the key columns to its bound values. This is needed so that we can
      * combine a bunch of keys into a {@link KeySet}. */
@@ -199,18 +200,6 @@ public class Key<T extends PersistentRecord> extends WhereClause
         return builder.visit(this);
     }
 
-    // from CacheKey
-    public String getCacheId ()
-    {
-        return _pClass.getName();
-    }
-
-    // from CacheKey
-    public Serializable getCacheKey ()
-    {
-        return this;
-    }
-
     // from ValidatingCacheInvalidator
     public void validateFlushType (Class<?> pClass)
     {
@@ -225,7 +214,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
     // from CacheInvalidator
     public void invalidate (PersistenceContext ctx)
     {
-        ctx.cacheInvalidate(this);
+        ctx.cacheInvalidate(new KeyCacheKey(this));
     }
 
     /**

@@ -74,22 +74,21 @@ public class PersistenceContext
     public static interface CacheListener<T>
     {
         /**
-         * The given entry (which is never null) has just been evicted from the cache slot
-         * indicated by the given key.
+         * The given entry (which is never null) has just been evicted from the cache.
          *
          * This method is most commonly used to trigger custom cache invalidation of records that
          * depend on the one that was just invalidated.
          */
-        public void entryInvalidated (CacheKey key, T oldEntry);
+        public void entryInvalidated (T oldEntry);
 
         /**
-         * The given entry, which may be an explicit null, has just been placed into the cache
-         * under the given key. The previous cache entry, if any, is also supplied.
+         * The given entry, which may be an explicit null, has just been placed into the cache. The
+         * previous cache entry, if any, is also supplied.
          *
          * This method is most likely used by repositories to index entries by attribute for quick
          * cache invalidation when brute force is unrealistically time consuming.
          */
-        public void entryCached (CacheKey key, T newEntry, T oldEntry);
+        public void entryCached (T newEntry, T oldEntry);
     }
 
     /**
@@ -345,7 +344,7 @@ public class PersistenceContext
                 log.debug("cascading [listener=" + listener + "]");
                 @SuppressWarnings("unchecked")
                     CacheListener<T> casted = (CacheListener<T>)listener;
-                casted.entryCached(key, entry, oldEntry);
+                casted.entryCached(entry, oldEntry);
             }
         }
     }
@@ -361,15 +360,6 @@ public class PersistenceContext
         } else {
             cacheInvalidate(key.getCacheId(), key.getCacheKey());
         }
-    }
-
-    /**
-     * Evicts the cache entry indexed under the given class and cache key, if there is one.  The
-     * eviction may trigger further cache invalidations.
-     */
-    public void cacheInvalidate (Class<? extends PersistentRecord> pClass, Serializable cacheKey)
-    {
-        cacheInvalidate(pClass.getName(), cacheKey);
     }
 
     /**
@@ -393,12 +383,11 @@ public class PersistenceContext
                 // if there was one, do (possibly cascading) cache invalidations
                 Set<CacheListener<?>> listeners = _listenerSets.get(cacheId);
                 if (listeners != null && listeners.size() > 0) {
-                    CacheKey key = new SimpleCacheKey(cacheId, cacheKey);
                     for (CacheListener<?> listener : listeners) {
                         log.debug("cascading [listener=" + listener + "]");
                         @SuppressWarnings("unchecked") CacheListener<T> casted =
                             (CacheListener<T>)listener;
-                        casted.entryInvalidated(key, oldEntry);
+                        casted.entryInvalidated(oldEntry);
                     }
                 }
             }

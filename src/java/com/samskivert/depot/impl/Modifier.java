@@ -24,12 +24,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import com.samskivert.depot.CacheAdapter;
 import com.samskivert.depot.CacheInvalidator;
 import com.samskivert.depot.CacheKey;
+import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.Stats;
-import com.samskivert.depot.CacheAdapter.CacheCategory;
 import com.samskivert.jdbc.DatabaseLiaison;
 
 /**
@@ -73,21 +74,21 @@ public abstract class Modifier implements Operation<Integer>
          * Construct a new CachingModifier with the given result, cache key, and invalidator,
          * all of which are optional, and may also be set during execution.
          */
-        protected CachingModifier (T result, CacheKey key, CacheInvalidator invalidator)
+        protected CachingModifier (T result, Key<T> key, CacheInvalidator invalidator)
         {
             super(invalidator);
             _result = result;
-            _key = key;
+            _key = (key == null) ? null : new KeyCacheKey(key);
         }
 
         /**
-         * Update this {@link CachingModifier}'s cache key, e.g. during insertion when a
-         * persistent object first receives a generated key.
+         * Update this {@link CachingModifier}'s cache key, e.g. during insertion when a persistent
+         * object first receives a generated key.
          */
-        protected void updateKey (CacheKey key)
+        protected void updateKey (Key<T> key)
         {
             if (key != null) {
-                _key = key;
+                _key = new KeyCacheKey(key);
             }
         }
 
@@ -98,7 +99,7 @@ public abstract class Modifier implements Operation<Integer>
             Integer rows = super.invoke(ctx, conn, liaison);
             // if we have both a key and a record, cache
             if (_key != null && _result != null) {
-                ctx.cacheStore(CacheCategory.RECORD, _key, _result.clone());
+                ctx.cacheStore(CacheAdapter.CacheCategory.RECORD, _key, _result.clone());
             }
             return rows;
         }

@@ -98,7 +98,7 @@ public class FindOneQuery<T extends PersistentRecord> extends Query<T>
             if (key == null) {
                 // no row-specific cache key was given, if we can, create a key from the record
                 if (result != null && _marsh.hasPrimaryKey()) {
-                    key = _marsh.getPrimaryKey(result);
+                    key = new KeyCacheKey(_marsh.getPrimaryKey(result));
                 }
             }
             if (PersistenceContext.CACHE_DEBUG) {

@@ -34,13 +34,14 @@ import com.samskivert.util.Logger;
 import com.samskivert.util.StringUtil;
 
 import com.samskivert.depot.clause.WhereClause;
-import com.samskivert.depot.operator.In;
-import com.samskivert.depot.operator.Or;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.DepotUtil;
 import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.KeyCacheKey;
+import com.samskivert.depot.operator.In;
+import com.samskivert.depot.operator.Or;
 
 /**
  * Contains a set of primary keys that match a set of persistent records. This is used internally
@@ -299,7 +300,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
     // from ValidatingCacheInvalidator
     public void invalidate (PersistenceContext ctx) {
         for (Key<T> key : this) {
-            ctx.cacheInvalidate(key);
+            ctx.cacheInvalidate(new KeyCacheKey(key));
         }
     }
 
