@@ -21,6 +21,7 @@
 package com.samskivert.depot;
 
 import com.samskivert.depot.expression.EpochSeconds;
+import com.samskivert.depot.expression.FunctionExp;
 import com.samskivert.depot.expression.IntervalExp;
 import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.SQLExpression;
@@ -103,5 +104,23 @@ public class Exps
     public static EpochSeconds epochSeconds (SQLExpression expr)
     {
         return new EpochSeconds(expr);
+    }
+
+    /**
+     * Creates an expression that computes the sum of the supplied expression. This would usually
+     * be used in a FieldOverride and supplied with a ColumnExp.
+     */
+    public static FunctionExp sum (SQLExpression expr)
+    {
+        return new FunctionExp("sum", expr);
+    }
+
+    /**
+     * Creates an expression that computes the sum of the supplied expression. This would usually
+     * be used in a FieldOverride and supplied with a ColumnExp.
+     */
+    public static FunctionExp abs (SQLExpression expr)
+    {
+        return new FunctionExp("abs", expr);
     }
 }
