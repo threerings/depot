@@ -37,7 +37,17 @@ public class FunctionExp extends FluentExp
      */
     public FunctionExp (String function, SQLExpression... arguments)
     {
+        this(function, null, arguments);
+        _arguments = arguments;
+    }
+
+    /**
+     * Create a new FunctionExp with the given function, expression annotation and arguments.
+     */
+    public FunctionExp (String function, String annotation, SQLExpression... arguments)
+    {
         _function = function;
+        _annotation = annotation;
         _arguments = arguments;
     }
 
@@ -60,6 +70,11 @@ public class FunctionExp extends FluentExp
         return _function;
     }
 
+    public String getAnnotation ()
+    {
+        return _annotation;
+    }
+
     public SQLExpression[] getArguments ()
     {
         return _arguments;
@@ -68,11 +83,15 @@ public class FunctionExp extends FluentExp
     @Override
     public String toString ()
     {
-        return _function + "(" + StringUtil.join(_arguments, ", ") + ")";
+        return _function + "(" + (_annotation == null ? "" : (_annotation + " ")) +
+            StringUtil.join(_arguments, ", ") + ")";
     }
 
     /** The literal name of this function, e.g. FLOOR */
     protected String _function;
+
+    /** An annotation that goes on the function's expression (only used for count(distinct X)) */
+    protected String _annotation;
 
     /** The arguments to this function */
     protected SQLExpression[] _arguments;

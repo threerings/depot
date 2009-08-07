@@ -146,6 +146,9 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
     {
         _builder.append(functionExp.getFunction());
         _builder.append("(");
+        if (functionExp.getAnnotation() != null) {
+            _builder.append(functionExp.getAnnotation()).append(" ");
+        }
         SQLExpression[] arguments = functionExp.getArguments();
         for (int ii = 0; ii < arguments.length; ii ++) {
             if (ii > 0) {

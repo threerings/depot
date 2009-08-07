@@ -116,11 +116,28 @@ public class Exps
     }
 
     /**
-     * Creates an expression that computes the sum of the supplied expression. This would usually
-     * be used in a FieldOverride and supplied with a ColumnExp.
+     * Creates an expression that computes the absolute value of the supplied expression.
      */
     public static FunctionExp abs (SQLExpression expr)
     {
         return new FunctionExp("abs", expr);
+    }
+
+    /**
+     * Creates an expression that counts the number of rows that match the supplied expression.
+     * This would usually be used in a FieldOverride and supplied with a ColumnExp.
+     */
+    public static FunctionExp count (SQLExpression expr)
+    {
+        return new FunctionExp("count", expr);
+    }
+
+    /**
+     * Creates an expression that counts the number of distinct values that match the supplied
+     * expression. This would usually be used in a FieldOverride and supplied with a ColumnExp.
+     */
+    public static FunctionExp countDistinct (SQLExpression expr)
+    {
+        return new FunctionExp("count", "distinct", expr);
     }
 }
