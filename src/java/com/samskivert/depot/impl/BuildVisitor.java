@@ -690,19 +690,15 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
             }
         }
 
-        // if we get this far we hopefully have a table to select from
-        if (tableClass != null) {
-            if (_defaultType != tableClass) {
-                appendTableAbbreviation(tableClass);
-                _builder.append(".");
-            }
-            appendIdentifier(fm.getColumnName());
-            return;
+        // if we get this far we hopefully have a table to select from, if not we're probably doing
+        // something like an order by on a synthetic field "select count(distinct foo) as bar from
+        // ... order by bar", so we just skip the table qualifier
+        if (tableClass != null && _defaultType != tableClass) {
+            appendTableAbbreviation(tableClass);
+            _builder.append(".");
         }
 
-        // else owie
-        throw new IllegalArgumentException(
-            "Persistent field has no definition [class=" + type + ", field=" + field + "]");
+        appendIdentifier(fm.getColumnName());
     }
 
     // output one of potentially many fields in an index expression
