@@ -614,7 +614,8 @@ public class DepotMarshaller<T extends PersistentRecord>
                     if (fm.getComputed() != null && !fm.getComputed().required()) {
                         continue;
                     }
-                    throw new SQLException("ResultSet missing field: " + fm.getField().getName());
+                    throw new SQLException(
+                        "ResultSet missing field: " + fm.getField().getName() + " for " + _pClass);
                 }
                 fm.getAndWriteToObject(rs, po);
             }
