@@ -353,7 +353,7 @@ public class EHCacheAdapter
     }
 
     protected CacheEventListener _cacheEventListener = new CacheEventListener() {
-        public Object clone () throws CloneNotSupportedException {
+        @Override public Object clone () throws CloneNotSupportedException {
             throw new CloneNotSupportedException();
         }
         public void dispose () {}

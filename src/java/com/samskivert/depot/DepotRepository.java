@@ -368,6 +368,9 @@ public abstract class DepotRepository
                 throw new IllegalArgumentException(
                     "Cannot use " + cache + " strategy because " + reason);
             }
+            break;
+        case NONE: case CONTENTS:
+            break;// NONE and CONTENTS can always be used.
         }
 
         if (!_ctx.isUsingCache()) {

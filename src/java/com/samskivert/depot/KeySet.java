@@ -51,7 +51,7 @@ import com.samskivert.depot.operator.Or;
  * the cache.
  */
 public abstract class KeySet<T extends PersistentRecord> extends WhereClause
-    implements Serializable, SQLExpression, ValidatingCacheInvalidator, Iterable<Key<T>>
+    implements Serializable, ValidatingCacheInvalidator, Iterable<Key<T>>
 {
     /**
      * Creates a key set for the supplied persistent record and keys.
