@@ -39,7 +39,6 @@ import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.DepotUtil;
 import com.samskivert.depot.impl.ExpressionVisitor;
-import com.samskivert.depot.impl.KeyCacheKey;
 import com.samskivert.depot.operator.In;
 import com.samskivert.depot.operator.Or;
 

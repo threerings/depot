@@ -36,7 +36,6 @@ import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.DepotMarshaller;
 import com.samskivert.depot.impl.DepotUtil;
 import com.samskivert.depot.impl.ExpressionVisitor;
-import com.samskivert.depot.impl.KeyCacheKey;
 
 /**
  * A special form of {@link WhereClause} that uniquely specifies a single database row and thus
