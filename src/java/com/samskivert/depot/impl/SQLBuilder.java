@@ -27,14 +27,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import com.samskivert.jdbc.ColumnDefinition;
-import com.samskivert.depot.ByteEnum;
 import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.annotation.GeneratedValue;
 import com.samskivert.depot.clause.QueryClause;
+import com.samskivert.jdbc.ColumnDefinition;
+import com.samskivert.util.ByteEnum;
 
 import static com.samskivert.depot.Log.log;
 

@@ -32,14 +32,14 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 
-import com.samskivert.depot.ByteEnum;
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.annotation.GeneratedValue;
-import com.samskivert.depot.util.ByteEnumUtil;
 import com.samskivert.jdbc.ColumnDefinition;
 
+import com.samskivert.util.ByteEnum;
+import com.samskivert.util.ByteEnumUtil;
 import com.samskivert.util.StringUtil;
 
 /**

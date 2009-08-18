@@ -30,9 +30,9 @@ import java.util.Set;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import com.samskivert.util.ByteEnum;
 import com.samskivert.util.Tuple;
 
-import com.samskivert.depot.ByteEnum;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.Computed;
