@@ -1,5 +1,0 @@
-<!-- $Id$                                       -->
-<!-- Exports a subset of Depot classes to GWT.  -->
-<module>
-  <source path="depot"/>
-</module>
