@@ -100,14 +100,25 @@ public class Key<T extends PersistentRecord> extends WhereClause
     }
 
     /**
-     * Extracts an integer key from a record's {@link Key}. This should only be used on records
-     * whose primary key is a single integer.
+     * Returns a function that extracts an integer from a record's {@link Key}. This should only be
+     * used on records whose primary key is a single integer.
      */
-    public static <T extends PersistentRecord> Function<Key<T>,Integer> toInt ()
+    public static <T extends PersistentRecord> Function<Key<T>, Integer> toInt ()
     {
-        return new Function<Key<T>,Integer>() {
-            public Integer apply (Key<T> key) {
-                return (Integer)key.getValues()[0];
+        return extract(0);
+    }
+
+    /**
+     * Returns a function that extracts an element key from a record's {@link Key}.
+     *
+     * @param index the index in the key of the element to be extracted.
+     */
+    public static <T extends PersistentRecord, E> Function<Key<T>, E> extract (final int index)
+    {
+        return new Function<Key<T>, E>() {
+            public E apply (Key<T> key) {
+                @SuppressWarnings("unchecked") E value = (E)key.getValues()[index];
+                return value;
             }
         };
     }
