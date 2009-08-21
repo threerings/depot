@@ -369,21 +369,22 @@ public abstract class DepotRepository
                     "Cannot use " + cache + " strategy because " + reason);
             }
             break;
+
         case NONE: case CONTENTS:
-            break;// NONE and CONTENTS can always be used.
+            break; // NONE and CONTENTS can always be used.
         }
 
         if (!_ctx.isUsingCache()) {
             cache = CacheStrategy.NONE;
         }
 
-        switch(cache) {
+        switch (cache) {
         case SHORT_KEYS: case LONG_KEYS: case RECORDS:
             return _ctx.invoke(new FindAllQuery.WithCache<T>(_ctx, type, clauses, cache));
 
         default:
             return _ctx.invoke(new FindAllQuery.Explicitly<T>(
-                    _ctx, type, clauses, cache == CacheStrategy.CONTENTS));
+                                   _ctx, type, clauses, cache == CacheStrategy.CONTENTS));
         }
     }
 
