@@ -548,6 +548,10 @@ public class PersistenceContext
             try {
                 // invoke our database operation
                 T value = op.invoke(this, conn, _liaison);
+                // if auto-commit is off and this is a write operation, push it through
+                if (!isReadOnly && !conn.getAutoCommit()) {
+                    conn.commit();
+                }
                 // note the time it took to invoke this operation
                 _stats.noteOp(isReadOnly, preConnect, preInvoke, System.nanoTime());
                 // have the operation update any appropriate runtime statistics as well
