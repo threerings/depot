@@ -560,9 +560,7 @@ public class PersistenceContext
                     // close all opened statements; if any close fails, abort the close process as
                     // the whole connection is now unusable and will be discarded
                     for (Statement stmt : stmts) {
-                        if (!stmt.isClosed()) {
-                            stmt.close();
-                        }
+                        stmt.close();
                     }
                 }
                 // if auto-commit is off and this is a write operation, push it through
