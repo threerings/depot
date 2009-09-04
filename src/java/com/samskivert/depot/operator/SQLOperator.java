@@ -59,8 +59,8 @@ public interface SQLOperator extends SQLExpression
         // from SQLExpression
         public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
         {
-            for (int ii = 0; ii < _operands.length; ii ++) {
-                _operands[ii].addClasses(classSet);
+            for (SQLExpression operand : _operands) {
+                operand.addClasses(classSet);
             }
         }
 
