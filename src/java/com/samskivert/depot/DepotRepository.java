@@ -21,7 +21,6 @@
 package com.samskivert.depot;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
@@ -39,8 +38,6 @@ import com.samskivert.util.ArrayUtil;
 
 import com.samskivert.jdbc.ConnectionProvider;
 import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.jdbc.JDBCUtil;
-
 import com.samskivert.depot.clause.FieldOverride;
 import com.samskivert.depot.clause.InsertClause;
 import com.samskivert.depot.clause.QueryClause;
@@ -459,19 +456,13 @@ public abstract class DepotRepository
 
                 builder.newQuery(new InsertClause(pClass, _result, identityFields));
 
-                PreparedStatement stmt = builder.prepare(conn);
-                try {
-                    int mods = stmt.executeUpdate();
-                    // run any post-factum value generators and potentially generate our key
-                    if (_key == null) {
-                        marsh.generateFieldValues(conn, liaison, _result, true);
-                        updateKey(marsh.getPrimaryKey(_result, false));
-                    }
-                    return mods;
-
-                } finally {
-                    JDBCUtil.close(stmt);
+                int mods = builder.prepare(conn).executeUpdate();
+                // run any post-factum value generators and potentially generate our key
+                if (_key == null) {
+                    marsh.generateFieldValues(conn, liaison, _result, true);
+                    updateKey(marsh.getPrimaryKey(_result, false));
                 }
+                return mods;
             }
         });
     }
@@ -698,44 +689,36 @@ public abstract class DepotRepository
         _ctx.invoke(new CachingModifier<T>(record, key, key) {
             @Override
             protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-                PreparedStatement stmt = null;
-                try {
-                    if (_key != null) {
-                        // run the update
-                        stmt = builder.prepare(conn);
-                        int mods = stmt.executeUpdate();
-                        if (mods > 0) {
-                            // if it succeeded, we're done
-                            return mods;
-                        }
-                        JDBCUtil.close(stmt);
+                if (_key != null) {
+                    // run the update
+                    int mods = builder.prepare(conn).executeUpdate();
+                    if (mods > 0) {
+                        // if it succeeded, we're done
+                        return mods;
                     }
-
-                    // if the update modified zero rows or the primary key was unset, insert
-                    Set<String> identityFields = Collections.emptySet();
-                    if (_key == null) {
-                        // first, set any auto-generated column values
-                        identityFields = marsh.generateFieldValues(conn, liaison, _result, false);
-                        // update our modifier's key so that it can cache our results
-                        updateKey(marsh.getPrimaryKey(_result, false));
-                    }
-
-                    builder.newQuery(new InsertClause(pClass, _result, identityFields));
-
-                    stmt = builder.prepare(conn);
-                    int mods = stmt.executeUpdate();
-
-                    // run any post-factum value generators and potentially generate our key
-                    if (_key == null) {
-                        marsh.generateFieldValues(conn, liaison, _result, true);
-                        updateKey(marsh.getPrimaryKey(_result, false));
-                    }
-                    created[0] = true;
-                    return mods;
-
-                } finally {
-                    JDBCUtil.close(stmt);
                 }
+
+                // if the update modified zero rows or the primary key was unset, insert
+                Set<String> identityFields = Collections.emptySet();
+                if (_key == null) {
+
+                    // first, set any auto-generated column values
+                    identityFields = marsh.generateFieldValues(conn, liaison, _result, false);
+                    // update our modifier's key so that it can cache our results
+                    updateKey(marsh.getPrimaryKey(_result, false));
+                }
+
+                builder.newQuery(new InsertClause(pClass, _result, identityFields));
+
+                int mods = builder.prepare(conn).executeUpdate();
+
+                // run any post-factum value generators and potentially generate our key
+                if (_key == null) {
+                    marsh.generateFieldValues(conn, liaison, _result, true);
+                    updateKey(marsh.getPrimaryKey(_result, false));
+                }
+                created[0] = true;
+                return mods;
             }
         });
         return created[0];
@@ -821,12 +804,7 @@ public abstract class DepotRepository
         return _ctx.invoke(new Modifier(invalidator) {
             @Override
             protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-                PreparedStatement stmt = builder.prepare(conn);
-                try {
-                    return stmt.executeUpdate();
-                } finally {
-                    JDBCUtil.close(stmt);
-                }
+                return builder.prepare(conn).executeUpdate();
             }
         });
     }
@@ -855,12 +833,7 @@ public abstract class DepotRepository
         return _ctx.invoke(new Modifier(invalidator) {
             @Override
             protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-                PreparedStatement stmt = builder.prepare(conn);
-                try {
-                    return stmt.executeUpdate();
-                } finally {
-                    JDBCUtil.close(stmt);
-                }
+                return builder.prepare(conn).executeUpdate();
             }
         });
     }

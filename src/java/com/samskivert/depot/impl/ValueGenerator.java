@@ -26,7 +26,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.jdbc.JDBCUtil;
 import com.samskivert.depot.annotation.GeneratedValue;
 
 import static com.samskivert.depot.Log.log;
@@ -85,24 +84,19 @@ public abstract class ValueGenerator
         String table = _dm.getTableName();
 
         Statement stmt = conn.createStatement();
-        try {
-            ResultSet rs = stmt.executeQuery(
-                " SELECT COUNT(*), MAX(" + liaison.columnSQL(column) + ") " +
-                "   FROM " + liaison.tableSQL(table));
-            if (!rs.next()) {
-                log.warning("Query on count()/max() bizarrely returned no rows.");
-                return null;
-            }
-
-            int cnt = rs.getInt(1);
-            if (cnt > 0) {
-                return Integer.valueOf(rs.getInt(2));
-            }
+        ResultSet rs = stmt.executeQuery(
+            " SELECT COUNT(*), MAX(" + liaison.columnSQL(column) + ") " +
+            "   FROM " + liaison.tableSQL(table));
+        if (!rs.next()) {
+            log.warning("Query on count()/max() bizarrely returned no rows.");
             return null;
-
-        } finally {
-            JDBCUtil.close(stmt);
         }
+
+        int cnt = rs.getInt(1);
+        if (cnt > 0) {
+            return Integer.valueOf(rs.getInt(2));
+        }
+        return null;
     }
 
     public DepotMarshaller<?> getDepotMarshaller ()

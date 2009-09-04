@@ -21,13 +21,10 @@
 package com.samskivert.depot.impl;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.jdbc.JDBCUtil;
-
 import com.samskivert.depot.CacheKey;
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.DepotRepository;
@@ -82,40 +79,34 @@ public class FindOneQuery<T extends PersistentRecord> extends Query<T>
     public T invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
         throws SQLException
     {
-        PreparedStatement stmt = _builder.prepare(conn);
-        try {
-            // load up the record in question
-            T result = null;
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                result = _marsh.createObject(rs);
-            }
-            // TODO: if (rs.next()) issue warning?
-            rs.close();
-
-            // potentially cache the result
-            CacheKey key = getCacheKey();
-            if (key == null) {
-                // no row-specific cache key was given, if we can, create a key from the record
-                if (result != null && _marsh.hasPrimaryKey()) {
-                    key = new KeyCacheKey(_marsh.getPrimaryKey(result));
-                }
-            }
-            if (PersistenceContext.CACHE_DEBUG) {
-                log.info("Loaded " + (key != null ? key : _marsh.getTableName()));
-            }
-            if (key != null) {
-                ctx.cacheStore(CacheCategory.RECORD, key, (result != null) ? result.clone() : null);
-                if (PersistenceContext.CACHE_DEBUG) {
-                    log.info("Cached " + key);
-                }
-            }
-
-            return result;
-
-        } finally {
-            JDBCUtil.close(stmt);
+        // load up the record in question
+        T result = null;
+        ResultSet rs = _builder.prepare(conn).executeQuery();
+        if (rs.next()) {
+            result = _marsh.createObject(rs);
         }
+        // TODO: if (rs.next()) issue warning?
+        rs.close();
+
+        // potentially cache the result
+        CacheKey key = getCacheKey();
+        if (key == null) {
+            // no row-specific cache key was given, if we can, create a key from the record
+            if (result != null && _marsh.hasPrimaryKey()) {
+                key = new KeyCacheKey(_marsh.getPrimaryKey(result));
+            }
+        }
+        if (PersistenceContext.CACHE_DEBUG) {
+            log.info("Loaded " + (key != null ? key : _marsh.getTableName()));
+        }
+        if (key != null) {
+            ctx.cacheStore(CacheCategory.RECORD, key, (result != null) ? result.clone() : null);
+            if (PersistenceContext.CACHE_DEBUG) {
+                log.info("Cached " + key);
+            }
+        }
+
+        return result;
     }
 
     // from Operation

@@ -25,12 +25,10 @@ import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Set;
 
-import com.samskivert.jdbc.JDBCUtil;
 import com.samskivert.util.Tuple;
 
 import com.samskivert.depot.PersistentRecord;
@@ -206,13 +204,8 @@ public class MySQLBuilder
         }
         update.append(")");
 
-        Statement stmt = conn.createStatement();
-        try {
-            log.info("Adding full-text search index: ftsIx_" + fts.name());
-            stmt.executeUpdate(update.toString());
-        } finally {
-            JDBCUtil.close(stmt);
-        }
+        log.info("Adding full-text search index: ftsIx_" + fts.name());
+        conn.createStatement().executeUpdate(update.toString());
         return true;
     }
 

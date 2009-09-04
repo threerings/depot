@@ -28,8 +28,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.jdbc.JDBCUtil;
-
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistenceContext;
@@ -76,19 +74,15 @@ public class FindAllKeysQuery<T extends PersistentRecord> extends Query<XList<Ke
     {
         XList<Key<T>> keys = new XArrayList<Key<T>>();
         PreparedStatement stmt = _builder.prepare(conn);
-        try {
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                keys.add(_marsh.makePrimaryKey(rs));
-            }
-            // TODO: cache this result?
-            if (PersistenceContext.CACHE_DEBUG) {
-                log.info("Loaded " + _marsh.getTableName(), "count", keys.size());
-            }
-            return keys;
-        } finally {
-            JDBCUtil.close(stmt);
+        ResultSet rs = stmt.executeQuery();
+        while (rs.next()) {
+            keys.add(_marsh.makePrimaryKey(rs));
         }
+        // TODO: cache this result?
+        if (PersistenceContext.CACHE_DEBUG) {
+            log.info("Loaded " + _marsh.getTableName(), "count", keys.size());
+        }
+        return keys;
     }
 
     // from Query

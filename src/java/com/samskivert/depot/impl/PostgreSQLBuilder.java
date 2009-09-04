@@ -31,7 +31,6 @@ import java.sql.Timestamp;
 import java.util.Set;
 
 import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.jdbc.JDBCUtil;
 import com.samskivert.jdbc.LiaisonRegistry;
 import com.samskivert.util.ArrayUtil;
 import com.samskivert.util.StringUtil;
@@ -185,18 +184,12 @@ public class PostgreSQLBuilder
             append(liaison.columnSQL(column)).append(")");
 
         Statement stmt = conn.createStatement();
-        try {
-            log.info(
-                "Adding full-text search column, index and trigger: " + column + ", " +
-                index + ", " + trigger);
-            liaison.addColumn(conn, table, column, "TSVECTOR", true);
-            stmt.executeUpdate(initColumn.toString());
-            stmt.executeUpdate(createIndex.toString());
-            stmt.executeUpdate(createTrigger.toString());
-
-        } finally {
-            JDBCUtil.close(stmt);
-        }
+        log.info("Adding full-text search column, index and trigger: " + column + ", " +
+                 index + ", " + trigger);
+        liaison.addColumn(conn, table, column, "TSVECTOR", true);
+        stmt.executeUpdate(initColumn.toString());
+        stmt.executeUpdate(createIndex.toString());
+        stmt.executeUpdate(createTrigger.toString());
         return true;
     }
 

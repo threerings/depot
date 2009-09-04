@@ -44,8 +44,6 @@ import com.samskivert.util.Tuple;
 
 import com.samskivert.jdbc.ColumnDefinition;
 import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.jdbc.JDBCUtil;
-
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistenceContext;
@@ -711,12 +709,7 @@ public class DepotMarshaller<T extends PersistentRecord>
         throws SQLException
     {
         if (builder.newQuery(clause)) {
-            PreparedStatement stmt = builder.prepare(conn);
-            try {
-                return stmt.executeUpdate();
-            } finally {
-                JDBCUtil.close(stmt);
-            }
+            return builder.prepare(conn).executeUpdate();
         }
         return 0;
     }

@@ -36,8 +36,6 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Maps;
 
 import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.jdbc.JDBCUtil;
-
 import com.samskivert.depot.CacheAdapter.CacheCategory;
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.DepotRepository.CacheStrategy;
@@ -132,13 +130,9 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<XLi
                 builder.newQuery(_select);
                 PreparedStatement stmt = builder.prepare(conn);
                 stmtString = stmt.toString(); // for debugging
-                try {
-                    ResultSet rs = stmt.executeQuery();
-                    while (rs.next()) {
-                        keys.add(_marsh.makePrimaryKey(rs));
-                    }
-                } finally {
-                    JDBCUtil.close(stmt);
+                ResultSet rs = stmt.executeQuery();
+                while (rs.next()) {
+                    keys.add(_marsh.makePrimaryKey(rs));
                 }
                 _keys = KeySet.newKeySet(_type, keys);
                 _uncachedQueries++;
@@ -239,14 +233,9 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<XLi
             XList<T> result = new XArrayList<T>();
             SQLBuilder builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, _select));
             builder.newQuery(_select);
-            PreparedStatement stmt = builder.prepare(conn);
-            try {
-                ResultSet rs = stmt.executeQuery();
-                while (rs.next()) {
-                    result.add(_marsh.createObject(rs));
-                }
-            } finally {
-                JDBCUtil.close(stmt);
+            ResultSet rs = builder.prepare(conn).executeQuery();
+            while (rs.next()) {
+                result.add(_marsh.createObject(rs));
             }
             _explicitQueries++;
             if (PersistenceContext.CACHE_DEBUG) {
@@ -348,39 +337,33 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<XLi
             _type, _marsh.getFieldNames(), KeySet.newKeySet(_type, keys));
         SQLBuilder builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, select));
         builder.newQuery(select);
-        PreparedStatement stmt = builder.prepare(conn);
-        try {
-            Set<Key<T>> got = Sets.newHashSet();
-            ResultSet rs = stmt.executeQuery();
-            int cnt = 0, dups = 0;
-            while (rs.next()) {
-                T obj = _marsh.createObject(rs);
-                Key<T> key = _marsh.getPrimaryKey(obj);
-                if (entities.put(key, obj) != null) {
-                    dups++;
-                }
-                ctx.cacheStore(CacheCategory.RECORD, new KeyCacheKey(key), obj.clone());
-                got.add(key);
-                cnt++;
+        Set<Key<T>> got = Sets.newHashSet();
+        ResultSet rs = builder.prepare(conn).executeQuery();
+        int cnt = 0, dups = 0;
+        while (rs.next()) {
+            T obj = _marsh.createObject(rs);
+            Key<T> key = _marsh.getPrimaryKey(obj);
+            if (entities.put(key, obj) != null) {
+                dups++;
             }
-            // if we get more results than we planned, or if we're doing a two-phase query and got
-            // fewer, then complain
-            if (cnt > keys.size() || (origStmt != null && cnt < keys.size())) {
-                log.warning("Row count mismatch in second pass", "origQuery", origStmt,
-                            // we need toString() here or StringUtil will get smart and dump our
-                            // KeySet using its iterator which results in verbosity
-                            "wanted", KeySet.newKeySet(_type, keys).toString(),
-                            "got", KeySet.newKeySet(_type, got).toString(),
-                            "dups", dups, new Exception());
-            }
-
-            if (PersistenceContext.CACHE_DEBUG) {
-                log.info("Cached " + _marsh.getTableName(), "count", cnt);
-            }
-
-        } finally {
-            JDBCUtil.close(stmt);
+            ctx.cacheStore(CacheCategory.RECORD, new KeyCacheKey(key), obj.clone());
+            got.add(key);
+            cnt++;
         }
+        // if we get more results than we planned, or if we're doing a two-phase query and got
+        // fewer, then complain
+        if (cnt > keys.size() || (origStmt != null && cnt < keys.size())) {
+            log.warning("Row count mismatch in second pass", "origQuery", origStmt,
+            // we need toString() here or StringUtil will get smart and dump our
+                // KeySet using its iterator which results in verbosity
+                "wanted", KeySet.newKeySet(_type, keys).toString(), "got", KeySet.newKeySet(
+                    _type, got).toString(), "dups", dups, new Exception());
+        }
+
+        if (PersistenceContext.CACHE_DEBUG) {
+            log.info("Cached " + _marsh.getTableName(), "count", cnt);
+        }
+
     }
 
     protected String keysToString (Iterable<Key<T>> keySet)

@@ -27,6 +27,7 @@ import java.util.Set;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -37,6 +38,7 @@ import com.samskivert.util.StringUtil;
 
 import com.samskivert.jdbc.ConnectionProvider;
 import com.samskivert.jdbc.DatabaseLiaison;
+import com.samskivert.jdbc.JDBCUtil;
 import com.samskivert.jdbc.LiaisonRegistry;
 
 import com.samskivert.depot.CacheAdapter.CacheCategory;
@@ -539,6 +541,10 @@ public class PersistenceContext
             throw new DatabaseException(pe.getMessage(), pe.getCause());
         }
 
+        // wrap the connection in a proxy that will collect all opened statements
+        List<Statement> stmts = Lists.newArrayListWithCapacity(1);
+        conn = JDBCUtil.makeCollector(conn, stmts);
+
         // TEMP: we synchronize on the connection to cooperate with SimpleRepository when used in
         // conjunction with a StaticConnectionProvider; at some point we'll switch to standard JDBC
         // connection pooling which will block in getConnection() instead of returning a connection
@@ -547,7 +553,18 @@ public class PersistenceContext
             long preInvoke = System.nanoTime();
             try {
                 // invoke our database operation
-                T value = op.invoke(this, conn, _liaison);
+                T value;
+                try {
+                    value = op.invoke(this, conn, _liaison);
+                } finally {
+                    // close all opened statements; if any close fails, abort the close process as
+                    // the whole connection is now unusable and will be discarded
+                    for (Statement stmt : stmts) {
+                        if (!stmt.isClosed()) {
+                            stmt.close();
+                        }
+                    }
+                }
                 // if auto-commit is off and this is a write operation, push it through
                 if (!isReadOnly && !conn.getAutoCommit()) {
                     conn.commit();

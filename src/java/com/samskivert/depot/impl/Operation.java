@@ -22,6 +22,7 @@ package com.samskivert.depot.impl;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.Stats;
@@ -38,7 +39,9 @@ public interface Operation<T>
     public boolean isReadOnly ();
 
     /**
-     * Performs the actual JDBC interactions associated with this operation.
+     * Performs the actual JDBC interactions associated with this operation. Any {@link Statement}
+     * instances created with the given connection will be closed automatically after this method
+     * returns. The operation need not close them itself.
      */
     public T invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
         throws SQLException;
