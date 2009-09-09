@@ -51,6 +51,7 @@ import com.samskivert.depot.function.NumericalFun.Ceil;
 import com.samskivert.depot.function.NumericalFun.Exp;
 import com.samskivert.depot.function.NumericalFun.Floor;
 import com.samskivert.depot.function.NumericalFun.Ln;
+import com.samskivert.depot.function.NumericalFun.Log10;
 import com.samskivert.depot.function.NumericalFun.LogN;
 import com.samskivert.depot.function.NumericalFun.Pi;
 import com.samskivert.depot.function.NumericalFun.Power;
@@ -123,6 +124,7 @@ public interface ExpressionVisitor<T>
     public T visit (Exp exp);
     public T visit (Floor exp);
     public T visit (Ln exp);
+    public T visit (Log10 exp);
     public T visit (LogN exp);
     public T visit (Pi exp);
     public T visit (Power exp);

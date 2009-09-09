@@ -70,6 +70,15 @@ public abstract class NumericalFun
         }
     }
 
+    public static class Log10 extends OneArgFun {
+        public Log10 (SQLExpression value) {
+            super(value);
+        }
+        public Object accept (ExpressionVisitor<?> visitor) {
+            return visitor.visit(this);
+        }
+    }
+
     public static class LogN extends TwoArgFun {
         public LogN (SQLExpression base, SQLExpression value) {
             super(base, value);

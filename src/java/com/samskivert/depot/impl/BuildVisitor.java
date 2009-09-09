@@ -68,6 +68,7 @@ import com.samskivert.depot.function.NumericalFun.Ceil;
 import com.samskivert.depot.function.NumericalFun.Exp;
 import com.samskivert.depot.function.NumericalFun.Floor;
 import com.samskivert.depot.function.NumericalFun.Ln;
+import com.samskivert.depot.function.NumericalFun.Log10;
 import com.samskivert.depot.function.NumericalFun.LogN;
 import com.samskivert.depot.function.NumericalFun.Pi;
 import com.samskivert.depot.function.NumericalFun.Power;
@@ -615,6 +616,11 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
     public Void visit (Ln exp)
     {
         return appendFunctionCall("ln", exp.getArg());
+    }
+
+    public Void visit (Log10 exp)
+    {
+        return appendFunctionCall("log", exp.getArg());
     }
 
     public Void visit (LogN exp)

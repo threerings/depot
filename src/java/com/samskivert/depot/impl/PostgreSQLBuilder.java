@@ -86,7 +86,8 @@ public class PostgreSQLBuilder
             return null;
         }
 
-        @Override public Void visit (DatePart exp) {
+        @Override public Void visit (DatePart exp)
+        {
             return appendFunctionCall(
                 "date_part", Exps.value(translateDatePart(exp.getPart())), exp.getArg());
         }
