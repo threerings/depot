@@ -33,7 +33,7 @@ import com.samskivert.depot.function.StringFun.*;
  * Provides static methods for function construction. For example: {@link #round}, {@link
  * #count} and {@link #length}.
  */
-public class Funs
+public class Funcs
 {
     /**
      * Creates an expression that computes the absolute value of the supplied expression.
