@@ -30,6 +30,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 /**
  * An expression for a function, e.g. FLOOR(blah).
  */
+@Deprecated
 public class FunctionExp extends FluentExp
 {
     /**

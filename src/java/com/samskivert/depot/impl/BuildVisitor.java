@@ -48,13 +48,40 @@ import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.clause.OrderBy;
 import com.samskivert.depot.clause.SelectClause;
 import com.samskivert.depot.clause.WhereClause;
-import com.samskivert.depot.expression.ColumnExp;
-import com.samskivert.depot.expression.EpochSeconds;
-import com.samskivert.depot.expression.FunctionExp;
-import com.samskivert.depot.expression.IntervalExp;
-import com.samskivert.depot.expression.LiteralExp;
-import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.expression.ValueExp;
+import com.samskivert.depot.expression.*;
+import com.samskivert.depot.function.AggregateFun;
+import com.samskivert.depot.function.AggregateFun.Average;
+import com.samskivert.depot.function.AggregateFun.Count;
+import com.samskivert.depot.function.AggregateFun.Every;
+import com.samskivert.depot.function.AggregateFun.Max;
+import com.samskivert.depot.function.AggregateFun.Min;
+import com.samskivert.depot.function.AggregateFun.Sum;
+import com.samskivert.depot.function.ConditionalFun.Coalesce;
+import com.samskivert.depot.function.ConditionalFun.Greatest;
+import com.samskivert.depot.function.ConditionalFun.Least;
+import com.samskivert.depot.function.DateFun.DatePart;
+import com.samskivert.depot.function.DateFun.DateTruncate;
+import com.samskivert.depot.function.DateFun.Now;
+import com.samskivert.depot.function.DateFun.DatePart.Part;
+import com.samskivert.depot.function.NumericalFun.Abs;
+import com.samskivert.depot.function.NumericalFun.Ceil;
+import com.samskivert.depot.function.NumericalFun.Exp;
+import com.samskivert.depot.function.NumericalFun.Floor;
+import com.samskivert.depot.function.NumericalFun.Ln;
+import com.samskivert.depot.function.NumericalFun.LogN;
+import com.samskivert.depot.function.NumericalFun.Pi;
+import com.samskivert.depot.function.NumericalFun.Power;
+import com.samskivert.depot.function.NumericalFun.Random;
+import com.samskivert.depot.function.NumericalFun.Round;
+import com.samskivert.depot.function.NumericalFun.Sign;
+import com.samskivert.depot.function.NumericalFun.Sqrt;
+import com.samskivert.depot.function.NumericalFun.Trunc;
+import com.samskivert.depot.function.StringFun.Length;
+import com.samskivert.depot.function.StringFun.Lower;
+import com.samskivert.depot.function.StringFun.Position;
+import com.samskivert.depot.function.StringFun.Substring;
+import com.samskivert.depot.function.StringFun.Trim;
+import com.samskivert.depot.function.StringFun.Upper;
 import com.samskivert.depot.operator.Case;
 import com.samskivert.depot.operator.Exists;
 import com.samskivert.depot.operator.FullText;
@@ -142,27 +169,21 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
         return null;
     }
 
+    @SuppressWarnings("deprecation")
     public Void visit (FunctionExp functionExp)
     {
-        _builder.append(functionExp.getFunction());
-        _builder.append("(");
+        _builder.append(functionExp.getFunction()).append("(");
         if (functionExp.getAnnotation() != null) {
             _builder.append(functionExp.getAnnotation()).append(" ");
         }
-        SQLExpression[] arguments = functionExp.getArguments();
-        for (int ii = 0; ii < arguments.length; ii ++) {
-            if (ii > 0) {
-                _builder.append(", ");
-            }
-            arguments[ii].accept(this);
-        }
+        appendArguments(functionExp.getArguments());
         _builder.append(")");
         return null;
     }
 
     public Void visit (MultiOperator multiOperator)
     {
-        SQLExpression[] conditions = multiOperator.getOperands();
+        SQLExpression[] conditions = multiOperator.getArgs();
         for (int ii = 0; ii < conditions.length; ii++) {
             if (ii > 0) {
                 _builder.append(" ").append(multiOperator.operator()).append(" ");
@@ -211,7 +232,10 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
         return null;
     }
 
-    public abstract Void visit (EpochSeconds seconds);
+    @SuppressWarnings("deprecation")
+    public Void visit (EpochSeconds epochSeconds) {
+        return visit(new DatePart(epochSeconds.getArgument(), Part.EPOCH));
+    }
 
     public abstract Void visit (FullText.Match match);
     public abstract Void visit (FullText.Rank rank);
@@ -565,18 +589,211 @@ public abstract class BuildVisitor implements ExpressionVisitor<Void>
         return null;
     }
 
-    protected void bindValue (Object object)
+    //
+    // NUMERICAL FUNCTIONS
+
+    public Void visit (Abs exp)
+    {
+        return appendFunctionCall("abs", exp.getArg());
+    }
+
+    public Void visit (Ceil exp)
+    {
+        return appendFunctionCall("ceil", exp.getArg());
+    }
+
+    public Void visit (Exp exp)
+    {
+        return appendFunctionCall("exp", exp.getArg());
+    }
+
+    public Void visit (Floor exp)
+    {
+        return appendFunctionCall("floor", exp.getArg());
+    }
+
+    public Void visit (Ln exp)
+    {
+        return appendFunctionCall("ln", exp.getArg());
+    }
+
+    public Void visit (LogN exp)
+    {
+        return appendFunctionCall("log", exp.getBase(), exp.getValue());
+    }
+
+    public Void visit (Pi exp)
+    {
+        return appendFunctionCall("PI");
+    }
+
+    public Void visit (Power exp)
+    {
+        return appendFunctionCall("power", exp.getPower(), exp.getValue());
+    }
+
+    public Void visit (Random exp)
+    {
+        return appendFunctionCall("random");
+    }
+
+    public Void visit (Round exp)
+    {
+        return appendFunctionCall("round", exp.getArg());
+    }
+
+    public Void visit (Sign exp)
+    {
+        return appendFunctionCall("sign", exp.getArg());
+    }
+
+    public Void visit (Sqrt exp)
+    {
+        return appendFunctionCall("sqrt", exp.getArg());
+    }
+
+    public Void visit (Trunc exp)
+    {
+        return appendFunctionCall("trunc", exp.getArg());
+    }
+
+    //
+    // STRING FUNCTIONS
+
+    public Void visit (Length exp)
+    {
+        return appendFunctionCall("length", exp.getArg());
+    }
+
+    public Void visit (Lower exp)
+    {
+        return appendFunctionCall("lower", exp.getArg());
+    }
+
+    public Void visit (Position exp)
+    {
+        _builder.append(" position(").append(exp.getSubString()).append(" in ").
+            append(exp.getString()).append(")");
+        return null;
+    }
+
+    public Void visit (Substring exp)
+    {
+        return appendFunctionCall("substr", exp.getArgs());
+    }
+
+    public Void visit (Trim exp)
+    {
+        return appendFunctionCall("trim", exp.getArg());
+    }
+
+    public Void visit (Upper exp)
+    {
+        return appendFunctionCall("upper", exp.getArg());
+    }
+
+    public abstract Void visit (DatePart exp);
+
+    public abstract Void visit (DateTruncate exp);
+
+    public Void visit (Now exp)
+    {
+        appendFunctionCall("now");
+        return null;
+    }
+
+    public Void visit (Average exp)
+    {
+        return appendAggregateFunctionCall("average", exp);
+    }
+
+    public Void visit (Count exp)
+    {
+        return appendAggregateFunctionCall("count", exp);
+    }
+
+    public Void visit (Every exp)
+    {
+        return appendAggregateFunctionCall("every", exp);
+    }
+
+    public Void visit (Max exp)
+    {
+        return appendAggregateFunctionCall("max", exp);
+    }
+
+    public Void visit (Min exp)
+    {
+        return appendAggregateFunctionCall("min", exp);
+    }
+
+    public Void visit (Sum exp)
+    {
+        return appendAggregateFunctionCall("sum", exp);
+    }
+
+    //
+    // CONDITIONAL FUNCTIONS
+
+    public Void visit (Coalesce exp)
+    {
+        return appendFunctionCall("coalesce", exp.getArgs());
+    }
+
+    public Void visit (Greatest exp)
+    {
+        return appendFunctionCall("greatest", exp.getArgs());
+    }
+
+    public Void visit (Least exp)
+    {
+        return appendFunctionCall("least", exp.getArgs());
+    }
+
+    protected Void appendAggregateFunctionCall (String function, AggregateFun exp)
+    {
+        _builder.append(" ").append(function).append("(");
+        if (exp.isDistinct()) {
+            _builder.append("DISTINCT ");
+        }
+        appendArguments(exp.getArg());
+        _builder.append(")");
+        return null;
+    }
+
+    protected Void appendFunctionCall (String function, SQLExpression... args)
+    {
+        _builder.append(" ").append(function).append("(");
+        appendArguments(args);
+        _builder.append(")");
+        return null;
+    }
+
+    protected Void appendArguments (SQLExpression... args)
+    {
+        for (int ii = 0; ii < args.length; ii ++) {
+            if (ii > 0) {
+                _builder.append(", ");
+            }
+            (args[ii]).accept(this);
+        }
+        return null;
+    }
+
+    protected Void bindValue (Object object)
     {
         _bindables.add(newBindable(object));
         _builder.append("?");
+        return null;
     }
 
-    protected void bindField (
+    protected Void bindField (
         Class<? extends PersistentRecord> pClass, ColumnExp field, Object pojo)
     {
         final DepotMarshaller<?> marshaller = _types.getMarshaller(pClass);
         _bindables.add(newBindable(marshaller, field, pojo));
         _builder.append("?");
+        return null;
     }
 
     protected abstract void appendIdentifier (String field);

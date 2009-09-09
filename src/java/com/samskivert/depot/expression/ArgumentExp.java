@@ -1,8 +1,8 @@
 //
-// $Id$
+// $Id: $
 //
 // Depot library - a Java relational persistence library
-// Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
+// Copyright (C) 2006-2009 Michael Bayne and Pär Winzell
 //
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
@@ -23,45 +23,25 @@ package com.samskivert.depot.expression;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.impl.ExpressionVisitor;
 
-/**
- * An expression for extracting the seconds since the epoch from a date expression.
- */
-@Deprecated
-public class EpochSeconds extends FluentExp
+public abstract class ArgumentExp extends FluentExp
 {
-    /**
-     * Create a new EpochSeconds with the given argument.
-     */
-    public EpochSeconds (SQLExpression arg)
+    protected ArgumentExp (SQLExpression... args)
     {
-        _arg = arg;
+        _args = args;
     }
 
-    // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
-    {
-        return builder.visit(this);
-    }
-
-    // from SQLExpression
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
-        _arg.addClasses(classSet);
+        for (SQLExpression arg : _args) {
+            arg.addClasses(classSet);
+        }
     }
 
-    public SQLExpression getArgument ()
+    public SQLExpression[] getArgs ()
     {
-        return _arg;
+        return _args;
     }
 
-    @Override // from Object
-    public String toString ()
-    {
-        return "Epoch(" + _arg + ")";
-    }
-
-    /** The argument. */
-    protected SQLExpression _arg;
+    protected SQLExpression[] _args;
 }

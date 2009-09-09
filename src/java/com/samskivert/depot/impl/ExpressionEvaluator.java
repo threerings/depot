@@ -37,14 +37,40 @@ import com.samskivert.depot.clause.OrderBy;
 import com.samskivert.depot.clause.SelectClause;
 import com.samskivert.depot.clause.WhereClause;
 
-import com.samskivert.depot.expression.ColumnExp;
-import com.samskivert.depot.expression.EpochSeconds;
-import com.samskivert.depot.expression.FunctionExp;
-import com.samskivert.depot.expression.IntervalExp;
-import com.samskivert.depot.expression.LiteralExp;
-import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.expression.*;
 import com.samskivert.depot.expression.SQLExpression.NoValue;
-import com.samskivert.depot.expression.ValueExp;
+
+import com.samskivert.depot.function.AggregateFun.Average;
+import com.samskivert.depot.function.AggregateFun.Count;
+import com.samskivert.depot.function.AggregateFun.Every;
+import com.samskivert.depot.function.AggregateFun.Max;
+import com.samskivert.depot.function.AggregateFun.Min;
+import com.samskivert.depot.function.AggregateFun.Sum;
+import com.samskivert.depot.function.ConditionalFun.Coalesce;
+import com.samskivert.depot.function.ConditionalFun.Greatest;
+import com.samskivert.depot.function.ConditionalFun.Least;
+import com.samskivert.depot.function.DateFun.DatePart;
+import com.samskivert.depot.function.DateFun.DateTruncate;
+import com.samskivert.depot.function.DateFun.Now;
+import com.samskivert.depot.function.NumericalFun.Abs;
+import com.samskivert.depot.function.NumericalFun.Ceil;
+import com.samskivert.depot.function.NumericalFun.Exp;
+import com.samskivert.depot.function.NumericalFun.Floor;
+import com.samskivert.depot.function.NumericalFun.Ln;
+import com.samskivert.depot.function.NumericalFun.LogN;
+import com.samskivert.depot.function.NumericalFun.Pi;
+import com.samskivert.depot.function.NumericalFun.Power;
+import com.samskivert.depot.function.NumericalFun.Random;
+import com.samskivert.depot.function.NumericalFun.Round;
+import com.samskivert.depot.function.NumericalFun.Sign;
+import com.samskivert.depot.function.NumericalFun.Sqrt;
+import com.samskivert.depot.function.NumericalFun.Trunc;
+import com.samskivert.depot.function.StringFun.Length;
+import com.samskivert.depot.function.StringFun.Lower;
+import com.samskivert.depot.function.StringFun.Position;
+import com.samskivert.depot.function.StringFun.Substring;
+import com.samskivert.depot.function.StringFun.Trim;
+import com.samskivert.depot.function.StringFun.Upper;
 
 import com.samskivert.depot.operator.Case;
 import com.samskivert.depot.operator.Exists;
@@ -65,7 +91,11 @@ import com.samskivert.util.Tuple;
 import static com.samskivert.depot.Log.log;
 
 /**
- * Enumerates visitation methods for every possible SQL expression type.
+ * Attempts to compute the actual values different SQL constructs would yield if they were
+ * actually send to the database to operate on rows, rather than on in-memory data objects.
+ *
+ * TODO: Many of the classes in com.samskivert.depot.functions.* have excellent implementations
+ * TODO: that should be written.
  */
 public class ExpressionEvaluator
     implements ExpressionVisitor<Object>
@@ -76,6 +106,7 @@ public class ExpressionEvaluator
         _pRec = pRec;
     }
 
+    @SuppressWarnings("deprecation")
     public Object visit (FunctionExp functionExp)
     {
         SQLExpression[] arguments = functionExp.getArguments();
@@ -94,6 +125,7 @@ public class ExpressionEvaluator
         return new NoValue("Bad Function: " + functionExp);
     }
 
+    @SuppressWarnings("deprecation")
     public Object visit (EpochSeconds epochSeconds)
     {
         Object result = epochSeconds.getArgument().accept(this);
@@ -105,7 +137,7 @@ public class ExpressionEvaluator
 
     public Object visit (MultiOperator multiOperator)
     {
-        SQLExpression[] operands = multiOperator.getOperands();
+        SQLExpression[] operands = multiOperator.getArgs();
         Object[] values = new Object[operands.length];
         for (int ii = 0; ii < operands.length; ii ++) {
             values[ii] = operands[ii].accept(this);
@@ -327,6 +359,170 @@ public class ExpressionEvaluator
     public Object visit (DropIndexClause dropIndexClause)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + dropIndexClause);
+    }
+
+    //
+    // NUMERICAL FUNCTIONS
+
+    public Void visit (Abs exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Ceil exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Exp exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Floor exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Ln exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (LogN exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Pi exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Power exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Random exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Round exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Sign exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Sqrt exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Trunc exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    //
+    // STRING FUNCTIONS
+
+    public Void visit (Length exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Lower exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Position exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Substring exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Trim exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Upper exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (DatePart exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (DateTruncate exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Now exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Average exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Count exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Every exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Max exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Min exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Sum exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    //
+    // CONDITIONAL FUNCTIONS
+
+    public Void visit (Coalesce exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Greatest exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
+    }
+
+    public Void visit (Least exp)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
     public static Double numerical (Object o)

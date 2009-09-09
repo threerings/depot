@@ -43,10 +43,11 @@ import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.annotation.GeneratedValue;
 import com.samskivert.depot.clause.OrderBy.Order;
-import com.samskivert.depot.expression.ColumnExp;
-import com.samskivert.depot.expression.EpochSeconds;
-import com.samskivert.depot.expression.FunctionExp;
-import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.expression.*;
+import com.samskivert.depot.function.DateFun.DatePart;
+import com.samskivert.depot.function.DateFun.DateTruncate;
+import com.samskivert.depot.function.DateFun.DatePart.Part;
+import com.samskivert.depot.function.StringFun.Lower;
 import com.samskivert.depot.operator.BitAnd;
 import com.samskivert.depot.operator.BitOr;
 import com.samskivert.depot.operator.FullText;
@@ -82,11 +83,10 @@ public class HSQLBuilder
 
             // now iterate over the cartesian product of the query words & the fields
             List<SQLExpression> bits = Lists.newArrayList();
-            for (int ii = 0; ii < fields.length; ii ++) {
-                FunctionExp colexp = new FunctionExp("lower", new ColumnExp(pClass, fields[ii]));
-                for (int jj = 0; jj < ftsWords.length; jj ++) {
+            for (String field : fields) {
+                for (String ftsWord : ftsWords) {
                     // build comparisons between each word and column
-                    bits.add(new Like(colexp, "%" + ftsWords[jj] + "%"));
+                    bits.add(new Like(new Lower(new ColumnExp(pClass, field)), "%" + ftsWord + "%"));
                 }
             }
             // then just OR them all together and we have our query
@@ -105,38 +105,37 @@ public class HSQLBuilder
         @Override
         public Void visit (MultiOperator operator)
         {
-            String op;
             // HSQL doesn't handle & and | operators
             if (operator instanceof BitAnd) {
-                op = "bitand";
-
-            } else if (operator instanceof BitOr) {
-                op = "bitor";
-
-            } else {
-                return super.visit(operator);
+                return appendFunctionCall("bitand", operator.getArgs());
             }
-
-            _builder.append(op).append("(");
-            boolean virgin = true;
-            for (SQLExpression bit: operator.getOperands()) {
-                if (!virgin) {
-                    _builder.append(", ");
-                }
-                bit.accept(this);
-                virgin = false;
+            if (operator instanceof BitOr) {
+                return appendFunctionCall("bitor", operator.getArgs());
             }
-            _builder.append(")");
-            return null;
+            return super.visit(operator);
+        }
+
+        @Override @SuppressWarnings("deprecation")
+        public Void visit (EpochSeconds epochSeconds)
+        {
+            return visit (new DatePart(epochSeconds.getArgument(), Part.EPOCH));
+        }
+
+        @Override public Void visit (DatePart exp) {
+
+            if (exp.getPart() == Part.EPOCH) {
+                _builder.append("datediff('ss', ");
+                exp.getArg().accept(this);
+                _builder.append(", '1970-01-01')");
+                return null;
+            }
+            return appendFunctionCall(getDateFunction(exp.getPart()), exp.getArg());
         }
 
         @Override
-        public Void visit (EpochSeconds epochSeconds)
+        public Void visit (DateTruncate exp)
         {
-            _builder.append("datediff('ss', ");
-            epochSeconds.getArgument().accept(this);
-            _builder.append(", '1970-01-01')");
-            return null;
+            throw new IllegalArgumentException("HSQL does not have built-in date truncation");
         }
 
         @Override
@@ -156,6 +155,31 @@ public class HSQLBuilder
         protected HBuildVisitor (DepotTypes types)
         {
             super(types);
+        }
+
+        protected String getDateFunction (Part part)
+        {
+            switch(part) {
+            case DAY_OF_MONTH:
+                return "dayofmonth";
+            case DAY_OF_WEEK:
+                return "dayofweek";
+            case DAY_OF_YEAR:
+                return "dayofyear";
+            case HOUR:
+                return "hour";
+            case MINUTE:
+                return "minute";
+            case MONTH:
+                return "month";
+            case SECOND:
+                return "second";
+            case WEEK:
+                return "week";
+            case YEAR:
+                return "year";
+            }
+            throw new IllegalArgumentException("Unknown date part: " + part);
         }
 
         @Override protected void appendIdentifier (String field) {

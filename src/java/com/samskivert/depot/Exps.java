@@ -20,12 +20,7 @@
 
 package com.samskivert.depot;
 
-import com.samskivert.depot.expression.EpochSeconds;
-import com.samskivert.depot.expression.FunctionExp;
-import com.samskivert.depot.expression.IntervalExp;
-import com.samskivert.depot.expression.LiteralExp;
-import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.expression.ValueExp;
+import com.samskivert.depot.expression.*;
 
 /**
  * Provides static methods for expression construction. For example: {@link #literal}, {@link
@@ -101,43 +96,9 @@ public class Exps
     /**
      * Creates an expression that converts the supplied expression into seconds since the epoch.
      */
+    @SuppressWarnings("deprecation")
     public static EpochSeconds epochSeconds (SQLExpression expr)
     {
         return new EpochSeconds(expr);
-    }
-
-    /**
-     * Creates an expression that computes the sum of the supplied expression. This would usually
-     * be used in a FieldOverride and supplied with a ColumnExp.
-     */
-    public static FunctionExp sum (SQLExpression expr)
-    {
-        return new FunctionExp("sum", expr);
-    }
-
-    /**
-     * Creates an expression that computes the absolute value of the supplied expression.
-     */
-    public static FunctionExp abs (SQLExpression expr)
-    {
-        return new FunctionExp("abs", expr);
-    }
-
-    /**
-     * Creates an expression that counts the number of rows that match the supplied expression.
-     * This would usually be used in a FieldOverride and supplied with a ColumnExp.
-     */
-    public static FunctionExp count (SQLExpression expr)
-    {
-        return new FunctionExp("count", expr);
-    }
-
-    /**
-     * Creates an expression that counts the number of distinct values that match the supplied
-     * expression. This would usually be used in a FieldOverride and supplied with a ColumnExp.
-     */
-    public static FunctionExp countDistinct (SQLExpression expr)
-    {
-        return new FunctionExp("count", "distinct", expr);
     }
 }

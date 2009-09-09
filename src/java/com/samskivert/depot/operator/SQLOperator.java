@@ -28,7 +28,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.expression.FluentExp;
+import com.samskivert.depot.expression.ArgumentExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.expression.ValueExp;
 import com.samskivert.depot.impl.ExpressionVisitor;
@@ -47,7 +47,7 @@ public interface SQLOperator extends SQLExpression
     {
         public MultiOperator (SQLExpression ... operands)
         {
-            _operands = operands;
+            super(operands);
         }
 
         // from SQLExpression
@@ -59,14 +59,9 @@ public interface SQLOperator extends SQLExpression
         // from SQLExpression
         public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
         {
-            for (SQLExpression operand : _operands) {
+            for (SQLExpression operand : _args) {
                 operand.addClasses(classSet);
             }
-        }
-
-        public SQLExpression[] getOperands ()
-        {
-            return _operands;
         }
 
         /**
@@ -83,7 +78,7 @@ public interface SQLOperator extends SQLExpression
         public String toString ()
         {
             StringBuilder builder = new StringBuilder("(");
-            for (SQLExpression operand : _operands) {
+            for (SQLExpression operand : _args) {
                 if (builder.length() > 1) {
                     builder.append(operator());
                 }
@@ -91,8 +86,6 @@ public interface SQLOperator extends SQLExpression
             }
             return builder.append(")").toString();
         }
-
-        protected SQLExpression[] _operands;
     }
 
     /**
@@ -102,8 +95,7 @@ public interface SQLOperator extends SQLExpression
     {
         public BinaryOperator (SQLExpression lhs, SQLExpression rhs)
         {
-            _lhs = lhs;
-            _rhs = rhs;
+            super(lhs, rhs);
         }
 
         public BinaryOperator (SQLExpression lhs, Comparable<?> rhs)
@@ -117,13 +109,6 @@ public interface SQLOperator extends SQLExpression
             return builder.visit(this);
         }
 
-        // from SQLExpression
-        public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
-        {
-            _lhs.addClasses(classSet);
-            _rhs.addClasses(classSet);
-        }
-
         public abstract Object evaluate (Object left, Object right);
 
         /**
@@ -133,25 +118,22 @@ public interface SQLOperator extends SQLExpression
 
         public SQLExpression getLeftHandSide ()
         {
-            return _lhs;
+            return _args[0];
         }
 
         public SQLExpression getRightHandSide ()
         {
-            return _rhs;
+            return _args[1];
         }
 
         @Override // from Object
         public String toString ()
         {
-            return "(" + _lhs + operator() + _rhs + ")";
+            return "(" + _args[0] + operator() + _args[1] + ")";
         }
-
-        protected SQLExpression _lhs;
-        protected SQLExpression _rhs;
     }
 
-    public static abstract class BaseOperator extends FluentExp
+    public static abstract class BaseOperator extends ArgumentExp
         implements SQLOperator
     {
         public static Function<Object, Long> INTEGRAL = new Function<Object, Long>() {
@@ -194,6 +176,11 @@ public interface SQLOperator extends SQLExpression
                 v = acc.accumulate(v, fun.apply(op));
             }
             return v;
+        }
+
+        protected BaseOperator (SQLExpression... operands)
+        {
+            super(operands);
         }
 
         protected static interface Accumulator<T>

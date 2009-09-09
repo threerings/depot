@@ -35,8 +35,11 @@ import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.expression.ColumnExp;
-import com.samskivert.depot.expression.EpochSeconds;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.function.DateFun.DatePart;
+import com.samskivert.depot.function.DateFun.DateTruncate;
+import com.samskivert.depot.function.DateFun.DatePart.Part;
+import com.samskivert.depot.function.NumericalFun.Trunc;
 import com.samskivert.depot.operator.FullText;
 
 import com.samskivert.depot.impl.FieldMarshaller.BooleanMarshaller;
@@ -90,13 +93,47 @@ public class MySQLBuilder
             return null;
         }
 
-        @Override
-        public Void visit (EpochSeconds epochSeconds)
+        @Override public Void visit (Trunc exp)
         {
-            _builder.append("unix_timestamp(");
-            epochSeconds.getArgument().accept(this);
-            _builder.append(")");
-            return null;
+            return appendFunctionCall("truncate", exp.getArg());
+        }
+
+        @Override public Void visit (DatePart exp) {
+            return appendFunctionCall(getDateFunction(exp.getPart()), exp.getArg());
+        }
+
+        @Override
+        public Void visit (DateTruncate exp)
+        {
+            // exp.getTruncation() is currently always DAY
+            return appendFunctionCall("date", exp.getArg());
+        }
+
+        protected String getDateFunction (Part part)
+        {
+            switch(part) {
+            case DAY_OF_MONTH:
+                return "dayofmonth";
+            case DAY_OF_WEEK:
+                return "dayofweek";
+            case DAY_OF_YEAR:
+                return "dayofyear";
+            case HOUR:
+                return "hour";
+            case MINUTE:
+                return "minute";
+            case MONTH:
+                return "month";
+            case SECOND:
+                return "second";
+            case WEEK:
+                return "week";
+            case YEAR:
+                return "year";
+            case EPOCH:
+                return "unix_timestamp";
+            }
+            throw new IllegalArgumentException("Unknown date part: " + part);
         }
 
         @Override
