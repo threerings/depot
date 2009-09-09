@@ -68,8 +68,7 @@ public class Funcs
     }
 
     /**
-     * Creates an expression that computes the natural logarithm of the supplied expression,
-     * which may be double-precision.
+     * Creates an expression that computes the natural logarithm of the supplied expression.
      */
     public static Ln ln (SQLExpression exp)
     {
@@ -77,22 +76,11 @@ public class Funcs
     }
 
     /**
-     * Creates an expression that computes the base-10 logarithm of the supplied expression,
-     * which may be double-precision.
+     * Creates an expression that computes the base-10 logarithm of the supplied expression.
      */
     public static Log10 log10 (SQLExpression value)
     {
         return new Log10(value);
-    }
-
-    /**
-     * Creates an expression that computes the logarithm of the supplied value expression
-     * in the supplied base expression. Note: Under PostgreSQL, this must evaluate to a simple
-     * numerical, not double precision.
-     */
-    public static LogN logN (SQLExpression base, SQLExpression value)
-    {
-        return new LogN(base, value);
     }
 
     /**

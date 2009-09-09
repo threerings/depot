@@ -79,21 +79,6 @@ public abstract class NumericalFun
         }
     }
 
-    public static class LogN extends TwoArgFun {
-        public LogN (SQLExpression base, SQLExpression value) {
-            super(base, value);
-        }
-        public Object accept (ExpressionVisitor<?> visitor) {
-            return visitor.visit(this);
-        }
-        public SQLExpression getBase () {
-            return _arg1;
-        }
-        public SQLExpression getValue () {
-            return _arg2;
-        }
-    }
-
     public static class Pi extends NoArgFun {
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);

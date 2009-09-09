@@ -58,7 +58,6 @@ import com.samskivert.depot.function.NumericalFun.Exp;
 import com.samskivert.depot.function.NumericalFun.Floor;
 import com.samskivert.depot.function.NumericalFun.Ln;
 import com.samskivert.depot.function.NumericalFun.Log10;
-import com.samskivert.depot.function.NumericalFun.LogN;
 import com.samskivert.depot.function.NumericalFun.Pi;
 import com.samskivert.depot.function.NumericalFun.Power;
 import com.samskivert.depot.function.NumericalFun.Random;
@@ -391,11 +390,6 @@ public class ExpressionEvaluator
     }
 
     public Void visit (Log10 exp)
-    {
-        throw new IllegalArgumentException("Can't evaluate expression: " + exp);
-    }
-
-    public Void visit (LogN exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
