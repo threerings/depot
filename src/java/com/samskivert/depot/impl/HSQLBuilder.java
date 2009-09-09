@@ -178,6 +178,8 @@ public class HSQLBuilder
                 return "week";
             case YEAR:
                 return "year";
+            case EPOCH:
+                throw new IllegalArgumentException("HSQL doesn't have a direct function for epoch");
             }
             throw new IllegalArgumentException("Unknown date part: " + part);
         }

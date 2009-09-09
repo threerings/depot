@@ -44,7 +44,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
  * instantiated explicitly.
  */
 public class Key<T extends PersistentRecord> extends WhereClause
-    implements SQLExpression, ValidatingCacheInvalidator
+    implements ValidatingCacheInvalidator
 {
     /** Handles the matching of the key columns to its bound values. This is needed so that we can
      * combine a bunch of keys into a {@link KeySet}. */

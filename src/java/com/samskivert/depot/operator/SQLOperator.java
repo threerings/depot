@@ -56,7 +56,8 @@ public interface SQLOperator extends SQLExpression
             return builder.visit(this);
         }
 
-        // from SQLExpression
+
+        @Override // from SQLExpression
         public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
         {
             for (SQLExpression operand : _args) {
