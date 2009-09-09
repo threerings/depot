@@ -179,7 +179,7 @@ public class HSQLBuilder
             case YEAR:
                 return "year";
             case EPOCH:
-                throw new IllegalArgumentException("HSQL doesn't have a direct function for epoch");
+                // internal error, EPOCH is handled in the calling function, fall through to error
             }
             throw new IllegalArgumentException("Unknown date part: " + part);
         }
