@@ -20,6 +20,7 @@
 
 package com.samskivert.depot;
 
+import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.function.AggregateFun.*;
 import com.samskivert.depot.function.ConditionalFun.*;
@@ -38,7 +39,7 @@ public class Funcs
     /**
      * Creates an expression that computes the absolute value of the supplied expression.
      */
-    public static Abs abs (SQLExpression expr)
+    public static FluentExp abs (SQLExpression expr)
     {
         return new Abs(expr);
     }
@@ -46,7 +47,7 @@ public class Funcs
     /**
      * Creates an expression that computes the integer ceiling of the supplied expression.
      */
-    public static Ceil ceil (SQLExpression exp)
+    public static FluentExp ceil (SQLExpression exp)
     {
         return new Ceil(exp);
     }
@@ -54,7 +55,7 @@ public class Funcs
     /**
      * Creates an expression that computes the exponential of the supplied expression.
      */
-    public static Exp exp (SQLExpression exp)
+    public static FluentExp exp (SQLExpression exp)
     {
         return new Exp(exp);
     }
@@ -62,7 +63,7 @@ public class Funcs
     /**
      * Creates an expression that computes the integer floor of the supplied expression.
      */
-    public static Floor floor (SQLExpression exp)
+    public static FluentExp floor (SQLExpression exp)
     {
         return new Floor(exp);
     }
@@ -70,7 +71,7 @@ public class Funcs
     /**
      * Creates an expression that computes the natural logarithm of the supplied expression.
      */
-    public static Ln ln (SQLExpression exp)
+    public static FluentExp ln (SQLExpression exp)
     {
         return new Ln(exp);
     }
@@ -78,7 +79,7 @@ public class Funcs
     /**
      * Creates an expression that computes the base-10 logarithm of the supplied expression.
      */
-    public static Log10 log10 (SQLExpression value)
+    public static FluentExp log10 (SQLExpression value)
     {
         return new Log10(value);
     }
@@ -86,7 +87,7 @@ public class Funcs
     /**
      * Creates an expression that evaluates to the constant PI.
      */
-    public static Pi pi ()
+    public static FluentExp pi ()
     {
         return new Pi();
     }
@@ -94,7 +95,7 @@ public class Funcs
     /**
      * Creates an expression that computes the value expression to the given power.
      */
-    public static Power power (SQLExpression value, SQLExpression power)
+    public static FluentExp power (SQLExpression value, SQLExpression power)
     {
         return new Power(value, power);
     }
@@ -102,7 +103,7 @@ public class Funcs
     /**
      * Creates an expression that returns a random number between 0.0 and 1.0.
      */
-    public static Random random ()
+    public static FluentExp random ()
     {
         return new Random();
     }
@@ -110,7 +111,7 @@ public class Funcs
     /**
      * Creates an expression that computes the whole number nearest the supplied expression.
      */
-    public static Round round (SQLExpression exp)
+    public static FluentExp round (SQLExpression exp)
     {
         return new Round(exp);
     }
@@ -118,7 +119,7 @@ public class Funcs
     /**
      * Creates an expression that computes the sign of the supplied expression.
      */
-    public static Sign sign (SQLExpression exp)
+    public static FluentExp sign (SQLExpression exp)
     {
         return new Sign(exp);
     }
@@ -126,7 +127,7 @@ public class Funcs
     /**
      * Creates an expression that computes the square root of the supplied expression.
      */
-    public static Sqrt sqrt (SQLExpression exp)
+    public static FluentExp sqrt (SQLExpression exp)
     {
         return new Sqrt(exp);
     }
@@ -135,7 +136,7 @@ public class Funcs
      * Creates an expression that computes the truncation of the supplied expression,
      * i.e. the next closest whole number to zero.
      */
-    public static Trunc trunc (SQLExpression exp)
+    public static FluentExp trunc (SQLExpression exp)
     {
         return new Trunc(exp);
     }
@@ -143,7 +144,7 @@ public class Funcs
     /**
      * Creates an expression that evaluates to the string length of the supplied expression.
      */
-    public static Length length (SQLExpression exp)
+    public static FluentExp length (SQLExpression exp)
     {
         return new Length(exp);
     }
@@ -151,7 +152,7 @@ public class Funcs
     /**
      * Creates an expression that down-cases the supplied expression.
      */
-    public static Lower lower (SQLExpression exp)
+    public static FluentExp lower (SQLExpression exp)
     {
         return new Lower(exp);
     }
@@ -160,7 +161,7 @@ public class Funcs
      * Creates an expression that locates the given substring expression within the given
      * string expression and returns the index.
      */
-    public static Position position (SQLExpression substring, SQLExpression string)
+    public static FluentExp position (SQLExpression substring, SQLExpression string)
     {
         return new Position(substring, string);
     }
@@ -169,7 +170,7 @@ public class Funcs
      * Creates an expression that evaluates to a substring of the given string expression,
      * starting at the given index and of the given length.
      */
-    public static Substring substring (
+    public static FluentExp substring (
         SQLExpression string, SQLExpression from, SQLExpression count)
     {
         return new Substring(string, from, count);
@@ -179,7 +180,7 @@ public class Funcs
      * Creates an expression that removes whitespace from the beginning and end of the supplied
      * string expression.
      */
-    public static Trim trim (SQLExpression exp)
+    public static FluentExp trim (SQLExpression exp)
     {
         return new Trim(exp);
     }
@@ -187,7 +188,7 @@ public class Funcs
     /**
      * Creates an expression that up-cases the supplied string expression.
      */
-    public static Upper upper (SQLExpression exp)
+    public static FluentExp upper (SQLExpression exp)
     {
         return new Upper(exp);
     }
@@ -195,7 +196,7 @@ public class Funcs
     /**
      * Creates an expression that truncates the given timestamp expression to a date.
      */
-    public static DateTruncate truncToDay (SQLExpression exp)
+    public static FluentExp truncToDay (SQLExpression exp)
     {
         return new DateTruncate(exp, Truncation.DAY);
     }
@@ -203,7 +204,7 @@ public class Funcs
     /**
      * Creates an expression to extract the day-of-month from the the supplied timestamp expression.
      */
-    public static DatePart dayOfMonth (SQLExpression exp)
+    public static FluentExp dayOfMonth (SQLExpression exp)
     {
         return new DatePart(exp, Part.DAY_OF_MONTH);
     }
@@ -211,7 +212,7 @@ public class Funcs
     /**
      * Creates an expression to extract the day-of-week from the the supplied timestamp expression.
      */
-    public static DatePart dayOfWeek (SQLExpression exp)
+    public static FluentExp dayOfWeek (SQLExpression exp)
     {
         return new DatePart(exp, Part.DAY_OF_WEEK);
     }
@@ -219,7 +220,7 @@ public class Funcs
     /**
      * Creates an expression to extract the day-of-year from the the supplied timestamp expression.
      */
-    public static DatePart dayOfYear (SQLExpression exp)
+    public static FluentExp dayOfYear (SQLExpression exp)
     {
         return new DatePart(exp, Part.DAY_OF_YEAR);
     }
@@ -227,7 +228,7 @@ public class Funcs
     /**
      * Creates an expression to extract the hour of the the supplied timestamp expression.
      */
-    public static DatePart dateHour (SQLExpression exp)
+    public static FluentExp dateHour (SQLExpression exp)
     {
         return new DatePart(exp, Part.HOUR);
     }
@@ -235,7 +236,7 @@ public class Funcs
     /**
      * Creates an expression to extract the minute of the the supplied timestamp expression.
      */
-    public static DatePart dateMinute (SQLExpression exp)
+    public static FluentExp dateMinute (SQLExpression exp)
     {
         return new DatePart(exp, Part.MINUTE);
     }
@@ -243,7 +244,7 @@ public class Funcs
     /**
      * Creates an expression to extract the month of the the supplied timestamp expression.
      */
-    public static DatePart dateMonth (SQLExpression exp)
+    public static FluentExp dateMonth (SQLExpression exp)
     {
         return new DatePart(exp, Part.MONTH);
     }
@@ -251,7 +252,7 @@ public class Funcs
     /**
      * Creates an expression to extract the second of the the supplied timestamp expression.
      */
-    public static DatePart dateSecond (SQLExpression exp)
+    public static FluentExp dateSecond (SQLExpression exp)
     {
         return new DatePart(exp, Part.SECOND);
     }
@@ -259,7 +260,7 @@ public class Funcs
     /**
      * Creates an expression to extract the week of the the supplied timestamp expression.
      */
-    public static DatePart dateWeek (SQLExpression exp)
+    public static FluentExp dateWeek (SQLExpression exp)
     {
         return new DatePart(exp, Part.WEEK);
     }
@@ -267,7 +268,7 @@ public class Funcs
     /**
      * Creates an expression to extract the year of the the supplied timestamp expression.
      */
-    public static DatePart dateYear (SQLExpression exp)
+    public static FluentExp dateYear (SQLExpression exp)
     {
         return new DatePart(exp, Part.YEAR);
     }
@@ -276,7 +277,7 @@ public class Funcs
      * Creates an expression to extract the epoch (aka unix timestamp, aka seconds passed since
      * 1970-01-01) of the the supplied timestamp expression.
      */
-    public static DatePart dateEpoch (SQLExpression exp)
+    public static FluentExp dateEpoch (SQLExpression exp)
     {
         return new DatePart(exp, Part.EPOCH);
     }
@@ -284,7 +285,7 @@ public class Funcs
     /**
      * Creates an expression for the current timestamp.
      */
-    public static Now now ()
+    public static FluentExp now ()
     {
         return new Now();
     }
@@ -293,7 +294,7 @@ public class Funcs
      * Creates an aggregate expression that averages all values from the supplied expression.
      * This would usually be used in a FieldOverride and supplied with a ColumnExp.
      */
-    public static Average average (SQLExpression expr)
+    public static FluentExp average (SQLExpression expr)
     {
         return new Average(expr);
     }
@@ -302,7 +303,7 @@ public class Funcs
      * Creates an expression that averages all distinct values from the supplied expression.
      * This would usually be used in a FieldOverride and supplied with a ColumnExp.
      */
-    public static Average averageDistinct (SQLExpression expr)
+    public static FluentExp averageDistinct (SQLExpression expr)
     {
         return new Average(expr, true);
     }
@@ -311,7 +312,7 @@ public class Funcs
      * Creates an aggregate expression that counts the number of rows from the supplied
      * expression. This would usually be used in a FieldOverride and supplied with a ColumnExp.
      */
-    public static Count count (SQLExpression expr)
+    public static FluentExp count (SQLExpression expr)
     {
         return new Count(expr);
     }
@@ -321,7 +322,7 @@ public class Funcs
      * supplied expression. This would usually be used in a FieldOverride and supplied with a
      * ColumnExp.
      */
-    public static Count countDistinct (SQLExpression expr)
+    public static FluentExp countDistinct (SQLExpression expr)
     {
         return new Count(expr, true);
     }
@@ -331,7 +332,7 @@ public class Funcs
      * expression is also true. This would usually be used in a FieldOverride and supplied with
      * a ColumnExp.
      */
-    public static Every every (SQLExpression expr)
+    public static FluentExp every (SQLExpression expr)
     {
         return new Every(expr);
     }
@@ -341,7 +342,7 @@ public class Funcs
      * supplied expression. This would usually be used in a FieldOverride and supplied with
      * a ColumnExp.
      */
-    public static Max max (SQLExpression expr)
+    public static FluentExp max (SQLExpression expr)
     {
         return new Max(expr);
     }
@@ -351,7 +352,7 @@ public class Funcs
      * supplied expression. This would usually be used in a FieldOverride and supplied with
      * a ColumnExp.
      */
-    public static Min min (SQLExpression expr)
+    public static FluentExp min (SQLExpression expr)
     {
         return new Min(expr);
     }
@@ -360,7 +361,7 @@ public class Funcs
      * Creates an aggregate expression that sums all the values from the supplied expression.
      * This would usually be used in a FieldOverride and supplied with a ColumnExp.
      */
-    public static Sum sum (SQLExpression expr)
+    public static FluentExp sum (SQLExpression expr)
     {
         return new Sum(expr);
     }
@@ -368,7 +369,7 @@ public class Funcs
     /**
      * Creates an expression that evaluates to the first supplied expression that is not null.
      */
-    public static Coalesce coalesce (SQLExpression... args)
+    public static FluentExp coalesce (SQLExpression... args)
     {
         return new Coalesce(args);
     }
@@ -376,7 +377,7 @@ public class Funcs
     /**
      * Creates an expression that evaluates to the largest of the given expressions.
      */
-    public static Greatest greatest (SQLExpression... args)
+    public static FluentExp greatest (SQLExpression... args)
     {
         return new Greatest(args);
     }
@@ -384,7 +385,7 @@ public class Funcs
     /**
      * Creates an expression that evaluates to the smallest of the given expressions.
      */
-    public static Least least (SQLExpression... args)
+    public static FluentExp least (SQLExpression... args)
     {
         return new Least(args);
     }
