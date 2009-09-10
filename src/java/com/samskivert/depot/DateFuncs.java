@@ -32,19 +32,11 @@ import com.samskivert.depot.impl.expression.DateFun.DateTruncate.Truncation;
 public class DateFuncs
 {
     /**
-     * Creates an expression that truncates the given timestamp expression to a date.
+     * Creates an expression that extracts the date from the given timestamp expression.
      */
-    public static FluentExp truncToDay (SQLExpression exp)
+    public static FluentExp date (SQLExpression exp)
     {
         return new DateTruncate(exp, Truncation.DAY);
-    }
-
-    /**
-     * Creates an expression to extract the day-of-month from the the supplied timestamp expression.
-     */
-    public static FluentExp dayOfMonth (SQLExpression exp)
-    {
-        return new DatePart(exp, Part.DAY_OF_MONTH);
     }
 
     /**
@@ -53,6 +45,14 @@ public class DateFuncs
     public static FluentExp dayOfWeek (SQLExpression exp)
     {
         return new DatePart(exp, Part.DAY_OF_WEEK);
+    }
+
+    /**
+     * Creates an expression to extract the day-of-month from the the supplied timestamp expression.
+     */
+    public static FluentExp dayOfMonth (SQLExpression exp)
+    {
+        return new DatePart(exp, Part.DAY_OF_MONTH);
     }
 
     /**
@@ -66,7 +66,7 @@ public class DateFuncs
     /**
      * Creates an expression to extract the hour of the the supplied timestamp expression.
      */
-    public static FluentExp dateHour (SQLExpression exp)
+    public static FluentExp hour (SQLExpression exp)
     {
         return new DatePart(exp, Part.HOUR);
     }
@@ -74,23 +74,15 @@ public class DateFuncs
     /**
      * Creates an expression to extract the minute of the the supplied timestamp expression.
      */
-    public static FluentExp dateMinute (SQLExpression exp)
+    public static FluentExp minute (SQLExpression exp)
     {
         return new DatePart(exp, Part.MINUTE);
     }
 
     /**
-     * Creates an expression to extract the month of the the supplied timestamp expression.
-     */
-    public static FluentExp dateMonth (SQLExpression exp)
-    {
-        return new DatePart(exp, Part.MONTH);
-    }
-
-    /**
      * Creates an expression to extract the second of the the supplied timestamp expression.
      */
-    public static FluentExp dateSecond (SQLExpression exp)
+    public static FluentExp second (SQLExpression exp)
     {
         return new DatePart(exp, Part.SECOND);
     }
@@ -98,15 +90,23 @@ public class DateFuncs
     /**
      * Creates an expression to extract the week of the the supplied timestamp expression.
      */
-    public static FluentExp dateWeek (SQLExpression exp)
+    public static FluentExp week (SQLExpression exp)
     {
         return new DatePart(exp, Part.WEEK);
     }
 
     /**
+     * Creates an expression to extract the month of the the supplied timestamp expression.
+     */
+    public static FluentExp month (SQLExpression exp)
+    {
+        return new DatePart(exp, Part.MONTH);
+    }
+
+    /**
      * Creates an expression to extract the year of the the supplied timestamp expression.
      */
-    public static FluentExp dateYear (SQLExpression exp)
+    public static FluentExp year (SQLExpression exp)
     {
         return new DatePart(exp, Part.YEAR);
     }
@@ -115,7 +115,7 @@ public class DateFuncs
      * Creates an expression to extract the epoch (aka unix timestamp, aka seconds passed since
      * 1970-01-01) of the the supplied timestamp expression.
      */
-    public static FluentExp dateEpoch (SQLExpression exp)
+    public static FluentExp epoch (SQLExpression exp)
     {
         return new DatePart(exp, Part.EPOCH);
     }
