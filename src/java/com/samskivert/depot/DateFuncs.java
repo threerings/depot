@@ -23,8 +23,6 @@ package com.samskivert.depot;
 import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.expression.DateFun.*;
-import com.samskivert.depot.impl.expression.DateFun.DatePart.Part;
-import com.samskivert.depot.impl.expression.DateFun.DateTruncate.Truncation;
 
 /**
  * Provides static methods for date-related function construction.
@@ -36,7 +34,7 @@ public class DateFuncs
      */
     public static FluentExp date (SQLExpression exp)
     {
-        return new DateTruncate(exp, Truncation.DAY);
+        return new DateTruncate(exp, DateTruncate.Truncation.DAY);
     }
 
     /**
@@ -44,7 +42,7 @@ public class DateFuncs
      */
     public static FluentExp dayOfWeek (SQLExpression exp)
     {
-        return new DatePart(exp, Part.DAY_OF_WEEK);
+        return new DatePart(exp, DatePart.Part.DAY_OF_WEEK);
     }
 
     /**
@@ -52,7 +50,7 @@ public class DateFuncs
      */
     public static FluentExp dayOfMonth (SQLExpression exp)
     {
-        return new DatePart(exp, Part.DAY_OF_MONTH);
+        return new DatePart(exp, DatePart.Part.DAY_OF_MONTH);
     }
 
     /**
@@ -60,7 +58,7 @@ public class DateFuncs
      */
     public static FluentExp dayOfYear (SQLExpression exp)
     {
-        return new DatePart(exp, Part.DAY_OF_YEAR);
+        return new DatePart(exp, DatePart.Part.DAY_OF_YEAR);
     }
 
     /**
@@ -68,7 +66,7 @@ public class DateFuncs
      */
     public static FluentExp hour (SQLExpression exp)
     {
-        return new DatePart(exp, Part.HOUR);
+        return new DatePart(exp, DatePart.Part.HOUR);
     }
 
     /**
@@ -76,7 +74,7 @@ public class DateFuncs
      */
     public static FluentExp minute (SQLExpression exp)
     {
-        return new DatePart(exp, Part.MINUTE);
+        return new DatePart(exp, DatePart.Part.MINUTE);
     }
 
     /**
@@ -84,7 +82,7 @@ public class DateFuncs
      */
     public static FluentExp second (SQLExpression exp)
     {
-        return new DatePart(exp, Part.SECOND);
+        return new DatePart(exp, DatePart.Part.SECOND);
     }
 
     /**
@@ -92,7 +90,7 @@ public class DateFuncs
      */
     public static FluentExp week (SQLExpression exp)
     {
-        return new DatePart(exp, Part.WEEK);
+        return new DatePart(exp, DatePart.Part.WEEK);
     }
 
     /**
@@ -100,7 +98,7 @@ public class DateFuncs
      */
     public static FluentExp month (SQLExpression exp)
     {
-        return new DatePart(exp, Part.MONTH);
+        return new DatePart(exp, DatePart.Part.MONTH);
     }
 
     /**
@@ -108,7 +106,7 @@ public class DateFuncs
      */
     public static FluentExp year (SQLExpression exp)
     {
-        return new DatePart(exp, Part.YEAR);
+        return new DatePart(exp, DatePart.Part.YEAR);
     }
 
     /**
@@ -117,7 +115,7 @@ public class DateFuncs
      */
     public static FluentExp epoch (SQLExpression exp)
     {
-        return new DatePart(exp, Part.EPOCH);
+        return new DatePart(exp, DatePart.Part.EPOCH);
     }
 
     /**
