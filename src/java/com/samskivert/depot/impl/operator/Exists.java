@@ -24,13 +24,14 @@ import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.clause.SelectClause;
+import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
  * The SQL 'exists' operator.
  */
 public class Exists
-    implements SQLOperator
+    implements SQLExpression
 {
     public Exists (SelectClause clause)
     {

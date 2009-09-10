@@ -16,7 +16,6 @@ import com.samskivert.depot.impl.expression.ArgumentExp;
  * A base class for all operators.
  */
 public abstract class BaseOperator extends ArgumentExp
-    implements SQLOperator
 {
     public static Function<Object, Long> INTEGRAL = new Function<Object, Long>() {
         public Long apply (Object o) {

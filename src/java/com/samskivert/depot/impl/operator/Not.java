@@ -30,7 +30,7 @@ import com.samskivert.depot.impl.ExpressionVisitor;
  * Represents the truth negation of another conditon.
  */
 public class Not
-    implements SQLOperator
+    implements SQLExpression
 {
     public Not (SQLExpression condition)
     {

@@ -24,13 +24,14 @@ import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ColumnExp;
+import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
  * The SQL 'in (...)' operator.
  */
 public class In
-    implements SQLOperator
+    implements SQLExpression
 {
     /** The maximum number of keys allowed in an IN() clause. */
     public static final int MAX_KEYS = Short.MAX_VALUE;

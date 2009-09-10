@@ -28,13 +28,13 @@ import com.google.common.collect.Lists;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
-import com.samskivert.depot.impl.operator.SQLOperator;
 import com.samskivert.util.Tuple;
 
 /**
  * The SQL 'case' operator.
  */
-public class Case implements SQLOperator
+public class Case
+    implements SQLExpression
 {
     public Case (SQLExpression... exps)
     {

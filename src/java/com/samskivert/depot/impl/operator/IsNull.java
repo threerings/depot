@@ -24,13 +24,14 @@ import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ColumnExp;
+import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
  * The SQL 'is null' operator.
  */
 public class IsNull
-    implements SQLOperator
+    implements SQLExpression
 {
     public IsNull (ColumnExp column)
     {
