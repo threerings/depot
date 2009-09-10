@@ -104,6 +104,14 @@ public class Ops
     }
 
     /**
+     * Creates an EXISTS expression with the supplied select clause.
+     */
+    public static SQLExpression exists (SelectClause target)
+    {
+        return new Exists(target);
+    }
+
+    /**
      * Adds the supplied expressions together.
      */
     public static FluentExp add (SQLExpression... exprs)
