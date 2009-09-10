@@ -22,6 +22,7 @@ package com.samskivert.depot;
 
 import java.util.Collection;
 
+import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.operator.And;
 import com.samskivert.depot.operator.Not;
@@ -36,7 +37,7 @@ public class Ops
     /**
      * Creates a {@link Not} with the supplied target expression.
      */
-    public static Not not (SQLExpression expr)
+    public static SQLExpression not (SQLExpression expr)
     {
         return new Not(expr);
     }
@@ -44,7 +45,7 @@ public class Ops
     /**
      * Creates an {@link And} with the supplied target expressions.
      */
-    public static And and (Collection<? extends SQLExpression> conditions)
+    public static FluentExp and (Collection<? extends SQLExpression> conditions)
     {
         return new And(conditions);
     }
@@ -52,7 +53,7 @@ public class Ops
     /**
      * Creates an {@link And} with the supplied target expressions.
      */
-    public static And and (SQLExpression... conditions)
+    public static FluentExp and (SQLExpression... conditions)
     {
         return new And(conditions);
     }
@@ -60,7 +61,7 @@ public class Ops
     /**
      * Creates an {@link Or} with the supplied target expressions.
      */
-    public static Or or (Collection<? extends SQLExpression> conditions)
+    public static FluentExp or (Collection<? extends SQLExpression> conditions)
     {
         return new Or(conditions);
     }
@@ -68,7 +69,7 @@ public class Ops
     /**
      * Creates an {@link Or} with the supplied target expressions.
      */
-    public static Or or (SQLExpression... conditions)
+    public static FluentExp or (SQLExpression... conditions)
     {
         return new Or(conditions);
     }
