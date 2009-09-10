@@ -22,10 +22,14 @@ package com.samskivert.depot;
 
 import java.util.Collection;
 
+import com.samskivert.depot.clause.SelectClause;
 import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.operator.Add;
 import com.samskivert.depot.operator.And;
+import com.samskivert.depot.operator.Exists;
 import com.samskivert.depot.operator.Like;
+import com.samskivert.depot.operator.Mul;
 import com.samskivert.depot.operator.Not;
 import com.samskivert.depot.operator.Or;
 
@@ -36,7 +40,7 @@ import com.samskivert.depot.operator.Or;
 public class Ops
 {
     /**
-     * Creates a {@link Not} with the supplied target expression.
+     * Creates a NOT expression with the supplied target expression.
      */
     public static SQLExpression not (SQLExpression expr)
     {
@@ -44,7 +48,7 @@ public class Ops
     }
 
     /**
-     * Creates an {@link And} with the supplied target expressions.
+     * Creates an AND expression with the supplied target expressions.
      */
     public static FluentExp and (Collection<? extends SQLExpression> conditions)
     {
@@ -52,7 +56,7 @@ public class Ops
     }
 
     /**
-     * Creates an {@link And} with the supplied target expressions.
+     * Creates an AND expression with the supplied target expressions.
      */
     public static FluentExp and (SQLExpression... conditions)
     {
@@ -60,7 +64,7 @@ public class Ops
     }
 
     /**
-     * Creates an {@link Or} with the supplied target expressions.
+     * Creates an OR expression with the supplied target expressions.
      */
     public static FluentExp or (Collection<? extends SQLExpression> conditions)
     {
@@ -68,22 +72,50 @@ public class Ops
     }
 
     /**
-     * Creates an {@link Or} with the supplied target expressions.
+     * Creates an OR expression with the supplied target expressions.
      */
     public static FluentExp or (SQLExpression... conditions)
     {
         return new Or(conditions);
     }
 
-    /** Returns an expression that matches when the source is like the supplied value. */
+    /**
+     * Returns an expression that matches when the source is like the supplied value.
+     */
     public static FluentExp like (SQLExpression source, Comparable<?> value)
     {
         return new Like(source, value);
     }
 
-    /** Returns an expression that matches when the source is like the supplied expression. */
+    /**
+     * Returns an expression that matches when the source is like the supplied expression.
+     */
     public static FluentExp like (SQLExpression source, SQLExpression expr)
     {
         return new Like(source, expr);
+    }
+
+    /**
+     * Creates an EXISTS expression with the supplied select clause.
+     */
+    public static SQLExpression exists (SelectClause target)
+    {
+        return new Exists(target);
+    }
+
+    /**
+     * Adds the supplied expressions together.
+     */
+    public static FluentExp add (SQLExpression... exprs)
+    {
+        return new Add(exprs);
+    }
+
+    /**
+     * Multiplies the supplied expressions together.
+     */
+    public static FluentExp mul (SQLExpression... exprs)
+    {
+        return new Mul(exprs);
     }
 }
