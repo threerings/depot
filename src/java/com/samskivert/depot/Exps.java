@@ -21,8 +21,6 @@
 package com.samskivert.depot;
 
 import com.samskivert.depot.expression.*;
-import com.samskivert.depot.function.AggregateFun;
-import com.samskivert.depot.function.NumericalFun;
 
 /**
  * Provides static methods for expression construction. For example: {@link #literal}, {@link
@@ -109,18 +107,18 @@ public class Exps
      * be used in a FieldOverride and supplied with a ColumnExp.
      */
     @Deprecated
-    public static AggregateFun.Sum sum (SQLExpression expr)
+    public static FunctionExp sum (SQLExpression expr)
     {
-        return new AggregateFun.Sum(expr);
+        return new FunctionExp("sum", expr);
     }
 
     /**
      * Creates an expression that computes the absolute value of the supplied expression.
      */
     @Deprecated
-    public static NumericalFun.Abs abs (SQLExpression expr)
+    public static FunctionExp abs (SQLExpression expr)
     {
-        return new NumericalFun.Abs(expr);
+        return new FunctionExp("abs", expr);
     }
 
     /**
@@ -128,9 +126,9 @@ public class Exps
      * This would usually be used in a FieldOverride and supplied with a ColumnExp.
      */
     @Deprecated
-    public static AggregateFun.Count count (SQLExpression expr)
+    public static FunctionExp count (SQLExpression expr)
     {
-        return new AggregateFun.Count(expr, false);
+        return new FunctionExp("count", expr);
     }
 
     /**
@@ -138,8 +136,8 @@ public class Exps
      * expression. This would usually be used in a FieldOverride and supplied with a ColumnExp.
      */
     @Deprecated
-    public static AggregateFun.Count countDistinct (SQLExpression expr)
+    public static FunctionExp countDistinct (SQLExpression expr)
     {
-        return new AggregateFun.Count(expr, true);
+        return new FunctionExp("count", "distinct", expr);
     }
 }
