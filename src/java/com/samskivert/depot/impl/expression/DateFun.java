@@ -22,6 +22,8 @@ package com.samskivert.depot.impl.expression;
 
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.expression.Function.NoArgFun;
+import com.samskivert.depot.impl.expression.Function.OneArgFun;
 
 public abstract class DateFun
 {
@@ -39,6 +41,9 @@ public abstract class DateFun
         }
         public Part getPart () {
             return _part;
+        }
+        public String getCanonicalFunctionName () {
+            return "datePart_" + _part;
         }
         protected Part _part;
     }
@@ -65,12 +70,18 @@ public abstract class DateFun
         public Truncation getTruncation () {
             return _truncation;
         }
+        public String getCanonicalFunctionName () {
+            return "dateTrunc_" + _truncation;
+        }
         protected Truncation _truncation;
     }
 
     public static class Now extends NoArgFun {
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
+        }
+        public String getCanonicalFunctionName () {
+            return "now";
         }
     }
 }

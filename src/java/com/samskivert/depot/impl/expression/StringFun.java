@@ -22,6 +22,9 @@ package com.samskivert.depot.impl.expression;
 
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.expression.Function.ManyArgFun;
+import com.samskivert.depot.impl.expression.Function.OneArgFun;
+import com.samskivert.depot.impl.expression.Function.TwoArgFun;
 
 public abstract class StringFun
 {
@@ -32,6 +35,9 @@ public abstract class StringFun
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "length";
+        }
     }
 
     public static class Lower extends OneArgFun {
@@ -40,6 +46,9 @@ public abstract class StringFun
         }
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
+        }
+        public String getCanonicalFunctionName () {
+            return "lower";
         }
     }
 
@@ -50,6 +59,9 @@ public abstract class StringFun
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "position";
+        }
         public SQLExpression getSubString () {
             return _arg1;
         }
@@ -58,12 +70,15 @@ public abstract class StringFun
         }
     }
 
-    public static class Substring extends ArgumentExp {
+    public static class Substring extends ManyArgFun {
         public Substring (SQLExpression string, SQLExpression from, SQLExpression count) {
             super(string, from, count);
         }
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
+        }
+        public String getCanonicalFunctionName () {
+            return "substring";
         }
     }
 
@@ -74,6 +89,9 @@ public abstract class StringFun
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "trim";
+        }
     }
 
     public static class Upper extends OneArgFun {
@@ -82,6 +100,9 @@ public abstract class StringFun
         }
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
+        }
+        public String getCanonicalFunctionName () {
+            return "upper";
         }
     }
 }

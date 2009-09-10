@@ -22,6 +22,7 @@ package com.samskivert.depot.impl.expression;
 
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.expression.Function.OneArgFun;
 
 public abstract class AggregateFun extends OneArgFun
 {
@@ -35,6 +36,9 @@ public abstract class AggregateFun extends OneArgFun
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "average";
+        }
     }
 
     public static class Count extends AggregateFun {
@@ -46,6 +50,9 @@ public abstract class AggregateFun extends OneArgFun
         }
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
+        }
+        public String getCanonicalFunctionName () {
+            return "count";
         }
     }
 
@@ -59,6 +66,9 @@ public abstract class AggregateFun extends OneArgFun
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "every";
+        }
     }
 
     public static class Max extends AggregateFun {
@@ -70,6 +80,9 @@ public abstract class AggregateFun extends OneArgFun
         }
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
+        }
+        public String getCanonicalFunctionName () {
+            return "max";
         }
     }
 
@@ -83,6 +96,9 @@ public abstract class AggregateFun extends OneArgFun
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "min";
+        }
     }
 
     public static class Sum extends AggregateFun {
@@ -95,6 +111,9 @@ public abstract class AggregateFun extends OneArgFun
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "sum";
+        }
     }
 
     public AggregateFun (SQLExpression argument, boolean distinct)
@@ -106,6 +125,11 @@ public abstract class AggregateFun extends OneArgFun
     public boolean isDistinct ()
     {
         return _distinct;
+    }
+
+    public String toString ()
+    {
+        return getCanonicalFunctionName() + "(" + (_distinct ? "distinct " : "") + _arg + ")";
     }
 
     protected boolean _distinct;

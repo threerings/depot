@@ -22,33 +22,43 @@ package com.samskivert.depot.impl.expression;
 
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.expression.Function.ManyArgFun;
 
 public abstract class ConditionalFun
 {
-    public static class Coalesce extends ArgumentExp {
+    public static class Coalesce extends ManyArgFun {
         public Coalesce (SQLExpression... args) {
             super(args);
         }
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "coalesce";
+        }
     }
 
-    public static class Greatest extends ArgumentExp {
+    public static class Greatest extends ManyArgFun {
         public Greatest (SQLExpression... args) {
             super(args);
         }
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "greatest";
+        }
     }
 
-    public static class Least extends ArgumentExp {
+    public static class Least extends ManyArgFun {
         public Least (SQLExpression... args) {
             super(args);
         }
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
+        }
+        public String getCanonicalFunctionName () {
+            return "least";
         }
     }
 }

@@ -22,6 +22,9 @@ package com.samskivert.depot.impl.expression;
 
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.expression.Function.NoArgFun;
+import com.samskivert.depot.impl.expression.Function.OneArgFun;
+import com.samskivert.depot.impl.expression.Function.TwoArgFun;
 
 public abstract class NumericalFun
 {
@@ -32,6 +35,9 @@ public abstract class NumericalFun
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "abs";
+        }
     }
 
     public static class Ceil extends OneArgFun {
@@ -40,6 +46,9 @@ public abstract class NumericalFun
         }
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
+        }
+        public String getCanonicalFunctionName () {
+            return "ceil";
         }
     }
 
@@ -50,6 +59,9 @@ public abstract class NumericalFun
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "exp";
+        }
     }
 
     public static class Floor extends OneArgFun {
@@ -58,6 +70,9 @@ public abstract class NumericalFun
         }
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
+        }
+        public String getCanonicalFunctionName () {
+            return "floor";
         }
     }
 
@@ -68,6 +83,9 @@ public abstract class NumericalFun
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "ln";
+        }
     }
 
     public static class Log10 extends OneArgFun {
@@ -77,11 +95,17 @@ public abstract class NumericalFun
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "log10";
+        }
     }
 
     public static class Pi extends NoArgFun {
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
+        }
+        public String getCanonicalFunctionName () {
+            return "pi";
         }
     }
 
@@ -91,6 +115,9 @@ public abstract class NumericalFun
         }
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
+        }
+        public String getCanonicalFunctionName () {
+            return "Power";
         }
         public SQLExpression getValue () {
             return _arg1;
@@ -104,6 +131,9 @@ public abstract class NumericalFun
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "random";
+        }
     }
 
     public static class Round extends OneArgFun {
@@ -112,6 +142,9 @@ public abstract class NumericalFun
         }
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
+        }
+        public String getCanonicalFunctionName () {
+            return "round";
         }
     }
 
@@ -122,6 +155,9 @@ public abstract class NumericalFun
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "sign";
+        }
     }
 
     public static class Sqrt extends OneArgFun {
@@ -131,6 +167,9 @@ public abstract class NumericalFun
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public String getCanonicalFunctionName () {
+            return "sqrt";
+        }
     }
 
     public static class Trunc extends OneArgFun {
@@ -139,6 +178,9 @@ public abstract class NumericalFun
         }
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
+        }
+        public String getCanonicalFunctionName () {
+            return "trunc";
         }
     }
 }
