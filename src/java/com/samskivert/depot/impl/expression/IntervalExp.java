@@ -2,7 +2,7 @@
 // $Id$
 //
 // Depot library - a Java relational persistence library
-// Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
+// Copyright (C) 2006-2009 Michael Bayne and Pär Winzell
 //
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
@@ -18,23 +18,33 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.expression;
+package com.samskivert.depot.impl.expression;
 
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
- * An expression for things we don't support natively, e.g. COUNT(*).
+ * A code for representing a date interval.
  */
-public class LiteralExp
+public class IntervalExp
     implements SQLExpression
 {
-    public LiteralExp (String text)
+    /** The units that can be used for an interval. */
+    public enum Unit { YEAR, MONTH, DAY, HOUR, MINUTE, SECOND };
+
+    /** The unit for this interval. */
+    public final Unit unit;
+
+    /** The number of units for this interval. */
+    public final int amount;
+
+    public IntervalExp (Unit unit, int amount)
     {
-        super();
-        _text = text;
+        this.unit = unit;
+        this.amount = amount;
     }
 
     // from SQLExpression
@@ -48,17 +58,9 @@ public class LiteralExp
     {
     }
 
-    public String getText ()
-    {
-        return _text;
-    }
-
     @Override
     public String toString ()
     {
-        return _text;
+        return amount + " " + unit;
     }
-
-    /** The literal text of this expression, e.g. COUNT(*) */
-    protected String _text;
 }

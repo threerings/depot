@@ -21,7 +21,7 @@
 package com.samskivert.depot.operator;
 
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.expression.ValueExp;
+import com.samskivert.depot.impl.expression.ValueExp;
 import com.samskivert.depot.operator.SQLOperator.MultiOperator;
 
 /**

@@ -44,7 +44,6 @@ import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.expression.ValueExp;
 
 import com.samskivert.depot.impl.DepotMarshaller;
 import com.samskivert.depot.impl.DepotMigrationHistoryRecord;
@@ -57,6 +56,7 @@ import com.samskivert.depot.impl.Modifier;
 import com.samskivert.depot.impl.SQLBuilder;
 import com.samskivert.depot.impl.clause.DeleteClause;
 import com.samskivert.depot.impl.clause.UpdateClause;
+import com.samskivert.depot.impl.expression.ValueExp;
 
 import static com.samskivert.depot.Log.log;
 
@@ -517,7 +517,7 @@ public abstract class DepotRepository
      * @param key the key for the persistent objects to be modified.
      * @param field the first field to be updated.
      * @param value the value to assign to the first field. This may be a primitive (Integer,
-     * String, etc.) which will be wrapped in ValueExp or a SQLExpression instance.
+     * String, etc.) which will be wrapped in value expression or a SQLExpression instance.
      * @param more additional (field, value) pairs to be updated.
      *
      * @return the number of rows modified by this action.
@@ -538,7 +538,7 @@ public abstract class DepotRepository
      *
      * @param key the key for the persistent objects to be modified.
      * @param updates a mapping from field to value for all values to be changed. The values may be
-     * primitives (Integer, String, etc.) which will be wrapped in ValueExp instances or
+     * primitives (Integer, String, etc.) which will be wrapped in value expression instances or
      * SQLExpression instances defining the value.
      *
      * @return the number of rows modified by this action.
@@ -564,7 +564,7 @@ public abstract class DepotRepository
      * @param invalidator a cache invalidator that will be run prior to the update to flush the
      * relevant persistent objects from the cache, or null if no invalidation is needed.
      * @param updates a mapping from field to value for all values to be changed. The values may be
-     * primitives (Integer, String, etc.) which will be wrapped in ValueExp instances or
+     * primitives (Integer, String, etc.) which will be wrapped in value expression instances or
      * SQLExpression instances defining the value.
      *
      * @return the number of rows modified by this action.
@@ -601,7 +601,7 @@ public abstract class DepotRepository
      * relevant persistent objects from the cache, or null if no invalidation is needed.
      * @param field the first field to be updated.
      * @param value the value to assign to the first field. This may be a primitive (Integer,
-     * String, etc.) which will be wrapped in ValueExp or a SQLExpression instance.
+     * String, etc.) which will be wrapped in value expression or a SQLExpression instance.
      * @param more additional (field, value) pairs to be updated.
      *
      * @return the number of rows modified by this action.

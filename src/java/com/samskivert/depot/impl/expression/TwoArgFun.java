@@ -1,5 +1,5 @@
 //
-// $Id$
+// $Id: $
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2009 Michael Bayne and Pär Winzell
@@ -18,48 +18,27 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.expression;
+package com.samskivert.depot.impl.expression;
 
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.expression.FluentExp;
+import com.samskivert.depot.expression.SQLExpression;
 
-/**
- * A code for representing a date interval.
- */
-public class IntervalExp
-    implements SQLExpression
+public abstract class TwoArgFun extends FluentExp
 {
-    /** The units that can be used for an interval. */
-    public enum Unit { YEAR, MONTH, DAY, HOUR, MINUTE, SECOND };
-
-    /** The unit for this interval. */
-    public final Unit unit;
-
-    /** The number of units for this interval. */
-    public final int amount;
-
-    public IntervalExp (Unit unit, int amount)
+    protected TwoArgFun (SQLExpression arg1, SQLExpression arg2)
     {
-        this.unit = unit;
-        this.amount = amount;
+        _arg1 = arg1;
+        _arg2 = arg2;
     }
 
-    // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
-    {
-        return builder.visit(this);
-    }
-
-    // from SQLExpression
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
+        _arg1.addClasses(classSet);
+        _arg2.addClasses(classSet);
     }
 
-    @Override
-    public String toString ()
-    {
-        return amount + " " + unit;
-    }
+    protected SQLExpression _arg1, _arg2;
 }

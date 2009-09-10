@@ -22,8 +22,8 @@ package com.samskivert.depot.clause;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ColumnExp;
-import com.samskivert.depot.expression.LiteralExp;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.impl.expression.LiteralExp;
 
 /**
  * Redirects one field of the persistent object we're creating from its default associated column

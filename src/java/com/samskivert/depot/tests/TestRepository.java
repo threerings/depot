@@ -39,7 +39,7 @@ import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.SchemaMigration;
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.clause.Where;
-import com.samskivert.depot.expression.LiteralExp;
+import com.samskivert.depot.impl.expression.LiteralExp;
 import com.samskivert.depot.operator.GreaterThan;
 import com.samskivert.depot.operator.LessThan;
 

@@ -22,13 +22,13 @@ package com.samskivert.depot;
 
 import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.function.AggregateFun.*;
-import com.samskivert.depot.function.ConditionalFun.*;
-import com.samskivert.depot.function.DateFun.*;
-import com.samskivert.depot.function.DateFun.DatePart.Part;
-import com.samskivert.depot.function.DateFun.DateTruncate.Truncation;
-import com.samskivert.depot.function.NumericalFun.*;
-import com.samskivert.depot.function.StringFun.*;
+import com.samskivert.depot.impl.expression.AggregateFun.*;
+import com.samskivert.depot.impl.expression.ConditionalFun.*;
+import com.samskivert.depot.impl.expression.DateFun.*;
+import com.samskivert.depot.impl.expression.DateFun.DatePart.Part;
+import com.samskivert.depot.impl.expression.DateFun.DateTruncate.Truncation;
+import com.samskivert.depot.impl.expression.NumericalFun.*;
+import com.samskivert.depot.impl.expression.StringFun.*;
 
 /**
  * Provides static methods for function construction. For example: {@link #round}, {@link

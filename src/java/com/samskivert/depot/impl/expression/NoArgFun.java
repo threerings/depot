@@ -18,27 +18,17 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.function;
+package com.samskivert.depot.impl.expression;
 
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.FluentExp;
-import com.samskivert.depot.expression.SQLExpression;
 
-public abstract class TwoArgFun extends FluentExp
+public abstract class NoArgFun extends FluentExp
 {
-    protected TwoArgFun (SQLExpression arg1, SQLExpression arg2)
-    {
-        _arg1 = arg1;
-        _arg2 = arg2;
-    }
-
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
-        _arg1.addClasses(classSet);
-        _arg2.addClasses(classSet);
+        // nothing to add
     }
-
-    protected SQLExpression _arg1, _arg2;
 }

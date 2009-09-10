@@ -21,6 +21,9 @@
 package com.samskivert.depot;
 
 import com.samskivert.depot.expression.*;
+import com.samskivert.depot.impl.expression.IntervalExp;
+import com.samskivert.depot.impl.expression.LiteralExp;
+import com.samskivert.depot.impl.expression.ValueExp;
 
 /**
  * Provides static methods for expression construction. For example: {@link #literal}, {@link
@@ -29,18 +32,18 @@ import com.samskivert.depot.expression.*;
 public class Exps
 {
     /**
-     * Wraps the supplied object in a {@link ValueExp}.
+     * Wraps the supplied object in a value expression.
      */
-    public static ValueExp value (Object value)
+    public static FluentExp value (Object value)
     {
         return new ValueExp(value);
     }
 
     /**
-     * Creates a {@link LiteralExp} with the supplied SQL snippet. Note: you're probably breaking
+     * Creates a literal expression with the supplied SQL snippet. Note: you're probably breaking
      * cross platform compatibility by using this construction.
      */
-    public static LiteralExp literal (String text)
+    public static SQLExpression literal (String text)
     {
         return new LiteralExp(text);
     }
@@ -48,7 +51,7 @@ public class Exps
     /**
      * Creates an interval for the specified number of years.
      */
-    public static IntervalExp years (int amount)
+    public static SQLExpression years (int amount)
     {
         return new IntervalExp(IntervalExp.Unit.YEAR, amount);
     }
@@ -56,7 +59,7 @@ public class Exps
     /**
      * Creates an interval for the specified number of months.
      */
-    public static IntervalExp months (int amount)
+    public static SQLExpression months (int amount)
     {
         return new IntervalExp(IntervalExp.Unit.MONTH, amount);
     }
@@ -64,7 +67,7 @@ public class Exps
     /**
      * Creates an interval for the specified number of days.
      */
-    public static IntervalExp days (int amount)
+    public static SQLExpression days (int amount)
     {
         return new IntervalExp(IntervalExp.Unit.DAY, amount);
     }
@@ -72,7 +75,7 @@ public class Exps
     /**
      * Creates an interval for the specified number of hours.
      */
-    public static IntervalExp hours (int amount)
+    public static SQLExpression hours (int amount)
     {
         return new IntervalExp(IntervalExp.Unit.HOUR, amount);
     }
@@ -80,7 +83,7 @@ public class Exps
     /**
      * Creates an interval for the specified number of minutes.
      */
-    public static IntervalExp minutes (int amount)
+    public static SQLExpression minutes (int amount)
     {
         return new IntervalExp(IntervalExp.Unit.MINUTE, amount);
     }
@@ -88,56 +91,8 @@ public class Exps
     /**
      * Creates an interval for the specified number of seconds.
      */
-    public static IntervalExp seconds (int amount)
+    public static SQLExpression seconds (int amount)
     {
         return new IntervalExp(IntervalExp.Unit.SECOND, amount);
-    }
-
-    /**
-     * Creates an expression that converts the supplied expression into seconds since the epoch.
-     */
-    @SuppressWarnings("deprecation")
-    public static EpochSeconds epochSeconds (SQLExpression expr)
-    {
-        return new EpochSeconds(expr);
-    }
-
-    /**
-     * Creates an expression that computes the sum of the supplied expression. This would usually
-     * be used in a FieldOverride and supplied with a ColumnExp.
-     */
-    @Deprecated
-    public static FunctionExp sum (SQLExpression expr)
-    {
-        return new FunctionExp("sum", expr);
-    }
-
-    /**
-     * Creates an expression that computes the absolute value of the supplied expression.
-     */
-    @Deprecated
-    public static FunctionExp abs (SQLExpression expr)
-    {
-        return new FunctionExp("abs", expr);
-    }
-
-    /**
-     * Creates an expression that counts the number of rows that match the supplied expression.
-     * This would usually be used in a FieldOverride and supplied with a ColumnExp.
-     */
-    @Deprecated
-    public static FunctionExp count (SQLExpression expr)
-    {
-        return new FunctionExp("count", expr);
-    }
-
-    /**
-     * Creates an expression that counts the number of distinct values that match the supplied
-     * expression. This would usually be used in a FieldOverride and supplied with a ColumnExp.
-     */
-    @Deprecated
-    public static FunctionExp countDistinct (SQLExpression expr)
-    {
-        return new FunctionExp("count", "distinct", expr);
     }
 }

@@ -44,10 +44,6 @@ import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.annotation.GeneratedValue;
 import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.expression.*;
-import com.samskivert.depot.function.DateFun.DatePart;
-import com.samskivert.depot.function.DateFun.DateTruncate;
-import com.samskivert.depot.function.DateFun.DatePart.Part;
-import com.samskivert.depot.function.StringFun.Lower;
 import com.samskivert.depot.operator.BitAnd;
 import com.samskivert.depot.operator.BitOr;
 import com.samskivert.depot.operator.FullText;
@@ -56,6 +52,10 @@ import com.samskivert.depot.operator.Or;
 import com.samskivert.depot.operator.SQLOperator.MultiOperator;
 
 import com.samskivert.depot.impl.clause.CreateIndexClause;
+import com.samskivert.depot.impl.expression.DateFun.DatePart;
+import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
+import com.samskivert.depot.impl.expression.DateFun.DatePart.Part;
+import com.samskivert.depot.impl.expression.StringFun.Lower;
 
 public class HSQLBuilder
     extends SQLBuilder
@@ -86,7 +86,7 @@ public class HSQLBuilder
             for (String field : fields) {
                 for (String ftsWord : ftsWords) {
                     // build comparisons between each word and column
-                    bits.add(new Like(new Lower(new ColumnExp(pClass, field)), "%" + ftsWord + "%"));
+                    bits.add(new Like(new Lower(new ColumnExp(pClass, field)), "%"+ftsWord+"%"));
                 }
             }
             // then just OR them all together and we have our query
@@ -113,12 +113,6 @@ public class HSQLBuilder
                 return appendFunctionCall("bitor", operator.getArgs());
             }
             return super.visit(operator);
-        }
-
-        @Override @SuppressWarnings("deprecation")
-        public Void visit (EpochSeconds epochSeconds)
-        {
-            return visit (new DatePart(epochSeconds.getArgument(), Part.EPOCH));
         }
 
         @Override public Void visit (DatePart exp) {

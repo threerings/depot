@@ -1,8 +1,8 @@
 //
-// $Id$
+// $Id: $
 //
 // Depot library - a Java relational persistence library
-// Copyright (C) 2006-2008 Michael Bayne and Pär Winzell
+// Copyright (C) 2006-2009 Michael Bayne and Pär Winzell
 //
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
@@ -18,45 +18,30 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.expression;
+package com.samskivert.depot.impl.expression;
 
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.expression.FluentExp;
+import com.samskivert.depot.expression.SQLExpression;
 
-/**
- * A Java value that is bound as a parameter to the query, e.g. 1 or 'abc'.
- */
-public class ValueExp extends FluentExp
+public abstract class OneArgFun extends FluentExp
 {
-    public ValueExp (Object value)
+    protected OneArgFun (SQLExpression argument)
     {
-        _value = value;
+        _argument = argument;
     }
 
-    // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
-    {
-        return builder.visit(this);
-    }
-
-    // from SQLExpression
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
+        _argument.addClasses(classSet);
     }
 
-    public Object getValue ()
+    public SQLExpression getArg ()
     {
-        return _value;
+        return _argument;
     }
 
-    @Override // from Object
-    public String toString ()
-    {
-        return (_value instanceof Number) ? String.valueOf(_value) : ("'" + _value + "'");
-    }
-
-    /** The value to be bound to the SQL parameters. */
-    protected Object _value;
+    protected SQLExpression _argument;
 }

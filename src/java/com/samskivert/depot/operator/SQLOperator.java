@@ -28,10 +28,10 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.expression.ArgumentExp;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.expression.ValueExp;
 import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.expression.ArgumentExp;
+import com.samskivert.depot.impl.expression.ValueExp;
 
 /**
  * A common interface for operator hierarchies in SQL. The main purpose of breaking this out from

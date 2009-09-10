@@ -36,10 +36,6 @@ import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.function.DateFun.DatePart;
-import com.samskivert.depot.function.DateFun.DateTruncate;
-import com.samskivert.depot.function.DateFun.DatePart.Part;
-import com.samskivert.depot.function.NumericalFun.Trunc;
 import com.samskivert.depot.operator.FullText;
 
 import com.samskivert.depot.impl.FieldMarshaller.BooleanMarshaller;
@@ -56,6 +52,10 @@ import com.samskivert.depot.impl.FieldMarshaller.ShortMarshaller;
 import com.samskivert.depot.impl.clause.CreateIndexClause;
 import com.samskivert.depot.impl.clause.DeleteClause;
 import com.samskivert.depot.impl.clause.DropIndexClause;
+import com.samskivert.depot.impl.expression.DateFun.DatePart;
+import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
+import com.samskivert.depot.impl.expression.DateFun.DatePart.Part;
+import com.samskivert.depot.impl.expression.NumericalFun.Trunc;
 
 import static com.samskivert.Log.log;
 

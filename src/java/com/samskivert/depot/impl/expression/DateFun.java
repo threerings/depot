@@ -18,36 +18,57 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.function;
+package com.samskivert.depot.impl.expression;
 
-import com.samskivert.depot.expression.ArgumentExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
 
-public abstract class ConditionalFun
+public abstract class DateFun
 {
-    public static class Coalesce extends ArgumentExp {
-        public Coalesce (SQLExpression... args) {
-            super(args);
+    public static class DatePart extends OneArgFun {
+        public enum Part {
+            DAY_OF_MONTH, DAY_OF_WEEK, DAY_OF_YEAR, HOUR, MINUTE, MONTH,
+            SECOND, WEEK, YEAR, EPOCH
+        };
+        public DatePart (SQLExpression date, Part part) {
+            super(date);
+            _part = part;
         }
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public Part getPart () {
+            return _part;
+        }
+        protected Part _part;
     }
 
-    public static class Greatest extends ArgumentExp {
-        public Greatest (SQLExpression... args) {
-            super(args);
+    public static class DateTruncate extends OneArgFun {
+        /**
+         * The degree of truncation to perform, in time units. Currently only DAY, due to lacking
+         * MySQL support, but we hope for future versions to match PostgreSQL.
+         */
+        public enum Truncation {
+            DAY,
+        };
+        /**
+         * Truncate a SQL timestamp value, currently only to the nearest day (Truncation.DAY) due
+         * to lacking MySQL support, but we hope for future versions to match PostgreSQL.
+         */
+        public DateTruncate (SQLExpression date, Truncation truncation) {
+            super(date);
+            _truncation= truncation;
         }
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }
+        public Truncation getTruncation () {
+            return _truncation;
+        }
+        protected Truncation _truncation;
     }
 
-    public static class Least extends ArgumentExp {
-        public Least (SQLExpression... args) {
-            super(args);
-        }
+    public static class Now extends NoArgFun {
         public Object accept (ExpressionVisitor<?> visitor) {
             return visitor.visit(this);
         }

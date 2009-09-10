@@ -43,157 +43,157 @@ public abstract class FluentExp
     implements SQLExpression
 {
     /** Returns an {@link Equals} with this expression and the supplied target. */
-    public Equals eq (Comparable<?> value)
+    public FluentExp eq (Comparable<?> value)
     {
         return new Equals(this, value);
     }
 
     /** Returns an {@link Equals} with this expression and the supplied target. */
-    public Equals eq (SQLExpression expr)
+    public FluentExp eq (SQLExpression expr)
     {
         return new Equals(this, expr);
     }
 
     /** Returns a {@link NotEquals} with this expression and the supplied target. */
-    public NotEquals notEq (Comparable<?> value)
+    public FluentExp notEq (Comparable<?> value)
     {
         return new NotEquals(this, value);
     }
 
     /** Returns a {@link NotEquals} with this expression and the supplied target. */
-    public NotEquals notEq (SQLExpression expr)
+    public FluentExp notEq (SQLExpression expr)
     {
         return new NotEquals(this, expr);
     }
 
     /** Returns a {@link GreaterThan} with this expression and the supplied target. */
-    public GreaterThan greaterThan (Comparable<?> value)
+    public FluentExp greaterThan (Comparable<?> value)
     {
         return new GreaterThan(this, value);
     }
 
     /** Returns a {@link GreaterThan} with this expression and the supplied target. */
-    public GreaterThan greaterThan (SQLExpression expr)
+    public FluentExp greaterThan (SQLExpression expr)
     {
         return new GreaterThan(this, expr);
     }
 
     /** Returns a {@link LessThan} with this expression and the supplied target. */
-    public LessThan lessThan (Comparable<?> value)
+    public FluentExp lessThan (Comparable<?> value)
     {
         return new LessThan(this, value);
     }
 
     /** Returns a {@link LessThan} with this expression and the supplied target. */
-    public LessThan lessThan (SQLExpression expr)
+    public FluentExp lessThan (SQLExpression expr)
     {
         return new LessThan(this, expr);
     }
 
     /** Returns a {@link GreaterThanEquals} with this expression and the supplied target. */
-    public GreaterThanEquals greaterEq (Comparable<?> value)
+    public FluentExp greaterEq (Comparable<?> value)
     {
         return new GreaterThanEquals(this, value);
     }
 
     /** Returns a {@link GreaterThanEquals} with this expression and the supplied target. */
-    public GreaterThanEquals greaterEq (SQLExpression expr)
+    public FluentExp greaterEq (SQLExpression expr)
     {
         return new GreaterThanEquals(this, expr);
     }
 
     /** Returns a {@link LessThanEquals} with this expression and the supplied target. */
-    public LessThanEquals lessEq (Comparable<?> value)
+    public FluentExp lessEq (Comparable<?> value)
     {
         return new LessThanEquals(this, value);
     }
 
     /** Returns a {@link LessThanEquals} with this expression and the supplied target. */
-    public LessThanEquals lessEq (SQLExpression expr)
+    public FluentExp lessEq (SQLExpression expr)
     {
         return new LessThanEquals(this, expr);
     }
 
     /** Returns an {@link And} with this expression and the supplied target. */
-    public And and (SQLExpression expr)
+    public FluentExp and (SQLExpression expr)
     {
         return new And(this, expr);
     }
 
     /** Returns an {@link Or} with this expression and the supplied target. */
-    public Or or (SQLExpression expr)
+    public FluentExp or (SQLExpression expr)
     {
         return new Or(this, expr);
     }
 
     /** Returns an {@link BitAnd} with this expression and the supplied target. */
-    public BitAnd bitAnd (Comparable<?> value)
+    public FluentExp bitAnd (Comparable<?> value)
     {
         return new BitAnd(this, value);
     }
 
     /** Returns an {@link BitAnd} with this expression and the supplied target. */
-    public BitAnd bitAnd (SQLExpression expr)
+    public FluentExp bitAnd (SQLExpression expr)
     {
         return new BitAnd(this, expr);
     }
 
     /** Returns an {@link BitOr} with this expression and the supplied target. */
-    public BitOr bitOr (Comparable<?> value)
+    public FluentExp bitOr (Comparable<?> value)
     {
         return new BitOr(this, value);
     }
 
     /** Returns an {@link BitOr} with this expression and the supplied target. */
-    public BitOr bitOr (SQLExpression expr)
+    public FluentExp bitOr (SQLExpression expr)
     {
         return new BitOr(this, expr);
     }
 
     /** Returns an {@link Add} with this expression and the supplied target. */
-    public Add plus (Comparable<?> value)
+    public FluentExp plus (Comparable<?> value)
     {
         return new Add(this, value);
     }
 
     /** Returns an {@link Add} with this expression and the supplied target. */
-    public Add plus (SQLExpression expr)
+    public FluentExp plus (SQLExpression expr)
     {
         return new Add(this, expr);
     }
 
     /** Returns a {@link Sub} with this expression and the supplied target. */
-    public Sub minus (Comparable<?> value)
+    public FluentExp minus (Comparable<?> value)
     {
         return new Sub(this, value);
     }
 
     /** Returns a {@link Sub} with this expression and the supplied target. */
-    public Sub minus (SQLExpression expr)
+    public FluentExp minus (SQLExpression expr)
     {
         return new Sub(this, expr);
     }
 
     /** Returns a {@link Mul} with this expression and the supplied target. */
-    public Mul times (Comparable<?> value)
+    public FluentExp times (Comparable<?> value)
     {
         return new Mul(this, value);
     }
 
     /** Returns a {@link Mul} with this expression and the supplied target. */
-    public Mul times (SQLExpression expr)
+    public FluentExp times (SQLExpression expr)
     {
         return new Mul(this, expr);
     }
 
     /** Returns a {@link Div} with this expression and the supplied target. */
-    public Div div (Comparable<?> value)
+    public FluentExp div (Comparable<?> value)
     {
         return new Div(this, value);
     }
 
     /** Returns a {@link Div} with this expression and the supplied target. */
-    public Div div (SQLExpression expr)
+    public FluentExp div (SQLExpression expr)
     {
         return new Div(this, expr);
     }

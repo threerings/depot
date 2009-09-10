@@ -21,7 +21,6 @@
 package com.samskivert.depot.impl;
 
 import java.lang.reflect.Field;
-import java.util.Date;
 
 import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistentRecord;
@@ -40,37 +39,6 @@ import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.*;
 import com.samskivert.depot.expression.SQLExpression.NoValue;
 
-import com.samskivert.depot.function.AggregateFun.Average;
-import com.samskivert.depot.function.AggregateFun.Count;
-import com.samskivert.depot.function.AggregateFun.Every;
-import com.samskivert.depot.function.AggregateFun.Max;
-import com.samskivert.depot.function.AggregateFun.Min;
-import com.samskivert.depot.function.AggregateFun.Sum;
-import com.samskivert.depot.function.ConditionalFun.Coalesce;
-import com.samskivert.depot.function.ConditionalFun.Greatest;
-import com.samskivert.depot.function.ConditionalFun.Least;
-import com.samskivert.depot.function.DateFun.DatePart;
-import com.samskivert.depot.function.DateFun.DateTruncate;
-import com.samskivert.depot.function.DateFun.Now;
-import com.samskivert.depot.function.NumericalFun.Abs;
-import com.samskivert.depot.function.NumericalFun.Ceil;
-import com.samskivert.depot.function.NumericalFun.Exp;
-import com.samskivert.depot.function.NumericalFun.Floor;
-import com.samskivert.depot.function.NumericalFun.Ln;
-import com.samskivert.depot.function.NumericalFun.Log10;
-import com.samskivert.depot.function.NumericalFun.Pi;
-import com.samskivert.depot.function.NumericalFun.Power;
-import com.samskivert.depot.function.NumericalFun.Random;
-import com.samskivert.depot.function.NumericalFun.Round;
-import com.samskivert.depot.function.NumericalFun.Sign;
-import com.samskivert.depot.function.NumericalFun.Sqrt;
-import com.samskivert.depot.function.NumericalFun.Trunc;
-import com.samskivert.depot.function.StringFun.Length;
-import com.samskivert.depot.function.StringFun.Lower;
-import com.samskivert.depot.function.StringFun.Position;
-import com.samskivert.depot.function.StringFun.Substring;
-import com.samskivert.depot.function.StringFun.Trim;
-import com.samskivert.depot.function.StringFun.Upper;
 
 import com.samskivert.depot.operator.Case;
 import com.samskivert.depot.operator.Exists;
@@ -85,6 +53,40 @@ import com.samskivert.depot.impl.clause.CreateIndexClause;
 import com.samskivert.depot.impl.clause.DeleteClause;
 import com.samskivert.depot.impl.clause.DropIndexClause;
 import com.samskivert.depot.impl.clause.UpdateClause;
+import com.samskivert.depot.impl.expression.IntervalExp;
+import com.samskivert.depot.impl.expression.LiteralExp;
+import com.samskivert.depot.impl.expression.ValueExp;
+import com.samskivert.depot.impl.expression.AggregateFun.Average;
+import com.samskivert.depot.impl.expression.AggregateFun.Count;
+import com.samskivert.depot.impl.expression.AggregateFun.Every;
+import com.samskivert.depot.impl.expression.AggregateFun.Max;
+import com.samskivert.depot.impl.expression.AggregateFun.Min;
+import com.samskivert.depot.impl.expression.AggregateFun.Sum;
+import com.samskivert.depot.impl.expression.ConditionalFun.Coalesce;
+import com.samskivert.depot.impl.expression.ConditionalFun.Greatest;
+import com.samskivert.depot.impl.expression.ConditionalFun.Least;
+import com.samskivert.depot.impl.expression.DateFun.DatePart;
+import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
+import com.samskivert.depot.impl.expression.DateFun.Now;
+import com.samskivert.depot.impl.expression.NumericalFun.Abs;
+import com.samskivert.depot.impl.expression.NumericalFun.Ceil;
+import com.samskivert.depot.impl.expression.NumericalFun.Exp;
+import com.samskivert.depot.impl.expression.NumericalFun.Floor;
+import com.samskivert.depot.impl.expression.NumericalFun.Ln;
+import com.samskivert.depot.impl.expression.NumericalFun.Log10;
+import com.samskivert.depot.impl.expression.NumericalFun.Pi;
+import com.samskivert.depot.impl.expression.NumericalFun.Power;
+import com.samskivert.depot.impl.expression.NumericalFun.Random;
+import com.samskivert.depot.impl.expression.NumericalFun.Round;
+import com.samskivert.depot.impl.expression.NumericalFun.Sign;
+import com.samskivert.depot.impl.expression.NumericalFun.Sqrt;
+import com.samskivert.depot.impl.expression.NumericalFun.Trunc;
+import com.samskivert.depot.impl.expression.StringFun.Length;
+import com.samskivert.depot.impl.expression.StringFun.Lower;
+import com.samskivert.depot.impl.expression.StringFun.Position;
+import com.samskivert.depot.impl.expression.StringFun.Substring;
+import com.samskivert.depot.impl.expression.StringFun.Trim;
+import com.samskivert.depot.impl.expression.StringFun.Upper;
 import com.samskivert.util.ArrayUtil;
 import com.samskivert.util.Tuple;
 
@@ -104,35 +106,6 @@ public class ExpressionEvaluator
     {
         _pClass = pClass;
         _pRec = pRec;
-    }
-
-    @SuppressWarnings("deprecation")
-    public Object visit (FunctionExp functionExp)
-    {
-        SQLExpression[] arguments = functionExp.getArguments();
-        Object[] values = new Object[functionExp.getArguments().length];
-        for (int ii = 0; ii < values.length; ii ++) {
-            values[ii] = arguments[ii].accept(this);
-            if (values[ii] instanceof NoValue) {
-                return values[ii];
-            }
-        }
-        if ("lower".equalsIgnoreCase(functionExp.getFunction())) {
-            if (values.length == 1 && values[0] instanceof String) {
-                return ((String) values[0]).toLowerCase();
-            }
-        }
-        return new NoValue("Bad Function: " + functionExp);
-    }
-
-    @SuppressWarnings("deprecation")
-    public Object visit (EpochSeconds epochSeconds)
-    {
-        Object result = epochSeconds.getArgument().accept(this);
-        if (result instanceof Date) {
-            return ((Date) result).getTime();
-        }
-        return new NoValue("Bad EpochSeconds: " + epochSeconds);
     }
 
     public Object visit (MultiOperator multiOperator)
