@@ -26,8 +26,7 @@ import com.samskivert.depot.impl.expression.AggregateFun.*;
 import com.samskivert.depot.impl.expression.ConditionalFun.*;
 
 /**
- * Provides static methods for function construction. For example: {@link #round}, {@link
- * #count} and {@link #length}.
+ * Provides static methods for function construction.
  */
 public class Funcs
 {
