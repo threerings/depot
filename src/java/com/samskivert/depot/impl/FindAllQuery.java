@@ -50,7 +50,7 @@ import com.samskivert.depot.XList;
 import com.samskivert.depot.clause.FieldOverride;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.SelectClause;
-import com.samskivert.depot.operator.In;
+import com.samskivert.depot.impl.operator.In;
 
 import static com.samskivert.depot.Log.log;
 

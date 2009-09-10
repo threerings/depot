@@ -25,6 +25,7 @@ import java.util.Collection;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.operator.SQLOperator;
 
 /**
  * An attempt at a dialect-agnostic full-text search condition, such as MySQL's MATCH() and

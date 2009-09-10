@@ -18,45 +18,37 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.operator;
+package com.samskivert.depot.impl.operator;
 
-import java.util.Collection;
-
-import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.clause.SelectClause;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.expression.SQLExpression;
 
 /**
- * The SQL 'exists' operator.
+ * The SQL '=' operator.
  */
-public class Exists
-    implements SQLOperator
+public class Equals extends SQLOperator.BinaryOperator
 {
-    public Exists (SelectClause clause)
+    public Equals (SQLExpression column, Comparable<?> value)
     {
-        _clause = clause;
+        super(column, value);
     }
 
-    public Object accept (ExpressionVisitor<?> builder)
+    public Equals (SQLExpression column, SQLExpression value)
     {
-        return builder.visit(this);
+        super(column, value);
     }
 
-    public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
+    @Override // from SQLOperator.BinaryOperator
+    public String operator()
     {
-        _clause.addClasses(classSet);
+        return "=";
     }
 
-    public SelectClause getSubClause ()
+    @Override // from SQLOperator.BinaryOperator
+    public Object evaluate (Object left, Object right)
     {
-        return _clause;
+        if (left == null || right == null) {
+            return new NoValue("Null operand to '=': (" + left + ", " + right + ")");
+        }
+        return left.equals(right);
     }
-
-    @Override // from Object
-    public String toString ()
-    {
-        return "Exists(" + _clause + ")";
-    }
-
-    protected SelectClause _clause;
 }

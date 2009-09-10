@@ -18,47 +18,42 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.operator;
+package com.samskivert.depot.impl.operator;
 
-import java.util.Collection;
-
-import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
- * Represents the truth negation of another conditon.
+ * The SQL '-' operator.
  */
-public class Not
-    implements SQLOperator
+public class Sub extends Arithmetic
 {
-    public Not (SQLExpression condition)
+    public Sub (SQLExpression column, Comparable<?> value)
     {
-        _condition = condition;
+        super(column, value);
     }
 
-    public SQLExpression getCondition ()
+    public Sub (SQLExpression... values)
     {
-        return _condition;
+        super(values);
     }
 
-    // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    @Override // from Arithmetic
+    public String operator()
     {
-        return builder.visit(this);
+        return "-";
     }
 
-    // from SQLExpression
-    public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
+    @Override // from Arithmetic
+    public Object evaluate (Object[] operands)
     {
-        _condition.addClasses(classSet);
+        return evaluate(operands, "-", new Accumulator<Double>() {
+            public Double accumulate (Double left, Double right) {
+                return left - right;
+            }
+        }, new Accumulator<Long>() {
+            public Long accumulate (Long left, Long right) {
+                return left - right;
+            }
+        });
     }
-
-    @Override // from Object
-    public String toString ()
-    {
-        return "Not(" + _condition + ")";
-    }
-
-    protected SQLExpression _condition;
 }

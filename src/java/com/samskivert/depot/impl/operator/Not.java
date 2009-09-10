@@ -18,40 +18,47 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.operator;
+package com.samskivert.depot.impl.operator;
 
+import java.util.Collection;
+
+import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
- * The SQL '>' operator.
+ * Represents the truth negation of another conditon.
  */
-public class GreaterThan extends SQLOperator.BinaryOperator
+public class Not
+    implements SQLOperator
 {
-    public GreaterThan (SQLExpression column, Comparable<?> value)
+    public Not (SQLExpression condition)
     {
-        super(column, value);
+        _condition = condition;
     }
 
-    public GreaterThan (SQLExpression column, SQLExpression value)
+    public SQLExpression getCondition ()
     {
-        super(column, value);
+        return _condition;
     }
 
-    @Override // from SQLOperator.BinaryOperator
-    public String operator()
+    // from SQLExpression
+    public Object accept (ExpressionVisitor<?> builder)
     {
-        return ">";
+        return builder.visit(this);
     }
 
-    @Override // from SQLOperator.BinaryOperator
-    public Object evaluate (Object left, Object right)
+    // from SQLExpression
+    public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
-        if (all(NUMERICAL, left, right)) {
-            return NUMERICAL.apply(left) > NUMERICAL.apply(right);
-        }
-        if (all(STRING, left, right) || all(DATE, left, right)) {
-            return compare(STRING, left, right) > 0;
-        }
-        return new NoValue("Non-comparable operand to '>': (" + left + ", " + right + ")");
+        _condition.addClasses(classSet);
     }
+
+    @Override // from Object
+    public String toString ()
+    {
+        return "Not(" + _condition + ")";
+    }
+
+    protected SQLExpression _condition;
 }

@@ -28,7 +28,7 @@ import java.sql.Timestamp;
 
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.impl.expression.ValueExp;
-import com.samskivert.depot.operator.In;
+import com.samskivert.depot.impl.operator.In;
 import com.samskivert.util.ByteEnum;
 
 /**

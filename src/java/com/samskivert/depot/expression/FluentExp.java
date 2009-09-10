@@ -20,20 +20,20 @@
 
 package com.samskivert.depot.expression;
 
-import com.samskivert.depot.operator.Add;
-import com.samskivert.depot.operator.And;
-import com.samskivert.depot.operator.BitAnd;
-import com.samskivert.depot.operator.BitOr;
-import com.samskivert.depot.operator.Div;
-import com.samskivert.depot.operator.Equals;
-import com.samskivert.depot.operator.GreaterThan;
-import com.samskivert.depot.operator.GreaterThanEquals;
-import com.samskivert.depot.operator.LessThan;
-import com.samskivert.depot.operator.LessThanEquals;
-import com.samskivert.depot.operator.Mul;
-import com.samskivert.depot.operator.NotEquals;
-import com.samskivert.depot.operator.Or;
-import com.samskivert.depot.operator.Sub;
+import com.samskivert.depot.impl.operator.Add;
+import com.samskivert.depot.impl.operator.And;
+import com.samskivert.depot.impl.operator.BitAnd;
+import com.samskivert.depot.impl.operator.BitOr;
+import com.samskivert.depot.impl.operator.Div;
+import com.samskivert.depot.impl.operator.Equals;
+import com.samskivert.depot.impl.operator.GreaterThan;
+import com.samskivert.depot.impl.operator.GreaterThanEquals;
+import com.samskivert.depot.impl.operator.LessThan;
+import com.samskivert.depot.impl.operator.LessThanEquals;
+import com.samskivert.depot.impl.operator.Mul;
+import com.samskivert.depot.impl.operator.NotEquals;
+import com.samskivert.depot.impl.operator.Or;
+import com.samskivert.depot.impl.operator.Sub;
 
 /**
  * A base class for {@link SQLExpression} implementations that provides a plethora of combinators

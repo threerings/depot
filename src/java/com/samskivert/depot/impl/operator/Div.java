@@ -18,21 +18,23 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.operator;
+package com.samskivert.depot.impl.operator;
+
+import com.samskivert.util.StringUtil;
 
 import com.samskivert.depot.expression.SQLExpression;
 
 /**
- * The SQL '|' operator.
+ * The SQL '/' operator.
  */
-public class BitOr extends Arithmetic
+public class Div extends Arithmetic
 {
-    public BitOr (SQLExpression column, Comparable<?> value)
+    public Div (SQLExpression column, Comparable<?> value)
     {
         super(column, value);
     }
 
-    public BitOr (SQLExpression... values)
+    public Div (SQLExpression... values)
     {
         super(values);
     }
@@ -40,15 +42,24 @@ public class BitOr extends Arithmetic
     @Override // from Arithmetic
     public String operator()
     {
-        return "|";
+        return " / "; // Pad with spaces to work-around a MySQL bug.
     }
 
     @Override // from Arithmetic
     public Object evaluate (Object[] operands)
     {
-        return evaluate(operands, "|", null, new Accumulator<Long>() {
+        for (int ii = 1; ii < operands.length; ii ++) {
+            if (Double.valueOf(0).equals(NUMERICAL.apply(operands[ii]))) {
+                return new NoValue("Division by zero in: " + StringUtil.toString(operands));
+            }
+        }
+        return evaluate(operands, "/", new Accumulator<Double>() {
+            public Double accumulate (Double left, Double right) {
+                return left / right;
+            }
+        }, new Accumulator<Long>() {
             public Long accumulate (Long left, Long right) {
-                return left | right;
+                return left / right;
             }
         });
     }

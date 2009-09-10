@@ -18,21 +18,21 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.operator;
+package com.samskivert.depot.impl.operator;
 
 import com.samskivert.depot.expression.SQLExpression;
 
 /**
- * The SQL 'like' operator.
+ * The SQL '!=' operator.
  */
-public class Like extends SQLOperator.BinaryOperator
+public class NotEquals extends SQLOperator.BinaryOperator
 {
-    public Like (SQLExpression column, Comparable<?> value)
+    public NotEquals (SQLExpression column, Comparable<?> value)
     {
         super(column, value);
     }
 
-    public Like (SQLExpression column, SQLExpression value)
+    public NotEquals (SQLExpression column, SQLExpression value)
     {
         super(column, value);
     }
@@ -40,12 +40,15 @@ public class Like extends SQLOperator.BinaryOperator
     @Override // from SQLOperator.BinaryOperator
     public String operator()
     {
-        return " like ";
+        return "!=";
     }
 
     @Override // from SQLOperator.BinaryOperator
     public Object evaluate (Object left, Object right)
     {
-        return new NoValue("Like operator not implemented");
+        if (left == null || right == null) {
+            return new NoValue("Null operand to '!=': (" + left + ", " + right + ")");
+        }
+        return !left.equals(right);
     }
 }

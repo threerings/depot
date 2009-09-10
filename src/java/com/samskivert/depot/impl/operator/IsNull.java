@@ -18,42 +18,46 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.operator;
+package com.samskivert.depot.impl.operator;
 
-import com.samskivert.depot.expression.SQLExpression;
+import java.util.Collection;
+
+import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.expression.ColumnExp;
+import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
- * The SQL '*' operator.
+ * The SQL 'is null' operator.
  */
-public class Mul extends Arithmetic
+public class IsNull
+    implements SQLOperator
 {
-    public Mul (SQLExpression column, Comparable<?> value)
+    public IsNull (ColumnExp column)
     {
-        super(column, value);
+        _column = column;
     }
 
-    public Mul (SQLExpression... values)
+    public ColumnExp getColumn()
     {
-        super(values);
+        return _column;
     }
 
-    @Override // from Arithmetic
-    public String operator()
+    // from SQLExpression
+    public Object accept (ExpressionVisitor<?> builder)
     {
-        return "*";
+        return builder.visit(this);
     }
 
-    @Override // from Arithmetic
-    public Object evaluate (Object[] operands)
+    // from SQLExpression
+    public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
-        return evaluate(operands, "*", new Accumulator<Double>() {
-            public Double accumulate (Double left, Double right) {
-                return left * right;
-            }
-        }, new Accumulator<Long>() {
-            public Long accumulate (Long left, Long right) {
-                return left * right;
-            }
-        });
     }
+
+    @Override // from Object
+    public String toString ()
+    {
+        return "IsNull(" + _column + ")";
+    }
+
+    protected ColumnExp _column;
 }

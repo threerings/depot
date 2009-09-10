@@ -41,13 +41,7 @@ import com.samskivert.depot.expression.SQLExpression.NoValue;
 
 
 import com.samskivert.depot.operator.Case;
-import com.samskivert.depot.operator.Exists;
 import com.samskivert.depot.operator.FullText;
-import com.samskivert.depot.operator.In;
-import com.samskivert.depot.operator.IsNull;
-import com.samskivert.depot.operator.Not;
-import com.samskivert.depot.operator.SQLOperator.BinaryOperator;
-import com.samskivert.depot.operator.SQLOperator.MultiOperator;
 
 import com.samskivert.depot.impl.clause.CreateIndexClause;
 import com.samskivert.depot.impl.clause.DeleteClause;
@@ -87,6 +81,12 @@ import com.samskivert.depot.impl.expression.StringFun.Position;
 import com.samskivert.depot.impl.expression.StringFun.Substring;
 import com.samskivert.depot.impl.expression.StringFun.Trim;
 import com.samskivert.depot.impl.expression.StringFun.Upper;
+import com.samskivert.depot.impl.operator.Exists;
+import com.samskivert.depot.impl.operator.In;
+import com.samskivert.depot.impl.operator.IsNull;
+import com.samskivert.depot.impl.operator.Not;
+import com.samskivert.depot.impl.operator.SQLOperator.BinaryOperator;
+import com.samskivert.depot.impl.operator.SQLOperator.MultiOperator;
 import com.samskivert.util.ArrayUtil;
 import com.samskivert.util.Tuple;
 

@@ -18,40 +18,42 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.operator;
+package com.samskivert.depot.impl.operator;
 
 import com.samskivert.depot.expression.SQLExpression;
 
 /**
- * The SQL '<' operator.
+ * The SQL '+' operator.
  */
-public class LessThan extends SQLOperator.BinaryOperator
+public class Add extends Arithmetic
 {
-    public LessThan (SQLExpression column, Comparable<?> value)
+    public Add (SQLExpression column, Comparable<?> value)
     {
         super(column, value);
     }
 
-    public LessThan (SQLExpression column, SQLExpression value)
+    public Add (SQLExpression... values)
     {
-        super(column, value);
+        super(values);
     }
 
-    @Override // from SQLOperator.BinaryOperator
+    @Override // from Arithmetic
     public String operator()
     {
-        return "<";
+        return "+";
     }
 
-    @Override // from SQLOperator.BinaryOperator
-    public Object evaluate (Object left, Object right)
+    @Override // from Arithmetic
+    public Object evaluate (Object[] operands)
     {
-        if (all(NUMERICAL, left, right)) {
-            return NUMERICAL.apply(left) < NUMERICAL.apply(right);
-        }
-        if (all(STRING, left, right) || all(DATE, left, right)) {
-            return compare(STRING, left, right) < 0;
-        }
-        return new NoValue("Non-comparable operand to '<': (" + left + ", " + right + ")");
+        return evaluate(operands, "+", new Accumulator<Double>() {
+            public Double accumulate (Double left, Double right) {
+                return left + right;
+            }
+        }, new Accumulator<Long>() {
+            public Long accumulate (Long left, Long right) {
+                return left + right;
+            }
+        });
     }
 }

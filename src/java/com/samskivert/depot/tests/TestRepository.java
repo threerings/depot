@@ -40,8 +40,8 @@ import com.samskivert.depot.SchemaMigration;
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.clause.Where;
 import com.samskivert.depot.impl.expression.LiteralExp;
-import com.samskivert.depot.operator.GreaterThan;
-import com.samskivert.depot.operator.LessThan;
+import com.samskivert.depot.impl.operator.GreaterThan;
+import com.samskivert.depot.impl.operator.LessThan;
 
 /**
  * A test tool for the Depot repository services.

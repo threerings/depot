@@ -28,6 +28,7 @@ import com.google.common.collect.Lists;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.operator.SQLOperator;
 import com.samskivert.util.Tuple;
 
 /**

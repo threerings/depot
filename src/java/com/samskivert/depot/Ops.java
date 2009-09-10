@@ -25,13 +25,13 @@ import java.util.Collection;
 import com.samskivert.depot.clause.SelectClause;
 import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.operator.Add;
-import com.samskivert.depot.operator.And;
-import com.samskivert.depot.operator.Exists;
-import com.samskivert.depot.operator.Like;
-import com.samskivert.depot.operator.Mul;
-import com.samskivert.depot.operator.Not;
-import com.samskivert.depot.operator.Or;
+import com.samskivert.depot.impl.operator.Add;
+import com.samskivert.depot.impl.operator.And;
+import com.samskivert.depot.impl.operator.Exists;
+import com.samskivert.depot.impl.operator.Like;
+import com.samskivert.depot.impl.operator.Mul;
+import com.samskivert.depot.impl.operator.Not;
+import com.samskivert.depot.impl.operator.Or;
 
 /**
  * Provides static methods for operator construction that don't fit nicely into the fluent style.

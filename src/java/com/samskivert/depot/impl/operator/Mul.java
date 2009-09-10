@@ -18,23 +18,21 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.operator;
-
-import com.samskivert.util.StringUtil;
+package com.samskivert.depot.impl.operator;
 
 import com.samskivert.depot.expression.SQLExpression;
 
 /**
- * The SQL '/' operator.
+ * The SQL '*' operator.
  */
-public class Div extends Arithmetic
+public class Mul extends Arithmetic
 {
-    public Div (SQLExpression column, Comparable<?> value)
+    public Mul (SQLExpression column, Comparable<?> value)
     {
         super(column, value);
     }
 
-    public Div (SQLExpression... values)
+    public Mul (SQLExpression... values)
     {
         super(values);
     }
@@ -42,24 +40,19 @@ public class Div extends Arithmetic
     @Override // from Arithmetic
     public String operator()
     {
-        return " / "; // Pad with spaces to work-around a MySQL bug.
+        return "*";
     }
 
     @Override // from Arithmetic
     public Object evaluate (Object[] operands)
     {
-        for (int ii = 1; ii < operands.length; ii ++) {
-            if (Double.valueOf(0).equals(NUMERICAL.apply(operands[ii]))) {
-                return new NoValue("Division by zero in: " + StringUtil.toString(operands));
-            }
-        }
-        return evaluate(operands, "/", new Accumulator<Double>() {
+        return evaluate(operands, "*", new Accumulator<Double>() {
             public Double accumulate (Double left, Double right) {
-                return left / right;
+                return left * right;
             }
         }, new Accumulator<Long>() {
             public Long accumulate (Long left, Long right) {
-                return left / right;
+                return left * right;
             }
         });
     }

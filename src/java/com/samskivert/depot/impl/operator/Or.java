@@ -18,48 +18,46 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.operator;
+package com.samskivert.depot.impl.operator;
 
 import java.util.Collection;
 
 import com.samskivert.depot.expression.SQLExpression;
 
 /**
- * Represents a condition that is true iff all its subconditions are true.
+ * Represents a condition that is false iff all its subconditions are false.
  */
-public class And extends SQLOperator.MultiOperator
+public class Or extends SQLOperator.MultiOperator
 {
-    public And (Collection<? extends SQLExpression> conditions)
+    public Or (Collection<? extends SQLExpression> conditions)
     {
         super(conditions.toArray(new SQLExpression[conditions.size()]));
     }
 
-    public And (SQLExpression... conditions)
+    public Or (SQLExpression... conditions)
     {
         super(conditions);
     }
 
     @Override public String operator()
     {
-        return " and ";
+        return " or ";
     }
 
     @Override
     public Object evaluate (Object[] values)
     {
-        // if all operands are true, return true, else if all operands are boolean, return
-        // false, else return NO_VALUE
-        boolean allTrue = true;
+        boolean anyTrue = false;
         for (Object value : values) {
             if (value instanceof NoValue) {
                 return value;
             }
-            if (Boolean.FALSE.equals(value)) {
-                allTrue = false;
-            } else if (!Boolean.TRUE.equals(value)) {
-                return new NoValue("Non-boolean operand to AND: " + value);
+            if (Boolean.TRUE.equals(value)) {
+                anyTrue = true;
+            } else if (!Boolean.FALSE.equals(value)) {
+                return new NoValue("Non-boolean operand to OR: " + value);
             }
         }
-        return allTrue;
+        return anyTrue;
     }
 }

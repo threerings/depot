@@ -18,38 +18,34 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.operator;
+package com.samskivert.depot.impl.operator;
 
 import com.samskivert.depot.expression.SQLExpression;
 
 /**
- * The SQL '&' operator.
+ * The SQL 'like' operator.
  */
-public class BitAnd extends Arithmetic
+public class Like extends SQLOperator.BinaryOperator
 {
-    public BitAnd (SQLExpression column, Comparable<?> value)
+    public Like (SQLExpression column, Comparable<?> value)
     {
         super(column, value);
     }
 
-    public BitAnd (SQLExpression... values)
+    public Like (SQLExpression column, SQLExpression value)
     {
-        super(values);
+        super(column, value);
     }
 
-    @Override // from Arithmetic
+    @Override // from SQLOperator.BinaryOperator
     public String operator()
     {
-        return "&";
+        return " like ";
     }
 
-    @Override // from Arithmetic
-    public Object evaluate (Object[] operands)
+    @Override // from SQLOperator.BinaryOperator
+    public Object evaluate (Object left, Object right)
     {
-        return evaluate(operands, "&", null, new Accumulator<Long>() {
-            public Long accumulate (Long left, Long right) {
-                return left & right;
-            }
-        });
+        return new NoValue("Like operator not implemented");
     }
 }
