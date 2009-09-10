@@ -25,6 +25,7 @@ import java.util.Collection;
 import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.operator.And;
+import com.samskivert.depot.operator.Like;
 import com.samskivert.depot.operator.Not;
 import com.samskivert.depot.operator.Or;
 
@@ -72,5 +73,17 @@ public class Ops
     public static FluentExp or (SQLExpression... conditions)
     {
         return new Or(conditions);
+    }
+
+    /** Returns an expression that matches when the source is like the supplied value. */
+    public static FluentExp like (SQLExpression source, Comparable<?> value)
+    {
+        return new Like(source, value);
+    }
+
+    /** Returns an expression that matches when the source is like the supplied expression. */
+    public static FluentExp like (SQLExpression source, SQLExpression expr)
+    {
+        return new Like(source, expr);
     }
 }
