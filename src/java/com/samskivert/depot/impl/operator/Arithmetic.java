@@ -22,7 +22,6 @@ package com.samskivert.depot.impl.operator;
 
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.expression.ValueExp;
-import com.samskivert.depot.impl.operator.SQLOperator.MultiOperator;
 
 /**
  * A convenient container for implementations of arithmetic operators.

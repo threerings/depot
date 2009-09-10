@@ -91,12 +91,12 @@ import com.samskivert.depot.impl.expression.StringFun.Position;
 import com.samskivert.depot.impl.expression.StringFun.Substring;
 import com.samskivert.depot.impl.expression.StringFun.Trim;
 import com.samskivert.depot.impl.expression.StringFun.Upper;
+import com.samskivert.depot.impl.operator.BinaryOperator;
 import com.samskivert.depot.impl.operator.Exists;
 import com.samskivert.depot.impl.operator.In;
 import com.samskivert.depot.impl.operator.IsNull;
+import com.samskivert.depot.impl.operator.MultiOperator;
 import com.samskivert.depot.impl.operator.Not;
-import com.samskivert.depot.impl.operator.SQLOperator.BinaryOperator;
-import com.samskivert.depot.impl.operator.SQLOperator.MultiOperator;
 
 /**
  * Implements the base functionality of the SQL-building pass of {@link SQLBuilder}. Dialectal

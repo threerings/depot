@@ -25,7 +25,7 @@ import com.samskivert.depot.expression.SQLExpression;
 /**
  * The SQL '>=' operator.
  */
-public class GreaterThanEquals extends SQLOperator.BinaryOperator
+public class GreaterThanEquals extends BinaryOperator
 {
     public GreaterThanEquals (SQLExpression column, Comparable<?> value)
     {
@@ -37,13 +37,13 @@ public class GreaterThanEquals extends SQLOperator.BinaryOperator
         super(column, value);
     }
 
-    @Override // from SQLOperator.BinaryOperator
+    @Override // from BinaryOperator
     public String operator()
     {
         return ">=";
     }
 
-    @Override // from SQLOperator.BinaryOperator
+    @Override // from BinaryOperator
     public Object evaluate (Object left, Object right)
     {
         if (all(NUMERICAL, left, right)) {

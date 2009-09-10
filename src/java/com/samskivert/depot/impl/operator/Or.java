@@ -27,7 +27,7 @@ import com.samskivert.depot.expression.SQLExpression;
 /**
  * Represents a condition that is false iff all its subconditions are false.
  */
-public class Or extends SQLOperator.MultiOperator
+public class Or extends MultiOperator
 {
     public Or (Collection<? extends SQLExpression> conditions)
     {

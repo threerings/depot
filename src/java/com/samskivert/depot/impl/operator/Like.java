@@ -25,7 +25,7 @@ import com.samskivert.depot.expression.SQLExpression;
 /**
  * The SQL 'like' operator.
  */
-public class Like extends SQLOperator.BinaryOperator
+public class Like extends BinaryOperator
 {
     public Like (SQLExpression column, Comparable<?> value)
     {
@@ -37,13 +37,13 @@ public class Like extends SQLOperator.BinaryOperator
         super(column, value);
     }
 
-    @Override // from SQLOperator.BinaryOperator
+    @Override // from BinaryOperator
     public String operator()
     {
         return " like ";
     }
 
-    @Override // from SQLOperator.BinaryOperator
+    @Override // from BinaryOperator
     public Object evaluate (Object left, Object right)
     {
         return new NoValue("Like operator not implemented");

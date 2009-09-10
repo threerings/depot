@@ -54,8 +54,8 @@ import com.samskivert.depot.impl.expression.StringFun.Lower;
 import com.samskivert.depot.impl.operator.BitAnd;
 import com.samskivert.depot.impl.operator.BitOr;
 import com.samskivert.depot.impl.operator.Like;
+import com.samskivert.depot.impl.operator.MultiOperator;
 import com.samskivert.depot.impl.operator.Or;
-import com.samskivert.depot.impl.operator.SQLOperator.MultiOperator;
 
 public class HSQLBuilder
     extends SQLBuilder

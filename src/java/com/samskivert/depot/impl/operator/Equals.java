@@ -25,7 +25,7 @@ import com.samskivert.depot.expression.SQLExpression;
 /**
  * The SQL '=' operator.
  */
-public class Equals extends SQLOperator.BinaryOperator
+public class Equals extends BinaryOperator
 {
     public Equals (SQLExpression column, Comparable<?> value)
     {
@@ -37,13 +37,13 @@ public class Equals extends SQLOperator.BinaryOperator
         super(column, value);
     }
 
-    @Override // from SQLOperator.BinaryOperator
+    @Override // from BinaryOperator
     public String operator()
     {
         return "=";
     }
 
-    @Override // from SQLOperator.BinaryOperator
+    @Override // from BinaryOperator
     public Object evaluate (Object left, Object right)
     {
         if (left == null || right == null) {
