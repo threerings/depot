@@ -26,12 +26,11 @@ import com.samskivert.depot.clause.SelectClause;
 import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.operator.Add;
-import com.samskivert.depot.impl.operator.And;
 import com.samskivert.depot.impl.operator.Exists;
 import com.samskivert.depot.impl.operator.Like;
 import com.samskivert.depot.impl.operator.Mul;
+import com.samskivert.depot.impl.operator.MultiOperator;
 import com.samskivert.depot.impl.operator.Not;
-import com.samskivert.depot.impl.operator.Or;
 
 /**
  * Provides static methods for operator construction that don't fit nicely into the fluent style.
@@ -52,7 +51,7 @@ public class Ops
      */
     public static FluentExp and (Collection<? extends SQLExpression> conditions)
     {
-        return new And(conditions);
+        return and(conditions.toArray(new SQLExpression[conditions.size()]));
     }
 
     /**
@@ -60,7 +59,28 @@ public class Ops
      */
     public static FluentExp and (SQLExpression... conditions)
     {
-        return new And(conditions);
+        return new MultiOperator(conditions) {
+            @Override public String operator() {
+                return " and ";
+            }
+
+            @Override public Object evaluate (Object[] values) {
+                // if all operands are true, return true, else if all operands are boolean, return
+                // false, else return NO_VALUE
+                boolean allTrue = true;
+                for (Object value : values) {
+                    if (value instanceof NoValue) {
+                        return value;
+                    }
+                    if (Boolean.FALSE.equals(value)) {
+                        allTrue = false;
+                    } else if (!Boolean.TRUE.equals(value)) {
+                        return new NoValue("Non-boolean operand to AND: " + value);
+                    }
+                }
+                return allTrue;
+            }
+        };
     }
 
     /**
@@ -68,7 +88,7 @@ public class Ops
      */
     public static FluentExp or (Collection<? extends SQLExpression> conditions)
     {
-        return new Or(conditions);
+        return or(conditions.toArray(new SQLExpression[conditions.size()]));
     }
 
     /**
@@ -76,7 +96,26 @@ public class Ops
      */
     public static FluentExp or (SQLExpression... conditions)
     {
-        return new Or(conditions);
+        return new MultiOperator(conditions) {
+            @Override public String operator() {
+                return " or ";
+            }
+
+            @Override public Object evaluate (Object[] values) {
+                boolean anyTrue = false;
+                for (Object value : values) {
+                    if (value instanceof NoValue) {
+                        return value;
+                    }
+                    if (Boolean.TRUE.equals(value)) {
+                        anyTrue = true;
+                    } else if (!Boolean.FALSE.equals(value)) {
+                        return new NoValue("Non-boolean operand to OR: " + value);
+                    }
+                }
+                return anyTrue;
+            }
+        };
     }
 
     /**

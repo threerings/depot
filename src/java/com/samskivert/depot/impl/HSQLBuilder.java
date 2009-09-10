@@ -39,6 +39,7 @@ import com.samskivert.jdbc.ColumnDefinition;
 import com.samskivert.util.ArrayUtil;
 import com.samskivert.util.Tuple;
 
+import com.samskivert.depot.Ops;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.annotation.GeneratedValue;
@@ -47,15 +48,14 @@ import com.samskivert.depot.expression.*;
 import com.samskivert.depot.operator.FullText;
 
 import com.samskivert.depot.impl.clause.CreateIndexClause;
+import com.samskivert.depot.impl.expression.DateFun.DatePart.Part;
 import com.samskivert.depot.impl.expression.DateFun.DatePart;
 import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
-import com.samskivert.depot.impl.expression.DateFun.DatePart.Part;
 import com.samskivert.depot.impl.expression.StringFun.Lower;
 import com.samskivert.depot.impl.operator.BitAnd;
 import com.samskivert.depot.impl.operator.BitOr;
 import com.samskivert.depot.impl.operator.Like;
 import com.samskivert.depot.impl.operator.MultiOperator;
-import com.samskivert.depot.impl.operator.Or;
 
 public class HSQLBuilder
     extends SQLBuilder
@@ -90,7 +90,7 @@ public class HSQLBuilder
                 }
             }
             // then just OR them all together and we have our query
-            _ftsCondition = new Or(bits);
+            _ftsCondition = Ops.or(bits);
             _ftsCondition.accept(this);
             return null;
         }

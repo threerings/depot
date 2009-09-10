@@ -22,12 +22,12 @@ package com.samskivert.depot.clause;
 
 import java.util.Collection;
 
+import com.samskivert.depot.Ops;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
 import com.samskivert.depot.impl.expression.ValueExp;
-import com.samskivert.depot.impl.operator.And;
 import com.samskivert.depot.impl.operator.Equals;
 import com.samskivert.depot.impl.operator.IsNull;
 
@@ -97,7 +97,7 @@ public class Where extends WhereClause
             comparisons[ii] = (values[ii] == null) ? new IsNull(columns[ii]) :
                 new Equals(columns[ii], new ValueExp(values[ii]));
         }
-        return new And(comparisons);
+        return Ops.and(comparisons);
     }
 
     protected SQLExpression _condition;

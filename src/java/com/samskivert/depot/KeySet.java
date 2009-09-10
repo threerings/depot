@@ -40,7 +40,6 @@ import com.samskivert.depot.impl.DepotUtil;
 import com.samskivert.depot.impl.ExpressionVisitor;
 import com.samskivert.depot.impl.expression.LiteralExp;
 import com.samskivert.depot.impl.operator.In;
-import com.samskivert.depot.impl.operator.Or;
 
 /**
  * Contains a set of primary keys that match a set of persistent records. This is used internally
@@ -225,7 +224,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             for (Comparable<?>[] kvals : _keys) {
                 keyexps[ii++] = new Key.Expression(_pClass, kvals);
             }
-            return new Or(keyexps);
+            return Ops.or(keyexps);
         }
 
         // from Iterable<Key<T>>

@@ -20,8 +20,8 @@
 
 package com.samskivert.depot.expression;
 
+import com.samskivert.depot.Ops;
 import com.samskivert.depot.impl.operator.Add;
-import com.samskivert.depot.impl.operator.And;
 import com.samskivert.depot.impl.operator.BitAnd;
 import com.samskivert.depot.impl.operator.BitOr;
 import com.samskivert.depot.impl.operator.Div;
@@ -32,7 +32,6 @@ import com.samskivert.depot.impl.operator.LessThan;
 import com.samskivert.depot.impl.operator.LessThanEquals;
 import com.samskivert.depot.impl.operator.Mul;
 import com.samskivert.depot.impl.operator.NotEquals;
-import com.samskivert.depot.impl.operator.Or;
 import com.samskivert.depot.impl.operator.Sub;
 
 /**
@@ -117,13 +116,13 @@ public abstract class FluentExp
     /** Returns an {@link And} with this expression and the supplied target. */
     public FluentExp and (SQLExpression expr)
     {
-        return new And(this, expr);
+        return Ops.and(this, expr);
     }
 
     /** Returns an {@link Or} with this expression and the supplied target. */
     public FluentExp or (SQLExpression expr)
     {
-        return new Or(this, expr);
+        return Ops.or(this, expr);
     }
 
     /** Returns an {@link BitAnd} with this expression and the supplied target. */
