@@ -31,6 +31,7 @@ import com.samskivert.depot.impl.SQLBuilder;
  */
 public interface SQLExpression
 {
+    /** Used internally to represent the lack of a value. */
     public static final class NoValue
     {
         public NoValue (String reason)

@@ -30,7 +30,8 @@ import com.samskivert.depot.impl.operator.IsNull;
 import com.samskivert.depot.impl.operator.Like;
 
 /**
- * An expression that unambiguously identifies a field of a class, e.g. GameRecord.itemId.
+ * An expression that unambiguously identifies a field of a class, for example
+ * <code>GameRecord.itemId</code>.
  */
 public class ColumnExp extends FluentExp
 {

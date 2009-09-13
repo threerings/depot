@@ -111,11 +111,12 @@
     <javadoc windowtitle="${lib.name} API" doctitle="${lib.name} API"
              overview="${src.dir}/${doc.overview}" destdir="${javadoc.dir}"
              additionalparam="-breakiterator"
-             link="http://samskivert.com/code/samskivert/samskivert/docs/api/">
+             link="http://samskivert.com/code/samskivert/docs/">
       <packageset dir="${src.dir}">
+        <exclude name="com/samskivert/depot/impl/**"/>
+        <exclude name="com/samskivert/depot/tests/**"/>
         <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="build.ehcache"/>
         <exclude name="com/samskivert/depot/tools/**" unless="build.tools"/>
-        <exclude name="com/samskivert/depot/tests/**" unless="build.tests"/>
       </packageset>
       <bottom>Copyright &#169; 2006-${year} ${copyright.holder}. All Rights Reserved.</bottom>
       <classpath refid="classpath"/>

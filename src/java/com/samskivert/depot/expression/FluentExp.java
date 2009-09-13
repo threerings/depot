@@ -35,8 +35,7 @@ import com.samskivert.depot.impl.operator.NotEquals;
 import com.samskivert.depot.impl.operator.Sub;
 
 /**
- * A base class for {@link SQLExpression} implementations that provides a plethora of combinators
- * for composing expressions.
+ * Provides a fluent API for creating most SQL expressions like and, or, equal, not equal, etc.
  */
 public abstract class FluentExp
     implements SQLExpression
@@ -113,85 +112,85 @@ public abstract class FluentExp
         return new LessThanEquals(this, expr);
     }
 
-    /** Returns an {@link And} with this expression and the supplied target. */
+    /** Returns a boolean and of this expression and the supplied target. */
     public FluentExp and (SQLExpression expr)
     {
         return Ops.and(this, expr);
     }
 
-    /** Returns an {@link Or} with this expression and the supplied target. */
+    /** Returns a boolean or of this expression and the supplied target. */
     public FluentExp or (SQLExpression expr)
     {
         return Ops.or(this, expr);
     }
 
-    /** Returns an {@link BitAnd} with this expression and the supplied target. */
+    /** Returns a bitwise and of this expression and the supplied target. */
     public FluentExp bitAnd (Comparable<?> value)
     {
         return new BitAnd(this, value);
     }
 
-    /** Returns an {@link BitAnd} with this expression and the supplied target. */
+    /** Returns a bitwise and of this expression and the supplied target. */
     public FluentExp bitAnd (SQLExpression expr)
     {
         return new BitAnd(this, expr);
     }
 
-    /** Returns an {@link BitOr} with this expression and the supplied target. */
+    /** Returns a bitwise or of this expression and the supplied target. */
     public FluentExp bitOr (Comparable<?> value)
     {
         return new BitOr(this, value);
     }
 
-    /** Returns an {@link BitOr} with this expression and the supplied target. */
+    /** Returns a bitwise or of this expression and the supplied target. */
     public FluentExp bitOr (SQLExpression expr)
     {
         return new BitOr(this, expr);
     }
 
-    /** Returns an {@link Add} with this expression and the supplied target. */
+    /** Returns the sum of this expression and the supplied target. */
     public FluentExp plus (Comparable<?> value)
     {
         return new Add(this, value);
     }
 
-    /** Returns an {@link Add} with this expression and the supplied target. */
+    /** Returns the sum of this expression and the supplied target. */
     public FluentExp plus (SQLExpression expr)
     {
         return new Add(this, expr);
     }
 
-    /** Returns a {@link Sub} with this expression and the supplied target. */
+    /** Returns this expression minus the supplied target. */
     public FluentExp minus (Comparable<?> value)
     {
         return new Sub(this, value);
     }
 
-    /** Returns a {@link Sub} with this expression and the supplied target. */
+    /** Returns this expression minus the supplied target. */
     public FluentExp minus (SQLExpression expr)
     {
         return new Sub(this, expr);
     }
 
-    /** Returns a {@link Mul} with this expression and the supplied target. */
+    /** Returns this expression times the supplied target. */
     public FluentExp times (Comparable<?> value)
     {
         return new Mul(this, value);
     }
 
-    /** Returns a {@link Mul} with this expression and the supplied target. */
+    /** Returns this expression times the supplied target. */
     public FluentExp times (SQLExpression expr)
     {
         return new Mul(this, expr);
     }
 
-    /** Returns a {@link Div} with this expression and the supplied target. */
+    /** Returns this expression divided by the supplied target. */
     public FluentExp div (Comparable<?> value)
     {
         return new Div(this, value);
     }
 
-    /** Returns a {@link Div} with this expression and the supplied target. */
+    /** Returns this expression divided by the supplied target. */
     public FluentExp div (SQLExpression expr)
     {
         return new Div(this, expr);
