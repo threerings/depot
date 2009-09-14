@@ -294,7 +294,7 @@ public class PostgreSQLBuilder
             return "BYTEA";
         } else if (fm instanceof FieldMarshaller.IntArrayMarshaller) {
             return "BYTEA";
-        } else if (fm instanceof FieldMarshaller.ByteEnumMarshaller) {
+        } else if (fm instanceof FieldMarshaller.ByteEnumMarshaller<?>) {
             return "SMALLINT";
         } else if (fm instanceof FieldMarshaller.BooleanMarshaller) {
             return "BOOLEAN";

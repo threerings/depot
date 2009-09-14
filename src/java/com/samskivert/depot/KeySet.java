@@ -144,7 +144,8 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             if (this == obj) {
                 return true;
             }
-            return (obj instanceof EmptyKeySet) && _pClass.equals(((EmptyKeySet<?>)obj)._pClass);
+            return (obj instanceof EmptyKeySet<?>) &&
+            	_pClass.equals(((EmptyKeySet<?>)obj)._pClass);
         }
 
         @Override public int hashCode () {
@@ -191,7 +192,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             if (this == obj) {
                 return true;
             }
-            if (!(obj instanceof SingleKeySet)) {
+            if (!(obj instanceof SingleKeySet<?>)) {
                 return false;
             }
             SingleKeySet<?> oset = (SingleKeySet<?>)obj;
@@ -245,7 +246,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             if (this == obj) {
                 return true;
             }
-            if (!(obj instanceof MultiKeySet)) {
+            if (!(obj instanceof MultiKeySet<?>)) {
                 return false;
             }
             MultiKeySet<?> oset = (MultiKeySet<?>)obj;

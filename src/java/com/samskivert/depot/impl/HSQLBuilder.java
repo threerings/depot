@@ -291,7 +291,7 @@ public class HSQLBuilder
             return "VARBINARY";
         } else if (fm instanceof FieldMarshaller.IntArrayMarshaller) {
             return "VARBINARY";
-        } else if (fm instanceof FieldMarshaller.ByteEnumMarshaller) {
+        } else if (fm instanceof FieldMarshaller.ByteEnumMarshaller<?>) {
             return "TINYINT";
         } else if (fm instanceof FieldMarshaller.BooleanMarshaller) {
             return "BOOLEAN";

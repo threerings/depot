@@ -918,11 +918,11 @@ public class DepotMarshaller<T extends PersistentRecord>
             }
         } else if (config instanceof SQLExpression) {
             definition.add(new Tuple<SQLExpression, Order>((SQLExpression)config, Order.ASC));
-        } else if (config instanceof Tuple) {
+        } else if (config instanceof Tuple<?,?>) {
             @SuppressWarnings("unchecked") Tuple<SQLExpression, Order> tuple =
                 (Tuple<SQLExpression, Order>)config;
             definition.add(tuple);
-        } else if (config instanceof List) {
+        } else if (config instanceof List<?>) {
             @SuppressWarnings("unchecked") List<Tuple<SQLExpression, Order>> defs =
                 (List<Tuple<SQLExpression, Order>>)config;
             definition.addAll(defs);

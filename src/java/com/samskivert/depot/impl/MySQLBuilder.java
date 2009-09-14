@@ -330,7 +330,7 @@ public class MySQLBuilder
                 return "MEDIUMBLOB";
             }
             return "LONGBLOB";
-        } else if (fm instanceof ByteEnumMarshaller) {
+        } else if (fm instanceof ByteEnumMarshaller<?>) {
             return "TINYINT";
         } else if (fm instanceof BooleanMarshaller) {
             return "TINYINT";
