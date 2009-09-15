@@ -34,7 +34,7 @@ import com.samskivert.depot.impl.expression.LiteralExp;
 public class OrderBy implements QueryClause
 {
     /** Indicates the order of the clause. */
-    public enum Order { ASC, DESC };
+    public enum Order { ASC, DESC }
 
     /**
      * Creates and returns a random order by clause.

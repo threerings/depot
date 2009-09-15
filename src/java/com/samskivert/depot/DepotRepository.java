@@ -123,7 +123,7 @@ public abstract class DepotRepository
          * very memory intensive.
          */
         CONTENTS
-    };
+    }
 
     /**
      * Creates a repository with the supplied persistence context. Any schema migrations needed by

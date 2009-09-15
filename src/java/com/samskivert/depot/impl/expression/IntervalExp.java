@@ -33,7 +33,7 @@ public class IntervalExp
     implements SQLExpression
 {
     /** The units that can be used for an interval. */
-    public enum Unit { YEAR, MONTH, DAY, HOUR, MINUTE, SECOND };
+    public enum Unit { YEAR, MONTH, DAY, HOUR, MINUTE, SECOND }
 
     /** The unit for this interval. */
     public final Unit unit;

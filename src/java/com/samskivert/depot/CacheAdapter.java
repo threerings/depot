@@ -44,7 +44,7 @@ import com.samskivert.depot.impl.FindAllQuery;
  */
 public interface CacheAdapter
 {
-    public enum CacheCategory { RECORD, SHORT_KEYSET, LONG_KEYSET, RESULT };
+    public enum CacheCategory { RECORD, SHORT_KEYSET, LONG_KEYSET, RESULT }
 
     /** The encapsulated result of a cache lookup. */
     public interface CachedValue<T>

@@ -31,7 +31,7 @@ public abstract class DateFun
         public enum Part {
             DAY_OF_MONTH, DAY_OF_WEEK, DAY_OF_YEAR, HOUR, MINUTE, MONTH,
             SECOND, WEEK, YEAR, EPOCH
-        };
+        }
         public DatePart (SQLExpression date, Part part) {
             super(date);
             _part = part;
@@ -55,7 +55,7 @@ public abstract class DateFun
          */
         public enum Truncation {
             DAY,
-        };
+        }
         /**
          * Truncate a SQL timestamp value, currently only to the nearest day (Truncation.DAY) due
          * to lacking MySQL support, but we hope for future versions to match PostgreSQL.

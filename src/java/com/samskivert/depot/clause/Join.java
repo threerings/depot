@@ -35,7 +35,7 @@ import com.samskivert.depot.impl.operator.Equals;
 public class Join implements QueryClause
 {
     /** Indicates the join type to be used. The default is INNER. */
-    public static enum Type { INNER, LEFT_OUTER, RIGHT_OUTER };
+    public static enum Type { INNER, LEFT_OUTER, RIGHT_OUTER }
 
     public Join (ColumnExp primary, ColumnExp join)
     {
