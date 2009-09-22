@@ -563,8 +563,10 @@ public class PersistenceContext
                         stmt.close();
                     }
                 }
-                // if auto-commit is off and this is a write operation, push it through
-                if (!isReadOnly && !conn.getAutoCommit()) {
+                // Always commit if auto-commit is off.  If the read-only operation managed to
+                // acquire some locks, this will release them.  Also, we've seen a MySQL bug where
+                // not committing after a select causes later selects to see stale results.
+                if (!conn.getAutoCommit()) {
                     conn.commit();
                 }
                 // note the time it took to invoke this operation
