@@ -71,6 +71,8 @@ public class PostgreSQL4Builder extends PostgreSQLBuilder
                         type = "smallint"; // tinyint is in the spec, but PG doesn't recognize?
                     } else if (testValue instanceof Timestamp) {
                         type = "timestamp";
+                    } else if (testValue instanceof Long) {
+                        type = "bigint";
                     } else {
                         throw new DatabaseException(
                             "Don't know how to make Postgres array for " + testValue.getClass());
