@@ -23,6 +23,9 @@ package com.samskivert.depot.impl;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
@@ -30,10 +33,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -44,6 +46,7 @@ import com.samskivert.util.Tuple;
 
 import com.samskivert.jdbc.ColumnDefinition;
 import com.samskivert.jdbc.DatabaseLiaison;
+
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistenceContext;
@@ -60,11 +63,10 @@ import com.samskivert.depot.annotation.Index;
 import com.samskivert.depot.annotation.TableGenerator;
 import com.samskivert.depot.annotation.Transient;
 import com.samskivert.depot.annotation.UniqueConstraint;
-import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.clause.QueryClause;
+import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
-
 import com.samskivert.depot.impl.clause.CreateIndexClause;
 
 import static com.samskivert.depot.Log.log;
@@ -112,8 +114,12 @@ public class DepotMarshaller<T extends PersistentRecord>
 
         boolean seenIdentityGenerator = false;
 
-        // introspect on the class and create marshallers for persistent fields
+        // introspect on the class and create marshallers and indices for persistent fields
         List<ColumnExp> fields = Lists.newArrayList();
+        ListMultimap<String, Tuple<SQLExpression, Order>> namedFieldIndices =
+            ArrayListMultimap.create();
+        ListMultimap<String, Tuple<SQLExpression, Order>> uniqueNamedFieldIndices =
+            ArrayListMultimap.create();
         for (Field field : _pClass.getFields()) {
             int mods = field.getModifiers();
 
@@ -136,7 +142,8 @@ public class DepotMarshaller<T extends PersistentRecord>
 
             FieldMarshaller<?> fm = FieldMarshaller.createMarshaller(field);
             _fields.put(field.getName(), fm);
-            fields.add(new ColumnExp(_pClass, field.getName()));
+            ColumnExp fieldColumn = new ColumnExp(_pClass, field.getName());
+            fields.add(fieldColumn);
 
             // check to see if this is our primary key
             if (field.getAnnotation(Id.class) != null) {
@@ -197,17 +204,33 @@ public class DepotMarshaller<T extends PersistentRecord>
             // check whether this field is indexed
             Index index = field.getAnnotation(Index.class);
             if (index != null) {
-                String ixName = index.name().equals("") ? field.getName() + "Index" : index.name();
-                _indexes.add(buildIndex(ixName, index.unique(),
-                                        new ColumnExp(_pClass, field.getName())));
+                String name = index.name().equals("") ? field.getName() + "Index" : index.name();
+                Tuple<SQLExpression, Order> entry =
+                    new Tuple<SQLExpression, Order>(fieldColumn, Order.ASC);
+                if (index.unique()) {
+                    Preconditions.checkArgument(!namedFieldIndices.containsKey(index.name()),
+                        "All @Index for a particular name must be unique or non-unique");
+                    uniqueNamedFieldIndices.put(name, entry);
+                } else {
+                    Preconditions.checkArgument(
+                        !uniqueNamedFieldIndices.containsKey(index.name()),
+                        "All @Index for a particular name must be unique or non-unique");
+                    namedFieldIndices.put(name, entry);
+                }
             }
 
             // if this column is marked as unique, that also means we create an index
             Column column = field.getAnnotation(Column.class);
             if (column != null && column.unique()) {
-                _indexes.add(buildIndex(field.getName() + "Index", true,
-                                        new ColumnExp(_pClass, field.getName())));
+                _indexes.add(buildIndex(field.getName() + "Index", true, fieldColumn));
             }
+        }
+
+        for (String indexName : namedFieldIndices.keySet()) {
+            _indexes.add(buildIndex(indexName, false, namedFieldIndices.get(indexName)));
+        }
+        for (String indexName : uniqueNamedFieldIndices.keySet()) {
+            _indexes.add(buildIndex(indexName, true, uniqueNamedFieldIndices.get(indexName)));
         }
 
         // if we did not find a schema version field, freak out (but not for computed records, for
