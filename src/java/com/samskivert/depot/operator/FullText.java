@@ -24,7 +24,6 @@ import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.FluentExp;
-import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ExpressionVisitor;
 
 /**
@@ -34,7 +33,6 @@ import com.samskivert.depot.impl.ExpressionVisitor;
 public class FullText
 {
     public class Rank extends FluentExp
-        implements SQLExpression
     {
         // from SQLExpression
         public Object accept (ExpressionVisitor<?> builder)
@@ -60,7 +58,6 @@ public class FullText
     }
 
     public class Match extends FluentExp
-        implements SQLExpression
     {
         // from SQLExpression
         public Object accept (ExpressionVisitor<?> builder)
