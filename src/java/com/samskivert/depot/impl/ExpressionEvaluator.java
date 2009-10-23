@@ -100,7 +100,7 @@ import static com.samskivert.depot.Log.log;
  * TODO: that should be written.
  */
 public class ExpressionEvaluator
-    implements ExpressionVisitor<Object>
+    implements FragmentVisitor<Object>
 {
     public <T extends PersistentRecord> ExpressionEvaluator (Class<T> pClass, T pRec)
     {

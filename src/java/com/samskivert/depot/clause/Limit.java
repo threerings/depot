@@ -23,7 +23,7 @@ package com.samskivert.depot.clause;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 
 /**
  *  Represents a LIMIT/OFFSET clause, for pagination.
@@ -47,7 +47,7 @@ public class Limit implements QueryClause
     }
 
     // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    public Object accept (FragmentVisitor<?> builder)
     {
         return builder.visit(this);
     }

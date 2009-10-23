@@ -21,7 +21,7 @@
 package com.samskivert.depot.impl.expression;
 
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 import com.samskivert.depot.impl.expression.Function.ManyArgFun;
 
 public abstract class ConditionalFun
@@ -30,7 +30,7 @@ public abstract class ConditionalFun
         public Coalesce (SQLExpression... args) {
             super(args);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -42,7 +42,7 @@ public abstract class ConditionalFun
         public Greatest (SQLExpression... args) {
             super(args);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -54,7 +54,7 @@ public abstract class ConditionalFun
         public Least (SQLExpression... args) {
             super(args);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {

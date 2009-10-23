@@ -20,16 +20,12 @@
 
 package com.samskivert.depot.expression;
 
-import java.util.Collection;
-
-import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.impl.ExpressionVisitor;
-import com.samskivert.depot.impl.SQLBuilder;
+import com.samskivert.depot.SQLFragment;
 
 /**
  * Represents an SQL expression, e.g. column name, function, or constant.
  */
-public interface SQLExpression
+public interface SQLExpression extends SQLFragment
 {
     /** Used internally to represent the lack of a value. */
     public static final class NoValue
@@ -46,19 +42,4 @@ public interface SQLExpression
         protected String _reason;
     }
 
-    /**
-     * Most uses of this class have been implemented with a visitor pattern. Create your own
-     * {@link ExpressionVisitor} and call this method with it.
-     *
-     * @see SQLBuilder
-     */
-    public Object accept (ExpressionVisitor<?> visitor);
-
-    /**
-     * Adds all persistent classes that are brought into the SQL context by this clause: FROM
-     * clauses, JOINs, UPDATEs, anything that could create a new table abbreviation. This method
-     * should recurse into any subordinate state that may in turn bring in new classes so that
-     * sub-queries work correctly.
-     */
-    public void addClasses (Collection<Class<? extends PersistentRecord>> classSet);
 }

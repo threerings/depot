@@ -26,7 +26,7 @@ import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.DepotUtil;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 import com.samskivert.depot.impl.operator.Equals;
 
 /**
@@ -74,7 +74,7 @@ public class Join implements QueryClause
     }
 
     // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    public Object accept (FragmentVisitor<?> builder)
     {
         return builder.visit(this);
     }

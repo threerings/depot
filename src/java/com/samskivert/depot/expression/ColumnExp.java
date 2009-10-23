@@ -24,7 +24,7 @@ import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.clause.Join;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 import com.samskivert.depot.impl.operator.In;
 import com.samskivert.depot.impl.operator.IsNull;
 import com.samskivert.depot.impl.operator.Like;
@@ -92,7 +92,7 @@ public class ColumnExp extends FluentExp
     }
 
     // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    public Object accept (FragmentVisitor<?> builder)
     {
         return builder.visit(this);
     }

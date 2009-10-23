@@ -25,7 +25,7 @@ import java.util.Collection;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.clause.QueryClause;
 
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 
 /**
  * Represents an DROP INDEX instruction to the database.
@@ -49,14 +49,14 @@ public class DropIndexClause
         return _name;
     }
 
-    // from SQLExpression
+    // from SQLFragment
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
         classSet.add(_pClass);
     }
 
-    // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    // from SQLFragment
+    public Object accept (FragmentVisitor<?> builder)
     {
         return builder.visit(this);
     }

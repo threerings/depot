@@ -39,7 +39,7 @@ import com.samskivert.util.ByteEnum;
 import static com.samskivert.depot.Log.log;
 
 /**
- * At the heart of Depot's SQL generation, this object constructs an {@link ExpressionVisitor}
+ * At the heart of Depot's SQL generation, this object constructs an {@link FragmentVisitor}
  * object and executes it, constructing SQL and parameter bindings as it recurses.
  */
 public abstract class SQLBuilder

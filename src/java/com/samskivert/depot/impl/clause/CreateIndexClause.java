@@ -30,7 +30,7 @@ import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.expression.SQLExpression;
 
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 
 /**
  * Represents an CREATE INDEX instruction to the database.
@@ -71,14 +71,14 @@ public class CreateIndexClause
         return _fields;
     }
 
-    // from SQLExpression
+    // from SQLFragment
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
         classSet.add(_pClass);
     }
 
-    // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    // from SQLFragment
+    public Object accept (FragmentVisitor<?> builder)
     {
         return builder.visit(this);
     }

@@ -85,7 +85,7 @@ import com.samskivert.depot.impl.operator.Not;
 /**
  * Enumerates visitation methods for every possible SQL expression type.
  */
-public interface ExpressionVisitor<T>
+public interface FragmentVisitor<T>
 {
     public T visit (FieldDefinition fieldOverride);
     public T visit (FromOverride fromOverride);

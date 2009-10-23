@@ -24,7 +24,7 @@ import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.FluentExp;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 
 /**
  * An attempt at a dialect-agnostic full-text search condition, such as MySQL's MATCH() and
@@ -35,7 +35,7 @@ public class FullText
     public class Rank extends FluentExp
     {
         // from SQLExpression
-        public Object accept (ExpressionVisitor<?> builder)
+        public Object accept (FragmentVisitor<?> builder)
         {
             return builder.visit(this);
         }
@@ -60,7 +60,7 @@ public class FullText
     public class Match extends FluentExp
     {
         // from SQLExpression
-        public Object accept (ExpressionVisitor<?> builder)
+        public Object accept (FragmentVisitor<?> builder)
         {
             return builder.visit(this);
         }

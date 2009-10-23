@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 
 /**
  * Builds actual SQL given a main persistent type and some {@link QueryClause} objects.
@@ -62,7 +62,7 @@ public class InsertClause implements QueryClause
     }
 
     // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    public Object accept (FragmentVisitor<?> builder)
     {
         return builder.visit(this);
     }

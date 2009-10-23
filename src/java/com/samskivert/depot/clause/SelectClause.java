@@ -30,7 +30,7 @@ import com.google.common.collect.Maps;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ColumnExp;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 
 /**
  * Represents a complete select clause.
@@ -193,7 +193,7 @@ public class SelectClause
     }
 
     // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    public Object accept (FragmentVisitor<?> builder)
     {
         return builder.visit(this);
     }

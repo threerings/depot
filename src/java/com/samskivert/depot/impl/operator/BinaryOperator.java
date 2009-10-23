@@ -4,7 +4,7 @@
 package com.samskivert.depot.impl.operator;
 
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 import com.samskivert.depot.impl.expression.ValueExp;
 
 /**
@@ -32,8 +32,8 @@ public abstract class BinaryOperator extends BaseOperator
      */
     public abstract Object evaluate (Object left, Object right);
 
-    // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    // from SQLFragment
+    public Object accept (FragmentVisitor<?> builder)
     {
         return builder.visit(this);
     }

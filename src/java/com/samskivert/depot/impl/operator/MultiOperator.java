@@ -7,7 +7,7 @@ import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 
 /**
  * Represents an operator with any number of operands.
@@ -29,13 +29,13 @@ public abstract class MultiOperator extends BaseOperator
      */
     public abstract Object evaluate (Object[] values);
 
-    // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    // from SQLFragment
+    public Object accept (FragmentVisitor<?> builder)
     {
         return builder.visit(this);
     }
 
-    @Override // from SQLExpression
+    @Override // from SQLFragment
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
         for (SQLExpression operand : _args) {

@@ -26,7 +26,7 @@ import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.WhereClause;
 
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 
 /**
  * Builds actual SQL given a main persistent type and some {@link QueryClause} objects.
@@ -50,14 +50,14 @@ public class DeleteClause
         return _where;
     }
 
-    // from SQLExpression
+    // from SQLFragment
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
         classSet.add(_pClass);
     }
 
-    // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    // from SQLFragment
+    public Object accept (FragmentVisitor<?> builder)
     {
         return builder.visit(this);
     }

@@ -27,7 +27,7 @@ import com.google.common.collect.Lists;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.impl.DepotUtil;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 
 /**
  *  Completely overrides the FROM clause, if it exists.
@@ -63,7 +63,7 @@ public class FromOverride implements QueryClause
     }
 
     // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    public Object accept (FragmentVisitor<?> builder)
     {
         return builder.visit(this);
     }

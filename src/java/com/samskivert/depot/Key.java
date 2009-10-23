@@ -35,7 +35,7 @@ import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.DepotMarshaller;
 import com.samskivert.depot.impl.DepotUtil;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 
 /**
  * A special form of {@link WhereClause} that uniquely specifies a single database row and thus
@@ -60,7 +60,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
         public Comparable<?>[] getValues () {
             return _values;
         }
-        public Object accept (ExpressionVisitor<?> builder) {
+        public Object accept (FragmentVisitor<?> builder) {
             return builder.visit(this);
         }
         public void addClasses (Collection<Class<? extends PersistentRecord>> classSet) {
@@ -205,7 +205,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
     }
 
     // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    public Object accept (FragmentVisitor<?> builder)
     {
         return builder.visit(this);
     }

@@ -102,7 +102,7 @@ import com.samskivert.depot.impl.operator.Not;
  * Implements the base functionality of the SQL-building pass of {@link SQLBuilder}. Dialectal
  * subclasses of this should be created and returned from {@link SQLBuilder#getBuildVisitor()}.
  */
-public abstract class BuildVisitor implements ExpressionVisitor<Void>
+public abstract class BuildVisitor implements FragmentVisitor<Void>
 {
     public String getQuery ()
     {

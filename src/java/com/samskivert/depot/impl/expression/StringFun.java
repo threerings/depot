@@ -21,7 +21,7 @@
 package com.samskivert.depot.impl.expression;
 
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 import com.samskivert.depot.impl.expression.Function.ManyArgFun;
 import com.samskivert.depot.impl.expression.Function.OneArgFun;
 import com.samskivert.depot.impl.expression.Function.TwoArgFun;
@@ -32,7 +32,7 @@ public abstract class StringFun
         public Length (SQLExpression argument) {
             super(argument);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -44,7 +44,7 @@ public abstract class StringFun
         public Lower (SQLExpression argument) {
             super(argument);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -56,7 +56,7 @@ public abstract class StringFun
         public Position (SQLExpression substring, SQLExpression string) {
             super(substring, string);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -74,7 +74,7 @@ public abstract class StringFun
         public Substring (SQLExpression string, SQLExpression from, SQLExpression count) {
             super(string, from, count);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -86,7 +86,7 @@ public abstract class StringFun
         public Trim (SQLExpression argument) {
             super(argument);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -98,7 +98,7 @@ public abstract class StringFun
         public Upper (SQLExpression argument) {
             super(argument);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {

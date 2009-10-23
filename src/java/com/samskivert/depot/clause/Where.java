@@ -26,7 +26,7 @@ import com.samskivert.depot.Ops;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 import com.samskivert.depot.impl.expression.ValueExp;
 import com.samskivert.depot.impl.operator.Equals;
 import com.samskivert.depot.impl.operator.IsNull;
@@ -73,7 +73,7 @@ public class Where extends WhereClause
     }
 
     // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    public Object accept (FragmentVisitor<?> builder)
     {
         return builder.visit(this);
     }

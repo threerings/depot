@@ -20,11 +20,11 @@
 
 package com.samskivert.depot.clause;
 
-import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.SQLFragment;
 
 /**
  * Represents a piece or modifier of an SQL query.
  */
-public interface QueryClause extends SQLExpression
+public interface QueryClause extends SQLFragment
 {
 }

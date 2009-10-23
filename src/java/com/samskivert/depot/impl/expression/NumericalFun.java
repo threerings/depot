@@ -21,7 +21,7 @@
 package com.samskivert.depot.impl.expression;
 
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 import com.samskivert.depot.impl.expression.Function.NoArgFun;
 import com.samskivert.depot.impl.expression.Function.OneArgFun;
 import com.samskivert.depot.impl.expression.Function.TwoArgFun;
@@ -32,7 +32,7 @@ public abstract class NumericalFun
         public Abs (SQLExpression argument) {
             super(argument);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -44,7 +44,7 @@ public abstract class NumericalFun
         public Ceil (SQLExpression argument) {
             super(argument);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -56,7 +56,7 @@ public abstract class NumericalFun
         public Exp (SQLExpression argument) {
             super(argument);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -68,7 +68,7 @@ public abstract class NumericalFun
         public Floor (SQLExpression argument) {
             super(argument);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -80,7 +80,7 @@ public abstract class NumericalFun
         public Ln (SQLExpression argument) {
             super(argument);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -92,7 +92,7 @@ public abstract class NumericalFun
         public Log10 (SQLExpression value) {
             super(value);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -101,7 +101,7 @@ public abstract class NumericalFun
     }
 
     public static class Pi extends NoArgFun {
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -113,7 +113,7 @@ public abstract class NumericalFun
         public Power (SQLExpression value, SQLExpression power) {
             super(value, power);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -128,7 +128,7 @@ public abstract class NumericalFun
     }
 
     public static class Random extends NoArgFun {
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -140,7 +140,7 @@ public abstract class NumericalFun
         public Round (SQLExpression argument) {
             super(argument);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -152,7 +152,7 @@ public abstract class NumericalFun
         public Sign (SQLExpression argument) {
             super(argument);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -164,7 +164,7 @@ public abstract class NumericalFun
         public Sqrt (SQLExpression argument) {
             super(argument);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {
@@ -176,7 +176,7 @@ public abstract class NumericalFun
         public Trunc (SQLExpression argument) {
             super(argument);
         }
-        public Object accept (ExpressionVisitor<?> visitor) {
+        public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
         public String getCanonicalFunctionName () {

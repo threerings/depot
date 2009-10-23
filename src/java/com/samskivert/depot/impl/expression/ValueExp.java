@@ -24,7 +24,7 @@ import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.FluentExp;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 
 /**
  * A Java value that is bound as a parameter to the query, e.g. 1 or 'abc'.
@@ -36,13 +36,13 @@ public class ValueExp extends FluentExp
         _value = value;
     }
 
-    // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    // from SQLFragment
+    public Object accept (FragmentVisitor<?> builder)
     {
         return builder.visit(this);
     }
 
-    // from SQLExpression
+    // from SQLFragment
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
     }

@@ -28,7 +28,7 @@ import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 
 /**
  * Builds actual SQL given a main persistent type and some {@link QueryClause} objects.
@@ -81,7 +81,7 @@ public class UpdateClause
         return _pClass;
     }
 
-    // from SQLExpression
+    // from SQLFragment
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
         classSet.add(_pClass);
@@ -95,8 +95,8 @@ public class UpdateClause
         }
     }
 
-    // from SQLExpression
-    public Object accept (ExpressionVisitor<?> builder)
+    // from SQLFragment
+    public Object accept (FragmentVisitor<?> builder)
     {
         return builder.visit(this);
     }

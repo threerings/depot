@@ -25,7 +25,7 @@ import java.util.Collection;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.impl.ExpressionVisitor;
+import com.samskivert.depot.impl.FragmentVisitor;
 import com.samskivert.depot.impl.expression.LiteralExp;
 
 /**
@@ -81,7 +81,7 @@ public class FieldDefinition implements QueryClause
     }
 
     // from SQLExpression
-    public Object accept (ExpressionVisitor<?> visitor)
+    public Object accept (FragmentVisitor<?> visitor)
     {
         return visitor.visit(this);
     }
