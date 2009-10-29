@@ -20,22 +20,26 @@
 
 package com.samskivert.depot.tools;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
@@ -44,18 +48,12 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Reference;
 import org.apache.tools.ant.util.ClasspathUtils;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
 import com.samskivert.io.StreamUtil;
 import com.samskivert.util.ClassUtil;
 import com.samskivert.util.GenUtil;
 import com.samskivert.util.StringUtil;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.annotation.Column;
-import com.samskivert.depot.annotation.GeneratedValue;
 import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.annotation.Transient;
 import com.samskivert.depot.impl.DepotUtil;
@@ -101,8 +99,8 @@ public class GenRecordTask extends Task
             DirectoryScanner ds = fs.getDirectoryScanner(getProject());
             File fromDir = fs.getDir(getProject());
             String[] srcFiles = ds.getIncludedFiles();
-            for (String srcFile : srcFiles) {
-                processRecord(new File(fromDir, srcFile));
+            for (int f = 0; f < srcFiles.length; f++) {
+                processRecord(new File(fromDir, srcFiles[f]));
             }
         }
     }
@@ -145,40 +143,17 @@ public class GenRecordTask extends Task
         }
         boolean isAbstract = Modifier.isAbstract(rclass.getModifiers());
 
-        // determine our primary key fields for getKey() generation (if we're not an abstract) and
-        // fields that need to be filled in for insertion to make a constructor
+        // determine our primary key fields for getKey() generation (if we're not an abstract)
         List<Field> kflist = Lists.newArrayList();
-        List<Field> requiredFields= Lists.newArrayList();
         if (!isAbstract) {
             // determine which fields make up our primary key; we'd just use Class.getFields() but
             // that returns things in a random order whereas ClassUtil returns fields in
             // declaration order starting from the top-most class and going down the line
             for (Field field : ClassUtil.getFields(rclass)) {
-                if (!isPersistentField(field)) {
-                    continue;
-                }
                 if (hasAnnotation(field, Id.class)) {
                     kflist.add(field);
-                    if (hasAnnotation(field, GeneratedValue.class)) {
-                        continue;
-                    }
+                    continue;
                 }
-                // We can't actually get the annotation as Column.class due to classloader hijinks,
-                // so prepare some reflection hoops and jump through them to get the values
-                Object ann = getAnnotation(field, Column.class);
-                if (ann != null) {
-                    try {
-                        Method defVal = ann.getClass().getMethod("defaultValue");
-                        Method nullable = ann.getClass().getMethod("nullable");
-                        if(!StringUtil.isBlank((String)defVal.invoke(ann)) ||
-                                (Boolean)nullable.invoke(ann)) {
-                            continue;
-                        }
-                    } catch (Exception e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-                requiredFields.add(field);
             }
         }
 
@@ -187,6 +162,12 @@ public class GenRecordTask extends Task
         for (Field field : rclass.getFields()) {
             if (isPersistentField(field)) {
                 flist.add(field);
+            }
+        }
+        Set<Field> declared = Sets.newHashSet();
+        for (Field field : rclass.getDeclaredFields()) {
+            if (isPersistentField(field)) {
+                declared.add(field);
             }
         }
 
@@ -210,7 +191,6 @@ public class GenRecordTask extends Task
         int bstart = -1, bend = -1;
         int nstart = -1, nend = -1;
         int mstart = -1, mend = -1;
-        int finalc = -1;
         for (int ii = 0; ii < lines.length; ii++) {
             String line = lines[ii].trim();
 
@@ -227,10 +207,6 @@ public class GenRecordTask extends Task
                         }
                     }
                 }
-
-            // look for the final line that starts a constructor
-            } else if(CONSTRUCTOR_PATTERN.matcher(line).find()) {
-                finalc = ii;
 
             // track the last } on a line by itself and we'll call that the end of the class body
             } else if (line.equals("}")) {
@@ -290,23 +266,6 @@ public class GenRecordTask extends Task
 
             // now generate our bits
             fsection.append(mergeTemplate(COL_TMPL, fsubs));
-        }
-
-        // Add a constructor that fills in all required fields if there isn't a constructor out of
-        // the generated section and we have some required fields
-        if (!requiredFields.isEmpty() && (finalc == -1 || (finalc > nstart && finalc < nend))) {
-            StringBuilder args = new StringBuilder();
-            StringBuilder assignments = new StringBuilder();
-            for (Field arg : requiredFields) {
-                String name = arg.getName();
-                if (args.length() > 0) {
-                    args.append(", ");
-                }
-                args.append(GenUtil.simpleName(arg)).append(" ").append(name);
-                assignments.append("\n        this.").append(name).append(" = ").append(name).append(';');
-            }
-            fsection.append(mergeTemplate(CONS_TMPL, ImmutableMap.of("argList", args.toString(),
-                "assignments", assignments.toString(), "record", rname)));
         }
 
         // generate our methods section
@@ -436,20 +395,15 @@ public class GenRecordTask extends Task
         }
     }
 
-    protected static boolean hasAnnotation (Field field, Class<? extends Annotation> annotation)
-    {
-        return getAnnotation(field, annotation) != null;
-    }
-
-    protected static Annotation getAnnotation (Field field, Class<? extends Annotation> annotation)
+    protected static boolean hasAnnotation (Field field, Class<?> annotation)
     {
         // iterate becase getAnnotation() fails if we're dealing with multiple classloaders
         for (Annotation a : field.getAnnotations()) {
             if (annotation.getName().equals(a.annotationType().getName())) {
-                return a;
+                return true;
             }
         }
-        return null;
+        return false;
     }
 
     /**
@@ -508,9 +462,6 @@ public class GenRecordTask extends Task
     /** Specifies the path to the key code template. */
     protected static final String KEY_TMPL = "com/samskivert/depot/tools/record_key.tmpl";
 
-    /** Specifies the path to the constructor code template. */
-    protected static final String CONS_TMPL = "com/samskivert/depot/tools/record_constructor.tmpl";
-
     // markers
     protected static final String MARKER = "// AUTO-GENERATED: ";
     protected static final String FIELDS_START = MARKER + "FIELDS START";
@@ -524,8 +475,4 @@ public class GenRecordTask extends Task
     /** A regular expression for matching the class or interface declaration. */
     protected static final Pattern NAME_PATTERN = Pattern.compile(
         "^\\s*public\\s+(?:abstract\\s+)?(interface|class)\\s+(\\w+)(\\W|$)");
-
-    /** A regular expression for matching constructor declarations. */
-    protected static final Pattern CONSTRUCTOR_PATTERN = Pattern.compile(
-        "^\\s*(public|protected|private)\\s+\\w+\\s*\\(");
 }
