@@ -53,11 +53,6 @@ public @interface Column
     boolean nullable () default false;
 
     /**
-     * The SQL type that is used when generating the DDL for the column.
-     */
-    String type() default "";
-
-    /**
      * The column length. (Applies to String and byte[] columns.)
      */
     int length () default 255;

@@ -119,7 +119,7 @@ public abstract class SQLBuilder
         Column column = field.getAnnotation(Column.class);
 
         ColumnDefinition coldef = (column != null) ?
-            new ColumnDefinition(nullify(column.type()), column.nullable(),
+            new ColumnDefinition(null, column.nullable(),
                                  column.unique(), nullify(column.defaultValue())) :
             new ColumnDefinition();
 
