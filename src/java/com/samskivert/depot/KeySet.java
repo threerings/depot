@@ -177,10 +177,10 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
         // from Iterable<Key<T>>
         public Iterator<Key<T>> iterator () {
             return Iterators.transform(
-                Iterators.forArray(_keys, 0, _keys.length), new Function<Comparable<?>, Key<T>>() {
-                public Key<T> apply (Comparable<?> key) {
-                    return new Key<T>(_pClass, new Comparable<?>[] { key });
-               }
+                Iterators.forArray(_keys), new Function<Comparable<?>, Key<T>>() {
+                    public Key<T> apply (Comparable<?> key) {
+                        return new Key<T>(_pClass, new Comparable<?>[] { key });
+                    }
             });
         }
 
@@ -230,11 +230,11 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
 
         // from Iterable<Key<T>>
         public Iterator<Key<T>> iterator () {
-            return Iterators.transform(Iterators.forArray(_keys, 0, _keys.length),
-                                       new Function<Comparable<?>[], Key<T>>() {
-                public Key<T> apply (Comparable<?>[] key) {
-                    return new Key<T>(_pClass, key);
-                }
+            return Iterators.transform(
+                Iterators.forArray(_keys), new Function<Comparable<?>[], Key<T>>() {
+                    public Key<T> apply (Comparable<?>[] key) {
+                        return new Key<T>(_pClass, key);
+                    }
             });
         }
 
