@@ -163,8 +163,8 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             super(pClass);
             // TODO: remove when we update to 1.6 and change Postgres In handling
             if (keys.length > In.MAX_KEYS) {
-                throw new IllegalArgumentException("Cannot create where clause for more than " +
-                                                   In.MAX_KEYS + " at a time.");
+                throw new IllegalArgumentException(
+                    "Cannot create where clause for more than " + In.MAX_KEYS + " keys at a time.");
             }
             _keys = keys;
         }
@@ -210,6 +210,10 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
         protected Comparable<?>[] _keys;
     }
 
+    // TODO: This algorithm very commonly creates huge lists of expressions like:
+    // TODO:   (A = 1 and B = 'dog') or (A = 1 and B = 'cat') or (A = 1 and B = 'elephant') or ...
+    // TODO: It would be worthwhile to optimize this common case to
+    // TODO:   (A = 1 and B in ('dog', 'cat', 'elephant', ...))
     protected static class MultiKeySet<T extends PersistentRecord> extends KeySet<T>
     {
         public MultiKeySet (Class<T> pClass, Comparable<?>[][] keys)
