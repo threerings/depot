@@ -48,9 +48,7 @@ class MultiKeySet<T extends PersistentRecord> extends KeySet<T>
         for (int ii = 0; ii < _keyFields.length; ii ++) {
             columns.add(ii);
         }
-        SQLExpression foo = rowsToSQLExpression(Lists.newLinkedList(Arrays.asList(_keys)), columns);
-        System.err.println("SQL: "  + foo);
-        return foo;
+        return rowsToSQLExpression(Lists.newLinkedList(Arrays.asList(_keys)), columns);
     }
 
     // from Iterable<Key<T>>
