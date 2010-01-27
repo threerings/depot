@@ -64,6 +64,8 @@ public class PostgreSQL4Builder extends PostgreSQLBuilder
                         type = "bigint";
                     } else if (testValue instanceof String) {
                         type = "varchar";
+                    } else if (testValue instanceof Short || testValue instanceof Byte) {
+                        type = "smallint";
                     } else if (testValue instanceof ByteEnum) {
                         Byte[] bytes = new Byte[values.length];
                         for (int ii = 0; ii < bytes.length; ii ++) {
