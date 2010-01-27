@@ -46,7 +46,7 @@ import com.samskivert.depot.impl.operator.In;
  * in Depot when decomposing queries into two parts: first a query for the primary keys that
  * identify the records that match a free-form query and then another query that operates on the
  * previously identified keys. The keys obtained in the first query are used to create a KeySet and
- * modifications and deletons using this set will automatically flush the appropriate records from
+ * modifications and deletions using this set will automatically flush the appropriate records from
  * the cache.
  */
 public abstract class KeySet<T extends PersistentRecord> extends WhereClause
@@ -86,7 +86,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             for (Key<T> key : keys) {
                 keysValues[ii++] = key.getValues();
             }
-            return new MultiKeySet<T>(pClass, keysValues);
+            return new MultiKeySet<T>(pClass, keyFields, keysValues);
         }
     }
 
@@ -208,64 +208,6 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
         }
 
         protected Comparable<?>[] _keys;
-    }
-
-    // TODO: This algorithm very commonly creates huge lists of expressions like:
-    // TODO:   (A = 1 and B = 'dog') or (A = 1 and B = 'cat') or (A = 1 and B = 'elephant') or ...
-    // TODO: It would be worthwhile to optimize this common case to
-    // TODO:   (A = 1 and B in ('dog', 'cat', 'elephant', ...))
-    protected static class MultiKeySet<T extends PersistentRecord> extends KeySet<T>
-    {
-        public MultiKeySet (Class<T> pClass, Comparable<?>[][] keys)
-        {
-            super(pClass);
-            _keys = keys;
-        }
-
-        @Override public SQLExpression getWhereExpression () {
-            // Multi-column keys result in OR'd AND's, of unknown efficiency (TODO check).
-            SQLExpression[] keyexps = new SQLExpression[_keys.length];
-            int ii = 0;
-            for (Comparable<?>[] kvals : _keys) {
-                keyexps[ii++] = new Key.Expression(_pClass, kvals);
-            }
-            return Ops.or(keyexps);
-        }
-
-        // from Iterable<Key<T>>
-        public Iterator<Key<T>> iterator () {
-            return Iterators.transform(
-                Iterators.forArray(_keys), new Function<Comparable<?>[], Key<T>>() {
-                    public Key<T> apply (Comparable<?>[] key) {
-                        return new Key<T>(_pClass, key);
-                    }
-            });
-        }
-
-        @Override public int size () {
-            return _keys.length;
-        }
-
-        @Override public boolean equals (Object obj) {
-            if (this == obj) {
-                return true;
-            }
-            if (!(obj instanceof MultiKeySet<?>)) {
-                return false;
-            }
-            MultiKeySet<?> oset = (MultiKeySet<?>)obj;
-            return _pClass.equals(oset._pClass) && Arrays.equals(_keys, oset._keys);
-        }
-
-        @Override public int hashCode () {
-            return 31 * _pClass.hashCode() + Arrays.hashCode(_keys);
-        }
-
-        @Override public String toString () {
-            return DepotUtil.justClassName(_pClass) + StringUtil.toString(_keys);
-        }
-
-        protected Comparable<?>[][] _keys;
     }
 
     /**
