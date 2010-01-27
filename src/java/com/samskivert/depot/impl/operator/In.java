@@ -78,7 +78,8 @@ public class In
             if (ii > 0) {
                 builder.append(", ");
             }
-            builder.append(_values[ii]);
+            builder.append((_values[ii] instanceof Number) ?
+                String.valueOf(_values[ii]) : ("'" + _values[ii] + "'"));
         }
         return builder.append(")").toString();
     }
