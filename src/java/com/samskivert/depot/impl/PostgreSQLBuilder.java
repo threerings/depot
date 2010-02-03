@@ -39,6 +39,8 @@ import com.samskivert.depot.Exps;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex.Configuration;
 import com.samskivert.depot.annotation.FullTextIndex;
+import com.samskivert.depot.clause.InsertClause;
+import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.impl.expression.IntervalExp;
 import com.samskivert.depot.impl.expression.DateFun.DatePart;
 import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
@@ -134,6 +136,22 @@ public class PostgreSQLBuilder
 
         @Override protected void appendIdentifier (String field) {
             _builder.append("\"").append(field).append("\"");
+        }
+
+        @Override protected void appendInsertColumns (InsertClause insertClause)
+        {
+            // see if we will be inserting any columns whatsoever
+            Class<? extends PersistentRecord> pClass = insertClause.getPersistentClass();
+            Set<String> idFields = insertClause.getIdentityFields();
+            for (ColumnExp field : _types.getMarshaller(pClass).getColumnFieldNames()) {
+                if (!idFields.contains(field.name)) {
+                    // we found a field we're inserting, so call super and finish
+                    super.appendInsertColumns(insertClause);
+                    return;
+                }
+            }
+            // we never found anything we'll actually be inserting
+            _builder.append("default values");
         }
 
         protected PGBuildVisitor (DepotTypes types)

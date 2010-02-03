@@ -493,45 +493,14 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
 
     public Void visit (InsertClause insertClause)
     {
-        Class<? extends PersistentRecord> pClass = insertClause.getPersistentClass();
-        Object pojo = insertClause.getPojo();
-        DepotMarshaller<?> marsh = _types.getMarshaller(pClass);
         _innerClause = true;
-
-        Set<String> idFields = insertClause.getIdentityFields();
-        ColumnExp[] fields = marsh.getColumnFieldNames();
-
         _builder.append("insert into ");
         appendTableName(insertClause.getPersistentClass());
-        _builder.append(" (");
-
-        boolean comma = false;
-        for (ColumnExp field : fields) {
-            if (idFields.contains(field.name)) {
-                continue;
-            }
-            if (comma) {
-                _builder.append(", ");
-            }
-            comma = true;
-            appendLhsColumn(pClass, field);
-        }
-        _builder.append(") values (");
-
-        comma = false;
-        for (ColumnExp field : fields) {
-            if (idFields.contains(field.name)) {
-                continue;
-            }
-            if (comma) {
-                _builder.append(", ");
-            }
-            comma = true;
-            bindField(pClass, field, pojo);
-        }
-        _builder.append(")");
+        _builder.append(" ");
+        appendInsertColumns(insertClause);
         return null;
     }
+
 
     public Void visit (CreateIndexClause createIndexClause)
     {
@@ -909,6 +878,43 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         // the standard builder wraps each field in its own parens
         _builder.append("(");
         expression.accept(this);
+        _builder.append(")");
+    }
+
+    // output the column names and values for an insert
+    protected void appendInsertColumns (InsertClause insertClause)
+    {
+        Class<? extends PersistentRecord> pClass = insertClause.getPersistentClass();
+        Object pojo = insertClause.getPojo();
+        DepotMarshaller<?> marsh = _types.getMarshaller(pClass);
+        Set<String> idFields = insertClause.getIdentityFields();
+        ColumnExp[] fields = marsh.getColumnFieldNames();
+
+        _builder.append("(");
+        boolean comma = false;
+        for (ColumnExp field : fields) {
+            if (idFields.contains(field.name)) {
+                continue;
+            }
+            if (comma) {
+                _builder.append(", ");
+            }
+            comma = true;
+            appendLhsColumn(pClass, field);
+        }
+        _builder.append(") values (");
+
+        comma = false;
+        for (ColumnExp field : fields) {
+            if (idFields.contains(field.name)) {
+                continue;
+            }
+            if (comma) {
+                _builder.append(", ");
+            }
+            comma = true;
+            bindField(pClass, field, pojo);
+        }
         _builder.append(")");
     }
 
