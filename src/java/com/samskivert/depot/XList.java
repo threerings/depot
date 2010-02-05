@@ -38,5 +38,5 @@ public interface XList<T> extends List<T>
      * Collection} to remind the caller that it is not an {@link ArrayList} but rather a lazy list
      * that will call the mapping function on the fly each time an element is read. Caveat coder.
      */
-    public <R> Collection<R> map (Function<T, R> mapper);
+    public <R> Collection<R> map (Function<? super T, ? extends R> mapper);
 }
