@@ -89,11 +89,7 @@ public abstract class SchemaMigration extends Modifier
         @Override
         public void init (String tableName, Map<String, FieldMarshaller<?>> marshallers) {
             super.init(tableName, marshallers);
-            FieldMarshaller<?> fm = marshallers.get(_newColumnName);
-            if (fm == null) {
-                throw new IllegalArgumentException(
-                    _tableName + " does not contain '" + _newColumnName + "' field.");
-            }
+            FieldMarshaller<?> fm = requireMarshaller(marshallers, _newColumnName);
             _newColumnDef = fm.getColumnDefinition();
         }
 
@@ -146,8 +142,9 @@ public abstract class SchemaMigration extends Modifier
         @Override
         public void init (String tableName, Map<String, FieldMarshaller<?>> marshallers) {
             super.init(tableName, marshallers);
-            _columnName = marshallers.get(_fieldName).getColumnName();
-            _newColumnDef = marshallers.get(_fieldName).getColumnDefinition();
+            FieldMarshaller<?> marsh = requireMarshaller(marshallers, _fieldName);
+            _columnName = marsh.getColumnName();
+            _newColumnDef = marsh.getColumnDefinition();
         }
 
         @Override
@@ -185,8 +182,9 @@ public abstract class SchemaMigration extends Modifier
         @Override
         public void init (String tableName, Map<String, FieldMarshaller<?>> marshallers) {
             super.init(tableName, marshallers);
-            _columnName = marshallers.get(_fieldName).getColumnName();
-            _newColumnDef = marshallers.get(_fieldName).getColumnDefinition();
+            FieldMarshaller<?> marsh = requireMarshaller(marshallers, _fieldName);
+            _columnName = marsh.getColumnName();
+            _newColumnDef = marsh.getColumnDefinition();
         }
 
         @Override
@@ -269,6 +267,17 @@ public abstract class SchemaMigration extends Modifier
     {
         super();
         _targetVersion = targetVersion;
+    }
+
+    protected FieldMarshaller<?> requireMarshaller (
+        Map<String, FieldMarshaller<?>> marshallers, String fieldName)
+    {
+        FieldMarshaller<?> marsh = marshallers.get(fieldName);
+        if (marsh == null) {
+            throw new IllegalArgumentException(
+                "'" + _tableName + "' does not contain field '" + fieldName + "'");
+        }
+        return marsh;
     }
 
     protected int _targetVersion;
