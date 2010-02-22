@@ -137,13 +137,13 @@ public class ExpressionEvaluator
 
     public Object visit (IsNull isNull)
     {
-        Object operand = isNull.getColumn().accept(this);
+        Object operand = isNull.getExpression().accept(this);
         return (operand instanceof NoValue) ? operand : operand != null;
     }
 
     public Object visit (In in)
     {
-        Object operand = in.getColumn().accept(this);
+        Object operand = in.getExpression().accept(this);
         return (operand instanceof NoValue) ? operand :
             -1 != ArrayUtil.indexOf(in.getValues(), operand);
     }

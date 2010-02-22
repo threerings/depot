@@ -197,7 +197,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
 
     public Void visit (IsNull isNull)
     {
-        isNull.getColumn().accept(this);
+        isNull.getExpression().accept(this);
         _builder.append(" is null");
         return null;
     }
@@ -209,7 +209,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
             new ValueExp(false).accept(this);
             return null;
         }
-        in.getColumn().accept(this);
+        in.getExpression().accept(this);
         _builder.append(" in (");
         Comparable<?>[] values = in.getValues();
         for (int ii = 0; ii < values.length; ii ++) {

@@ -23,7 +23,6 @@ package com.samskivert.depot.impl.operator;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FragmentVisitor;
 
@@ -36,20 +35,20 @@ public class In
     /** The maximum number of keys allowed in an IN() clause. */
     public static final int MAX_KEYS = Short.MAX_VALUE;
 
-    public In (ColumnExp column, Comparable<?>... values)
+    public In (SQLExpression expression, Comparable<?>... values)
     {
-        _column = column;
+        _expression = expression;
         _values = values;
     }
 
-    public In (ColumnExp pColumn, Collection<? extends Comparable<?>> values)
+    public In (SQLExpression pColumn, Collection<? extends Comparable<?>> values)
     {
         this(pColumn, values.toArray(new Comparable<?>[values.size()]));
     }
 
-    public ColumnExp getColumn ()
+    public SQLExpression getExpression ()
     {
-        return _column;
+        return _expression;
     }
 
     public Comparable<?>[] getValues ()
@@ -66,14 +65,14 @@ public class In
     // from SQLFragment
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
-        _column.addClasses(classSet);
+        _expression.addClasses(classSet);
     }
 
     @Override // from Object
     public String toString ()
     {
         StringBuilder builder = new StringBuilder();
-        builder.append(_column).append(" in (");
+        builder.append(_expression).append(" in (");
         for (int ii = 0; ii < _values.length; ii++) {
             if (ii > 0) {
                 builder.append(", ");
@@ -84,6 +83,6 @@ public class In
         return builder.append(")").toString();
     }
 
-    protected ColumnExp _column;
+    protected SQLExpression _expression;
     protected Comparable<?>[] _values;
 }

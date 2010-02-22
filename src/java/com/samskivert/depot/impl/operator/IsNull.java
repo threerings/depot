@@ -23,7 +23,6 @@ package com.samskivert.depot.impl.operator;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FragmentVisitor;
 
@@ -33,14 +32,14 @@ import com.samskivert.depot.impl.FragmentVisitor;
 public class IsNull
     implements SQLExpression
 {
-    public IsNull (ColumnExp column)
+    public IsNull (SQLExpression expression)
     {
-        _column = column;
+        _expression = expression;
     }
 
-    public ColumnExp getColumn()
+    public SQLExpression getExpression ()
     {
-        return _column;
+        return _expression;
     }
 
     // from SQLFragment
@@ -57,8 +56,8 @@ public class IsNull
     @Override // from Object
     public String toString ()
     {
-        return "IsNull(" + _column + ")";
+        return "IsNull(" + _expression + ")";
     }
 
-    protected ColumnExp _column;
+    protected SQLExpression _expression;
 }

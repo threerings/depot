@@ -45,7 +45,7 @@ public class PostgreSQL4Builder extends PostgreSQLBuilder
                 new ValueExp(false).accept(this);
                 return null;
             }
-            in.getColumn().accept(this);
+            in.getExpression().accept(this);
             _builder.append(" = any (?)");
             _bindables.add(new Bindable() {
                 public void doBind (Connection conn, PreparedStatement stmt, int argIdx)

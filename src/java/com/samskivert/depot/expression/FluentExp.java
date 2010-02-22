@@ -28,6 +28,8 @@ import com.samskivert.depot.impl.operator.Div;
 import com.samskivert.depot.impl.operator.Equals;
 import com.samskivert.depot.impl.operator.GreaterThan;
 import com.samskivert.depot.impl.operator.GreaterThanEquals;
+import com.samskivert.depot.impl.operator.In;
+import com.samskivert.depot.impl.operator.IsNull;
 import com.samskivert.depot.impl.operator.LessThan;
 import com.samskivert.depot.impl.operator.LessThanEquals;
 import com.samskivert.depot.impl.operator.Mul;
@@ -62,6 +64,18 @@ public abstract class FluentExp
     public FluentExp notEq (SQLExpression expr)
     {
         return new NotEquals(this, expr);
+    }
+
+    /** Returns an {@link IsNull} with this expression as its target. */
+    public IsNull isNull ()
+    {
+        return new IsNull(this);
+    }
+
+    /** Returns an {@link In} with this expression and the supplied values. */
+    public In in (Comparable<?>... values)
+    {
+        return new In(this, values);
     }
 
     /** Returns a {@link GreaterThan} with this expression and the supplied target. */

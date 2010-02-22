@@ -26,7 +26,6 @@ import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.clause.Join;
 import com.samskivert.depot.impl.FragmentVisitor;
 import com.samskivert.depot.impl.operator.In;
-import com.samskivert.depot.impl.operator.IsNull;
 import com.samskivert.depot.impl.operator.Like;
 
 /**
@@ -53,18 +52,6 @@ public class ColumnExp extends FluentExp
     public ColumnExp as (Class<? extends PersistentRecord> oClass)
     {
         return new ColumnExp(oClass, name);
-    }
-
-    /** Returns an {@link IsNull} with this column as its target. */
-    public IsNull isNull ()
-    {
-        return new IsNull(this);
-    }
-
-    /** Returns an {@link In} with this column and the supplied values. */
-    public In in (Comparable<?>... values)
-    {
-        return new In(this, values);
     }
 
     /** Returns an {@link In} with this column and the supplied values. */
