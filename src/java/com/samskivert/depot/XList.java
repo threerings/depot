@@ -26,6 +26,8 @@ import java.util.List;
 
 import com.google.common.base.Function;
 
+import com.samskivert.depot.util.Sequence;
+
 /**
  * Extends the {@link List} interface with a method {@link #map} that makes it easy to convert the
  * contents of the list to an ordered {@link Collection} of a different type via the application of
@@ -34,9 +36,8 @@ import com.google.common.base.Function;
 public interface XList<T> extends List<T>
 {
     /**
-     * Returns mapping of this list via the specified mapping function. The result is a {@link
-     * Collection} to remind the caller that it is not an {@link ArrayList} but rather a lazy list
-     * that will call the mapping function on the fly each time an element is read. Caveat coder.
+     * @deprecated Use {@link DepotRepository#map} and {@link Sequence}.
      */
+    @Deprecated
     public <R> Collection<R> map (Function<? super T, ? extends R> mapper);
 }
