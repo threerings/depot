@@ -33,7 +33,7 @@ import com.google.common.collect.Lists;
 public class XArrayList<T> extends ArrayList<T>
     implements XList<T>
 {
-    // from interface XList<T>
+    @Deprecated // from interface XList<T>
     public <R> Collection<R> map (Function<? super T, ? extends R> mapper)
     {
         return Lists.transform(this, mapper);
