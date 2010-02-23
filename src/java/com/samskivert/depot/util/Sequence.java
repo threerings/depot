@@ -20,11 +20,14 @@
 
 package com.samskivert.depot.util;
 
+import java.lang.reflect.Array;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterators;
 
 /**
@@ -43,6 +46,8 @@ public abstract class Sequence<T> implements Iterable<T>
     public static <F, T> Sequence<T> map (final Collection<F> source,
                                           final Function<? super F, ? extends T> func)
     {
+        Preconditions.checkNotNull(source);
+        Preconditions.checkNotNull(func);
         return new Sequence<T>() {
             public Iterator<T> iterator () {
                 return Iterators.transform(source.iterator(), func);
@@ -59,6 +64,15 @@ public abstract class Sequence<T> implements Iterable<T>
                     list.add(func.apply(elem));
                 }
                 return list;
+            }
+            public T[] toArray (Class<T> clazz) {
+                @SuppressWarnings("unchecked")
+                T[] array = (T[]) Array.newInstance(clazz, source.size());
+                int index = 0;
+                for (F elem : source) {
+                    array[index++] = func.apply(elem);
+                }
+                return array;
             }
         };
     }
@@ -80,4 +94,10 @@ public abstract class Sequence<T> implements Iterable<T>
      * Converts this sequence into an array list.
      */
     public abstract ArrayList<T> toList ();
+
+    /**
+     * Converts this sequence into an array.
+     * I wish this were <S super T> S[] toArray (Class<S? clazz);
+     */
+    public abstract T[] toArray (Class<T> clazz);
 }
