@@ -31,19 +31,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import com.samskivert.util.ArrayUtil;
 
-import com.samskivert.jdbc.ConnectionProvider;
-import com.samskivert.jdbc.DatabaseLiaison;
 import com.samskivert.depot.clause.FieldOverride;
 import com.samskivert.depot.clause.InsertClause;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.util.Sequence;
+import com.samskivert.jdbc.ConnectionProvider;
+import com.samskivert.jdbc.DatabaseLiaison;
 
 import com.samskivert.depot.impl.DepotMarshaller;
 import com.samskivert.depot.impl.DepotMigrationHistoryRecord;
@@ -903,6 +905,14 @@ public abstract class DepotRepository
     protected SQLExpression makeValue (Object value)
     {
         return (value instanceof SQLExpression) ? (SQLExpression)value : new ValueExp(value);
+    }
+
+    /**
+     * Concise way to call {@link Sequence#map} to transform query results.
+     */
+    protected <F, T> Sequence<T> map (Collection<F> source, Function<? super F, ? extends T> func)
+    {
+        return Sequence.map(source, func);
     }
 
     protected PersistenceContext _ctx;
