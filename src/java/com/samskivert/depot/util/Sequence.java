@@ -24,6 +24,7 @@ import java.lang.reflect.Array;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import com.google.common.base.Function;
@@ -59,11 +60,10 @@ public abstract class Sequence<T> implements Iterable<T>
                 return source.isEmpty();
             }
             public ArrayList<T> toList () {
-                ArrayList<T> list = new ArrayList<T>(source.size());
-                for (F elem : source) {
-                    list.add(func.apply(elem));
-                }
-                return list;
+                return copyInto(new ArrayList<T>(source.size()));
+            }
+            public HashSet<T> toSet () {
+                return copyInto(new HashSet<T>(source.size()));
             }
             // In a perfect world this would be <S super T> S[] toArray (Class<S> clazz)
             public T[] toArray (Class<T> clazz) {
@@ -74,6 +74,12 @@ public abstract class Sequence<T> implements Iterable<T>
                     array[index++] = func.apply(elem);
                 }
                 return array;
+            }
+            protected <C extends Collection<T>> C copyInto (C coll) {
+                for (F elem : source) {
+                    coll.add(func.apply(elem));
+                }
+                return coll;
             }
         };
     }
@@ -95,6 +101,11 @@ public abstract class Sequence<T> implements Iterable<T>
      * Converts this sequence into an ArrayList.
      */
     public abstract ArrayList<T> toList ();
+
+    /**
+     * Converts this sequence into a HashSet.
+     */
+    public abstract HashSet<T> toSet ();
 
     /**
      * Converts this sequence into an array.
