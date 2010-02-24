@@ -65,6 +65,7 @@ public abstract class Sequence<T> implements Iterable<T>
                 }
                 return list;
             }
+            // In a perfect world this would be <S super T> S[] toArray (Class<S> clazz)
             public T[] toArray (Class<T> clazz) {
                 @SuppressWarnings("unchecked")
                 T[] array = (T[]) Array.newInstance(clazz, source.size());
@@ -91,13 +92,13 @@ public abstract class Sequence<T> implements Iterable<T>
     public abstract boolean isEmpty ();
 
     /**
-     * Converts this sequence into an array list.
+     * Converts this sequence into an ArrayList.
      */
     public abstract ArrayList<T> toList ();
 
     /**
      * Converts this sequence into an array.
-     * I wish this were <S super T> S[] toArray (Class<S? clazz);
+     * I wish this were <S super T> S[] toArray (Class<?> clazz);
      */
     public abstract T[] toArray (Class<T> clazz);
 }
