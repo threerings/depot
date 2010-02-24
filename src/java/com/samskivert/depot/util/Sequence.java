@@ -98,7 +98,7 @@ public abstract class Sequence<T> implements Iterable<T>
 
     /**
      * Converts this sequence into an array.
-     * I wish this were <S super T> S[] toArray (Class<?> clazz);
+     * I wish this were <S super T> S[] toArray (Class<S> clazz);
      */
     public abstract T[] toArray (Class<T> clazz);
 }
