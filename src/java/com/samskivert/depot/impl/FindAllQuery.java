@@ -25,6 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -45,8 +46,6 @@ import com.samskivert.depot.KeySet;
 import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.Stats;
-import com.samskivert.depot.XArrayList;
-import com.samskivert.depot.XList;
 import com.samskivert.depot.clause.FieldOverride;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.SelectClause;
@@ -58,7 +57,7 @@ import static com.samskivert.depot.Log.log;
  * This class implements the functionality required by {@link DepotRepository#findAll}: fetch
  * a collection of persistent objects using one of two included strategies.
  */
-public abstract class FindAllQuery<T extends PersistentRecord> extends Query<XList<T>>
+public abstract class FindAllQuery<T extends PersistentRecord> extends Query<List<T>>
 {
     /**
      * The two-pass collection query implementation. See {@link DepotRepository#findAll} for
@@ -102,7 +101,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<XLi
         }
 
         @Override // from Query
-        public XList<T> getCachedResult (PersistenceContext ctx)
+        public List<T> getCachedResult (PersistenceContext ctx)
         {
             if (_qkey == null) {
                 return null;
@@ -117,7 +116,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<XLi
         }
 
         // from Query
-        public XList<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
+        public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
             // we want this to remain null if our key set came from the cache
@@ -174,7 +173,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<XLi
         }
 
         @Override // from Query
-        public XList<T> getCachedResult (PersistenceContext ctx)
+        public List<T> getCachedResult (PersistenceContext ctx)
         {
             // look up what we can from the cache
             _fetchKeys = loadFromCache(ctx, _keys, _entities);
@@ -184,7 +183,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<XLi
         }
 
         // from Query
-        public XList<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
+        public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
             return loadAndResolve(ctx, conn, _keys, _fetchKeys, _entities, null);
@@ -217,7 +216,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<XLi
         }
 
         @Override // from Query
-        public XList<T> getCachedResult (PersistenceContext ctx)
+        public List<T> getCachedResult (PersistenceContext ctx)
         {
             if (_qkey != null) {
                 _cachedQueries++;
@@ -227,10 +226,10 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<XLi
         }
 
         // from Query
-        public XList<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
+        public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
-            XList<T> result = new XArrayList<T>();
+            List<T> result = new ArrayList<T>();
             SQLBuilder builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, _select));
             builder.newQuery(_select);
             ResultSet rs = builder.prepare(conn).executeQuery();
@@ -287,9 +286,9 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<XLi
         return fetchKeys;
     }
 
-    protected XList<T> resolve (Iterable<Key<T>> allKeys, Map<Key<T>, T> entities)
+    protected List<T> resolve (Iterable<Key<T>> allKeys, Map<Key<T>, T> entities)
     {
-        XList<T> result = new XArrayList<T>();
+        List<T> result = new ArrayList<T>();
         for (Key<T> key : allKeys) {
             T value = entities.get(key);
             if (value != null) {
@@ -299,7 +298,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<XLi
         return result;
     }
 
-    protected XList<T> loadAndResolve (PersistenceContext ctx, Connection conn,
+    protected List<T> loadAndResolve (PersistenceContext ctx, Connection conn,
                                        Iterable<Key<T>> allKeys, Set<Key<T>> fetchKeys,
                                        Map<Key<T>, T> entities, String origStmt)
         throws SQLException

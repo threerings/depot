@@ -33,6 +33,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
@@ -397,11 +398,10 @@ public class DepotMarshaller<T extends PersistentRecord>
      */
     public Key<T> getPrimaryKey (Object object, boolean requireKey)
     {
-        if (!hasPrimaryKey()) {
-            if (requireKey) {
-                throw new UnsupportedOperationException(
-                    _pClass.getName() + " does not define a primary key");
-            }
+        if (requireKey) {
+            checkHasPrimaryKey();
+
+        } else if (!hasPrimaryKey()) {
             return null;
         }
 
@@ -453,11 +453,21 @@ public class DepotMarshaller<T extends PersistentRecord>
      */
     public Key<T> makePrimaryKey (Comparable<?> value)
     {
-        if (!hasPrimaryKey()) {
-            throw new UnsupportedOperationException(
-                getClass().getName() + " does not define a primary key");
-        }
+        checkHasPrimaryKey();
         return new Key<T>(_pClass, new Comparable<?>[] { value });
+    }
+
+    /**
+     * Creates a Function that changes Comparables into primary keys.
+     */
+    public Function<Comparable<?>, Key<T>> primaryKeyFunction ()
+    {
+        checkHasPrimaryKey();
+        return new Function<Comparable<?>, Key<T>>() {
+            public Key<T> apply (Comparable<?> value) {
+                return new Key<T>(_pClass, new Comparable<?>[] { value });
+            }
+        };
     }
 
     /**
@@ -989,6 +999,17 @@ public class DepotMarshaller<T extends PersistentRecord>
                 continue;
             }
             log.warning(getTableName() + " contains stale column '" + column + "'.");
+        }
+    }
+
+    /**
+     * Check to see if we have a primary key, otherwise throw an UnsupportedOperationException.
+     */
+    protected void checkHasPrimaryKey ()
+    {
+        if (!hasPrimaryKey()) {
+            throw new UnsupportedOperationException(
+                getClass().getName() + " does not define a primary key");
         }
     }
 

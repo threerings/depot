@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -179,17 +180,13 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    public <T extends PersistentRecord> XList<T> loadAll (
+    public <T extends PersistentRecord> List<T> loadAll (
         Class<T> type, Collection<? extends Comparable<?>> primaryKeys)
         throws DatabaseException
     {
         // convert the raw keys into real key records
-        DepotMarshaller<T> marsh = _ctx.getMarshaller(type);
-        List<Key<T>> keys = Lists.newArrayList();
-        for (Comparable<?> key : primaryKeys) {
-            keys.add(marsh.makePrimaryKey(key));
-        }
-        return loadAll(keys);
+        return loadAll(
+            Collections2.transform(primaryKeys, _ctx.getMarshaller(type).primaryKeyFunction()));
     }
 
     /**
@@ -197,10 +194,10 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    public <T extends PersistentRecord> XList<T> loadAll (Collection<Key<T>> keys)
+    public <T extends PersistentRecord> List<T> loadAll (Collection<Key<T>> keys)
         throws DatabaseException
     {
-        return (keys.size() == 0) ? new XArrayList<T>() :
+        return keys.isEmpty() ? Collections.emptyList() :
             _ctx.invoke(new FindAllQuery.WithKeys<T>(_ctx, keys));
     }
 
@@ -209,7 +206,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    public <T extends PersistentRecord> XList<T> findAll (Class<T> type, QueryClause... clauses)
+    public <T extends PersistentRecord> List<T> findAll (Class<T> type, QueryClause... clauses)
         throws DatabaseException
     {
         return findAll(type, Arrays.asList(clauses));
@@ -228,7 +225,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    public <T extends PersistentRecord> XList<T> findAll (
+    public <T extends PersistentRecord> List<T> findAll (
         Class<T> type, Collection<? extends QueryClause> clauses)
         throws DatabaseException
     {
@@ -240,7 +237,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    public <T extends PersistentRecord> XList<T> findAll (
+    public <T extends PersistentRecord> List<T> findAll (
         Class<T> type, CacheStrategy strategy, QueryClause... clauses)
         throws DatabaseException
     {
@@ -252,7 +249,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    public <T extends PersistentRecord> XList<T> findAll (
+    public <T extends PersistentRecord> List<T> findAll (
         Class<T> type, CacheStrategy cache, Collection<? extends QueryClause> clauses)
         throws DatabaseException
     {
@@ -314,7 +311,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    public <T extends PersistentRecord> XList<Key<T>> findAllKeys (
+    public <T extends PersistentRecord> List<Key<T>> findAllKeys (
         Class<T> type, boolean forUpdate, QueryClause... clause)
         throws DatabaseException
     {
@@ -332,7 +329,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    public <T extends PersistentRecord> XList<Key<T>> findAllKeys (
+    public <T extends PersistentRecord> List<Key<T>> findAllKeys (
         Class<T> type, boolean forUpdate, Collection<? extends QueryClause> clauses)
         throws DatabaseException
     {

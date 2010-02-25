@@ -20,7 +20,9 @@
 
 package com.samskivert.depot.impl;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,8 +35,6 @@ import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.Stats;
-import com.samskivert.depot.XArrayList;
-import com.samskivert.depot.XList;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.SelectClause;
 
@@ -43,7 +43,7 @@ import static com.samskivert.depot.Log.log;
 /**
  * Loads all primary keys for the records matching the supplied clause.
  */
-public class FindAllKeysQuery<T extends PersistentRecord> extends Query<XList<Key<T>>>
+public class FindAllKeysQuery<T extends PersistentRecord> extends Query<List<Key<T>>>
 {
     public FindAllKeysQuery (PersistenceContext ctx, Class<T> type, boolean forUpdate,
                              Collection<? extends QueryClause> clauses)
@@ -63,16 +63,16 @@ public class FindAllKeysQuery<T extends PersistentRecord> extends Query<XList<Ke
     }
 
     @Override // from Query
-    public XList<Key<T>> getCachedResult (PersistenceContext ctx)
+    public List<Key<T>> getCachedResult (PersistenceContext ctx)
     {
         return null; // TODO
     }
 
     // from Query
-    public XList<Key<T>> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
+    public List<Key<T>> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
         throws SQLException
     {
-        XList<Key<T>> keys = new XArrayList<Key<T>>();
+        List<Key<T>> keys = new ArrayList<Key<T>>();
         PreparedStatement stmt = _builder.prepare(conn);
         ResultSet rs = stmt.executeQuery();
         while (rs.next()) {
