@@ -202,7 +202,7 @@ public abstract class DepotRepository
     }
 
     /**
-     * A varargs version of {@link #findAll(Class,Collection)}.
+     * A varargs version of {@link #findAll(Class,Iterable)}.
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
@@ -902,7 +902,7 @@ public abstract class DepotRepository
     }
 
     /**
-     * Concise way to call {@link Sequence#map} to transform query results.
+     * Concise way to transform query results.
      */
     protected <F, T> Sequence<T> map (Collection<F> source, Function<? super F, ? extends T> func)
     {
