@@ -20,16 +20,11 @@
 
 package com.samskivert.depot.util;
 
-import java.lang.reflect.Array;
-
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Iterators;
 
 /**
  * Provides read-only access to a sequence of elements. Note that these elements will generally be
@@ -38,78 +33,31 @@ import com.google.common.collect.Iterators;
  * #toList} to convert the sequence to concrete list to avoid repeated application of the
  * conversion function on elements of the sequence.
  */
-public abstract class Sequence<T> implements Iterable<T>
+public interface Sequence<T> extends Iterable<T>
 {
-    /**
-     * Applies the supplied mapping function to the elements in the supplied collection, returning
-     * a lazily created read-only view of the mapped elements.
-     */
-    public static <F, T> Sequence<T> map (final Collection<F> source,
-                                          final Function<? super F, ? extends T> func)
-    {
-        Preconditions.checkNotNull(source);
-        Preconditions.checkNotNull(func);
-        return new Sequence<T>() {
-            public Iterator<T> iterator () {
-                return Iterators.transform(source.iterator(), func);
-            }
-            public int size () {
-                return source.size();
-            }
-            public boolean isEmpty () {
-                return source.isEmpty();
-            }
-            public ArrayList<T> toList () {
-                return copyInto(new ArrayList<T>(source.size()));
-            }
-            public HashSet<T> toSet () {
-                return copyInto(new HashSet<T>(source.size()));
-            }
-            // In a perfect world this would be <S super T> S[] toArray (Class<S> clazz)
-            public T[] toArray (Class<T> clazz) {
-                @SuppressWarnings("unchecked")
-                T[] array = (T[]) Array.newInstance(clazz, source.size());
-                int index = 0;
-                for (F elem : source) {
-                    array[index++] = func.apply(elem);
-                }
-                return array;
-            }
-            protected <C extends Collection<T>> C copyInto (C coll) {
-                for (F elem : source) {
-                    coll.add(func.apply(elem));
-                }
-                return coll;
-            }
-        };
-    }
-
-    // from interface Iterable
-    public abstract Iterator<T> iterator ();
-
     /**
      * Returns the number of elements in this sequence.
      */
-    public abstract int size ();
+    int size ();
 
     /**
      * Returns true if this sequence is empty, false if it contains at least one element.
      */
-    public abstract boolean isEmpty ();
+    boolean isEmpty ();
 
     /**
-     * Converts this sequence into an ArrayList.
+     * Converts this sequence into an {@link ArrayList}.
      */
-    public abstract ArrayList<T> toList ();
+    ArrayList<T> toList ();
 
     /**
-     * Converts this sequence into a HashSet.
+     * Converts this sequence into a {@link HashSet}.
      */
-    public abstract HashSet<T> toSet ();
+    HashSet<T> toSet ();
 
     /**
      * Converts this sequence into an array.
-     * I wish this were <S super T> S[] toArray (Class<S> clazz);
      */
-    public abstract T[] toArray (Class<T> clazz);
+    T[] toArray (Class<T> clazz);
+    // Ray wishes this were <S super T> S[] toArray (Class<S> clazz);
 }

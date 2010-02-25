@@ -60,6 +60,7 @@ import com.samskivert.depot.impl.SQLBuilder;
 import com.samskivert.depot.impl.clause.DeleteClause;
 import com.samskivert.depot.impl.clause.UpdateClause;
 import com.samskivert.depot.impl.expression.ValueExp;
+import com.samskivert.depot.impl.util.SeqImpl;
 
 import static com.samskivert.depot.Log.log;
 
@@ -197,7 +198,7 @@ public abstract class DepotRepository
     public <T extends PersistentRecord> List<T> loadAll (Collection<Key<T>> keys)
         throws DatabaseException
     {
-        return keys.isEmpty() ? Collections.emptyList() :
+        return keys.isEmpty() ? Collections.<T>emptyList() :
             _ctx.invoke(new FindAllQuery.WithKeys<T>(_ctx, keys));
     }
 
@@ -909,7 +910,7 @@ public abstract class DepotRepository
      */
     protected <F, T> Sequence<T> map (Collection<F> source, Function<? super F, ? extends T> func)
     {
-        return Sequence.map(source, func);
+        return new SeqImpl<F, T>(source, func);
     }
 
     protected PersistenceContext _ctx;
