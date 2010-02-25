@@ -332,7 +332,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
         throws SQLException
     {
         SelectClause select = new SelectClause(
-            _type, _marsh.getFieldNames(), KeySet.newKeySet(_type, keys));
+            _type, _marsh.getFieldNames(), (QueryClause) KeySet.newKeySet(_type, keys));
         SQLBuilder builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, select));
         builder.newQuery(select);
         Set<Key<T>> got = Sets.newHashSet();
