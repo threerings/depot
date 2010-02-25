@@ -20,7 +20,7 @@
 
 package com.samskivert.depot;
 
-import java.util.Collection;
+import com.google.common.collect.Iterables;
 
 import com.samskivert.depot.clause.SelectClause;
 import com.samskivert.depot.expression.FluentExp;
@@ -49,9 +49,9 @@ public class Ops
     /**
      * Creates an AND expression with the supplied target expressions.
      */
-    public static FluentExp and (Collection<? extends SQLExpression> conditions)
+    public static FluentExp and (Iterable<? extends SQLExpression> conditions)
     {
-        return and(conditions.toArray(new SQLExpression[conditions.size()]));
+        return and(Iterables.toArray(conditions, SQLExpression.class));
     }
 
     /**
@@ -86,9 +86,9 @@ public class Ops
     /**
      * Creates an OR expression with the supplied target expressions.
      */
-    public static FluentExp or (Collection<? extends SQLExpression> conditions)
+    public static FluentExp or (Iterable<? extends SQLExpression> conditions)
     {
-        return or(conditions.toArray(new SQLExpression[conditions.size()]));
+        return or(Iterables.toArray(conditions, SQLExpression.class));
     }
 
     /**

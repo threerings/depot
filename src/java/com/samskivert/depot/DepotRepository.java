@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -182,12 +182,12 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     public <T extends PersistentRecord> List<T> loadAll (
-        Class<T> type, Collection<? extends Comparable<?>> primaryKeys)
+        Class<T> type, Iterable<? extends Comparable<?>> primaryKeys)
         throws DatabaseException
     {
         // convert the raw keys into real key records
         return loadAll(
-            Collections2.transform(primaryKeys, _ctx.getMarshaller(type).primaryKeyFunction()));
+            Iterables.transform(primaryKeys, _ctx.getMarshaller(type).primaryKeyFunction()));
     }
 
     /**
@@ -195,11 +195,10 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    public <T extends PersistentRecord> List<T> loadAll (Collection<Key<T>> keys)
+    public <T extends PersistentRecord> List<T> loadAll (Iterable<Key<T>> keys)
         throws DatabaseException
     {
-        return keys.isEmpty() ? Collections.<T>emptyList() :
-            _ctx.invoke(new FindAllQuery.WithKeys<T>(_ctx, keys));
+        return _ctx.invoke(new FindAllQuery.WithKeys<T>(_ctx, keys));
     }
 
     /**
@@ -227,14 +226,14 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     public <T extends PersistentRecord> List<T> findAll (
-        Class<T> type, Collection<? extends QueryClause> clauses)
+        Class<T> type, Iterable<? extends QueryClause> clauses)
         throws DatabaseException
     {
         return findAll(type, CacheStrategy.BEST, clauses);
     }
 
     /**
-     * A varargs version of {@link #findAll(Class,CacheStrategy,Collection)}.
+     * A varargs version of {@link #findAll(Class,CacheStrategy,Iterable)}.
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
@@ -251,7 +250,7 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     public <T extends PersistentRecord> List<T> findAll (
-        Class<T> type, CacheStrategy cache, Collection<? extends QueryClause> clauses)
+        Class<T> type, CacheStrategy cache, Iterable<? extends QueryClause> clauses)
         throws DatabaseException
     {
         DepotMarshaller<T> marsh = _ctx.getMarshaller(type);
@@ -331,7 +330,7 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     public <T extends PersistentRecord> List<Key<T>> findAllKeys (
-        Class<T> type, boolean forUpdate, Collection<? extends QueryClause> clauses)
+        Class<T> type, boolean forUpdate, Iterable<? extends QueryClause> clauses)
         throws DatabaseException
     {
         return _ctx.invoke(new FindAllKeysQuery<T>(_ctx, type, forUpdate, clauses));

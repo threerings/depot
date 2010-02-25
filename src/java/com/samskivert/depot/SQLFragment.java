@@ -1,3 +1,6 @@
+//
+// $Id$
+
 package com.samskivert.depot;
 
 import java.util.Collection;

@@ -22,6 +22,7 @@ package com.samskivert.depot.impl.operator;
 
 import java.util.Collection;
 
+import com.google.common.collect.Iterables;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FragmentVisitor;
@@ -41,9 +42,9 @@ public class In
         _values = values;
     }
 
-    public In (SQLExpression pColumn, Collection<? extends Comparable<?>> values)
+    public In (SQLExpression pColumn, Iterable<? extends Comparable<?>> values)
     {
-        this(pColumn, values.toArray(new Comparable<?>[values.size()]));
+        this(pColumn, Iterables.toArray(values, Comparable.class));
     }
 
     public SQLExpression getExpression ()

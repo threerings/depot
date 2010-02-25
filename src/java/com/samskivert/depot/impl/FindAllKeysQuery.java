@@ -21,7 +21,6 @@
 package com.samskivert.depot.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import java.sql.Connection;
@@ -46,7 +45,7 @@ import static com.samskivert.depot.Log.log;
 public class FindAllKeysQuery<T extends PersistentRecord> extends Query<List<Key<T>>>
 {
     public FindAllKeysQuery (PersistenceContext ctx, Class<T> type, boolean forUpdate,
-                             Collection<? extends QueryClause> clauses)
+                             Iterable<? extends QueryClause> clauses)
         throws DatabaseException
     {
         _forUpdate = forUpdate;

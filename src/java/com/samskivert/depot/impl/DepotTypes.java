@@ -23,7 +23,6 @@ package com.samskivert.depot.impl;
 import java.sql.SQLException;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
@@ -58,7 +57,7 @@ public class DepotTypes
      * are interrogated for their class definition sets through {@link SQLExpression#addClasses}.
      */
     public static <T extends PersistentRecord> DepotTypes getDepotTypes (
-        PersistenceContext ctx, Collection<? extends QueryClause> clauses)
+        PersistenceContext ctx, Iterable<? extends QueryClause> clauses)
         throws DatabaseException
     {
         Set<Class<? extends PersistentRecord>> classSet = Sets.newLinkedHashSet();
@@ -71,7 +70,7 @@ public class DepotTypes
     }
 
     /**
-     * A varargs version of {@link #getDepotTypes(PersistenceContext,Collection)}.
+     * A varargs version of {@link #getDepotTypes(PersistenceContext,Iterable)}.
      */
     public static <T extends PersistentRecord> DepotTypes getDepotTypes (
         PersistenceContext ctx, QueryClause... clauses)
@@ -84,7 +83,7 @@ public class DepotTypes
      * Create a new DepotTypes with the given {@link PersistenceContext} and a collection of
      * persistent record classes.
      */
-    public DepotTypes (PersistenceContext ctx, Collection<Class<? extends PersistentRecord>> others)
+    public DepotTypes (PersistenceContext ctx, Iterable<Class<? extends PersistentRecord>> others)
         throws DatabaseException
     {
         for (Class<? extends PersistentRecord> c : others) {

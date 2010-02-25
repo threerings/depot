@@ -55,7 +55,7 @@ public class ColumnExp extends FluentExp
     }
 
     /** Returns an {@link In} with this column and the supplied values. */
-    public In in (Collection<? extends Comparable<?>> values)
+    public In in (Iterable<? extends Comparable<?>> values)
     {
         return new In(this, values);
     }

@@ -26,7 +26,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +65,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
     public static class WithCache<T extends PersistentRecord> extends FindAllQuery<T>
     {
         public WithCache (PersistenceContext ctx, Class<T> type,
-            Collection<? extends QueryClause> clauses, CacheStrategy strategy)
+            Iterable<? extends QueryClause> clauses, CacheStrategy strategy)
             throws DatabaseException
         {
             super(ctx, type);
@@ -201,7 +200,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
     public static class Explicitly<T extends PersistentRecord> extends FindAllQuery<T>
     {
         public Explicitly (PersistenceContext ctx, Class<T> type,
-                           Collection<? extends QueryClause> clauses, boolean cachedContents)
+                           Iterable<? extends QueryClause> clauses, boolean cachedContents)
             throws DatabaseException
         {
             super(ctx, type);

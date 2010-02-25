@@ -53,7 +53,7 @@ public class SelectClause
      * class for rows that match the supplied clauses.
      */
     public SelectClause (Class<? extends PersistentRecord> pClass, ColumnExp[] columns,
-                         Collection<? extends QueryClause> clauses)
+                         Iterable<? extends QueryClause> clauses)
     {
         _pClass = pClass;
         _fields = columns;
