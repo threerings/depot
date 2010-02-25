@@ -31,6 +31,11 @@ import com.google.common.base.Function;
  * Thus a caller is expected to either simply iterate over the elements once, or use {@link
  * #toList} to convert the sequence to concrete list to avoid repeated application of the
  * conversion function on elements of the sequence.
+ *
+ * Repository authors <i>may</i> want to return this interface for transformed findAll queries
+ * in order to avoid creating a second large List to contain elements. However, that exposes
+ * this interface to callers. The other two options are: go ahead and call toList() and return
+ * that to callers, or enforce single-iteration and return the result of iterator().
  */
 public interface Sequence<T> extends Iterable<T>
 {
