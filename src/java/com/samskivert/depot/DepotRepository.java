@@ -199,7 +199,8 @@ public abstract class DepotRepository
         throws DatabaseException
     {
         return Iterables.isEmpty(keys) ? Collections.<T>emptyList() :
-            _ctx.invoke(new FindAllQuery.WithKeys<T>(_ctx, keys));     }
+            _ctx.invoke(new FindAllQuery.WithKeys<T>(_ctx, keys));
+    }
 
     /**
      * A varargs version of {@link #findAll(Class,Iterable)}.
