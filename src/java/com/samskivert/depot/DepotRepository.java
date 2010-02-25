@@ -368,7 +368,6 @@ public abstract class DepotRepository
                     identityFields = marsh.generateFieldValues(conn, liaison, _result, false);
                     updateKey(marsh.getPrimaryKey(_result, false));
                 }
-
                 builder.newQuery(new InsertClause(pClass, _result, identityFields));
 
                 int mods = builder.prepare(conn).executeUpdate();
@@ -616,13 +615,11 @@ public abstract class DepotRepository
                 // if the update modified zero rows or the primary key was unset, insert
                 Set<String> identityFields = Collections.emptySet();
                 if (_key == null) {
-
                     // first, set any auto-generated column values
                     identityFields = marsh.generateFieldValues(conn, liaison, _result, false);
                     // update our modifier's key so that it can cache our results
                     updateKey(marsh.getPrimaryKey(_result, false));
                 }
-
                 builder.newQuery(new InsertClause(pClass, _result, identityFields));
 
                 int mods = builder.prepare(conn).executeUpdate();
