@@ -22,7 +22,6 @@ package com.samskivert.depot.util;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 
 import com.google.common.base.Function;
 
