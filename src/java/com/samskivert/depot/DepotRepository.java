@@ -198,8 +198,8 @@ public abstract class DepotRepository
     public <T extends PersistentRecord> List<T> loadAll (Iterable<Key<T>> keys)
         throws DatabaseException
     {
-        return _ctx.invoke(new FindAllQuery.WithKeys<T>(_ctx, keys));
-    }
+        return Iterables.isEmpty(keys) ? Collections.<T>emptyList() :
+            _ctx.invoke(new FindAllQuery.WithKeys<T>(_ctx, keys));     }
 
     /**
      * A varargs version of {@link #findAll(Class,Iterable)}.
