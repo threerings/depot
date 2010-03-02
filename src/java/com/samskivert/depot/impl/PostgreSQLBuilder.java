@@ -97,8 +97,8 @@ public class PostgreSQLBuilder
         @Override
         public Void visit (DateTruncate exp)
         {
-            // exp.getTruncation() is currently always DAY
-            return appendFunctionCall("date_trunc", Exps.literal("day"), exp.getArg());
+            String field = "'" + exp.getTruncation().toString().toLowerCase() + "'";
+            return appendFunctionCall("date_trunc", Exps.literal(field), exp.getArg());
         }
 
         protected String translateDatePart (Part part)
