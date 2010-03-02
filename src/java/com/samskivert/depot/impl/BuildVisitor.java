@@ -869,7 +869,12 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
             _builder.append(".");
         }
 
-        appendIdentifier(fm.getColumnName());
+        // if the field is shadowed, be sure to use the shadowed column's name
+        if (tableClass != type && tableClass != null) {
+            appendIdentifier(_types.getColumnName(tableClass, field.name));
+        } else {
+            appendIdentifier(fm.getColumnName());
+        }
     }
 
     // output one of potentially many fields in an index expression
