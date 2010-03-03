@@ -22,10 +22,11 @@ package com.samskivert.depot.impl;
 
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentMap;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import com.google.common.collect.MapMaker;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.Id;
@@ -42,18 +43,7 @@ public class DepotUtil
      */
     public static ColumnExp[] getKeyFields (Class<? extends PersistentRecord> pClass)
     {
-        ColumnExp[] fields = _keyFields.get(pClass);
-        if (fields == null) {
-            List<ColumnExp> kflist = Lists.newArrayList();
-            for (Field field : pClass.getFields()) {
-                // look for @Id fields
-                if (field.getAnnotation(Id.class) != null) {
-                    kflist.add(new ColumnExp(pClass, field.getName()));
-                }
-            }
-            _keyFields.put(pClass, fields = kflist.toArray(new ColumnExp[kflist.size()]));
-        }
-        return fields;
+        return _keyFields.get(pClass);
     }
 
     /**
@@ -66,5 +56,18 @@ public class DepotUtil
 
     /** A (never expiring) cache of primary key field names for all persistent classes (of which
      * there are merely dozens, so we don't need to worry about expiring). */
-    protected static Map<Class<?>, ColumnExp[]> _keyFields = Maps.newHashMap();
+    protected static ConcurrentMap<Class<? extends PersistentRecord>, ColumnExp[]> _keyFields =
+        new MapMaker()
+        .makeComputingMap(new Function<Class<? extends PersistentRecord>, ColumnExp[]>() {
+            public ColumnExp[] apply (Class<? extends PersistentRecord> pClass) {
+                List<ColumnExp> kflist = Lists.newArrayList();
+                for (Field field : pClass.getFields()) {
+                    // look for @Id fields
+                    if (field.getAnnotation(Id.class) != null) {
+                        kflist.add(new ColumnExp(pClass, field.getName()));
+                    }
+                }
+                return kflist.toArray(new ColumnExp[kflist.size()]);
+            }
+        });
 }
