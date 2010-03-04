@@ -400,7 +400,6 @@ public class DepotMarshaller<T extends PersistentRecord>
     {
         if (requireKey) {
             checkHasPrimaryKey();
-
         } else if (!hasPrimaryKey()) {
             return null;
         }
@@ -453,7 +452,7 @@ public class DepotMarshaller<T extends PersistentRecord>
      */
     public Key<T> makePrimaryKey (Comparable<?> value)
     {
-        checkHasPrimaryKey();
+        checkHasNonCompositePrimaryKey();
         return new Key<T>(_pClass, new Comparable<?>[] { value });
     }
 
@@ -462,7 +461,7 @@ public class DepotMarshaller<T extends PersistentRecord>
      */
     public Function<Comparable<?>, Key<T>> primaryKeyFunction ()
     {
-        checkHasPrimaryKey();
+        checkHasNonCompositePrimaryKey();
         return new Function<Comparable<?>, Key<T>>() {
             public Key<T> apply (Comparable<?> value) {
                 return new Key<T>(_pClass, new Comparable<?>[] { value });
@@ -1002,14 +1001,19 @@ public class DepotMarshaller<T extends PersistentRecord>
         }
     }
 
-    /**
-     * Check to see if we have a primary key, otherwise throw an UnsupportedOperationException.
-     */
     protected void checkHasPrimaryKey ()
     {
         if (!hasPrimaryKey()) {
             throw new UnsupportedOperationException(
                 getClass().getName() + " does not define a primary key");
+        }
+    }
+
+    protected void checkHasNonCompositePrimaryKey ()
+    {
+        if (_pkColumns == null || _pkColumns.size() != 1) {
+            throw new UnsupportedOperationException(
+                getClass().getName() + " does not define a single column primary key");
         }
     }
 
