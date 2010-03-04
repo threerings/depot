@@ -49,19 +49,19 @@ public class SeqImpl<F, T> extends AbstractCollection<T> implements Sequence<T>
         _func = func;
     }
 
-    // from interface Sequence<T> and Collection<T>
+    @Override // from interface Sequence<T> and Collection<T>
     public Iterator<T> iterator ()
     {
         return Iterators.transform(_source.iterator(), _func);
     }
 
-    // from interface Sequence<T> and Collection<T>
+    @Override // from interface Sequence<T> and Collection<T>
     public int size ()
     {
         return _source.size();
     }
 
-    // from interface Sequence<T> and Collection<T>
+    @Override // from interface Sequence<T> and Collection<T>
     public boolean isEmpty ()
     {
         return _source.isEmpty();

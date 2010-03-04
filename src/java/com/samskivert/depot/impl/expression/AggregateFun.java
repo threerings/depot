@@ -127,6 +127,7 @@ public abstract class AggregateFun extends OneArgFun
         return _distinct;
     }
 
+    @Override
     public String toString ()
     {
         return getCanonicalFunctionName() + "(" + (_distinct ? "distinct " : "") + _arg + ")";

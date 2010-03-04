@@ -41,7 +41,6 @@ public class KeyTest
         // make sure that the arguments we passed in got assigned in the right positions
         ColumnExp[] kfs = DepotUtil.getKeyFields(MonkeyRecord.class);
         int kspecies = 0, kmonkeyId = 0;
-        Comparable<?>[] values = new Comparable<?>[kfs.length];
         for (int ii = 0; ii < kfs.length; ii++) {
             if (MonkeyRecord.SPECIES.equals(kfs[ii])) {
                 kspecies = (Integer)(key.getValues()[ii]);
@@ -61,7 +60,6 @@ public class KeyTest
         // make sure that the arguments we passed in got assigned in the right positions
         ColumnExp[] kfs = DepotUtil.getKeyFields(TestRecord.class);
         int krecordId = 0;
-        Comparable<?>[] values = new Comparable<?>[kfs.length];
         for (int ii = 0; ii < kfs.length; ii++) {
             if (TestRecord.RECORD_ID.equals(kfs[ii])) {
                 krecordId = (Integer)(key.getValues()[ii]);

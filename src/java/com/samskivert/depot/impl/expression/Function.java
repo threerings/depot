@@ -56,6 +56,7 @@ public interface Function
             return _arg;
         }
 
+        @Override
         public String toString ()
         {
             return getCanonicalFunctionName() + "(" + _arg + ")";
@@ -78,6 +79,7 @@ public interface Function
             _arg2.addClasses(classSet);
         }
 
+        @Override
         public String toString ()
         {
             return getCanonicalFunctionName() + "(" + _arg1 + ", " + _arg2 + ")";
@@ -93,6 +95,7 @@ public interface Function
             super(args);
         }
 
+        @Override
         public String toString ()
         {
             return getCanonicalFunctionName() + "(" + StringUtil.join(_args, ", ") + ")";
