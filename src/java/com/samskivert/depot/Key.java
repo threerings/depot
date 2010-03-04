@@ -135,34 +135,42 @@ public class Key<T extends PersistentRecord> extends WhereClause
         // keep this for posterity
         _pClass = pClass;
 
-        // build a local map of field name -> field value
-        Map<ColumnExp, Comparable<?>> map = Maps.newHashMap();
-        for (int i = 0; i < fields.length; i ++) {
-            map.put(fields[i], values[i]);
-        }
-
         // look up the cached primary key fields for this object
         ColumnExp[] keyFields = DepotUtil.getKeyFields(pClass);
 
-        // now extract the values in field order and ensure none are extra or missing
-        _values = new Comparable<?>[values.length];
-        for (int ii = 0; ii < keyFields.length; ii++) {
-            Comparable<?> value = map.remove(keyFields[ii]);
-            if (value == null) {
-                // make sure we were provided with a value for this primary key field
-                throw new IllegalArgumentException("Missing value for key field: " + keyFields[ii]);
-            }
-            if (!(value instanceof Serializable)) {
-                throw new IllegalArgumentException(
-                    "Non-serializable argument [key=" + keyFields[ii] + ", value=" + value + "]");
-            }
-            _values[ii] = value;
-        }
+        // fast path!
+        if (fields.length == 1 && keyFields.length == 1 && keyFields[0].equals(fields[0])) {
+            _values = new Comparable<?>[] { values[0] };
 
-        // finally make sure we were not given any fields that are not in fact primary key fields
-        if (map.size() > 0) {
-            throw new IllegalArgumentException(
-                "Non-key columns given: " +  StringUtil.join(map.keySet().toArray(), ", "));
+        } else {
+            // build a local map of field name -> field value
+            Map<ColumnExp, Comparable<?>> map = Maps.newHashMap();
+            for (int ii = 0; ii < fields.length; ii++) {
+                map.put(fields[ii], values[ii]);
+            }
+
+            // now extract the values in field order and ensure none are extra or missing
+            _values = new Comparable<?>[values.length];
+            for (int ii = 0; ii < keyFields.length; ii++) {
+                Comparable<?> value = map.remove(keyFields[ii]);
+                if (value == null) {
+                    // make sure we were provided with a value for this primary key field
+                    throw new IllegalArgumentException(
+                        "Missing value for key field: " + keyFields[ii]);
+                }
+                if (!(value instanceof Serializable)) {
+                    throw new IllegalArgumentException(
+                        "Non-serializable argument [key=" + keyFields[ii] +
+                        ", value=" + value + "]");
+                }
+                _values[ii] = value;
+            }
+
+            // finally make sure we were not given any fields that are not primary key fields
+            if (map.size() > 0) {
+                throw new IllegalArgumentException(
+                    "Non-key columns given: " +  StringUtil.join(map.keySet().toArray(), ", "));
+            }
         }
     }
 
