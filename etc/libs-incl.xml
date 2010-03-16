@@ -2,7 +2,7 @@
 <!-- declares the libraries needed to build depot -->
 <project name="library-dependencies">
   <fileset dir="${libs.dir}" id="depot.libs">
-    <include name="google-collect.jar"/>
+    <include name="guava.jar"/>
     <include name="samskivert.jar"/>
     <!-- ehcache adapter dependencies (optional) -->
     <include name="ehcache.jar"/>
