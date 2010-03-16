@@ -2,10 +2,14 @@
 <!-- declares the libraries needed to build depot -->
 <project name="library-dependencies">
   <fileset dir="${libs.dir}" id="depot.libs">
-    <include name="ant.jar"/>
-    <include name="ehcache.jar"/>
     <include name="google-collect.jar"/>
-    <include name="junit4.jar"/>
     <include name="samskivert.jar"/>
+    <!-- ehcache adapter dependencies (optional) -->
+    <include name="ehcache.jar"/>
+    <!-- ant task dependencies (optional) -->
+    <include name="ant.jar"/>
+    <!-- unit test dependencies (optional) -->
+    <include name="hsqldb.jar"/>
+    <include name="junit4.jar"/>
   </fileset>
 </project>

@@ -60,7 +60,7 @@ public class TestRecord extends PersistentRecord
 
     public String homeTown;
 
-    @Index
+    // @Index // TODO: this horks HSQLDB
     public Date created;
 
     public Timestamp lastModified;
