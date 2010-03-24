@@ -56,10 +56,10 @@ public class DepotMigrationHistoryRecord extends PersistentRecord
      */
     public static Key<DepotMigrationHistoryRecord> getKey (String ident)
     {
-        return new Key<DepotMigrationHistoryRecord>(
-                DepotMigrationHistoryRecord.class,
-                new ColumnExp[] { IDENT },
-                new Comparable[] { ident });
+        return newKey(_R, ident);
     }
+
+    /** Register the key fields in an order matching the getKey() factory. */
+    static { registerKeyFields(IDENT); }
     // AUTO-GENERATED: METHODS END
 }

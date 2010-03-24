@@ -47,17 +47,33 @@ public class DepotUtil
     }
 
     /**
+     * Register the key fields to their PersistentRecord class. It should never be necessary
+     * to do this manually, as it is done via a static initializer in generated PersistentRecord
+     * subclasses. Calling this method after the key fields have already been registered will
+     * have no effect.
+     */
+    public static void registerKeyFields (ColumnExp... fields)
+    {
+        // TODO: Checks? For example: Validate all exps from same class?
+        // Make a defensive copy of the array? Hide this method from public consumption?
+        _keyFields.putIfAbsent(fields[0].getPersistentClass(), fields);
+    }
+
+    /**
      * Returns the name of the supplied class minus its package.
      */
     public static String justClassName (Class<?> clazz)
     {
-        return clazz.getName().substring(clazz.getName().lastIndexOf(".")+1);
+        return clazz.getName().substring(clazz.getName().lastIndexOf(".") + 1);
     }
 
     /** A (never expiring) cache of primary key field names for all persistent classes (of which
      * there are merely dozens, so we don't need to worry about expiring). */
     protected static ConcurrentMap<Class<? extends PersistentRecord>, ColumnExp[]> _keyFields =
         new MapMaker()
+        // newly generated PersistentRecord classes will register their key fields via
+        // registerKeyFields, which will return an ordering determined at genrecord time.
+        // We fall back to computing the fields at runtime for older PersistentRecord classes.
         .makeComputingMap(new Function<Class<? extends PersistentRecord>, ColumnExp[]>() {
             public ColumnExp[] apply (Class<? extends PersistentRecord> pClass) {
                 List<ColumnExp> kflist = Lists.newArrayList();

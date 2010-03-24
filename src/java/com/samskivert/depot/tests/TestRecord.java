@@ -80,10 +80,10 @@ public class TestRecord extends PersistentRecord
      */
     public static Key<TestRecord> getKey (int recordId)
     {
-        return new Key<TestRecord>(
-                TestRecord.class,
-                new ColumnExp[] { RECORD_ID },
-                new Comparable[] { recordId });
+        return newKey(_R, recordId);
     }
+
+    /** Register the key fields in an order matching the getKey() factory. */
+    static { registerKeyFields(RECORD_ID); }
     // AUTO-GENERATED: METHODS END
 }

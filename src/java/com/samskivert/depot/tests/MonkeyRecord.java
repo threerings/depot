@@ -52,10 +52,10 @@ public class MonkeyRecord extends PersistentRecord
      */
     public static Key<MonkeyRecord> getKey (int species, int monkeyId)
     {
-        return new Key<MonkeyRecord>(
-                MonkeyRecord.class,
-                new ColumnExp[] { SPECIES, MONKEY_ID },
-                new Comparable[] { species, monkeyId });
+        return newKey(_R, species, monkeyId);
     }
+
+    /** Register the key fields in an order matching the getKey() factory. */
+    static { registerKeyFields(SPECIES, MONKEY_ID); }
     // AUTO-GENERATED: METHODS END
 }

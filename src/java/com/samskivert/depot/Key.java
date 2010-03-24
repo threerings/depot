@@ -135,6 +135,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
      * Used to create a key when you know you have the canonical values array. Don't call this
      * unless you know what you're doing!
      */
+    // TODO: This should perhaps be made package-private, but DepotMarshaller uses it
     public Key (Class<T> pClass, Comparable<?>[] values)
     {
         _pClass = pClass;

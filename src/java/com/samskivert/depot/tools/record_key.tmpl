@@ -4,8 +4,8 @@
      */
     public static Key<@record@> getKey (@argList@)
     {
-        return new Key<@record@>(
-                @record@.class,
-                new ColumnExp[] { @fieldNameList@ },
-                new Comparable[] { @argNameList@ });
+        return newKey(_R, @argNameList@);
     }
+
+    /** Register the key fields in an order matching the getKey() factory. */
+    static { registerKeyFields(@fieldNameList@); }
