@@ -251,6 +251,17 @@ public class GenRecordTask extends Task
 
         // add our prototype declaration
         Map<String, String> subs = Maps.newHashMap();
+        // We could add the @Generated annotation, but
+        // - we'd need to add the import for javax.annotation.Generated
+        // - it adds a lot of boilerplate to the source file
+        // - we can't annotate the static initializer that registers the key fields
+        // So it was decided to omit it and the few benefits:
+        //   - marked as Generated in javadoc
+        //   - timestamp of last generation
+        //   - a reference back to this class
+//        subs.put("generated", "@Generated(value={\"" + GenRecordTask.class.getName() + "\"}, " +
+//            "date=\"" + // ISO 8601 date
+//            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ").format(new Date()) + "\")");
         subs.put("record", rname);
         fsection.append(mergeTemplate(PROTO_TMPL, subs));
 
