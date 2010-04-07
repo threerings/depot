@@ -25,8 +25,6 @@ import java.util.Collection;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.clause.Join;
 import com.samskivert.depot.impl.FragmentVisitor;
-import com.samskivert.depot.impl.operator.In;
-import com.samskivert.depot.impl.operator.Like;
 
 /**
  * An expression that unambiguously identifies a field of a class, for example
@@ -54,28 +52,10 @@ public class ColumnExp extends FluentExp
         return new ColumnExp(oClass, name);
     }
 
-    /** Returns an {@link In} with this column and the supplied values. */
-    public In in (Iterable<? extends Comparable<?>> values)
-    {
-        return new In(this, values);
-    }
-
     /** Returns a {@link Join} on this column and the supplied target. */
     public Join join (ColumnExp join)
     {
         return new Join(this, join);
-    }
-
-    /** Returns a {@link Like} on this column and the supplied target. */
-    public Like like (Comparable<?> value)
-    {
-        return new Like(this, value);
-    }
-
-    /** Returns a {@link Like} on this column and the supplied target. */
-    public Like like (SQLExpression expr)
-    {
-        return new Like(this, expr);
     }
 
     // from SQLExpression

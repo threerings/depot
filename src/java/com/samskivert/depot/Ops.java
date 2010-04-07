@@ -123,7 +123,7 @@ public class Ops
      */
     public static FluentExp like (SQLExpression source, Comparable<?> value)
     {
-        return new Like(source, value);
+        return new Like(source, value, true);
     }
 
     /**
@@ -131,8 +131,25 @@ public class Ops
      */
     public static FluentExp like (SQLExpression source, SQLExpression expr)
     {
-        return new Like(source, expr);
+        return new Like(source, expr, true);
     }
+
+    /**
+     * Returns an expression that matches when the source is NOT like the supplied value.
+     */
+    public static FluentExp notLike (SQLExpression source, Comparable<?> value)
+    {
+        return new Like(source, value, false);
+    }
+
+    /**
+     * Returns an expression that matches when the source is NOT like the supplied expression.
+     */
+    public static FluentExp notLike (SQLExpression source, SQLExpression expr)
+    {
+        return new Like(source, expr, false);
+    }
+
 
     /**
      * Creates an EXISTS expression with the supplied select clause.

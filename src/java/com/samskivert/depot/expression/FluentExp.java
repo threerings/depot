@@ -32,6 +32,7 @@ import com.samskivert.depot.impl.operator.In;
 import com.samskivert.depot.impl.operator.IsNull;
 import com.samskivert.depot.impl.operator.LessThan;
 import com.samskivert.depot.impl.operator.LessThanEquals;
+import com.samskivert.depot.impl.operator.Like;
 import com.samskivert.depot.impl.operator.Mul;
 import com.samskivert.depot.impl.operator.NotEquals;
 import com.samskivert.depot.impl.operator.Sub;
@@ -74,6 +75,12 @@ public abstract class FluentExp
 
     /** Returns an {@link In} with this expression and the supplied values. */
     public In in (Comparable<?>... values)
+    {
+        return new In(this, values);
+    }
+
+    /** Returns an {@link In} with this column and the supplied values. */
+    public In in (Iterable<? extends Comparable<?>> values)
     {
         return new In(this, values);
     }
@@ -209,4 +216,29 @@ public abstract class FluentExp
     {
         return new Div(this, expr);
     }
+
+    /** Returns a {@link Like} on this column and the supplied target. */
+    public Like like (Comparable<?> value)
+    {
+        return new Like(this, value, true);
+    }
+
+    /** Returns a {@link Like} on this column and the supplied target. */
+    public Like like (SQLExpression expr)
+    {
+        return new Like(this, expr, true);
+    }
+
+    /** Returns a negated {@link Like} on this column and the supplied target. */
+    public Like notLike (Comparable<?> value)
+    {
+        return new Like(this, value, false);
+    }
+
+    /** Returns a negated {@link Like} on this column and the supplied target. */
+    public Like notLike (SQLExpression expr)
+    {
+        return new Like(this, expr, false);
+    }
+
 }

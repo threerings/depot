@@ -23,24 +23,26 @@ package com.samskivert.depot.impl.operator;
 import com.samskivert.depot.expression.SQLExpression;
 
 /**
- * The SQL 'like' operator.
+ * The SQL 'like' (and 'not like') operator.
  */
 public class Like extends BinaryOperator
 {
-    public Like (SQLExpression column, Comparable<?> value)
+    public Like (SQLExpression column, Comparable<?> value, boolean like)
     {
         super(column, value);
+        _like = like;
     }
 
-    public Like (SQLExpression column, SQLExpression value)
+    public Like (SQLExpression column, SQLExpression value, boolean like)
     {
         super(column, value);
+        _like = like;
     }
 
     @Override // from BinaryOperator
     public String operator()
     {
-        return " like ";
+        return _like ? " like " : " not like ";
     }
 
     @Override // from BinaryOperator
@@ -48,4 +50,6 @@ public class Like extends BinaryOperator
     {
         return new NoValue("Like operator not implemented");
     }
+
+    protected boolean _like;
 }
