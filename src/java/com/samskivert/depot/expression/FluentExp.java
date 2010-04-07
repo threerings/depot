@@ -218,27 +218,26 @@ public abstract class FluentExp
     }
 
     /** Returns a {@link Like} on this column and the supplied target. */
-    public Like like (Comparable<?> value)
+    public FluentExp like (Comparable<?> value)
     {
         return new Like(this, value, true);
     }
 
     /** Returns a {@link Like} on this column and the supplied target. */
-    public Like like (SQLExpression expr)
+    public FluentExp like (SQLExpression expr)
     {
         return new Like(this, expr, true);
     }
 
     /** Returns a negated {@link Like} on this column and the supplied target. */
-    public Like notLike (Comparable<?> value)
+    public FluentExp notLike (Comparable<?> value)
     {
         return new Like(this, value, false);
     }
 
     /** Returns a negated {@link Like} on this column and the supplied target. */
-    public Like notLike (SQLExpression expr)
+    public FluentExp notLike (SQLExpression expr)
     {
         return new Like(this, expr, false);
     }
-
 }
