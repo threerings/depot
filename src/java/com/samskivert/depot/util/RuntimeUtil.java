@@ -69,8 +69,8 @@ public class RuntimeUtil
     /**
      * Creates a function that creates an instance of R and initializes all accessible (ie. public)
      * fields of R from fields of P with matching name. If the function is applied to null, null
-     * will be returned. Fields of P that do not exist in R will be ignored. See the class
-     * documentation for a list of field conversions that will be made automatically and the
+     * will be returned. Fields of P that do not exist in R will be ignored and vice versa. See the
+     * class documentation for a list of field conversions that will be made automatically and the
      * mechanism for performing other conversions.
      */
     public static <P extends PersistentRecord, R> Function<P, R> makeToRuntime (
@@ -86,7 +86,9 @@ public class RuntimeUtil
                 try {
                     R object = rclass.newInstance();
                     for (int ii = 0, ll = rfields.length; ii < ll; ii++) {
-                        rfields[ii].set(object, getters[ii].get(record));
+                        if (getters[ii] != null) {
+                            rfields[ii].set(object, getters[ii].get(record));
+                        }
                     }
                     return object;
                 } catch (Exception e) {
@@ -116,7 +118,9 @@ public class RuntimeUtil
                 try {
                     P record = pclass.newInstance();
                     for (int ii = 0, ll = rfields.length; ii < ll; ii++) {
-                        setters[ii].set(record, rfields[ii].get(object));
+                        if (setters[ii] != null) {
+                            setters[ii].set(record, rfields[ii].get(object));
+                        }
                     }
                     return record;
                 } catch (Exception e) {
@@ -177,10 +181,7 @@ public class RuntimeUtil
 
         // if we have no persistent field for the runtime field, we're now out of luck
         if (pfield == null) {
-            throw new IllegalArgumentException(
-                "Cannot create mapping for " + rfield + ". Neither " +
-                pclass.getSimpleName() + "." + rfield.getName() + " nor " +
-                rfield.getType() + " " + getter + "() exist.");
+            return null;
         }
 
         // if the fields match exactly, return a getter that just gets the field
@@ -203,7 +204,7 @@ public class RuntimeUtil
         }
 
         // if we have exhausted all other approaches, we're SOL
-        throw new IllegalArgumentException("Cannot map " + pfield + " to " + rfield + ".");
+        return null;
     }
 
     protected static Setter makeSetter (Class<?> pclass, final Field pfield, Field rfield)
@@ -223,8 +224,7 @@ public class RuntimeUtil
 
         // if we have no persistent field for this runtime field, we're now out of luck
         if (pfield == null) {
-            throw new IllegalArgumentException("Cannot create setter for " + rfield + ". " +
-                                               "No corresponding field exists in " + pclass + ".");
+            return null;
         }
 
         // if the fields match exactly, return a setter that just sets the field
@@ -247,7 +247,7 @@ public class RuntimeUtil
         }
 
         // if we have exhausted all other approaches, we're SOL
-        throw new IllegalArgumentException("Cannot map " + rfield + " to " + pfield + ".");
+        return null;
     }
 
     protected static Field[] getPersistentFields (Class<?> pclass, Field[] rfields)
