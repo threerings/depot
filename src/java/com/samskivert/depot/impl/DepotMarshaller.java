@@ -814,6 +814,29 @@ public class DepotMarshaller<T extends PersistentRecord>
             }
         }
 
+        // if the primary key has changed size or signature, we have to drop and readd it
+        boolean keyMatch;
+        if (metaData.pkColumns.size() == _pkColumns.size()) {
+            keyMatch = true;
+            for (FieldMarshaller<?> column : _pkColumns) {
+                keyMatch &= metaData.pkColumns.contains(column.getField().getName());
+            }
+        } else {
+            keyMatch = false;
+        }
+
+        if (!keyMatch) {
+            log.info("Primary key has changed: dropping.");
+            ctx.invoke(new Modifier() {
+                @Override protected int invoke (Connection conn, DatabaseLiaison liaison)
+                    throws SQLException {
+                    // TODO
+                    return 0;
+                }
+            });
+
+        }
+
         // add or remove the primary key as needed
         if (hasPrimaryKey() && metaData.pkName == null) {
             log.info("Adding primary key.");
