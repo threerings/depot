@@ -90,6 +90,9 @@ public class DepotMarshaller<T extends PersistentRecord>
     {
         _pClass = pClass;
 
+        Preconditions.checkArgument(!java.lang.reflect.Modifier.isAbstract(pClass.getModifiers()),
+            "Can't handle reference to abstract record: " + pClass.getName());
+
         Entity entity = pClass.getAnnotation(Entity.class);
 
         // see if this is a computed entity
