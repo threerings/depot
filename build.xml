@@ -130,6 +130,8 @@
 
   <!-- runs our unit tests -->
   <target name="tests" depends="prepare,compile" description="Runs the unit tests.">
+    <!-- allows passing -Dtest=NamePrefix to restrict to subset of tests -->
+    <property name="test" value=""/>
     <taskdef name="unit" classpathref="classpath"
       classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask"/>
     <unit printsummary="off" haltonfailure="yes" fork="${junit.fork}">
@@ -142,7 +144,7 @@
       <formatter type="brief" usefile="false"/>
       <batchtest>
         <fileset dir="${src.dir}">
-          <include name="**/tests/**/*Test.java"/>
+          <include name="**/tests/**/${test}*Test.java"/>
           <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="ehcache.present"/>
         </fileset>
       </batchtest>
