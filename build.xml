@@ -140,7 +140,7 @@
         <pathelement location="${basedir}"/> <!-- for rsrc/ -->
         <fileset dir="${deploy.dir}/lib" includes="*.jar"/>
       </classpath>
-      <sysproperty key="test_dir" value="${basedir}"/>
+      <sysproperty key="com.samskivert.depot.debug" value="${debug}"/>
       <formatter type="brief" usefile="false"/>
       <batchtest>
         <fileset dir="${src.dir}">
