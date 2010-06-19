@@ -84,6 +84,7 @@ public class AllTypesRecord extends PersistentRecord
     public float floatValue;
     public double doubleValue;
 
+    public Boolean boxedBoolean;
     public Byte boxedByte;
     public Short boxedShort;
     public Integer boxedInt;
@@ -101,6 +102,7 @@ public class AllTypesRecord extends PersistentRecord
     // public Blob blob; // tested by byte[]
     // public Clob clob; // not clear how to test this
 
+    @Column(nullable=true) public Boolean nullBoxedBoolean;
     @Column(nullable=true) public Byte nullBoxedByte;
     @Column(nullable=true) public Short nullBoxedShort;
     @Column(nullable=true) public Integer nullBoxedInt;
@@ -126,6 +128,7 @@ public class AllTypesRecord extends PersistentRecord
             (longValue == orec.longValue) &&
             (floatValue == orec.floatValue) &&
             (doubleValue == orec.doubleValue) &&
+            boxedBoolean.equals(orec.boxedBoolean) &&
             boxedByte.equals(orec.boxedByte) &&
             boxedShort.equals(orec.boxedShort) &&
             boxedInt.equals(orec.boxedInt) &&
@@ -138,6 +141,7 @@ public class AllTypesRecord extends PersistentRecord
             date.equals(orec.date) &&
             time.equals(orec.time) &&
             timestamp.equals(orec.timestamp) &&
+            (nullBoxedBoolean == orec.nullBoxedBoolean) &&
             (nullBoxedByte == orec.nullBoxedByte) &&
             (nullBoxedShort == orec.nullBoxedShort) &&
             (nullBoxedInt == orec.nullBoxedInt) &&
@@ -163,6 +167,7 @@ public class AllTypesRecord extends PersistentRecord
         rec.longValue = 4;
         rec.floatValue = 5.5f;
         rec.doubleValue = 6.6;
+        rec.boxedBoolean = true;
         rec.boxedByte = 7;
         rec.boxedShort = 8;
         rec.boxedInt = 9;

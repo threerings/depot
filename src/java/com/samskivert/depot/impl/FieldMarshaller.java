@@ -252,6 +252,12 @@ public abstract class FieldMarshaller<T>
             return new DoubleMarshaller();
 
         // boxed primitive types
+        } else if (ftype.equals(Boolean.class)) {
+            return new ObjectMarshaller() {
+                @Override public String getColumnType (ColumnTyper typer, int length) {
+                    return typer.getBooleanType(length);
+                }
+            };
         } else if (ftype.equals(Byte.class)) {
             return new ObjectMarshaller() {
                 @Override public String getColumnType (ColumnTyper typer, int length) {
