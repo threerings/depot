@@ -157,23 +157,6 @@ public class TransformTest extends TestBase
         public InvalidCustomType invalid;
     }
 
-    public static class TransformRepository extends DepotRepository
-    {
-        public TransformRepository (PersistenceContext ctx) {
-            super(ctx);
-        }
-
-        public TransformRecord loadNoCache (int recordId)
-        {
-            return load(TransformRecord.getKey(recordId), CacheStrategy.NONE);
-        }
-
-        @Override // from DepotRepository
-        protected void getManagedRecords (Set<Class<? extends PersistentRecord>> classes) {
-            classes.add(TransformRecord.class);
-        }
-    }
-
     @Test public void testValidAnnotations ()
         throws NoSuchFieldException
     {
@@ -241,6 +224,23 @@ public class TransformTest extends TestBase
             }
         }
         throw new IllegalArgumentException(eclass + " has no value with code " + code);
+    }
+
+    protected static class TransformRepository extends DepotRepository
+    {
+        public TransformRepository (PersistenceContext ctx) {
+            super(ctx);
+        }
+
+        public TransformRecord loadNoCache (int recordId)
+        {
+            return load(TransformRecord.getKey(recordId), CacheStrategy.NONE);
+        }
+
+        @Override // from DepotRepository
+        protected void getManagedRecords (Set<Class<? extends PersistentRecord>> classes) {
+            classes.add(TransformRecord.class);
+        }
     }
 
     // the HSQL in-memory database persists for the lifetime of the VM, which means we have to
