@@ -22,13 +22,8 @@ package com.samskivert.depot.impl;
 
 import static com.samskivert.Log.log;
 
-import java.sql.Blob;
-import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
 
 import java.util.List;
 import java.util.Set;

@@ -20,13 +20,8 @@
 
 package com.samskivert.depot.impl;
 
-import java.sql.Blob;
-import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.SQLException;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.util.Set;
 
 import com.samskivert.util.Tuple;
@@ -38,17 +33,6 @@ import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.operator.FullText;
 
-import com.samskivert.depot.impl.FieldMarshaller.BooleanMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.ByteArrayMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.ByteEnumMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.ByteMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.DoubleMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.FloatMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.IntArrayMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.IntMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.LongMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.ObjectMarshaller;
-import com.samskivert.depot.impl.FieldMarshaller.ShortMarshaller;
 import com.samskivert.depot.impl.clause.CreateIndexClause;
 import com.samskivert.depot.impl.clause.DeleteClause;
 import com.samskivert.depot.impl.clause.DropIndexClause;

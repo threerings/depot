@@ -501,7 +501,6 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         return null;
     }
 
-
     public Void visit (CreateIndexClause createIndexClause)
     {
         _builder.append("create ");

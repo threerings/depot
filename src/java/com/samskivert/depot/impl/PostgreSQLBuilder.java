@@ -20,14 +20,9 @@
 
 package com.samskivert.depot.impl;
 
-import java.sql.Blob;
-import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Time;
-import java.sql.Timestamp;
 import java.util.Set;
 
 import com.samskivert.jdbc.DatabaseLiaison;
@@ -279,7 +274,6 @@ public class PostgreSQLBuilder
         }
         return StringUtil.join(searchTerms, "|");
     }
-
 
     // Translate the mildly abstracted full-text parser/dictionary configuration support
     // in FullText to actual PostgreSQL configuration identifiers.

@@ -39,7 +39,6 @@ import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.*;
 import com.samskivert.depot.expression.SQLExpression.NoValue;
 
-
 import com.samskivert.depot.operator.Case;
 import com.samskivert.depot.operator.FullText;
 

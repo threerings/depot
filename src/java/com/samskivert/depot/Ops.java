@@ -150,7 +150,6 @@ public class Ops
         return new Like(source, expr, false);
     }
 
-
     /**
      * Creates an EXISTS expression with the supplied select clause.
      */
