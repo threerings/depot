@@ -268,56 +268,44 @@ public class MySQLBuilder
     @Override
     protected <T> String getColumnType (FieldMarshaller<?> fm, int length)
     {
-        if (fm instanceof ByteMarshaller) {
+        return fm.getColumnType(TYPER, length);
+    }
+
+    protected static final FieldMarshaller.ColumnTyper TYPER = new FieldMarshaller.ColumnTyper() {
+        public String getBooleanType (int length) {
             return "TINYINT";
-        } else if (fm instanceof ShortMarshaller) {
+        }
+        public String getByteType (int length) {
+            return "TINYINT";
+        }
+        public String getShortType (int length) {
             return "SMALLINT";
-        } else if (fm instanceof IntMarshaller) {
+        }
+        public String getIntType (int length) {
             return "INTEGER";
-        } else if (fm instanceof LongMarshaller) {
+        }
+        public String getLongType (int length) {
             return "BIGINT";
-        } else if (fm instanceof FloatMarshaller) {
+        }
+        public String getFloatType (int length) {
             return "FLOAT";
-        } else if (fm instanceof DoubleMarshaller) {
+        }
+        public String getDoubleType (int length) {
             return "DOUBLE";
-        } else if (fm instanceof ObjectMarshaller) {
-            Class<?> ftype = fm.getField().getType();
-            if (ftype.equals(Byte.class)) {
-                return "SMALLINT";
-            } else if (ftype.equals(Short.class)) {
-                return "SMALLINT";
-            } else if (ftype.equals(Integer.class)) {
-                return "INTEGER";
-            } else if (ftype.equals(Long.class)) {
-                return "BIGINT";
-            } else if (ftype.equals(Float.class)) {
-                return "FLOAT";
-            } else if (ftype.equals(Double.class)) {
-                return "DOUBLE";
-            } else if (ftype.equals(String.class)) {
-                if (length < (1 << 15)) {
-                    return "VARCHAR(" + length + ")";
-                }
-                return "TEXT";
-            } else if (ftype.equals(Date.class)) {
-                return "DATE";
-            } else if (ftype.equals(Time.class)) {
-                return "DATETIME";
-            } else if (ftype.equals(Timestamp.class)) {
-                return "DATETIME";
-            } else if (ftype.equals(Blob.class)) {
-                return "BYTEA";
-            } else if (ftype.equals(Clob.class)) {
-                return "TEXT";
-            } else {
-                throw new IllegalArgumentException(
-                    "Don't know how to create SQL for " + ftype + ".");
-            }
-        } else if (fm instanceof ByteArrayMarshaller ||
-                   fm instanceof IntArrayMarshaller) {
-            if (fm instanceof IntArrayMarshaller) {
-                length *= 4;
-            }
+        }
+        public String getStringType (int length) {
+            return (length < (1 << 15)) ? "VARCHAR(" + length + ")" : "TEXT";
+        }
+        public String getDateType (int length) {
+            return "DATE";
+        }
+        public String getTimeType (int length) {
+            return "DATETIME";
+        }
+        public String getTimestampType (int length) {
+            return "DATETIME";
+        }
+        public String getBlobType (int length) {
             // semi-arbitrarily use VARBINARY() up to 32767
             if (length < (1 << 15)) {
                 return "VARBINARY(" + length + ")";
@@ -330,12 +318,9 @@ public class MySQLBuilder
                 return "MEDIUMBLOB";
             }
             return "LONGBLOB";
-        } else if (fm instanceof ByteEnumMarshaller<?>) {
-            return "TINYINT";
-        } else if (fm instanceof BooleanMarshaller) {
-            return "TINYINT";
-        } else {
-            throw new IllegalArgumentException("Unknown field marshaller type: " + fm.getClass());
         }
-    }
+        public String getClobType (int length) {
+            return "TEXT";
+        }
+    };
 }

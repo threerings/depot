@@ -263,62 +263,7 @@ public class PostgreSQLBuilder
     @Override
     protected <T> String getColumnType (FieldMarshaller<?> fm, int length)
     {
-        if (fm instanceof FieldMarshaller.ByteMarshaller) {
-            return "SMALLINT";
-        } else if (fm instanceof FieldMarshaller.ShortMarshaller) {
-            return "SMALLINT";
-        } else if (fm instanceof FieldMarshaller.IntMarshaller) {
-            return "INTEGER";
-        } else if (fm instanceof FieldMarshaller.LongMarshaller) {
-            return "BIGINT";
-        } else if (fm instanceof FieldMarshaller.FloatMarshaller) {
-            return "REAL";
-        } else if (fm instanceof FieldMarshaller.DoubleMarshaller) {
-            return "DOUBLE PRECISION";
-        } else if (fm instanceof FieldMarshaller.ObjectMarshaller) {
-            Class<?> ftype = fm.getField().getType();
-            if (ftype.equals(Byte.class)) {
-                return "SMALLINT";
-            } else if (ftype.equals(Short.class)) {
-                return "SMALLINT";
-            } else if (ftype.equals(Integer.class)) {
-                return "INTEGER";
-            } else if (ftype.equals(Long.class)) {
-                return "BIGINT";
-            } else if (ftype.equals(Float.class)) {
-                return "FLOAT";
-            } else if (ftype.equals(Double.class)) {
-                return "DOUBLE";
-            } else if (ftype.equals(String.class)) {
-                if (length < (1 << 15)) {
-                    return "VARCHAR(" + length + ")";
-                }
-                return "TEXT";
-            } else if (ftype.equals(Date.class)) {
-                return "DATE";
-            } else if (ftype.equals(Time.class)) {
-                return "TIME";
-            } else if (ftype.equals(Timestamp.class)) {
-                return "TIMESTAMP";
-            } else if (ftype.equals(Blob.class)) {
-                return "BYTEA";
-            } else if (ftype.equals(Clob.class)) {
-                return "TEXT";
-            } else {
-                throw new IllegalArgumentException(
-                    "Don't know how to create SQL for " + ftype + ".");
-            }
-        } else if (fm instanceof FieldMarshaller.ByteArrayMarshaller) {
-            return "BYTEA";
-        } else if (fm instanceof FieldMarshaller.IntArrayMarshaller) {
-            return "BYTEA";
-        } else if (fm instanceof FieldMarshaller.ByteEnumMarshaller<?>) {
-            return "SMALLINT";
-        } else if (fm instanceof FieldMarshaller.BooleanMarshaller) {
-            return "BOOLEAN";
-        } else {
-            throw new IllegalArgumentException("Unknown field marshaller type: " + fm.getClass());
-        }
+        return fm.getColumnType(TYPER, length);
     }
 
     protected static String massageFTQuery (FullText match)
@@ -354,4 +299,52 @@ public class PostgreSQLBuilder
                 "Unknown full text configuration: " + configuration);
         }
     }
+
+    protected static final FieldMarshaller.ColumnTyper TYPER = new FieldMarshaller.ColumnTyper() {
+        public String getBooleanType (int length) {
+            return "BOOLEAN";
+        }
+        public String getByteType (int length) {
+            return "SMALLINT";
+        }
+        public String getShortType (int length) {
+            return "SMALLINT";
+        }
+        public String getIntType (int length) {
+            return "INTEGER";
+        }
+        public String getLongType (int length) {
+            return "BIGINT";
+        }
+        public String getFloatType (int length) {
+            return "REAL";
+        }
+        public String getDoubleType (int length) {
+            return "DOUBLE PRECISION";
+        }
+        public String getByteArrayType (int length) {
+            return "BYTEA";
+        }
+        public String getIntArrayType (int length) {
+            return "BYTEA";
+        }
+        public String getStringType (int length) {
+            return "VARCHAR(" + length + ")";
+        }
+        public String getDateType (int length) {
+            return "DATE";
+        }
+        public String getTimeType (int length) {
+            return "TIME";
+        }
+        public String getTimestampType (int length) {
+            return "TIMESTAMP";
+        }
+        public String getBlobType (int length) {
+            return "BYTEA";
+        }
+        public String getClobType (int length) {
+            return "TEXT";
+        }
+    };
 }
