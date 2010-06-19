@@ -127,7 +127,7 @@ public class TransformTest extends TestBase
 
         @Id public int recordId;
 
-        @Transform(Transformers.CommaSeparatedString.class)
+        @Transform(Transformers.TabSeparatedString.class)
         public String[] strings;
 
         public CustomType custom;
@@ -151,7 +151,7 @@ public class TransformTest extends TestBase
 
     public static class BadTransformRecord extends PersistentRecord
     {
-        @Transform(Transformers.CommaSeparatedString.class)
+        @Transform(Transformers.TabSeparatedString.class)
         public Thread thread;
 
         public InvalidCustomType invalid;
