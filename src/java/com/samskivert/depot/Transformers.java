@@ -20,8 +20,6 @@
 
 package com.samskivert.depot;
 
-import com.google.common.base.Joiner;
-
 import com.samskivert.depot.annotation.Column;
 
 /**
