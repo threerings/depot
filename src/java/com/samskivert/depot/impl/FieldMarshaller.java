@@ -21,6 +21,7 @@
 package com.samskivert.depot.impl;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 
 import java.sql.Blob;
@@ -33,13 +34,16 @@ import java.sql.Time;
 import java.sql.Timestamp;
 
 import com.samskivert.depot.DatabaseException;
+import com.samskivert.depot.Transformer;
 import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.annotation.GeneratedValue;
+import com.samskivert.depot.annotation.Transform;
 import com.samskivert.jdbc.ColumnDefinition;
 
 import com.samskivert.util.ByteEnum;
 import com.samskivert.util.ByteEnumUtil;
+import com.samskivert.util.Logger;
 import com.samskivert.util.StringUtil;
 
 /**
@@ -49,74 +53,63 @@ import com.samskivert.util.StringUtil;
  */
 public abstract class FieldMarshaller<T>
 {
+    /** Used by the {@link SQLBuilder} implementations. We factor this into an interface to avoid a
+     * bunch of instanceof casts and to ensure that if a new supported type is added, all of the
+     * builders will fail to compile instead of failing at runtime. */
+    public static interface ColumnTyper {
+        String getBooleanType (int length);
+        String getByteType (int length);
+        String getShortType (int length);
+        String getIntType (int length);
+        String getLongType (int length);
+        String getFloatType (int length);
+        String getDoubleType (int length);
+        String getStringType (int length);
+        String getDateType (int length);
+        String getTimeType (int length);
+        String getTimestampType (int length);
+        String getBlobType (int length);
+        String getClobType (int length);
+    }
+
     /**
      * Creates and returns a field marshaller for the specified field. Throws an exception if the
      * field in question cannot be marshalled.
      */
     public static FieldMarshaller<?> createMarshaller (Field field)
     {
-        Class<?> ftype = field.getType();
-        FieldMarshaller<?> marshaller;
-
-        // primitive types
-        if (ftype.equals(Boolean.TYPE)) {
-            marshaller = new BooleanMarshaller();
-        } else if (ftype.equals(Byte.TYPE)) {
-            marshaller = new ByteMarshaller();
-        } else if (ftype.equals(Short.TYPE)) {
-            marshaller = new ShortMarshaller();
-        } else if (ftype.equals(Integer.TYPE)) {
-            marshaller = new IntMarshaller();
-        } else if (ftype.equals(Long.TYPE)) {
-            marshaller = new LongMarshaller();
-        } else if (ftype.equals(Float.TYPE)) {
-            marshaller = new FloatMarshaller();
-        } else if (ftype.equals(Double.TYPE)) {
-            marshaller = new DoubleMarshaller();
-
-        // "natural" types
-        } else if (ftype.equals(Byte.class) ||
-            ftype.equals(Short.class) ||
-            ftype.equals(Integer.class) ||
-            ftype.equals(Long.class) ||
-            ftype.equals(Float.class) ||
-            ftype.equals(Double.class) ||
-            ftype.equals(String.class)) {
-            marshaller = new ObjectMarshaller();
-
-        // some primitive array types
-        } else if (ftype.equals(byte[].class)) {
-            marshaller = new ByteArrayMarshaller();
-
-        } else if (ftype.equals(int[].class)) {
-            marshaller = new IntArrayMarshaller();
-
-        // SQL types
-        } else if (ftype.equals(Date.class) ||
-            ftype.equals(Time.class) ||
-            ftype.equals(Timestamp.class) ||
-            ftype.equals(Blob.class) ||
-            ftype.equals(Clob.class)) {
-            marshaller = new ObjectMarshaller();
-
-        // special Enum types
-        } else if (ByteEnum.class.isAssignableFrom(ftype)) {
-            // do some sanity checking so that the unsafe business we do below is safer
-            if (!Enum.class.isAssignableFrom(ftype)) {
-                throw new IllegalArgumentException(
-                    "ByteEnum not implemented by real Enum: " + field);
+        // first, look for a @Transform annotation on the field (cheap)
+        Transform xform = field.getAnnotation(Transform.class);
+        if (xform == null) {
+            // next look for a marshaller for the basic type (cheapish)
+            FieldMarshaller<?> marshaller = createMarshaller(field.getType());
+            if (marshaller != null) {
+                marshaller.create(field);
+                return marshaller;
             }
-            @SuppressWarnings("unchecked") ByteEnumMarshaller<?> bem =
-                new ByteEnumMarshaller(ftype);
-            marshaller = bem;
 
-        } else {
-            throw new IllegalArgumentException(
-                "Cannot marshall field of type '" + ftype.getName() + "'.");
+            // finally look for an @Transform annotation on the field type (expensive)
+            xform = findTransformAnnotation(field.getType());
+            if (xform == null) {
+                throw new IllegalArgumentException("Cannot marshall " + field + ".");
+            }
         }
 
-        marshaller.create(field);
-        return marshaller;
+        try {
+            @SuppressWarnings("unchecked") Transformer<?,?> xformer = xform.value().newInstance();
+            @SuppressWarnings("unchecked") TransformingMarshaller<?,?> xmarsh =
+                new TransformingMarshaller(xformer, field);
+            xmarsh.create(field);
+            return xmarsh;
+        } catch (InstantiationException e) {
+            throw new IllegalArgumentException(
+                Logger.format("Unable to create Transformer", "xclass", xform.value(),
+                              "field", field), e);
+        } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException(
+                Logger.format("Unable to create Transformer", "xclass", xform.value(),
+                              "field", field), e);
+        }
     }
 
     /**
@@ -168,6 +161,12 @@ public abstract class FieldMarshaller<T>
     {
         return _columnDefinition;
     }
+
+    /**
+     * Returns the appropriate column type for this field, given the database specific typer
+     * supplied as an argument.
+     */
+    public abstract String getColumnType (ColumnTyper typer, int length);
 
     /**
      * Reads this field from the given persistent object.
@@ -234,7 +233,172 @@ public abstract class FieldMarshaller<T>
         _generatedValue = field.getAnnotation(GeneratedValue.class);
     }
 
+    protected static FieldMarshaller<?> createMarshaller (Class<?> ftype)
+    {
+        // primitive types
+        if (ftype.equals(Boolean.TYPE)) {
+            return new BooleanMarshaller();
+        } else if (ftype.equals(Byte.TYPE)) {
+            return new ByteMarshaller();
+        } else if (ftype.equals(Short.TYPE)) {
+            return new ShortMarshaller();
+        } else if (ftype.equals(Integer.TYPE)) {
+            return new IntMarshaller();
+        } else if (ftype.equals(Long.TYPE)) {
+            return new LongMarshaller();
+        } else if (ftype.equals(Float.TYPE)) {
+            return new FloatMarshaller();
+        } else if (ftype.equals(Double.TYPE)) {
+            return new DoubleMarshaller();
+
+        // "natural" types
+        } else if (ftype.equals(Byte.class)) {
+            return new ObjectMarshaller() {
+                @Override public String getColumnType (ColumnTyper typer, int length) {
+                    return typer.getByteType(length);
+                }
+                @Override public Object getFromSet (ResultSet rs)
+                    throws SQLException {
+                    Object value = super.getFromSet(rs);
+                    return (value == null) ? null : ((Number)value).byteValue();
+                }
+            };
+        } else if (ftype.equals(Short.class)) {
+            return new ObjectMarshaller() {
+                @Override public String getColumnType (ColumnTyper typer, int length) {
+                    return typer.getShortType(length);
+                }
+                @Override public Object getFromSet (ResultSet rs)
+                    throws SQLException {
+                    Object value = super.getFromSet(rs);
+                    return (value == null) ? null : ((Number)value).shortValue();
+                }
+            };
+        } else if (ftype.equals(Integer.class)) {
+            return new ObjectMarshaller() {
+                @Override public String getColumnType (ColumnTyper typer, int length) {
+                    return typer.getIntType(length);
+                }
+            };
+        } else if (ftype.equals(Long.class)) {
+            return new ObjectMarshaller() {
+                @Override public String getColumnType (ColumnTyper typer, int length) {
+                    return typer.getLongType(length);
+                }
+            };
+        } else if (ftype.equals(Float.class)) {
+            return new ObjectMarshaller() {
+                @Override public String getColumnType (ColumnTyper typer, int length) {
+                    return typer.getFloatType(length);
+                }
+                @Override public Object getFromSet (ResultSet rs)
+                    throws SQLException {
+                    Object value = super.getFromSet(rs);
+                    return (value == null) ? null : ((Number)value).floatValue();
+                }
+            };
+        } else if (ftype.equals(Double.class)) {
+            return new ObjectMarshaller() {
+                @Override public String getColumnType (ColumnTyper typer, int length) {
+                    return typer.getDoubleType(length);
+                }
+            };
+        } else if (ftype.equals(String.class)) {
+            return new ObjectMarshaller() {
+                @Override public String getColumnType (ColumnTyper typer, int length) {
+                    return typer.getStringType(length);
+                }
+            };
+
+        // some primitive array types
+        } else if (ftype.equals(byte[].class)) {
+            return new ByteArrayMarshaller();
+
+        } else if (ftype.equals(int[].class)) {
+            return new IntArrayMarshaller();
+
+        // SQL types
+        } else if (ftype.equals(Date.class)) {
+            return new ObjectMarshaller() {
+                @Override public String getColumnType (ColumnTyper typer, int length) {
+                    return typer.getDateType(length);
+                }
+            };
+        } else if (ftype.equals(Time.class)) {
+            return new ObjectMarshaller() {
+                @Override public String getColumnType (ColumnTyper typer, int length) {
+                    return typer.getTimeType(length);
+                }
+            };
+        } else if (ftype.equals(Timestamp.class)) {
+            return new ObjectMarshaller() {
+                @Override public String getColumnType (ColumnTyper typer, int length) {
+                    return typer.getTimestampType(length);
+                }
+            };
+        } else if (ftype.equals(Blob.class)) {
+            return new ObjectMarshaller() {
+                @Override public String getColumnType (ColumnTyper typer, int length) {
+                    return typer.getBlobType(length);
+                }
+            };
+        } else if (ftype.equals(Clob.class)) {
+            return new ObjectMarshaller() {
+                @Override public String getColumnType (ColumnTyper typer, int length) {
+                    return typer.getClobType(length);
+                }
+            };
+
+        // special Enum type hackery (it would be nice to handle this with @Transform, but that
+        // introduces some undesirable samskivert-Depot dependencies)
+        } else if (ByteEnum.class.isAssignableFrom(ftype)) {
+            @SuppressWarnings("unchecked") ByteEnumMarshaller<?> bem =
+                new ByteEnumMarshaller(ftype);
+            return bem;
+
+        } else {
+            return null;
+        }
+    }
+
+    protected static Class<?> getTransformerType (Transformer<?, ?> xformer, String which)
+    {
+        Class<?> ttype = null;
+        for (Method method : xformer.getClass().getDeclaredMethods()) {
+            if (method.getName().equals(which + "Persistent")) {
+                if (ttype == null || ttype.isAssignableFrom(method.getReturnType())) {
+                    ttype = method.getReturnType();
+                }
+            }
+        }
+        if (ttype == null) {
+            throw new IllegalArgumentException(
+                Logger.format("Transformer lacks " + which + "Persistent() method!?",
+                              "xclass", xformer.getClass()));
+        }
+        return ttype;
+    }
+
+    protected static Transform findTransformAnnotation (Class<?> ftype)
+    {
+        Transform xform = ftype.getAnnotation(Transform.class);
+        if (xform != null) {
+            return xform;
+        }
+        for (Class<?> iface : ftype.getInterfaces()) {
+            xform = iface.getAnnotation(Transform.class);
+            if (xform != null) {
+                return xform;
+            }
+        }
+        Class<?> parent = ftype.getSuperclass();
+        return (parent == null) ? null : findTransformAnnotation(parent);
+    }
+
     protected static class BooleanMarshaller extends FieldMarshaller<Boolean> {
+        @Override public String getColumnType (ColumnTyper typer, int length) {
+            return typer.getBooleanType(length);
+        }
         @Override public Boolean getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
             return _field.getBoolean(po);
@@ -254,6 +418,9 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class ByteMarshaller extends FieldMarshaller<Byte> {
+        @Override public String getColumnType (ColumnTyper typer, int length) {
+            return typer.getByteType(length);
+        }
         @Override public Byte getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
             return _field.getByte(po);
@@ -273,6 +440,9 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class ShortMarshaller extends FieldMarshaller<Short> {
+        @Override public String getColumnType (ColumnTyper typer, int length) {
+            return typer.getShortType(length);
+        }
         @Override public Short getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
             return _field.getShort(po);
@@ -292,6 +462,9 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class IntMarshaller extends FieldMarshaller<Integer> {
+        @Override public String getColumnType (ColumnTyper typer, int length) {
+            return typer.getIntType(length);
+        }
         @Override public Integer getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
             return _field.getInt(po);
@@ -311,6 +484,9 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class LongMarshaller extends FieldMarshaller<Long> {
+        @Override public String getColumnType (ColumnTyper typer, int length) {
+            return typer.getLongType(length);
+        }
         @Override public Long getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
             return _field.getLong(po);
@@ -330,6 +506,9 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class FloatMarshaller extends FieldMarshaller<Float> {
+        @Override public String getColumnType (ColumnTyper typer, int length) {
+            return typer.getFloatType(length);
+        }
         @Override public Float getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
             return _field.getFloat(po);
@@ -349,6 +528,9 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class DoubleMarshaller extends FieldMarshaller<Double> {
+        @Override public String getColumnType (ColumnTyper typer, int length) {
+            return typer.getDoubleType(length);
+        }
         @Override public Double getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
             return _field.getDouble(po);
@@ -367,7 +549,7 @@ public abstract class FieldMarshaller<T>
         }
     }
 
-    protected static class ObjectMarshaller extends FieldMarshaller<Object> {
+    protected static abstract class ObjectMarshaller extends FieldMarshaller<Object> {
         @Override public Object getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
             return _field.get(po);
@@ -387,6 +569,9 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class ByteArrayMarshaller extends FieldMarshaller<byte[]> {
+        @Override public String getColumnType (ColumnTyper typer, int length) {
+            return typer.getBlobType(length);
+        }
         @Override public byte[] getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
             return (byte[]) _field.get(po);
@@ -406,6 +591,9 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class IntArrayMarshaller extends FieldMarshaller<byte[]> {
+        @Override public String getColumnType (ColumnTyper typer, int length) {
+            return typer.getBlobType(length);
+        }
         @Override public byte[] getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
             int[] values = (int[]) _field.get(po);
@@ -441,6 +629,18 @@ public abstract class FieldMarshaller<T>
             _eclass = clazz;
         }
 
+        @Override public void create (Field field) {
+            super.create(field);
+            // do some sanity checking so that the unsafe business we do below is safer
+            if (!Enum.class.isAssignableFrom(_eclass)) {
+                throw new IllegalArgumentException(
+                    "ByteEnum not implemented by real Enum: " + field);
+            }
+        }
+
+        @Override public String getColumnType (ColumnTyper typer, int length) {
+            return typer.getByteType(length);
+        }
         @Override public ByteEnum getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
             return (ByteEnum) _field.get(po);
@@ -458,6 +658,50 @@ public abstract class FieldMarshaller<T>
         }
 
         protected Class<E> _eclass;
+    }
+
+    protected static class TransformingMarshaller<F,T> extends FieldMarshaller<T> {
+        public TransformingMarshaller (Transformer<F, T> xformer, Field field) {
+            Class<?> pojoType = getTransformerType(xformer, "from");
+            if (!pojoType.isAssignableFrom(field.getType())) {
+                throw new IllegalArgumentException(
+                    "@Transform error on " + field.getType().getName() + "." +
+                    field.getName() + ": " + xformer.getClass().getName() + " cannot convert " +
+                    field.getType().getName());
+            }
+            @SuppressWarnings("unchecked") FieldMarshaller<T> delegate =
+                (FieldMarshaller<T>)createMarshaller(getTransformerType(xformer, "to"));
+            _delegate = delegate;
+            _xformer = xformer;
+        }
+
+        @Override public void create (Field field) {
+            super.create(field);
+            _delegate.create(field);
+        }
+
+        @Override public String getColumnType (ColumnTyper typer, int length) {
+            return _delegate.getColumnType(typer, length);
+        }
+        @Override public T getFromObject (Object po)
+            throws IllegalArgumentException, IllegalAccessException {
+            @SuppressWarnings("unchecked") F value = (F)_field.get(po);
+            return _xformer.toPersistent(value);
+        }
+        @Override public T getFromSet (ResultSet rs) throws SQLException {
+            return _delegate.getFromSet(rs);
+        }
+        @Override public void writeToObject (Object po, T value)
+            throws IllegalArgumentException, IllegalAccessException {
+            _field.set(po, _xformer.fromPersistent(_field.getType(), value));
+        }
+        @Override public void writeToStatement (PreparedStatement ps, int column, T value)
+            throws SQLException {
+            _delegate.writeToStatement(ps, column, value);
+        }
+
+        protected Transformer<F, T> _xformer;
+        protected FieldMarshaller<T> _delegate;
     }
 
     protected Field _field;
