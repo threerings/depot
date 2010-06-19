@@ -592,7 +592,7 @@ public abstract class FieldMarshaller<T>
 
     protected static class IntArrayMarshaller extends FieldMarshaller<byte[]> {
         @Override public String getColumnType (ColumnTyper typer, int length) {
-            return typer.getBlobType(length);
+            return typer.getBlobType(length*4);
         }
         @Override public byte[] getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
