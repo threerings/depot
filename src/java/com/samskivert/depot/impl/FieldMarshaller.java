@@ -251,7 +251,7 @@ public abstract class FieldMarshaller<T>
         } else if (ftype.equals(Double.TYPE)) {
             return new DoubleMarshaller();
 
-        // "natural" types
+        // boxed primitive types
         } else if (ftype.equals(Byte.class)) {
             return new ObjectMarshaller() {
                 @Override public String getColumnType (ColumnTyper typer, int length) {
@@ -259,6 +259,8 @@ public abstract class FieldMarshaller<T>
                 }
                 @Override public Object getFromSet (ResultSet rs)
                     throws SQLException {
+                    // work around the fact that HSQLDB (at least) returns Integer rather than
+                    // Byte for TINYINT columns
                     Object value = super.getFromSet(rs);
                     return (value == null) ? null : ((Number)value).byteValue();
                 }
@@ -270,6 +272,8 @@ public abstract class FieldMarshaller<T>
                 }
                 @Override public Object getFromSet (ResultSet rs)
                     throws SQLException {
+                    // work around the fact that HSQLDB (at least) returns Integer rather than
+                    // Short for SMALLINT columns
                     Object value = super.getFromSet(rs);
                     return (value == null) ? null : ((Number)value).shortValue();
                 }
@@ -293,6 +297,8 @@ public abstract class FieldMarshaller<T>
                 }
                 @Override public Object getFromSet (ResultSet rs)
                     throws SQLException {
+                    // work around the fact that HSQLDB (at least) returns Double rather than
+                    // Float for REAL columns
                     Object value = super.getFromSet(rs);
                     return (value == null) ? null : ((Number)value).floatValue();
                 }
