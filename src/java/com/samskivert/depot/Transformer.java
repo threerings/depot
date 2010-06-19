@@ -30,9 +30,23 @@ package com.samskivert.depot;
  */
 public interface Transformer<F,T>
 {
-    /** Transforms a runtime value into a value that can be persisted. */
+    /**
+     * Transforms a runtime value into a value that can be persisted.
+     *
+     * @param value the value just read from a persistent record.
+     *
+     * @return the transformed value, which will be written to the database.
+     */
     T toPersistent (F value);
 
-    /** Transforms a persisted value into a value that can be store in a runtime field. */
-    F fromPersistent (T value);
+    /**
+     * Transforms a persisted value into a value that can be store in a runtime field.
+     *
+     * @param fieldType the type of the persistent record field to which the transformed value will
+     * be written.
+     * @param value the value just read from the database.
+     *
+     * @return the transformed value, which will be stored in a field of the persistent record.
+     */
+    F fromPersistent (Class<?> fieldType, T value);
 }

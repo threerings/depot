@@ -33,9 +33,6 @@ import com.samskivert.depot.annotation.Column;
  *     public String[] cities;
  * }
  * </pre>
- * Because of limitations of Java's annotation system, configuration of transformers is not
- * possible (without complex machinations) and separate classes must be created for any particular
- * transformation.
  */
 public class Transformers
 {
@@ -46,7 +43,7 @@ public class Transformers
         public String toPersistent (String[] value) {
             return Joiner.on(",").join(value);
         }
-        public String[] fromPersistent (String value) {
+        public String[] fromPersistent (Class<?> ftype, String value) {
             return value.split(",");
         }
     }
