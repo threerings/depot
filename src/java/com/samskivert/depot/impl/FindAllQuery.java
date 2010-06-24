@@ -243,6 +243,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
             if (_qkey != null) {
                 ctx.cacheStore(CacheCategory.RESULT, _qkey, result); // cache the entire result set
             }
+            _uncachedRecords += result.size();
             return result;
         }
 
