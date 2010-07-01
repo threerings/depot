@@ -100,17 +100,34 @@ public class EHCacheAdapter
         new EHCacheConfig("depotResult", 5000, 300, 300);
 
     /**
-     * Creates an adapter using the supplied cache manager. Note: this adapter does not shut down
-     * the supplied manager when it is shutdown. The caller is responsible for shutting down the
-     * cache manager when it knows that Depot and any other clients no longer need it.
+     * Creates an adapter using the supplied cache manager with the default cache configurations.
+     *
+     * Note: this adapter does not shut down* the supplied manager when it is shutdown. The caller
+     * is responsible for shutting down the cache manager when it knows that Depot and any other
+     * clients no longer need it.
      */
     public EHCacheAdapter (CacheManager cachemgr, String ident)
     {
+        this(cachemgr, ident, EHCACHE_RECORD_CONFIG, EHCACHE_SHORT_KEYSET_CONFIG,
+            EHCACHE_LONG_KEYSET_CONFIG, EHCACHE_RESULT_CONFIG);
+    }
+
+    /**
+     * Creates an adapter using the supplied cache manager with the specific cache configurations.
+     *
+     * Note: this adapter does not shut down* the supplied manager when it is shutdown. The caller
+     * is responsible for shutting down the cache manager when it knows that Depot and any other
+     * clients no longer need it.
+     */
+    public EHCacheAdapter (CacheManager cachemgr, String ident, EHCacheConfig recordConfig,
+        EHCacheConfig shortKeySetConfig, EHCacheConfig longKeySetConfig,
+        EHCacheConfig resultConfig)
+    {
         _cachemgr = cachemgr;
-        createEHCache(ident, CacheCategory.RECORD, EHCACHE_RECORD_CONFIG);
-        createEHCache(ident, CacheCategory.SHORT_KEYSET, EHCACHE_SHORT_KEYSET_CONFIG);
-        createEHCache(ident, CacheCategory.LONG_KEYSET, EHCACHE_LONG_KEYSET_CONFIG);
-        createEHCache(ident, CacheCategory.RESULT, EHCACHE_RESULT_CONFIG);
+        createEHCache(ident, CacheCategory.RECORD, recordConfig);
+        createEHCache(ident, CacheCategory.SHORT_KEYSET, shortKeySetConfig);
+        createEHCache(ident, CacheCategory.LONG_KEYSET, longKeySetConfig);
+        createEHCache(ident, CacheCategory.RESULT, resultConfig);
     }
 
     // from CacheAdapter
