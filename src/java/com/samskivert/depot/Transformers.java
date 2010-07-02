@@ -132,7 +132,7 @@ public class Transformers
                     buf.append('\uFFFC');
                 } else {
                     s = s.replace("\\", "\\\\"); // turn \ into \\ 
-                    s = s.replace("\n", "\\n");  // turn newline into \n
+                    s = s.replace("\n", "\\\n");  // preslash a newline
                     s = s.replace("\uFFFC", "\\\uFFFC"); // preslash the nullmarker too
                     buf.append(s).append('\n');
                 }
