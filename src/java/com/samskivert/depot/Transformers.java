@@ -33,8 +33,6 @@ import java.util.Set;
 
 import com.samskivert.depot.annotation.Column;
 
-//import com.google.common.annotations.Beta;
-
 import com.google.common.base.Preconditions;
 
 import com.google.common.collect.Iterables;
@@ -56,8 +54,10 @@ public class Transformers
     /**
      * Combines the contents of a String[] column into a single string, separated by tabs. Any tabs
      * in the strings will be escaped.
+     *
+     * @deprecated does not encode {} and { "" } differently; cannot handle null.
      */
-    public static class TabSeparatedString implements Transformer<String[], String> {
+    @Deprecated public static class TabSeparatedString implements Transformer<String[], String> {
         public String toPersistent (String[] values) {
             StringBuffer buf = new StringBuffer();
             for (String value : values) {
@@ -77,7 +77,13 @@ public class Transformers
         }
     }
 
-    //@Beta
+    /**
+     * Combines the contents of a String[] column into a single String, terminating
+     * each String element with a newline.
+     * A backslash ('\') in Strings will be prefixed by another backslash,
+     * newlines will be encoded as "\n", and null elements will be encoded as "\0" (but not
+     * terminated by a newline).
+     */
     public static class StringArray implements Transformer<String[], String>
     {
         public String toPersistent (String[] value)
@@ -97,7 +103,13 @@ public class Transformers
         }
     }
 
-    //@Beta
+    /**
+     * Combines the contents of an Iterable<String> column into a single String, terminating
+     * each String element with a newline.
+     * A backslash ('\') in Strings will be prefixed by another backslash,
+     * newlines will be encoded as "\n", and null elements will be encoded as "\0" (but not
+     * terminated by a newline).
+     */
     public static class StringIterable implements Transformer<Iterable<String>, String>
     {
         public String toPersistent (Iterable<String> value)
