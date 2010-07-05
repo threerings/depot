@@ -134,11 +134,10 @@ public class Transformers
             StringBuilder buf = new StringBuilder();
             for (String s : value) {
                 if (s == null) {
-                    buf.append('\uFFFC');
+                    buf.append("\\0"); // encode nulls as "\0" (with no terminator)
                 } else {
                     s = s.replace("\\", "\\\\"); // turn \ into \\ 
-                    s = s.replace("\n", "\\\n");  // preslash a newline
-                    s = s.replace("\uFFFC", "\\\uFFFC"); // preslash the nullmarker too
+                    s = s.replace("\n", "\\n");  // turn a newline in a String to "\n"
                     buf.append(s).append('\n');
                 }
             }
@@ -155,21 +154,27 @@ public class Transformers
             for (int ii = 0, nn = encoded.length(); ii < nn; ii++) {
                 char c = encoded.charAt(ii);
                 switch (c) {
-                case '\uFFFC':
-                    Preconditions.checkArgument(buf.length() == 0, "Invalid encoded string");
-                    value.add(null);
-                    break;
-
                 case '\n':
                     value.add(buf.toString()); // TODO: intern?
                     buf.setLength(0);
                     break;
 
                 case '\\':
-                    try {
-                        buf.append(encoded.charAt(++ii)); // take the next char at face value
-                    } catch (IndexOutOfBoundsException e) {
-                        throw new IllegalArgumentException("Invalid encoded string", e);
+                    Preconditions.checkArgument(++ii < nn, "Invalid encoded string");
+                    char slashed = encoded.charAt(ii);
+                    switch (slashed) {
+                    case '0': // turn \0 into a null element
+                        Preconditions.checkArgument(buf.length() == 0, "Invalid encoded string");
+                        value.add(null);
+                        break;
+
+                    case 'n': // turn \n back into a newline
+                        buf.append('\n');
+                        break;
+
+                    default: // this should only be a slash...
+                        buf.append(slashed);
+                        break;
                     }
                     break;
 
@@ -178,7 +183,7 @@ public class Transformers
                     break;
                 }
             }
-            // make sure there are no left-over characters
+            // make sure the last element was terminated
             Preconditions.checkArgument(buf.length() == 0, "Invalid encoded string");
             return value;
         }
