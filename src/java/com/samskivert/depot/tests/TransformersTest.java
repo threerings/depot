@@ -34,7 +34,7 @@ import com.samskivert.depot.Transformers;
  */
 public class TransformersTest
 {
-    @Test public void testTabSeparatedString ()
+    @Test public void testStringArray ()
     {
         String[] data = { "notabs", "\tpretab", "posttab\t", "in\ttab", "\t\t\tOMGtabs!\t\t" };
         Transformers.StringArray xform = new Transformers.StringArray();
@@ -45,6 +45,7 @@ public class TransformersTest
     {
         Transformers.StringArray xform = new Transformers.StringArray();
         Set<String> set = Sets.newHashSet();
+        // all three of these should obviously encode to different Strings
         set.add(xform.toPersistent(null));
         set.add(xform.toPersistent(new String[] {}));
         set.add(xform.toPersistent(new String[] {""}));
