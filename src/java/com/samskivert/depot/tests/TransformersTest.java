@@ -37,15 +37,15 @@ public class TransformersTest
     @Test public void testTabSeparatedString ()
     {
         String[] data = { "notabs", "\tpretab", "posttab\t", "in\ttab", "\t\t\tOMGtabs!\t\t" };
-        Transformers.TabSeparatedString xform = new Transformers.TabSeparatedString();
+        Transformers.StringArray xform = new Transformers.StringArray();
         assertArrayEquals(data, xform.fromPersistent(null, xform.toPersistent(data)));
     }
 
     @Test public void testEmpties ()
     {
-        Transformers.TabSeparatedString xform = new Transformers.TabSeparatedString();
+        Transformers.StringArray xform = new Transformers.StringArray();
         Set<String> set = Sets.newHashSet();
-//        set.add(xform.toPersistent(null));
+        set.add(xform.toPersistent(null));
         set.add(xform.toPersistent(new String[] {}));
         set.add(xform.toPersistent(new String[] {""}));
         assertTrue(set.size() == 3);

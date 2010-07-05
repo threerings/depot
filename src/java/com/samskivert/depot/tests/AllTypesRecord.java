@@ -46,6 +46,7 @@ public class AllTypesRecord extends PersistentRecord
     public static final ColumnExp LONG_VALUE = colexp(_R, "longValue");
     public static final ColumnExp FLOAT_VALUE = colexp(_R, "floatValue");
     public static final ColumnExp DOUBLE_VALUE = colexp(_R, "doubleValue");
+    public static final ColumnExp BOXED_BOOLEAN = colexp(_R, "boxedBoolean");
     public static final ColumnExp BOXED_BYTE = colexp(_R, "boxedByte");
     public static final ColumnExp BOXED_SHORT = colexp(_R, "boxedShort");
     public static final ColumnExp BOXED_INT = colexp(_R, "boxedInt");
@@ -58,6 +59,7 @@ public class AllTypesRecord extends PersistentRecord
     public static final ColumnExp DATE = colexp(_R, "date");
     public static final ColumnExp TIME = colexp(_R, "time");
     public static final ColumnExp TIMESTAMP = colexp(_R, "timestamp");
+    public static final ColumnExp NULL_BOXED_BOOLEAN = colexp(_R, "nullBoxedBoolean");
     public static final ColumnExp NULL_BOXED_BYTE = colexp(_R, "nullBoxedByte");
     public static final ColumnExp NULL_BOXED_SHORT = colexp(_R, "nullBoxedShort");
     public static final ColumnExp NULL_BOXED_INT = colexp(_R, "nullBoxedInt");

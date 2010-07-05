@@ -22,9 +22,14 @@ package com.samskivert.depot.tests;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
+
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 import com.samskivert.depot.Key;
 import com.samskivert.depot.expression.ColumnExp;
@@ -34,6 +39,7 @@ import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.Transformer;
 import com.samskivert.depot.Transformers;
+import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.annotation.Transform;
 import com.samskivert.depot.impl.FieldMarshaller;
@@ -119,6 +125,8 @@ public class TransformTest extends TestBase
         public static final Class<TransformRecord> _R = TransformRecord.class;
         public static final ColumnExp RECORD_ID = colexp(_R, "recordId");
         public static final ColumnExp STRINGS = colexp(_R, "strings");
+        public static final ColumnExp STRING_LIST = colexp(_R, "stringList");
+        public static final ColumnExp STRING_SET = colexp(_R, "stringSet");
         public static final ColumnExp CUSTOM = colexp(_R, "custom");
         public static final ColumnExp ORDINAL = colexp(_R, "ordinal");
         // AUTO-GENERATED: FIELDS END
@@ -127,8 +135,14 @@ public class TransformTest extends TestBase
 
         @Id public int recordId;
 
-        @Transform(Transformers.TabSeparatedString.class)
+        @Column(nullable=true) @Transform(Transformers.StringArray.class)
         public String[] strings;
+
+        @Column(nullable=true) @Transform(Transformers.StringIterable.class)
+        public List<String> stringList;
+
+        @Column(nullable=true) @Transform(Transformers.StringIterable.class)
+        public Set<String> stringSet;
 
         public CustomType custom;
 
@@ -194,9 +208,21 @@ public class TransformTest extends TestBase
 
     @Test public void testCreateReadDelete ()
     {
+        testCreateReadDelete(new String[] { "one", "two", "three" });
+        testCreateReadDelete(new String[] { ",", null, "" });
+        testCreateReadDelete(new String[] { "" });
+        testCreateReadDelete(new String[] {});
+        testCreateReadDelete(null);
+        testCreateReadDelete(new String[] { "", "\n", "", "\n\n" });
+    }
+
+    protected void testCreateReadDelete (String[] strings)
+    {
         TransformRecord in = new TransformRecord();
         in.recordId = 1;
-        in.strings = new String[] { "one", "two", "three" };
+        in.strings = strings;
+        in.stringList = (strings == null) ? null : Lists.newArrayList(strings);
+        in.stringSet = (strings == null) ? null : Sets.newHashSet(strings);
         in.custom = new CustomType("custom");
         in.ordinal = Ordinal.THREE;
         _repo.insert(in);
@@ -208,6 +234,8 @@ public class TransformTest extends TestBase
         // make sure all of the fields were marshalled and unmarshalled correctly
         assertEquals(in.recordId, out.recordId);
         assertArrayEquals(in.strings, out.strings);
+        assertTrue(Objects.equal(in.stringList, out.stringList));
+        assertTrue(Objects.equal(in.stringSet, out.stringSet));
         assertEquals(in.custom, out.custom);
         assertEquals(in.ordinal, out.ordinal);
 
