@@ -20,8 +20,12 @@
 
 package com.samskivert.depot.tests;
 
+import java.util.Set;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import com.google.common.collect.Sets;
 
 import com.samskivert.depot.Transformers;
 
@@ -35,5 +39,15 @@ public class TransformersTest
         String[] data = { "notabs", "\tpretab", "posttab\t", "in\ttab", "\t\t\tOMGtabs!\t\t" };
         Transformers.TabSeparatedString xform = new Transformers.TabSeparatedString();
         assertArrayEquals(data, xform.fromPersistent(null, xform.toPersistent(data)));
+    }
+
+    @Test public void testEmpties ()
+    {
+        Transformers.TabSeparatedString xform = new Transformers.TabSeparatedString();
+        Set<String> set = Sets.newHashSet();
+//        set.add(xform.toPersistent(null));
+        set.add(xform.toPersistent(new String[] {}));
+        set.add(xform.toPersistent(new String[] {""}));
+        assertTrue(set.size() == 3);
     }
 }
