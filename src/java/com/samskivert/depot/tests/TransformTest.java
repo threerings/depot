@@ -54,8 +54,7 @@ public class TransformTest extends TestBase
         }
 
         @Override public boolean equals (Object other) {
-            return !(other instanceof CustomType) ? false :
-                value.equals(((CustomType)other).value);
+            return (other instanceof CustomType) && value.equals(((CustomType)other).value);
         }
 
         @Override public int hashCode () {
