@@ -20,6 +20,9 @@
 
 package com.samskivert.depot;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -65,7 +68,7 @@ public class Transformers
             }
             return buf.toString();
         }
-        public String[] fromPersistent (Class<?> ftype, String value) {
+        public String[] fromPersistent (Type ftype, String value) {
             String[] values = value.replace("\\\t", "%%ESCTAB%%").split("\t");
             for (int ii = 0; ii < values.length; ii++) {
                 values[ii] = values[ii].replace("%%ESCTAB%%", "\t");
@@ -85,7 +88,7 @@ public class Transformers
             return StringIterable.toPersistent0(Arrays.asList(value));
         }
 
-        public String[] fromPersistent (Class<?> ftype, String encoded)
+        public String[] fromPersistent (Type ftype, String encoded)
         {
             if (encoded == null) {
                 return null;
@@ -102,18 +105,20 @@ public class Transformers
             return toPersistent0(value);
         }
 
-        public Iterable<String> fromPersistent (Class<?> ftype, String encoded)
+        public Iterable<String> fromPersistent (Type ftype, String encoded)
         {
             ArrayList<String> value = fromPersistent0(encoded);
+            Type fclass = (ftype instanceof ParameterizedType) ?
+                ((ParameterizedType)ftype).getRawType() : ftype;
             if (value == null ||
-                    ftype == ArrayList.class || ftype == List.class || ftype == Collection.class ||
-                    ftype == Iterable.class) {
+                    fclass == ArrayList.class || fclass == List.class ||
+                    fclass == Collection.class || fclass == Iterable.class) {
                 return value;
             }
-            if (ftype == LinkedList.class) {
+            if (fclass == LinkedList.class) {
                 return Lists.newLinkedList(value);
             }
-            if (ftype == HashSet.class || ftype == Set.class) {
+            if (fclass == HashSet.class || fclass == Set.class) {
                 return Sets.newHashSet(value);
             }
             // else: reflection? See if it's a collection, call the 0-arg constructor, add all

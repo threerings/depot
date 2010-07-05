@@ -20,6 +20,8 @@
 
 package com.samskivert.depot;
 
+import java.lang.reflect.Type;
+
 /**
  * Transforms a persistent record field into a format that can be read and written by the
  * underlying database. For example, one might transform an enum into a byte, short or integer. Or
@@ -48,5 +50,5 @@ public interface Transformer<F,T>
      *
      * @return the transformed value, which will be stored in a field of the persistent record.
      */
-    F fromPersistent (Class<?> fieldType, T value);
+    F fromPersistent (Type fieldType, T value);
 }

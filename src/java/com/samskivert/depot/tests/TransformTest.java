@@ -21,6 +21,7 @@
 package com.samskivert.depot.tests;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 import java.util.Set;
 
 import org.junit.Test;
@@ -92,7 +93,7 @@ public class TransformTest extends TestBase
             return value.value;
         }
 
-        public CustomType fromPersistent (Class<?> ftype, String value) {
+        public CustomType fromPersistent (Type ftype, String value) {
             return new CustomType(value);
         }
     }
@@ -102,7 +103,7 @@ public class TransformTest extends TestBase
         public Short toPersistent (ShortEnum value) {
             return value.toShort();
         }
-        public ShortEnum fromPersistent (Class<?> ftype, Short value) {
+        public ShortEnum fromPersistent (Type ftype, Short value) {
             @SuppressWarnings("unchecked") Class<Dummy> eclass = (Class<Dummy>)ftype;
             return fromShort(eclass, value);
         }

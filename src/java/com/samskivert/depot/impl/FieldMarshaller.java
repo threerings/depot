@@ -705,7 +705,7 @@ public abstract class FieldMarshaller<T>
         }
         @Override public void writeToObject (Object po, T value)
             throws IllegalArgumentException, IllegalAccessException {
-            _field.set(po, _xformer.fromPersistent(_field.getType(), value));
+            _field.set(po, _xformer.fromPersistent(_field.getGenericType(), value));
         }
         @Override public void writeToStatement (PreparedStatement ps, int column, T value)
             throws SQLException {
