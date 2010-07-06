@@ -44,7 +44,7 @@ import com.google.common.collect.Sets;
  * specify it via a {@link Column} annotation. For example:
  * <pre>
  * public class MyRecord extends PersistentRecord {
- *     @Transform(Transformers.CommaSeparatedString.class)
+ *     @Transform(Transformers.StringArray.class)
  *     public String[] cities;
  * }
  * </pre>
@@ -52,53 +52,48 @@ import com.google.common.collect.Sets;
 public class Transformers
 {
     /**
-     * Combines the contents of a String[] column into a single String, terminating
-     * each String element with a newline.
-     * A backslash ('\') in Strings will be prefixed by another backslash,
+     * Combines the contents of a String[] column into a single String, terminating each String
+     * element with a newline. A backslash ('\') in Strings will be prefixed by another backslash,
      * newlines will be encoded as "\n", and null elements will be encoded as "\0" (but not
      * terminated by a newline).
      */
-    public static class StringArray implements Transformer<String[], String>
+    public static class StringArray extends StringBase<String[]>
     {
         public String toPersistent (String[] value)
         {
-            if (value == null) {
-                return null;
-            }
-            return StringIterable.toPersistent0(Arrays.asList(value));
+            return (value == null) ? null : encode(Arrays.asList(value));
         }
 
         public String[] fromPersistent (Type ftype, String encoded)
         {
-            if (encoded == null) {
-                return null;
-            }
-            return Iterables.toArray(StringIterable.fromPersistent0(encoded), String.class);
+            return (encoded == null) ? null : Iterables.toArray(decode(encoded), String.class);
         }
     }
 
     /**
-     * Combines the contents of an Iterable<String> column into a single String, terminating
-     * each String element with a newline.
-     * A backslash ('\') in Strings will be prefixed by another backslash,
-     * newlines will be encoded as "\n", and null elements will be encoded as "\0" (but not
-     * terminated by a newline).
+     * Combines the contents of an Iterable<String> column into a single String, terminating each
+     * String element with a newline. A backslash ('\') in Strings will be prefixed by another
+     * backslash, newlines will be encoded as "\n", and null elements will be encoded as "\0" (but
+     * not terminated by a newline).
      */
-    public static class StringIterable implements Transformer<Iterable<String>, String>
+    public static class StringIterable extends StringBase<Iterable<String>>
     {
         public String toPersistent (Iterable<String> value)
         {
-            return toPersistent0(value);
+            return (value == null) ? null : encode(value);
         }
 
         public Iterable<String> fromPersistent (Type ftype, String encoded)
         {
-            ArrayList<String> value = fromPersistent0(encoded);
+            if (encoded == null) {
+                return null;
+            }
+
+            ArrayList<String> value = decode(encoded);
             Type fclass = (ftype instanceof ParameterizedType) ?
                 ((ParameterizedType)ftype).getRawType() : ftype;
-            if (value == null ||
-                    fclass == ArrayList.class || fclass == List.class ||
-                    fclass == Collection.class || fclass == Iterable.class) {
+            if (fclass == ArrayList.class || fclass == List.class ||
+                fclass == Collection.class || fclass == Iterable.class) {
                 return value;
             }
             if (fclass == LinkedList.class) {
@@ -111,12 +106,12 @@ public class Transformers
             // and return? Something?
             return value;
         }
+    }
 
-        protected static String toPersistent0 (Iterable<String> value)
+    protected abstract static class StringBase<F> implements Transformer<F, String>
+    {
+        protected static String encode (Iterable<String> value)
         {
-            if (value == null) {
-                return null;
-            }
             StringBuilder buf = new StringBuilder();
             for (String s : value) {
                 if (s == null) {
@@ -130,11 +125,8 @@ public class Transformers
             return buf.toString();
         }
 
-        protected static ArrayList<String> fromPersistent0 (String encoded)
+        protected static ArrayList<String> decode (String encoded)
         {
-            if (encoded == null) {
-                return null;
-            }
             ArrayList<String> value = Lists.newArrayList();
             StringBuilder buf = new StringBuilder(encoded.length());
             for (int ii = 0, nn = encoded.length(); ii < nn; ii++) {
@@ -153,11 +145,9 @@ public class Transformers
                         Preconditions.checkArgument(buf.length() == 0, "Invalid encoded string");
                         value.add(null);
                         break;
-
                     case 'n': // turn \n back into a newline
                         buf.append('\n');
                         break;
-
                     default: // this should only be a slash...
                         buf.append(slashed);
                         break;
@@ -169,6 +159,7 @@ public class Transformers
                     break;
                 }
             }
+
             // make sure the last element was terminated
             Preconditions.checkArgument(buf.length() == 0, "Invalid encoded string");
             return value;
