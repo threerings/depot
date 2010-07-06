@@ -137,7 +137,7 @@ public class Transformers
             StringBuilder buf = new StringBuilder();
             for (String s : value) {
                 if (s == null) {
-                    buf.append("\\0"); // encode nulls as "\0" (with no terminator)
+                    buf.append("\\\n"); // encode nulls as slash followed by the terminator
                 } else {
                     s = s.replace("\\", "\\\\"); // turn \ into \\ 
                     s = s.replace("\n", "\\n");  // turn a newline in a String to "\n"
@@ -163,7 +163,7 @@ public class Transformers
                     Preconditions.checkArgument(++ii < nn, "Invalid encoded string");
                     char slashed = encoded.charAt(ii);
                     switch (slashed) {
-                    case '0': // turn \0 into a null element
+                    case '\n': // turn back into a null element
                         Preconditions.checkArgument(buf.length() == 0, "Invalid encoded string");
                         value.add(null);
                         break;
