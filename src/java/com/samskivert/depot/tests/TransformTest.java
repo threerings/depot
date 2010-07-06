@@ -165,7 +165,7 @@ public class TransformTest extends TestBase
 
     public static class BadTransformRecord extends PersistentRecord
     {
-        @Transform(Transformers.TabSeparatedString.class)
+        @Transform(Transformers.StringArray.class)
         public Thread thread;
 
         public InvalidCustomType invalid;

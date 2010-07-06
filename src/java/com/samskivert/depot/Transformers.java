@@ -52,32 +52,6 @@ import com.google.common.collect.Sets;
 public class Transformers
 {
     /**
-     * Combines the contents of a String[] column into a single string, separated by tabs. Any tabs
-     * in the strings will be escaped.
-     *
-     * @deprecated does not encode {} and { "" } differently; cannot handle null.
-     */
-    @Deprecated public static class TabSeparatedString implements Transformer<String[], String> {
-        public String toPersistent (String[] values) {
-            StringBuffer buf = new StringBuffer();
-            for (String value : values) {
-                if (buf.length() > 0) {
-                    buf.append("\t");
-                }
-                buf.append(value.replace("\t", "\\\t"));
-            }
-            return buf.toString();
-        }
-        public String[] fromPersistent (Type ftype, String value) {
-            String[] values = value.replace("\\\t", "%%ESCTAB%%").split("\t");
-            for (int ii = 0; ii < values.length; ii++) {
-                values[ii] = values[ii].replace("%%ESCTAB%%", "\t");
-            }
-            return values;
-        }
-    }
-
-    /**
      * Combines the contents of a String[] column into a single String, terminating
      * each String element with a newline.
      * A backslash ('\') in Strings will be prefixed by another backslash,
