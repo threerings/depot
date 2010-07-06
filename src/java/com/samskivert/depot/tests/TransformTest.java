@@ -22,6 +22,7 @@ package com.samskivert.depot.tests;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
@@ -30,6 +31,8 @@ import org.junit.Test;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+
+import com.samskivert.util.ByteEnum;
 
 import com.samskivert.depot.Key;
 import com.samskivert.depot.expression.ColumnExp;
@@ -93,6 +96,14 @@ public class TransformTest extends TestBase
         protected short _code;
     }
 
+    public enum ExtraOrdinal implements ByteEnum {
+        ONE, TWO, THREE;
+
+        public byte toByte () {
+            return (byte)ordinal(); // sufficient for testing
+        }
+    }
+
     public static class CustomTypeTransformer implements Transformer<CustomType, String>
     {
         public String toPersistent (CustomType value) {
@@ -129,6 +140,7 @@ public class TransformTest extends TestBase
         public static final ColumnExp STRING_SET = colexp(_R, "stringSet");
         public static final ColumnExp CUSTOM = colexp(_R, "custom");
         public static final ColumnExp ORDINAL = colexp(_R, "ordinal");
+        public static final ColumnExp BOBS = colexp(_R, "bobs");
         // AUTO-GENERATED: FIELDS END
 
         public static final int SCHEMA_VERSION = 1;
@@ -147,6 +159,9 @@ public class TransformTest extends TestBase
         public CustomType custom;
 
         public Ordinal ordinal;
+
+        @Transform(Transformers.ByteEnumSet.class)
+        public Set<ExtraOrdinal> bobs;
 
         // AUTO-GENERATED: METHODS START
         /**
@@ -225,6 +240,7 @@ public class TransformTest extends TestBase
         in.stringSet = (strings == null) ? null : Sets.newHashSet(strings);
         in.custom = new CustomType("custom");
         in.ordinal = Ordinal.THREE;
+        in.bobs = EnumSet.of(ExtraOrdinal.TWO);
         _repo.insert(in);
 
         TransformRecord out = _repo.loadNoCache(in.recordId);
@@ -238,6 +254,7 @@ public class TransformTest extends TestBase
         assertTrue(Objects.equal(in.stringSet, out.stringSet));
         assertEquals(in.custom, out.custom);
         assertEquals(in.ordinal, out.ordinal);
+        assertEquals(in.bobs, out.bobs);
 
         // finally clean up after ourselves
         _repo.delete(TransformRecord.getKey(in.recordId));

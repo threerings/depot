@@ -31,6 +31,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.samskivert.util.ByteEnum;
+import com.samskivert.util.ByteEnumUtil;
+
 import com.samskivert.depot.annotation.Column;
 
 import com.google.common.base.Preconditions;
@@ -105,6 +108,25 @@ public class Transformers
             // else: reflection? See if it's a collection, call the 0-arg constructor, add all
             // and return? Something?
             return value;
+        }
+    }
+
+    public static class ByteEnumSet<E extends Enum<E> & ByteEnum>
+        implements Transformer<Set<E>, Integer>
+    {
+        public Integer toPersistent (Set<E> value)
+        {
+            return (value == null) ? null : ByteEnumUtil.setToInt(value);
+        }
+
+        public Set<E> fromPersistent (Type ftype, Integer encoded)
+        {
+            if (encoded == null) {
+                return null;
+            }
+            @SuppressWarnings("unchecked")
+            Class<E> eclass = (Class<E>) ((ParameterizedType) ftype).getActualTypeArguments()[0];
+            return ByteEnumUtil.intToSet(eclass, encoded);
         }
     }
 
