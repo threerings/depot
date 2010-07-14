@@ -23,7 +23,8 @@ package com.samskivert.depot.impl;
 import java.io.Serializable;
 
 import com.samskivert.depot.CacheKey;
-import com.samskivert.util.ObjectUtil;
+
+import com.google.common.base.Objects;
 
 /**
  * Convenience class that implements {@link CacheKey} as simply as possibly. This class is
@@ -71,8 +72,8 @@ public class SimpleCacheKey
             return false;
         }
         SimpleCacheKey other = (SimpleCacheKey) obj;
-        return ObjectUtil.equals(_cacheId, other._cacheId) &&
-            ObjectUtil.equals(_cacheKey, other._cacheKey);
+        return Objects.equal(_cacheId, other._cacheId) &&
+            Objects.equal(_cacheKey, other._cacheKey);
     }
 
     @Override
