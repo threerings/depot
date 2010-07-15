@@ -79,7 +79,7 @@ public abstract class SchemaMigration extends Modifier
         public Rename (int targetVersion, String oldColumnName, ColumnExp newColumn) {
             super(targetVersion);
             _oldColumnName = oldColumnName;
-            _newColumnName = newColumn.name;
+            _fieldName = newColumn.name;
         }
 
         @Override public boolean runBeforeDefault () {
@@ -89,7 +89,8 @@ public abstract class SchemaMigration extends Modifier
         @Override
         public void init (String tableName, Map<String, FieldMarshaller<?>> marshallers) {
             super.init(tableName, marshallers);
-            FieldMarshaller<?> fm = requireMarshaller(marshallers, _newColumnName);
+            FieldMarshaller<?> fm = requireMarshaller(marshallers, _fieldName);
+            _newColumnName = fm.getColumnName();
             _newColumnDef = fm.getColumnDefinition();
         }
 
@@ -119,7 +120,7 @@ public abstract class SchemaMigration extends Modifier
                 conn, _tableName, _oldColumnName, _newColumnName, _newColumnDef) ? 1 : 0;
         }
 
-        protected String _oldColumnName,  _newColumnName;
+        protected String _oldColumnName, _fieldName, _newColumnName;
         protected ColumnDefinition _newColumnDef;
     }
 
