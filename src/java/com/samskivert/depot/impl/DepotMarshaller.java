@@ -819,7 +819,7 @@ public class DepotMarshaller<T extends PersistentRecord>
         if (metaData.pkColumns.size() == _pkColumns.size()) {
             keyMatch = true;
             for (FieldMarshaller<?> column : _pkColumns) {
-                keyMatch &= metaData.pkColumns.contains(column.getField().getName());
+                keyMatch &= metaData.pkColumns.contains(column.getColumnName());
             }
         } else {
             keyMatch = false;
