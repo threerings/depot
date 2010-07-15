@@ -149,8 +149,8 @@ public abstract class SchemaMigration extends Modifier
 
         @Override
         protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-            log.info("Updating type of '" + _fieldName + "' in " + _tableName);
-            return liaison.changeColumn(conn, _tableName, _fieldName, _newColumnDef.type,
+            log.info("Updating type of '" + _columnName + "' in " + _tableName);
+            return liaison.changeColumn(conn, _tableName, _columnName, _newColumnDef.type,
                 _newColumnDef.nullable, _newColumnDef.unique,
                 _newColumnDef.defaultValue) ? 1 : 0;
         }
