@@ -90,7 +90,10 @@ public class MySQLBuilder
         public Void visit (DateTruncate exp)
         {
             // exp.getTruncation() is currently always DAY
-            return appendFunctionCall("date", exp.getArg());
+            _builder.append(" cast(");
+            appendFunctionCall("date", exp.getArg());
+            _builder.append(" as datetime)");
+            return null;
         }
 
         protected String getDateFunction (Part part)
