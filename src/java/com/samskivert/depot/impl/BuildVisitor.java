@@ -132,10 +132,6 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     public Void visit (FieldDefinition definition)
     {
         definition.getDefinition().accept(this);
-        if (_enableAliasing) {
-            _builder.append(" as ");
-            appendIdentifier(definition.getField());
-        }
         return null;
     }
 
@@ -816,6 +812,10 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
                     boolean saved = _enableOverrides;
                     _enableOverrides = false;
                     fieldDef.accept(this);
+                    if (_enableAliasing) {
+                        _builder.append(" as ");
+                        appendIdentifier(fm.getColumnName());
+                    }
                     _enableOverrides = saved;
                     return;
                 }
@@ -844,7 +844,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
                 _builder.append(fieldComputed.fieldDefinition());
                 if (_enableAliasing) {
                     _builder.append(" as ");
-                    appendIdentifier(field.name);
+                    appendIdentifier(fm.getColumnName());
                 }
                 return;
             }

@@ -34,6 +34,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 
 import com.samskivert.depot.DatabaseException;
+import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.Transformer;
 import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.Computed;
@@ -216,15 +217,30 @@ public abstract class FieldMarshaller<T>
     {
         _field = field;
         _columnName = field.getName();
+        _computed = field.getAnnotation(Computed.class);
 
         Column column = _field.getAnnotation(Column.class);
+        if (column == null) {
+            // look for a column annotation on the shadowed field, if any
+            Computed dcomputed = (_computed == null) ?
+                field.getDeclaringClass().getAnnotation(Computed.class) : _computed;
+            if (dcomputed != null) {
+                Class<? extends PersistentRecord> sclass = dcomputed.shadowOf();
+                if (sclass != null) {
+                    try {
+                        column = sclass.getField(field.getName()).getAnnotation(Column.class);
+                    } catch (NoSuchFieldException e) {
+                        // no problem; assume that it will be defined in the query
+                    }
+                }
+            }
+        }
         if (column != null) {
             if (!StringUtil.isBlank(column.name())) {
                 _columnName = column.name();
             }
         }
 
-        _computed = field.getAnnotation(Computed.class);
         if (_computed != null) {
             return;
         }
