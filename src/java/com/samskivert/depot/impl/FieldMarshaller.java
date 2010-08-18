@@ -226,7 +226,7 @@ public abstract class FieldMarshaller<T>
                 field.getDeclaringClass().getAnnotation(Computed.class) : _computed;
             if (dcomputed != null) {
                 Class<? extends PersistentRecord> sclass = dcomputed.shadowOf();
-                if (sclass != null) {
+                if (!PersistentRecord.class.equals(sclass)) {
                     try {
                         column = sclass.getField(field.getName()).getAnnotation(Column.class);
                     } catch (NoSuchFieldException e) {
