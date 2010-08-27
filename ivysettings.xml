@@ -1,0 +1,15 @@
+<ivysettings>
+  <settings defaultResolver="default"/>
+  <include url="${ivy.default.settings.dir}/ivysettings-local.xml"/>
+  <include url="${ivy.default.settings.dir}/ivysettings-public.xml"/>
+  <resolvers>
+    <chain name="default" returnFirst="true">
+      <resolver ref="local"/>
+      <resolver ref="public"/>
+      <url name="samskivert">
+        <ivy pattern="http://samskivert.googlecode.com/svn/releases/[organization]/[module]/[revision]/[artifact].xml"/>
+        <artifact pattern="http://samskivert.googlecode.com/svn/releases/[organization]/[module]/[revision]/[artifact].[ext]"/>
+      </url>
+    </chain>
+  </resolvers>
+</ivysettings>
