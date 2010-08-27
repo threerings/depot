@@ -18,7 +18,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.tests;
+package com.samskivert.depot;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -29,8 +29,6 @@ import static org.junit.Assert.*;
 import com.google.common.collect.Sets;
 
 import com.samskivert.util.ByteEnum;
-
-import com.samskivert.depot.Transformers;
 
 /**
  * Tests the stock transformers.

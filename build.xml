@@ -8,8 +8,10 @@
 
   <!-- various directories used when building things -->
   <property name="src.dir"     value="src/java"/>
+  <property name="test.dir"     value="src/test/java"/>
   <property name="deploy.dir"  value="dist"/>
   <property name="classes.dir" value="${deploy.dir}/classes"/>
+  <property name="tclasses.dir" value="${deploy.dir}/test-classes"/>
   <property name="javadoc.dir" value="${deploy.dir}/docs"/>
   <property name="libs.dir"    value="lib"/>
 
@@ -28,6 +30,7 @@
     <mkdir dir="${deploy.dir}"/>
     <mkdir dir="${deploy.dir}/lib"/>
     <mkdir dir="${classes.dir}"/>
+    <mkdir dir="${tclasses.dir}"/>
     <mkdir dir="${javadoc.dir}"/>
     <copy todir="${classes.dir}">
       <fileset dir="${src.dir}" includes="**/*.tmpl"/>
@@ -67,8 +70,10 @@
     <taskdef name="grecord" classname="com.samskivert.depot.tools.GenRecordTask"
              classpathref="classpath"/>
     <!-- make sure the record class files are all compiled -->
-    <javac srcdir="src/java" destdir="${classes.dir}"
+    <javac destdir="${classes.dir}"
            debug="on" optimize="${build.optimize}" deprecation="on">
+      <src name="${src.dir}"/>
+      <src name="${test.dir}"/>
       <classpath refid="classpath"/>
       <include name="**/*Record.java"/>
     </javac>
@@ -105,6 +110,18 @@
     </javac>
   </target>
 
+  <target name="test-compile" depends="compile" description="Compiles test classes.">
+    <javac srcdir="${test.dir}" destdir="${tclasses.dir}" includeAntRuntime="false"
+           debug="on" optimize="${build.optimize}" source="1.5" target="1.5" encoding="utf-8">
+      <classpath>
+        <pathelement location="${classes.dir}"/>
+        <path refid="classpath"/>
+      </classpath>
+      <compilerarg value="-Xlint"/>
+      <compilerarg value="-Xlint:-serial"/>
+    </javac>
+  </target>
+
   <!-- build the javadoc documentation -->
   <target name="javadoc" depends="prepare,compute-builds"
           description="Generates javadoc documentation.">
@@ -125,11 +142,11 @@
   </target>
 
   <!-- a target for rebuilding everything -->
-  <target name="all" depends="clean,prepare,compile,javadoc,dist"
+  <target name="all" depends="clean,compile,javadoc,dist"
           description="Cleans and rebuilds everything including documentation."/>
 
   <!-- runs our unit tests -->
-  <target name="tests" depends="prepare,compile" description="Runs the unit tests.">
+  <target name="tests" depends="test-compile" description="Runs the unit tests.">
     <!-- allows passing -Dtest=NamePrefix to restrict to subset of tests -->
     <property name="test" value=""/>
     <taskdef name="unit" classpathref="classpath"
@@ -137,14 +154,15 @@
     <unit printsummary="off" haltonfailure="yes" fork="${junit.fork}">
       <classpath>
         <pathelement location="${classes.dir}"/>
+        <pathelement location="${tclasses.dir}"/>
         <pathelement location="${basedir}"/> <!-- for rsrc/ -->
         <fileset dir="${deploy.dir}/lib" includes="*.jar"/>
       </classpath>
       <sysproperty key="com.samskivert.depot.debug" value="${debug}"/>
       <formatter type="brief" usefile="false"/>
       <batchtest>
-        <fileset dir="${src.dir}">
-          <include name="**/tests/**/${test}*Test.java"/>
+        <fileset dir="${test.dir}">
+          <include name="**/${test}*Test.java"/>
           <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="ehcache.present"/>
         </fileset>
       </batchtest>

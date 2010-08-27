@@ -18,7 +18,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.tests;
+package com.samskivert.depot;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -37,11 +37,6 @@ import com.samskivert.util.ByteEnum;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.expression.ColumnExp;
 
-import com.samskivert.depot.DepotRepository;
-import com.samskivert.depot.PersistenceContext;
-import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.Transformer;
-import com.samskivert.depot.Transformers;
 import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.annotation.Transform;

@@ -18,7 +18,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.tests;
+package com.samskivert.depot;
 
 import java.lang.reflect.Field;
 
@@ -27,7 +27,6 @@ import static org.junit.Assert.*;
 
 import com.samskivert.util.ByteEnum;
 
-import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.impl.FieldMarshaller;
 
 /**

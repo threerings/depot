@@ -18,15 +18,13 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.tests;
+package com.samskivert.depot;
 
 import org.junit.Test;
+import static org.junit.Assert.*;
 
-import com.samskivert.depot.Key;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.impl.DepotUtil;
-
-import static org.junit.Assert.*;
 
 /**
  * Tests some super basic {@link Key} stuff.

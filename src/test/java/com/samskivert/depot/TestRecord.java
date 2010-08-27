@@ -18,19 +18,17 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.tests;
+package com.samskivert.depot;
 
 import java.sql.Date;
 import java.sql.Timestamp;
 
-import com.samskivert.depot.Key;
-import com.samskivert.depot.PersistentRecord;
+import com.samskivert.util.StringUtil;
+
 import com.samskivert.depot.annotation.Entity;
 import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.annotation.Index;
 import com.samskivert.depot.expression.ColumnExp;
-
-import com.samskivert.util.StringUtil;
 
 /**
  * A test persistent object.

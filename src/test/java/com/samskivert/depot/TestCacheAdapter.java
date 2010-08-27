@@ -18,7 +18,7 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
 
-package com.samskivert.depot.tests;
+package com.samskivert.depot;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -28,7 +28,6 @@ import java.util.Map;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-import com.samskivert.depot.CacheAdapter;
 import com.samskivert.util.Tuple;
 
 /**
