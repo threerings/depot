@@ -19,11 +19,14 @@ The library is built using ant. It can be found here:
 
   http://jakarta.apache.org/ant/
 
-Next, ensure that the necessary third party jar files are copied to the lib/
-directory. See etc/libs-incl.xml for the list of those jar files.
+If you use build-ivy.xml to build, the necessary dependencies will be
+automatically fetched by Ivy (which will itself be downloaded if needed).
 
-Finally invoke 'ant dist' to compile the code and generate a jar file. Invoke
-'ant -p' to see information on other build targets.
+To compile the code and generate a jar file, invoke:
+
+  % ant -f build-ivy.xml dist
+
+Invoke 'ant -f build-ivy.xml -p' to see information on other build targets.
 
 Depot also provides .classpath and .project files for Eclipse users which
 require that you set an EXT_LIBS_DIR variable indicating the location of the
