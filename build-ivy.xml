@@ -7,7 +7,7 @@
   <property name="copyright.holder" value="Michael Bayne"/>
 
   <!-- various directories used when building things -->
-  <property name="src.dir"     value="src/java"/>
+  <property name="src.dir"     value="src/main/java"/>
   <property name="test.dir"    value="src/test/java"/>
   <property name="deploy.dir"  value="dist"/>
   <property name="classes.dir" value="${deploy.dir}/classes"/>
@@ -94,7 +94,7 @@
     </javac>
   </target>
 
-  <target name="genrecord" depends="-prepare"
+  <target name="genrecord" depends="tools-compile,test-compile"
           description="Regenerates persistent record boilerplate.">
     <taskdef name="grecord" classname="com.samskivert.depot.tools.GenRecordTask">
       <classpath>
@@ -102,18 +102,11 @@
         <path refid="compile.classpath"/>
       </classpath>
     </taskdef>
-    <!-- make sure the record class files are all compiled -->
-    <javac srcdir="src/java" destdir="${classes.dir}"
-           debug="on" optimize="${build.optimize}" deprecation="on">
-      <classpath refid="compile.classpath"/>
-      <include name="**/*Record.java"/>
-    </javac>
-    <!-- now update the source files -->
-    <grecord>
-      <classpath>
-        <pathelement location="${classes.dir}"/>
-        <pathelement location="${tclasses.dir}"/>
-      </classpath>
+    <path id="genrec.classpath">
+      <pathelement location="${classes.dir}"/>
+      <pathelement location="${tclasses.dir}"/>
+    </path>
+    <grecord classpathref="genrec.classpath">
       <fileset dir="${src.dir}" includes="**/*Record.java"/>
       <fileset dir="${test.dir}" includes="**/*Record.java"/>
     </grecord>
