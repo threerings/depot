@@ -282,7 +282,7 @@ public class HSQLBuilder
             return "TIMESTAMP";
         }
         public String getBlobType (int length) {
-            return "VARBINARY";
+            return "VARBINARY(" + length + ")";
         }
         public String getClobType (int length) {
             return "VARCHAR";
