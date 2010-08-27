@@ -47,7 +47,7 @@ import com.google.common.collect.Sets;
  * specify it via a {@link Column} annotation. For example:
  * <pre>
  * public class MyRecord extends PersistentRecord {
- *     @Transform(Transformers.StringArray.class)
+ *     &#064;Transform(Transformers.StringArray.class)
  *     public String[] cities;
  * }
  * </pre>

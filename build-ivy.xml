@@ -121,7 +121,7 @@
         <exclude name="com/samskivert/depot/impl/**"/>
       </packageset>
       <bottom>Copyright &#169; 2006-${year} ${copyright.holder}. All Rights Reserved.</bottom>
-      <classpath refid="classpath"/>
+      <classpath refid="tools.classpath"/>
       <link href="http://java.sun.com/j2se/1.5/docs/api/"/>
     </javadoc>
   </target>

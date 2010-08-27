@@ -26,6 +26,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.Transformer;
 
 /**
@@ -38,7 +39,7 @@ import com.samskivert.depot.Transformer;
  *
  * <pre>
  * public class MyRecord extends PersistentRecord {
- *     @Transform(Transformers.CommaSeparatedString.class)
+ *     &#064;Transform(Transformers.CommaSeparatedString.class)
  *     public String[] cities;
  * }
  * </pre>
@@ -47,7 +48,7 @@ import com.samskivert.depot.Transformer;
  * type:
  *
  * <pre>
- * @Transform(ByteEnumTransformer.class)
+ * &#064;Transform(ByteEnumTransformer.class)
  * public interface ByteEnum { ... }
  * </pre>
  *
