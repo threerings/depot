@@ -7,7 +7,7 @@
   <property name="copyright.holder" value="Michael Bayne"/>
 
   <!-- various directories used when building things -->
-  <property name="src.dir"     value="src/java"/>
+  <property name="src.dir"     value="src/main/java"/>
   <property name="test.dir"     value="src/test/java"/>
   <property name="deploy.dir"  value="dist"/>
   <property name="classes.dir" value="${deploy.dir}/classes"/>
@@ -79,7 +79,8 @@
     </javac>
     <!-- now update the source files -->
     <grecord classpathref="classpath">
-      <fileset dir="src/java" includes="**/*Record.java"/>
+      <fileset dir="${src.dir}" includes="**/*Record.java"/>
+      <fileset dir="${test.dir}" includes="**/*Record.java"/>
     </grecord>
   </target>
 

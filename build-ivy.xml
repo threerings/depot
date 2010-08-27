@@ -1,0 +1,190 @@
+<?xml version="1.0"?>
+<project xmlns:ivy="antlib:org.apache.ivy.ant" name="depot" default="compile" basedir=".">
+  <!-- project metadata -->
+  <property name="lib.name"         value="depot"/>
+  <property name="doc.packages"     value="com.samskivert.depot.*"/>
+  <property name="doc.overview"     value="com/samskivert/depot/overview.html"/>
+  <property name="copyright.holder" value="Michael Bayne"/>
+
+  <!-- various directories used when building things -->
+  <property name="src.dir"     value="src/java"/>
+  <property name="test.dir"    value="src/test/java"/>
+  <property name="deploy.dir"  value="dist"/>
+  <property name="classes.dir" value="${deploy.dir}/classes"/>
+  <property name="tclasses.dir" value="${deploy.dir}/test-classes"/>
+  <property name="javadoc.dir" value="${deploy.dir}/docs"/>
+
+  <!-- downloads ivy if necessary and sets everything up -->
+  <property name="ivy.vers" value="2.1.0-rc2" />
+  <property name="ivy.jar.dir" value="${user.home}/.ant/lib" />
+  <condition property="ivy.exists"><available file="${ivy.jar.dir}/ivy.jar"/></condition>
+  <target name="-download-ivy" unless="ivy.exists">
+    <mkdir dir="${ivy.jar.dir}"/>
+    <get src="http://repo2.maven.org/maven2/org/apache/ivy/ivy/${ivy.vers}/ivy-${ivy.vers}.jar" 
+         dest="${ivy.jar.dir}/ivy.jar" usetimestamp="true"/>
+  </target>
+  <target name="-init-ivy" depends="-download-ivy">
+    <path id="ivy.lib.path"><fileset dir="${ivy.jar.dir}" includes="*.jar"/></path>
+    <taskdef resource="org/apache/ivy/ant/antlib.xml"
+             uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
+    <ivy:cachepath pathid="compile.classpath" conf="runtime" log="download-only"/>
+    <ivy:cachepath pathid="tools.classpath" conf="tools" log="download-only"/>
+    <ivy:cachepath pathid="test.classpath" conf="test" log="download-only"/>
+  </target>
+
+  <!-- prepares the application directories -->
+  <target name="-prepare" depends="-init-ivy">
+    <tstamp><format property="year" pattern="yyyy" /></tstamp>
+    <mkdir dir="${deploy.dir}"/>
+    <mkdir dir="${deploy.dir}/lib"/>
+    <mkdir dir="${classes.dir}"/>
+    <mkdir dir="${tclasses.dir}"/>
+    <mkdir dir="${javadoc.dir}"/>
+    <copy todir="${classes.dir}">
+      <fileset dir="${src.dir}" includes="**/*.tmpl"/>
+    </copy>
+  </target>
+
+  <target name="check-ivy" depends="-init-ivy" description="Computes and prints Ivy classpath.">
+    <property refid="compile.classpath" name="compile.str"/>
+    <echo>Compile: ${compile.str}</echo>
+    <property refid="test.classpath" name="test.str"/>
+    <echo>Test: ${test.str}</echo>
+  </target>
+
+  <target name="clean" description="Cleans out build results.">
+    <delete dir="${classes.dir}"/>
+    <delete dir="${deploy.dir}/docs"/>
+    <delete failonerror="false"><fileset dir="${deploy.dir}" includes="*.jar"/></delete>
+  </target>
+
+  <target name="distclean" description="Completely removes build result directory.">
+    <delete dir="${deploy.dir}"/>
+  </target>
+
+  <target name="compile" depends="-prepare" description="Compiles main code.">
+    <javac srcdir="${src.dir}" destdir="${classes.dir}" includeAntRuntime="false"
+           debug="on" optimize="${build.optimize}" source="1.5" target="1.5" encoding="utf-8">
+      <classpath refid="compile.classpath"/>
+      <exclude name="com/samskivert/depot/tools/**"/>
+      <compilerarg value="-Xlint"/>
+      <compilerarg value="-Xlint:-serial"/>
+    </javac>
+  </target>
+
+  <target name="tools-compile" depends="compile" description="Compiles tool code.">
+    <javac srcdir="${src.dir}" destdir="${classes.dir}" includeAntRuntime="false"
+           debug="on" optimize="${build.optimize}" source="1.5" target="1.5" encoding="utf-8">
+      <classpath refid="tools.classpath"/>
+      <include name="com/samskivert/depot/tools/**"/>
+      <compilerarg value="-Xlint"/>
+      <compilerarg value="-Xlint:-serial"/>
+    </javac>
+  </target>
+
+  <target name="test-compile" depends="compile" description="Compiles test classes.">
+    <javac srcdir="${test.dir}" destdir="${tclasses.dir}" includeAntRuntime="false"
+           debug="on" optimize="${build.optimize}" source="1.5" target="1.5" encoding="utf-8">
+      <classpath>
+        <pathelement location="${classes.dir}"/>
+        <path refid="test.classpath"/>
+      </classpath>
+      <compilerarg value="-Xlint"/>
+      <compilerarg value="-Xlint:-serial"/>
+    </javac>
+  </target>
+
+  <target name="genrecord" depends="-prepare"
+          description="Regenerates persistent record boilerplate.">
+    <taskdef name="grecord" classname="com.samskivert.depot.tools.GenRecordTask">
+      <classpath>
+        <pathelement location="${classes.dir}"/>
+        <path refid="compile.classpath"/>
+      </classpath>
+    </taskdef>
+    <!-- make sure the record class files are all compiled -->
+    <javac srcdir="src/java" destdir="${classes.dir}"
+           debug="on" optimize="${build.optimize}" deprecation="on">
+      <classpath refid="compile.classpath"/>
+      <include name="**/*Record.java"/>
+    </javac>
+    <!-- now update the source files -->
+    <grecord>
+      <classpath>
+        <pathelement location="${classes.dir}"/>
+        <pathelement location="${tclasses.dir}"/>
+      </classpath>
+      <fileset dir="${src.dir}" includes="**/*Record.java"/>
+      <fileset dir="${test.dir}" includes="**/*Record.java"/>
+    </grecord>
+  </target>
+
+  <target name="javadoc" depends="-prepare" description="Builds javadocs.">
+    <javadoc windowtitle="${lib.name} API" doctitle="${lib.name} API"
+             overview="${src.dir}/${doc.overview}" destdir="${javadoc.dir}"
+             additionalparam="-breakiterator"
+             link="http://samskivert.com/code/samskivert/docs/">
+      <packageset dir="${src.dir}">
+        <exclude name="com/samskivert/depot/impl/**"/>
+        <exclude name="com/samskivert/depot/tests/**"/>
+        <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="build.ehcache"/>
+        <exclude name="com/samskivert/depot/tools/**" unless="build.tools"/>
+      </packageset>
+      <bottom>Copyright &#169; 2006-${year} ${copyright.holder}. All Rights Reserved.</bottom>
+      <classpath refid="classpath"/>
+      <link href="http://java.sun.com/j2se/1.5/docs/api/"/>
+    </javadoc>
+  </target>
+
+  <target name="all" depends="clean,compile,javadoc,dist"
+          description="Cleans and rebuilds everything including documentation."/>
+
+  <target name="tests" depends="test-compile"
+          description="Runs the unit tests. Use -Dtest=Foo to run FooTest.">
+    <!-- allows passing -Dtest=NamePrefix to restrict to subset of tests -->
+    <property name="test" value=""/>
+    <taskdef name="unit" classpathref="test.classpath"
+      classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask"/>
+    <unit printsummary="off" haltonfailure="yes" fork="${junit.fork}">
+      <classpath>
+        <pathelement location="${classes.dir}"/>
+        <pathelement location="${tclasses.dir}"/>
+        <pathelement location="${basedir}"/> <!-- for rsrc/ -->
+        <path refid="test.classpath"/>
+      </classpath>
+      <sysproperty key="com.samskivert.depot.debug" value="${debug}"/>
+      <formatter type="brief" usefile="false"/>
+      <batchtest>
+        <fileset dir="${test.dir}">
+          <include name="**/${test}*Test.java"/>
+        </fileset>
+      </batchtest>
+    </unit>
+  </target>
+
+  <target name="dist" depends="tools-compile" description="Builds our jar file.">
+    <jar destfile="${deploy.dir}/${lib.name}.jar" basedir="${classes.dir}">
+      <exclude name="**/tests/**"/>
+    </jar>
+  </target>
+
+  <target name="snapshot" depends="dist"
+          description="Generates a snapshot zip containing the jar file and its dependencies.">
+    <tstamp><format property="date" pattern="yyyyMMdd" /></tstamp>
+    <mkdir dir="${deploy.dir}/depot-${date}"/>
+    <copy todir="${deploy.dir}/depot-${date}">
+      <fileset dir="${deploy.dir}/lib" includes="*.jar"/>
+      <fileset dir="${deploy.dir}" includes="${lib.name}.jar"/>
+    </copy>
+    <copy file="lib/SNAPSHOT_README" tofile="${deploy.dir}/depot-${date}/README"/>
+    <zip destfile="${deploy.dir}/depot-${date}.zip" basedir="${deploy.dir}">
+      <include name="depot-${date}/**"/>
+    </zip>
+  </target>
+
+  <target name="publish" depends="dist" description="Publishes jar to local repository.">
+    <ivy:publish resolver="local" pubrevision="1.0">
+      <artifacts pattern="${deploy.dir}/[artifact].[ext]" />
+    </ivy:publish>
+  </target>
+</project>
