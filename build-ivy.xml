@@ -119,9 +119,6 @@
              link="http://samskivert.com/code/samskivert/docs/">
       <packageset dir="${src.dir}">
         <exclude name="com/samskivert/depot/impl/**"/>
-        <exclude name="com/samskivert/depot/tests/**"/>
-        <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="build.ehcache"/>
-        <exclude name="com/samskivert/depot/tools/**" unless="build.tools"/>
       </packageset>
       <bottom>Copyright &#169; 2006-${year} ${copyright.holder}. All Rights Reserved.</bottom>
       <classpath refid="classpath"/>
