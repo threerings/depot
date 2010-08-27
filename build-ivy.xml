@@ -158,24 +158,37 @@
     </jar>
   </target>
 
-  <target name="snapshot" depends="dist"
-          description="Generates a snapshot zip containing the jar file and its dependencies.">
-    <tstamp><format property="date" pattern="yyyyMMdd" /></tstamp>
-    <mkdir dir="${deploy.dir}/depot-${date}"/>
-    <copy todir="${deploy.dir}/depot-${date}">
-      <fileset dir="${deploy.dir}/lib" includes="*.jar"/>
-      <fileset dir="${deploy.dir}" includes="${lib.name}.jar"/>
-    </copy>
-    <copy file="lib/SNAPSHOT_README" tofile="${deploy.dir}/depot-${date}/README"/>
-    <zip destfile="${deploy.dir}/depot-${date}.zip" basedir="${deploy.dir}">
-      <include name="depot-${date}/**"/>
-    </zip>
-  </target>
-
   <target name="publish" depends="dist" description="Publishes jar to local repository.">
     <property name="release" value="1.0"/>
     <ivy:publish resolver="local" pubrevision="${release}">
       <artifacts pattern="${deploy.dir}/[artifact].[ext]" />
     </ivy:publish>
+  </target>
+
+  <target name="publish-remote" depends="publish" description="Publishes a public release.">
+    <exec executable="svn">
+      <arg value="checkout"/>
+      <arg value="-N"/>
+      <arg value="https://${lib.name}.googlecode.com/svn/releases/com.samskivert/${lib.name}"/>
+      <arg value="temp"/>
+    </exec>
+    <mkdir dir="temp/${release}"/>
+    <copy todir="temp/${release}">
+      <fileset dir="${user.home}/.ivy2/local/com.samskivert/${lib.name}/${release}/ivys"
+               includes="ivy.xml"/>
+      <fileset dir="${user.home}/.ivy2/local/com.samskivert/${lib.name}/${release}/jars"
+               includes="${lib.name}.jar"/>
+    </copy>
+    <exec executable="svn">
+      <arg value="add"/>
+      <arg value="temp/${release}"/>
+    </exec>
+    <exec executable="svn">
+      <arg value="commit"/>
+      <arg value="-m"/>
+      <arg value="Published release ${release}."/>
+      <arg value="temp"/>
+    </exec>
+    <delete dir="temp"/>
   </target>
 </project>
