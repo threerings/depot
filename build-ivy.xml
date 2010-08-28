@@ -6,6 +6,9 @@
   <property name="doc.overview"     value="com/samskivert/depot/overview.html"/>
   <property name="copyright.holder" value="Michael Bayne"/>
 
+  <!-- the next release version -->
+  <property name="revision" value="1.0"/>
+
   <!-- various directories used when building things -->
   <property name="src.dir"     value="src/main/java"/>
   <property name="test.dir"    value="src/test/java"/>
@@ -27,8 +30,7 @@
     <path id="ivy.lib.path"><fileset dir="${ivy.jar.dir}" includes="*.jar"/></path>
     <taskdef resource="org/apache/ivy/ant/antlib.xml"
              uri="antlib:org.apache.ivy.ant" classpathref="ivy.lib.path"/>
-    <ivy:cachepath pathid="compile.classpath" conf="runtime" log="download-only"/>
-    <ivy:cachepath pathid="tools.classpath" conf="tools" log="download-only"/>
+    <ivy:cachepath pathid="compile.classpath" conf="compile" log="download-only"/>
     <ivy:cachepath pathid="test.classpath" conf="test" log="download-only"/>
   </target>
 
@@ -36,7 +38,9 @@
   <target name="-prepare" depends="-init-ivy">
     <tstamp><format property="year" pattern="yyyy" /></tstamp>
     <mkdir dir="${deploy.dir}"/>
-    <mkdir dir="${deploy.dir}/lib"/>
+    <mkdir dir="${deploy.dir}/jar"/>
+    <mkdir dir="${deploy.dir}/source"/>
+    <mkdir dir="${deploy.dir}/javadoc"/>
     <mkdir dir="${classes.dir}"/>
     <mkdir dir="${tclasses.dir}"/>
     <mkdir dir="${javadoc.dir}"/>
@@ -46,10 +50,12 @@
   </target>
 
   <target name="check-ivy" depends="-init-ivy" description="Computes and prints Ivy classpath.">
-    <property refid="compile.classpath" name="compile.str"/>
-    <echo>Compile: ${compile.str}</echo>
-    <property refid="test.classpath" name="test.str"/>
-    <echo>Test: ${test.str}</echo>
+    <pathconvert pathsep="${line.separator}  " property="compile.str" refid="compile.classpath"/>
+    <echo>Compile classpath:</echo>
+    <echo>  ${compile.str}</echo>
+    <echo>Test classpath:</echo>
+    <pathconvert pathsep="${line.separator}  " property="test.str" refid="test.classpath"/>
+    <echo>  ${test.str}</echo>
   </target>
 
   <target name="clean" description="Cleans out build results.">
@@ -75,7 +81,7 @@
   <target name="tools-compile" depends="compile" description="Compiles tool code.">
     <javac srcdir="${src.dir}" destdir="${classes.dir}" includeAntRuntime="false"
            debug="on" optimize="${build.optimize}" source="1.5" target="1.5" encoding="utf-8">
-      <classpath refid="tools.classpath"/>
+      <classpath refid="compile.classpath"/>
       <include name="com/samskivert/depot/tools/**"/>
       <compilerarg value="-Xlint"/>
       <compilerarg value="-Xlint:-serial"/>
@@ -121,9 +127,10 @@
         <exclude name="com/samskivert/depot/impl/**"/>
       </packageset>
       <bottom>Copyright &#169; 2006-${year} ${copyright.holder}. All Rights Reserved.</bottom>
-      <classpath refid="tools.classpath"/>
+      <classpath refid="compile.classpath"/>
       <link href="http://java.sun.com/j2se/1.5/docs/api/"/>
     </javadoc>
+    <jar destfile="${deploy.dir}/javadoc/${lib.name}.jar" basedir="${javadoc.dir}"/>
   </target>
 
   <target name="all" depends="clean,compile,javadoc,dist"
@@ -153,15 +160,13 @@
   </target>
 
   <target name="dist" depends="tools-compile" description="Builds our jar file.">
-    <jar destfile="${deploy.dir}/${lib.name}.jar" basedir="${classes.dir}">
-      <exclude name="**/tests/**"/>
-    </jar>
+    <jar destfile="${deploy.dir}/jar/${lib.name}.jar" basedir="${classes.dir}"/>
+    <jar destfile="${deploy.dir}/source/${lib.name}.jar" basedir="${src.dir}"/>
   </target>
 
-  <target name="publish" depends="dist" description="Publishes jar to local repository.">
-    <property name="release" value="1.0"/>
-    <ivy:publish resolver="local" pubrevision="${release}">
-      <artifacts pattern="${deploy.dir}/[artifact].[ext]" />
+  <target name="publish" depends="dist,javadoc" description="Publishes jar to local repository.">
+    <ivy:publish resolver="local" pubrevision="${revision}" forcedeliver="true">
+      <artifacts pattern="${deploy.dir}/[type]/[artifact].[ext]"/>
     </ivy:publish>
   </target>
 
@@ -172,21 +177,24 @@
       <arg value="https://${lib.name}.googlecode.com/svn/releases/com.samskivert/${lib.name}"/>
       <arg value="temp"/>
     </exec>
-    <mkdir dir="temp/${release}"/>
-    <copy todir="temp/${release}">
-      <fileset dir="${user.home}/.ivy2/local/com.samskivert/${lib.name}/${release}/ivys"
+    <mkdir dir="temp/${revision}"/>
+    <copy todir="temp/${revision}">
+      <fileset dir="${user.home}/.ivy2/local/com.samskivert/${lib.name}/${revision}/ivys"
                includes="ivy.xml"/>
-      <fileset dir="${user.home}/.ivy2/local/com.samskivert/${lib.name}/${release}/jars"
-               includes="${lib.name}.jar"/>
+      <fileset dir="${user.home}/.ivy2/local/com.samskivert/${lib.name}/${revision}">
+        <include name="jars/${lib.name}.jar"/>
+        <include name="sources/${lib.name}.jar"/>
+        <include name="javadocs/${lib.name}.jar"/>
+      </fileset>
     </copy>
     <exec executable="svn">
       <arg value="add"/>
-      <arg value="temp/${release}"/>
+      <arg value="temp/${revision}"/>
     </exec>
     <exec executable="svn">
       <arg value="commit"/>
       <arg value="-m"/>
-      <arg value="Published release ${release}."/>
+      <arg value="Published release ${revision}."/>
       <arg value="temp"/>
     </exec>
     <delete dir="temp"/>

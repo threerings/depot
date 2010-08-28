@@ -7,8 +7,8 @@
       <resolver ref="local"/>
       <resolver ref="public"/>
       <url name="samskivert">
-        <ivy pattern="http://samskivert.googlecode.com/svn/releases/[organization]/[module]/[revision]/[artifact].xml"/>
-        <artifact pattern="http://samskivert.googlecode.com/svn/releases/[organization]/[module]/[revision]/[artifact].[ext]"/>
+        <ivy pattern="http://samskivert.googlecode.com/svn/releases/[organization]/[module]/[revision]/[type]s/[artifact].xml"/>
+        <artifact pattern="http://samskivert.googlecode.com/svn/releases/[organization]/[module]/[revision]/[type]s/[artifact].[ext]"/>
       </url>
     </chain>
   </resolvers>

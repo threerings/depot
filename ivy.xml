@@ -2,20 +2,23 @@
   <info organisation="com.samskivert" module="depot" revision="1.0">
     <description homepage="http://code.google.com/p/depot"/>
   </info>
-  <configurations defaultconfmapping="test->master(*);compile->master(*);runtime->master(*);tools->master(*)">
-    <conf name="master" visibility="public"/>
-    <conf name="compile" visibility="public"/>
-    <conf name="runtime" visibility="public" extends="compile"/>
-    <conf name="tools" visibility="public" extends="runtime"/>
-    <conf name="test" visibility="private" extends="runtime"/>
+  <configurations>
     <conf name="default" visibility="public" extends="runtime,master"/>
+    <conf name="master" visibility="public"/>
+    <conf name="provided" visibility="public"/>
+    <conf name="runtime" visibility="public"/>
+    <conf name="sources" visibility="public"/>
+    <conf name="javadoc" visibility="public"/>
+    <conf name="optional" visibility="public"/>
+    <conf name="compile" visibility="private" extends="runtime,provided,optional"/>
+    <conf name="test" visibility="private" extends="compile"/>
   </configurations>
   <dependencies>
-    <dependency org="com.samskivert" name="samskivert" rev="1.0" conf="runtime"/>
-    <dependency org="com.google.guava" name="guava" rev="r05" conf="runtime"/>
-    <dependency org="net.sf.ehcache" name="ehcache" rev="1.6.0" conf="runtime"/>
-    <dependency org="org.hsqldb" name="hsqldb" rev="2.0.0" conf="test"/>
-    <dependency org="junit" name="junit" rev="4.8.1" conf="test"/>
-    <dependency org="org.apache.ant" name="ant" rev="1.7.1" conf="tools"/>
+    <dependency org="com.samskivert" name="samskivert" rev="1.0" conf="runtime->default"/>
+    <dependency org="com.google.guava" name="guava" rev="r05" conf="runtime->default"/>
+    <dependency org="org.hsqldb" name="hsqldb" rev="2.0.0" conf="test->master(*)"/>
+    <dependency org="junit" name="junit" rev="4.8.1" conf="test->master(*)"/>
+    <dependency org="net.sf.ehcache" name="ehcache" rev="1.6.0" conf="optional->master(*)"/>
+    <dependency org="org.apache.ant" name="ant" rev="1.7.1" conf="provided->master(*)"/>
   </dependencies>
 </ivy-module>
