@@ -30,6 +30,7 @@ import java.util.Iterator;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
 import com.samskivert.depot.util.Sequence;
