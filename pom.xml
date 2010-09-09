@@ -112,13 +112,6 @@
             <exclude>com/samskivert/depot/*Record.java</exclude>
             <exclude>com/samskivert/depot/*Repository.java</exclude>
           </excludes>
-          <additionalClasspathElements>
-            <additionalClasspathElement>lib/test/test.jar</additionalClasspathElement>
-            <additionalClasspathElement>lib/test/test-al.jar</additionalClasspathElement>
-            <additionalClasspathElement>lib/test/test-ar.jar</additionalClasspathElement>
-            <additionalClasspathElement>lib/test/test-br.jar</additionalClasspathElement>
-            <additionalClasspathElement>lib/test/test-c.jar</additionalClasspathElement>
-          </additionalClasspathElements>
         </configuration>
       </plugin>
       <plugin>
