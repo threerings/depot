@@ -45,7 +45,7 @@ import static com.samskivert.depot.Log.log;
  * An implementation of {@link CacheAdapter} for ehcache where each
  * {@link CacheAdapter.CacheCategory} results in one {@link Ehcache}. All (cacheId, key)
  * combinations within one category is stuffed into the same {@link Ehcache}, and all elements are
- * cached under {@link EHCacheKey}, which basically wraps just such a tuple.
+ * cached under EHCacheKey, which basically wraps just such a tuple.
  *
  * Thus there are currently only four Ehcaches in play, called 'depotRecord', 'depotLongKeyset',
  * 'depotShortKeyset' and 'depotResult'. These must be defined in your ehcache.xml configuration.
