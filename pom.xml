@@ -45,7 +45,7 @@
     <dependency>
       <groupId>com.samskivert</groupId>
       <artifactId>samskivert</artifactId>
-      <version>1.0-SNAPSHOT</version>
+      <version>1.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -120,9 +120,13 @@
         <version>RELEASE</version>
         <configuration>
           <quiet>true</quiet>
+          <show>public</show>
+          <excludePackageNames>com.samskivert.depot.impl</excludePackageNames>
           <links>
+            <link>http://samskivert.googlecode.com/svn/apidocs/</link>
             <link>http://guava-libraries.googlecode.com/svn/trunk/javadoc/</link>
             <link>http://ehcache.org/apidocs/</link>
+            <link>http://evgeny-goldin.org/ant/api/</link>
           </links>
         </configuration>
       </plugin>
@@ -142,6 +146,21 @@
         <configuration>
           <keyname>mdb@samskivert.com</keyname>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>RELEASE</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-install-plugin</artifactId>
+        <version>RELEASE</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>RELEASE</version>
       </plugin>
     </plugins>
   </build>
