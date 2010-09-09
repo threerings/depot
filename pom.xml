@@ -45,7 +45,7 @@
     <dependency>
       <groupId>com.samskivert</groupId>
       <artifactId>samskivert</artifactId>
-      <version>1.0</version>
+      <version>1.0-SNAPSHOT</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -85,6 +85,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>RELEASE</version>
         <configuration>
           <source>1.5</source>
           <target>1.5</target>
@@ -96,6 +97,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
+        <version>RELEASE</version>
         <configuration>
           <encoding>UTF-8</encoding>
         </configuration>
@@ -103,15 +105,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>RELEASE</version>
         <configuration>
           <excludes>
             <exclude>com/samskivert/depot/TestCacheAdapter*.java</exclude>
             <exclude>com/samskivert/depot/*Record.java</exclude>
             <exclude>com/samskivert/depot/*Repository.java</exclude>
           </excludes>
-          <systemProperties>
-            <property><name>test_dir</name><value>target/test-classes</value></property>
-          </systemProperties>
           <additionalClasspathElements>
             <additionalClasspathElement>lib/test/test.jar</additionalClasspathElement>
             <additionalClasspathElement>lib/test/test-al.jar</additionalClasspathElement>
@@ -124,16 +124,19 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
+        <version>RELEASE</version>
         <configuration>
           <quiet>true</quiet>
           <links>
-            <link>http://download.oracle.com/javase/6/docs/api/</link>
+            <link>http://guava-libraries.googlecode.com/svn/trunk/javadoc/</link>
+            <link>http://ehcache.org/apidocs/</link>
           </links>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-gpg-plugin</artifactId>
+        <version>RELEASE</version>
         <executions>
           <execution>
             <id>sign-artifacts</id>
