@@ -1,19 +1,14 @@
 <?xml version="1.0"?>
 <project name="depot" default="compile" basedir=".">
   <!-- project metadata -->
-  <property name="lib.name"         value="depot"/>
-  <property name="doc.packages"     value="com.samskivert.depot.*"/>
-  <property name="doc.overview"     value="com/samskivert/depot/overview.html"/>
-  <property name="copyright.holder" value="Michael Bayne"/>
-
-  <!-- various directories used when building things -->
-  <property name="src.dir"     value="src/main/java"/>
+  <property name="lib.name"     value="depot"/>
+  <property name="src.dir"      value="src/main/java"/>
   <property name="test.dir"     value="src/test/java"/>
-  <property name="deploy.dir"  value="dist"/>
-  <property name="classes.dir" value="${deploy.dir}/classes"/>
+  <property name="deploy.dir"   value="dist"/>
+  <property name="classes.dir"  value="${deploy.dir}/classes"/>
   <property name="tclasses.dir" value="${deploy.dir}/test-classes"/>
-  <property name="javadoc.dir" value="${deploy.dir}/docs"/>
-  <property name="libs.dir"    value="lib"/>
+  <property name="javadoc.dir"  value="${deploy.dir}/docs"/>
+  <property name="libs.dir"     value="lib"/>
 
   <!-- declare our classpath -->
   <path id="classpath">
@@ -127,7 +122,7 @@
   <target name="javadoc" depends="prepare,compute-builds"
           description="Generates javadoc documentation.">
     <javadoc windowtitle="${lib.name} API" doctitle="${lib.name} API"
-             overview="${src.dir}/${doc.overview}" destdir="${javadoc.dir}"
+             overview="src/main/javadoc/overview.html" destdir="${javadoc.dir}"
              additionalparam="-breakiterator"
              link="http://samskivert.com/code/samskivert/docs/">
       <packageset dir="${src.dir}">
@@ -136,7 +131,7 @@
         <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="build.ehcache"/>
         <exclude name="com/samskivert/depot/tools/**" unless="build.tools"/>
       </packageset>
-      <bottom>Copyright &#169; 2006-${year} ${copyright.holder}. All Rights Reserved.</bottom>
+      <bottom>Copyright &#169; 2006-${year} Michael Bayne, et. al. All Rights Reserved.</bottom>
       <classpath refid="classpath"/>
       <link href="http://java.sun.com/j2se/1.5/docs/api/"/>
     </javadoc>
