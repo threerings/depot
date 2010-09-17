@@ -287,7 +287,7 @@ public class MySQLBuilder
             return "DATE";
         }
         public String getTimeType (int length) {
-            return "DATETIME";
+            return "TIME";
         }
         public String getTimestampType (int length) {
             return "DATETIME";
