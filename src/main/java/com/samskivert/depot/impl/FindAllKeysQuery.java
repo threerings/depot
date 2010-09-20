@@ -20,13 +20,14 @@
 
 package com.samskivert.depot.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import com.google.common.collect.Lists;
 
 import com.samskivert.jdbc.DatabaseLiaison;
 import com.samskivert.depot.DatabaseException;
@@ -71,7 +72,7 @@ public class FindAllKeysQuery<T extends PersistentRecord> extends Query<List<Key
     public List<Key<T>> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
         throws SQLException
     {
-        List<Key<T>> keys = new ArrayList<Key<T>>();
+        List<Key<T>> keys = Lists.newArrayList();
         PreparedStatement stmt = _builder.prepare(conn);
         ResultSet rs = stmt.executeQuery();
         while (rs.next()) {

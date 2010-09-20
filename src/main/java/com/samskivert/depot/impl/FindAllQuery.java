@@ -25,7 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -228,7 +228,7 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
         public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
-            List<T> result = new ArrayList<T>();
+            List<T> result = Lists.newArrayList();
             SQLBuilder builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, _select));
             builder.newQuery(_select);
             ResultSet rs = builder.prepare(conn).executeQuery();
@@ -288,7 +288,9 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
 
     protected List<T> resolve (Iterable<Key<T>> allKeys, Map<Key<T>, T> entities)
     {
-        List<T> result = new ArrayList<T>();
+        List<T> result = (allKeys instanceof Collection<?>)
+            ? Lists.<T>newArrayListWithCapacity(((Collection<?>)allKeys).size())
+            : Lists.<T>newArrayList();
         for (Key<T> key : allKeys) {
             T value = entities.get(key);
             if (value != null) {
@@ -310,12 +312,11 @@ public abstract class FindAllQuery<T extends PersistentRecord> extends Query<Lis
         // if we're fetching a huge number of records, we have to do it in multiple queries
         if (fetchKeys.size() > In.MAX_KEYS) {
             int keyCount = fetchKeys.size();
+            Iterator<Key<T>> iter = fetchKeys.iterator();
             do {
                 Set<Key<T>> keys = Sets.newHashSet();
-                Iterator<Key<T>> iter = fetchKeys.iterator();
-                for (int ii = 0; ii < Math.min(keyCount, In.MAX_KEYS); ii++) {
+                for (int ii = 0, nn = Math.min(keyCount, In.MAX_KEYS); ii < nn; ii++) {
                     keys.add(iter.next());
-                    iter.remove();
                 }
                 keyCount -= keys.size();
                 loadRecords(ctx, conn, keys, entities, origStmt);
