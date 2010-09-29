@@ -22,6 +22,7 @@ package com.samskivert.depot.impl;
 
 import java.sql.Array;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -75,6 +76,8 @@ public class PostgreSQL4Builder extends PostgreSQLBuilder
                         type = "smallint"; // tinyint is in the spec, but PG doesn't recognize?
                     } else if (testValue instanceof Timestamp) {
                         type = "timestamp";
+                    } else if (testValue instanceof Date) {
+                        type = "date";
                     } else {
                         throw new DatabaseException(
                             "Don't know how to make Postgres array for " + testValue.getClass());
