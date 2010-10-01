@@ -392,8 +392,9 @@ public abstract class FieldMarshaller<T>
     protected static Class<?> getTransformerType (Transformer<?, ?> xformer, String which)
     {
         Class<?> ttype = null;
-        for (Method method : xformer.getClass().getDeclaredMethods()) {
-            if (method.getName().equals(which + "Persistent")) {
+        String methodName = which + "Persistent";
+        for (Method method : xformer.getClass().getMethods()) {
+            if (method.getName().equals(methodName)) {
                 if (ttype == null || ttype.isAssignableFrom(method.getReturnType())) {
                     ttype = method.getReturnType();
                 }
