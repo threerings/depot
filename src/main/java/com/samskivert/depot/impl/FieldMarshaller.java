@@ -97,9 +97,10 @@ public abstract class FieldMarshaller<T>
         }
 
         try {
-            @SuppressWarnings("unchecked") Transformer<?,?> xformer = xform.value().newInstance();
+            @SuppressWarnings("unchecked") Transformer<?,?> xformer =
+                xform.value().newInstance();
             @SuppressWarnings("unchecked") TransformingMarshaller<?,?> xmarsh =
-                new TransformingMarshaller(xformer, field);
+                new TransformingMarshaller(xformer, field, xform);
             xmarsh.create(field);
             return xmarsh;
         } catch (InstantiationException e) {
@@ -690,7 +691,8 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class TransformingMarshaller<F,T> extends FieldMarshaller<T> {
-        public TransformingMarshaller (Transformer<F, T> xformer, Field field) {
+        public TransformingMarshaller (
+                Transformer<F,T> xformer, Field field, Transform annotation) {
             Class<?> pojoType = getTransformerType(xformer, "from");
             if (!pojoType.isAssignableFrom(field.getType())) {
                 throw new IllegalArgumentException(
@@ -700,6 +702,7 @@ public abstract class FieldMarshaller<T>
             }
             @SuppressWarnings("unchecked") FieldMarshaller<T> delegate =
                 (FieldMarshaller<T>)createMarshaller(getTransformerType(xformer, "to"));
+            xformer.init(field.getGenericType(), annotation);
             _delegate = delegate;
             _xformer = xformer;
         }
@@ -722,7 +725,7 @@ public abstract class FieldMarshaller<T>
         }
         @Override public void writeToObject (Object po, T value)
             throws IllegalArgumentException, IllegalAccessException {
-            _field.set(po, _xformer.fromPersistent(_field.getGenericType(), value));
+            _field.set(po, _xformer.fromPersistent(value));
         }
         @Override public void writeToStatement (PreparedStatement ps, int column, T value)
             throws SQLException {

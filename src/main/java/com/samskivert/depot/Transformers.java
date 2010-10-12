@@ -26,6 +26,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -35,9 +36,14 @@ import com.samskivert.util.ByteEnum;
 import com.samskivert.util.ByteEnumUtil;
 
 import com.samskivert.depot.annotation.Column;
+import com.samskivert.depot.annotation.Transform;
 
 import com.google.common.base.Preconditions;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -55,6 +61,35 @@ import com.google.common.collect.Sets;
 public class Transformers
 {
     /**
+     * Transform a Set of ByteEnums into an Integer.
+     * Does not presently support the immutable or interning hints.
+     */
+    public static class ByteEnumSet<E extends Enum<E> & ByteEnum>
+        extends Transformer<Set<E>, Integer>
+    {
+        @Override @SuppressWarnings("unchecked")
+        public void init (Type fieldType, Transform annotation)
+        {
+            _eclass = (Class<E>) ((ParameterizedType) fieldType).getActualTypeArguments()[0];
+        }
+
+        @Override
+        public Integer toPersistent (Set<E> value)
+        {
+            return (value == null) ? null : ByteEnumUtil.setToInt(value);
+        }
+
+        @Override
+        public Set<E> fromPersistent (Integer encoded)
+        {
+            return (encoded == null) ? null : ByteEnumUtil.intToSet(_eclass, encoded);
+        }
+
+        /** The enum class token. */
+        protected Class<E> _eclass;
+    }
+
+    /**
      * Combines the contents of a String[] column into a single String, terminating each String
      * element with a newline. A backslash ('\') in Strings will be prefixed by another backslash,
      * newlines will be encoded as "\n", and null elements will be encoded as "\0" (but not
@@ -62,14 +97,24 @@ public class Transformers
      */
     public static class StringArray extends StringBase<String[]>
     {
-        public String toPersistent (String[] value)
+        protected Iterable<String> asIterable (String[] value)
         {
-            return (value == null) ? null : encode(Arrays.asList(value));
+            return Arrays.asList(value);
         }
 
-        public String[] fromPersistent (Type ftype, String encoded)
+        protected Builder<String[]> createBuilder (String encoded)
         {
-            return (encoded == null) ? null : Iterables.toArray(decode(encoded), String.class);
+            // jog through and count the elements so that we can populate the array directly
+            final String[] result = new String[countElements(encoded)];
+            return new Builder<String[]>() {
+                public void add (String s) {
+                    result[idx++] = s;
+                }
+                public String[] build () {
+                    return result;
+                }
+                protected int idx = 0;
+            };
         }
     }
 
@@ -81,61 +126,77 @@ public class Transformers
      */
     public static class StringIterable extends StringBase<Iterable<String>>
     {
-        public String toPersistent (Iterable<String> value)
+        protected Iterable<String> asIterable (Iterable<String> value)
         {
-            return (value == null) ? null : encode(value);
-        }
-
-        public Iterable<String> fromPersistent (Type ftype, String encoded)
-        {
-            if (encoded == null) {
-                return null;
-            }
-
-            ArrayList<String> value = decode(encoded);
-            Type fclass = (ftype instanceof ParameterizedType) ?
-                ((ParameterizedType)ftype).getRawType() : ftype;
-            if (fclass == ArrayList.class || fclass == List.class ||
-                fclass == Collection.class || fclass == Iterable.class) {
-                return value;
-            }
-            if (fclass == LinkedList.class) {
-                return Lists.newLinkedList(value);
-            }
-            if (fclass == HashSet.class || fclass == Set.class) {
-                return Sets.newHashSet(value);
-            }
-            // else: reflection? See if it's a collection, call the 0-arg constructor, add all
-            // and return? Something?
             return value;
         }
-    }
 
-    public static class ByteEnumSet<E extends Enum<E> & ByteEnum>
-        implements Transformer<Set<E>, Integer>
-    {
-        public Integer toPersistent (Set<E> value)
+        protected Builder<Iterable<String>> createBuilder (String encoded)
         {
-            return (value == null) ? null : ByteEnumUtil.setToInt(value);
+            Collection<String> adder;
+            Collection<String> retval = null;
+            Type clazz = (_ftype instanceof ParameterizedType) ?
+                ((ParameterizedType)_ftype).getRawType() : _ftype;
+            // TODO: fill out the collection types
+            if (clazz == HashSet.class || clazz == Set.class) {
+                Set<String> set = Sets.newHashSet();
+                adder = set;
+                if (_immutable && (clazz == Set.class)) {
+                    retval = Collections.unmodifiableSet(set);
+                }
+
+            } else if (clazz == LinkedList.class) {
+                adder = Lists.newLinkedList();
+
+            } else {
+                List<String> list = Lists.newArrayList();
+                adder = list;
+                if (_immutable &&
+                        ((clazz == List.class) ||
+                         (clazz == Iterable.class) ||
+                         (clazz == Collection.class))) {
+                    retval = Collections.unmodifiableList(list);
+                }
+            }
+            return createBuilder(adder, (retval == null) ? adder : retval);
         }
 
-        public Set<E> fromPersistent (Type ftype, Integer encoded)
+        protected Builder<Iterable<String>> createBuilder (
+            final Collection<String> adder, final Collection<String> retval)
         {
-            if (encoded == null) {
+            Preconditions.checkNotNull(adder);
+            return new Builder<Iterable<String>>() {
+                public void add (String s) {
+                    adder.add(s);
+                }
+                public Iterable<String> build () {
+                    return (_immutable && _intern && (adder != retval))
+                        ? INTERNER.intern(retval)
+                        : retval;
+                }
+            };
+        }
+    }
+
+    protected abstract static class StringBase<F> extends Transformer<F, String>
+    {
+        @Override
+        public void init (Type fieldType, Transform annotation)
+        {
+            _ftype = fieldType;
+            _immutable = annotation.immutable();
+            _intern = annotation.intern();
+        }
+
+        @Override
+        public String toPersistent (F value)
+        {
+            if (value == null) {
                 return null;
             }
-            @SuppressWarnings("unchecked")
-            Class<E> eclass = (Class<E>) ((ParameterizedType) ftype).getActualTypeArguments()[0];
-            return ByteEnumUtil.intToSet(eclass, encoded);
-        }
-    }
 
-    protected abstract static class StringBase<F> implements Transformer<F, String>
-    {
-        protected static String encode (Iterable<String> value)
-        {
             StringBuilder buf = new StringBuilder();
-            for (String s : value) {
+            for (String s : asIterable(value)) {
                 if (s == null) {
                     buf.append("\\\n"); // encode nulls as slash followed by the terminator
                 } else {
@@ -147,15 +208,21 @@ public class Transformers
             return buf.toString();
         }
 
-        protected static ArrayList<String> decode (String encoded)
+        @Override
+        public F fromPersistent (String encoded)
         {
-            ArrayList<String> value = Lists.newArrayList();
+            if (encoded == null) {
+                return null;
+            }
+
+            Builder<F> builder = createBuilder(encoded);
             StringBuilder buf = new StringBuilder(encoded.length());
             for (int ii = 0, nn = encoded.length(); ii < nn; ii++) {
                 char c = encoded.charAt(ii);
                 switch (c) {
                 case '\n':
-                    value.add(buf.toString()); // TODO: intern?
+                    String s = buf.toString();
+                    builder.add(_intern ? s.intern() : s);
                     buf.setLength(0);
                     break;
 
@@ -165,7 +232,7 @@ public class Transformers
                     switch (slashed) {
                     case '\n': // turn back into a null element
                         Preconditions.checkArgument(buf.length() == 0, "Invalid encoded string");
-                        value.add(null);
+                        builder.add(null);
                         break;
                     case 'n': // turn \n back into a newline
                         buf.append('\n');
@@ -181,10 +248,41 @@ public class Transformers
                     break;
                 }
             }
-
             // make sure the last element was terminated
             Preconditions.checkArgument(buf.length() == 0, "Invalid encoded string");
-            return value;
+            return builder.build();
         }
+
+        protected abstract Iterable<String> asIterable (F value);
+
+        protected abstract Builder<F> createBuilder (String encoded);
+
+        /**
+         * Utility tount the number of elements in the encoded non-null string.
+         */
+        protected static int countElements (String encoded)
+        {
+            int count = 0;
+            for (int pos = 0; 0 != (pos = 1 + encoded.indexOf('\n', pos)); count++) {}
+            return count;
+        }
+
+        protected interface Builder<F>
+        {
+            void add (String s);
+
+            F build ();
+        }
+
+        protected Type _ftype;
+
+        /** Immutable hint. */
+        protected boolean _immutable;
+
+        /** Interning hint.*/
+        protected boolean _intern;
+
+        /** The interner we use for <em>immutable</em> values. */
+        protected static final Interner<Iterable<String>> INTERNER = Interners.newWeakInterner();
     }
 }

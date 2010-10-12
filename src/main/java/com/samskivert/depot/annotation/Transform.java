@@ -39,7 +39,7 @@ import com.samskivert.depot.Transformer;
  *
  * <pre>
  * public class MyRecord extends PersistentRecord {
- *     &#064;Transform(Transformers.CommaSeparatedString.class)
+ *     &#064;Transform(Transformers.StringArray.class)
  *     public String[] cities;
  * }
  * </pre>
@@ -67,4 +67,17 @@ public @interface Transform
      * Specifies a transformer to be used when persisting the target of this annotation.
      */
     Class<? extends Transformer> value ();
+
+    /**
+     * Hint to the transformer whether it should return an immutable result.
+     * The transformer is free to ignore this hint.
+     */
+    boolean immutable () default false;
+
+    /**
+     * Hint to the transformer whether it should return an interned result, which should only
+     * be honored if the result is also immutable.
+     * The transformer is free to ignore this hint.
+     */
+    boolean intern () default false;
 }
