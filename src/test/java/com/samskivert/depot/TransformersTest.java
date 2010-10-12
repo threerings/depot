@@ -40,7 +40,7 @@ public class TransformersTest
         String[] data = { "something", "", null, "\nprenewline", "postnewline\n", "in\nnewline",
             "a slash \\", "\\ two slashes \\", "\n\n\n" };
         Transformers.StringArray xform = new Transformers.StringArray();
-        assertArrayEquals(data, xform.fromPersistent(null, xform.toPersistent(data)));
+        assertArrayEquals(data, xform.fromPersistent(xform.toPersistent(data)));
     }
 
     @Test public void testEmptyStringArrays ()
