@@ -67,10 +67,6 @@
     <javac srcdir="${src.dir}" destdir="${classes.dir}" includeAntRuntime="false"
            debug="on" optimize="${build.optimize}" source="1.5" target="1.5" encoding="utf-8">
       <classpath refid="classpath"/>
-      <exclude name="com/samskivert/depot/OldEHCacheAdapter.java" unless="build.ehcache"/>
-      <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="build.ehcache"/>
-      <exclude name="com/samskivert/depot/tools/**" unless="build.tools"/>
-      <exclude name="com/samskivert/depot/tests/**" unless="build.tests"/>
       <compilerarg value="-Xlint"/>
       <compilerarg value="-Xlint:-serial"/>
     </javac>
@@ -95,12 +91,7 @@
     <javadoc windowtitle="${lib.name} API" doctitle="${lib.name} API"
              overview="src/main/javadoc/overview.html" destdir="${javadoc.dir}"
              additionalparam="-breakiterator">
-      <packageset dir="${src.dir}">
-        <exclude name="com/samskivert/depot/impl/**"/>
-        <exclude name="com/samskivert/depot/tests/**"/>
-        <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="build.ehcache"/>
-        <exclude name="com/samskivert/depot/tools/**" unless="build.tools"/>
-      </packageset>
+      <packageset dir="${src.dir}"/>
       <bottom>Copyright &#169; 2006-${year} Michael Bayne, et al. All Rights Reserved.</bottom>
       <classpath refid="classpath"/>
       <link href="http://java.sun.com/j2se/1.5/docs/api/"/>
@@ -125,10 +116,7 @@
       <sysproperty key="com.samskivert.depot.debug" value="${debug}"/>
       <formatter type="brief" usefile="false"/>
       <batchtest>
-        <fileset dir="${test.dir}">
-          <include name="**/${test}*Test.java"/>
-          <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="ehcache.present"/>
-        </fileset>
+        <fileset dir="${test.dir}" includes="**/${test}*Test.java"/>
       </batchtest>
     </unit>
   </target>
