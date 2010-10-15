@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="depot" default="compile" basedir=".">
+<project name="depot" default="compile" basedir="." xmlns:artifact="urn:maven-artifact-ant">
   <!-- project metadata -->
   <property name="lib.name"     value="depot"/>
   <property name="src.dir"      value="src/main/java"/>
@@ -8,65 +8,35 @@
   <property name="classes.dir"  value="${deploy.dir}/classes"/>
   <property name="tclasses.dir" value="${deploy.dir}/test-classes"/>
   <property name="javadoc.dir"  value="${deploy.dir}/docs"/>
-  <property name="libs.dir"     value="lib"/>
 
-  <!-- declare our classpath -->
-  <path id="classpath">
-    <pathelement location="${classes.dir}"/>
-    <fileset dir="${deploy.dir}/lib" includes="*.jar"/>
-  </path>
+  <property name="maven-ant.vers" value="2.1.1"/>
+  <property name="maven-ant.dir" value="${user.home}/.m2/ant-support"/>
+  <property name="maven-ant.jar" value="${maven-ant.dir}/maven-ant-tasks-${maven-ant.vers}.jar"/>
+  <property name="maven-ant.url" value="http://mirrors.ibiblio.org/pub/mirrors/apache/maven/binaries"/>
+  <condition property="maven-ant.exists"><available file="${maven-ant.jar}"/></condition>
+  <target name="-download-maven-ant" unless="maven-ant.exists">
+    <mkdir dir="${maven-ant.dir}"/>
+    <get src="${maven-ant.url}/maven-ant-tasks-${maven-ant.vers}.jar" 
+         dest="${maven-ant.jar}" usetimestamp="true"/>
+  </target>
 
-  <!-- our dependencies are in a separate file so that we can integrate into OOO builds -->
-  <import file="etc/libs-incl.xml"/>
+  <target name="-init-maven-ant" depends="-download-maven-ant">
+    <taskdef resource="org/apache/maven/artifact/ant/antlib.xml"
+             uri="urn:maven-artifact-ant" classpath="${maven-ant.jar}"/>
+    <artifact:pom id="pom" file="pom.xml"/>
+    <artifact:dependencies pathId="classpath" pomRefId="pom"/>
+  </target>
 
-  <!-- prepares the application directories -->
-  <target name="prepare">
-    <tstamp><format property="year" pattern="yyyy" /></tstamp>
+  <target name="-prepare" depends="-init-maven-ant">
     <mkdir dir="${deploy.dir}"/>
-    <mkdir dir="${deploy.dir}/lib"/>
-    <mkdir dir="${classes.dir}"/>
-    <mkdir dir="${tclasses.dir}"/>
-    <mkdir dir="${javadoc.dir}"/>
-    <copy todir="${classes.dir}">
-      <fileset dir="${src.dir}" includes="**/*.tmpl"/>
-    </copy>
-    <copy todir="${deploy.dir}/lib" flatten="true">
-      <fileset refid="${lib.name}.libs"/>
-    </copy>
   </target>
 
-  <!-- determines which optional packages should be built -->
-  <target name="compute-builds">
-    <!-- check to see which packages are available -->
-    <available property="ant.present" classpathref="classpath" ignoresystemclasses="true"
-     classname="org.apache.tools.ant.Task"/>
-    <echo level="info">Ant: ${ant.present}</echo>
-    <available property="ehcache.present" classpathref="classpath"
-     classname="net.sf.ehcache.Element"/>
-    <echo level="info">EH Cache: ${ehcache.present}</echo>
-    <available property="junit.present" classpathref="classpath"
-     classname="junit.framework.Test"/>
-    <echo level="info">JUnit: ${junit.present}</echo>
-
-    <!-- combines package availability into build controls -->
-    <condition property="build.ehcache">
-      <and><isset property="ehcache.present"/></and>
-    </condition>
-    <condition property="build.tools">
-      <and><isset property="ant.present"/></and>
-    </condition>
-    <condition property="build.tests">
-      <and><isset property="junit.present"/></and>
-    </condition>
-  </target>
-
-  <!-- generates fields for persistent record classes -->
-  <target name="genrecord" depends="prepare">
+  <target name="genrecord" depends="-prepare"
+          description="Generates fields for persistent record classes.">
     <taskdef name="grecord" classname="com.samskivert.depot.tools.GenRecordTask"
              classpathref="classpath"/>
     <!-- make sure the record class files are all compiled -->
-    <javac destdir="${classes.dir}"
-           debug="on" optimize="${build.optimize}" deprecation="on">
+    <javac destdir="${classes.dir}" debug="on" optimize="${build.optimize}" deprecation="on">
       <src name="${src.dir}"/>
       <src name="${test.dir}"/>
       <classpath refid="classpath"/>
@@ -79,21 +49,21 @@
     </grecord>
   </target>
 
-  <!-- cleans out the intermediate build files -->
   <target name="clean" description="Cleans out build results.">
     <delete dir="${classes.dir}"/>
-    <delete dir="${deploy.dir}/docs"/>
+    <delete dir="${javadoc.dir}"/>
     <delete failonerror="false"><fileset dir="${deploy.dir}" includes="*.jar"/></delete>
   </target>
 
-  <!-- wipes the entire build directory clean -->
   <target name="distclean" description="Completely removes build result directory.">
     <delete dir="${deploy.dir}"/>
   </target>
 
-  <!-- build the java class files -->
-  <target name="compile" depends="prepare,compute-builds"
-          description="Compiles the code.">
+  <target name="compile" depends="-prepare" description="Compiles the code.">
+    <mkdir dir="${classes.dir}"/>
+    <copy todir="${classes.dir}">
+      <fileset dir="${src.dir}" includes="**/*.tmpl"/>
+    </copy>
     <javac srcdir="${src.dir}" destdir="${classes.dir}" includeAntRuntime="false"
            debug="on" optimize="${build.optimize}" source="1.5" target="1.5" encoding="utf-8">
       <classpath refid="classpath"/>
@@ -107,6 +77,7 @@
   </target>
 
   <target name="test-compile" depends="compile" description="Compiles test classes.">
+    <mkdir dir="${tclasses.dir}"/>
     <javac srcdir="${test.dir}" destdir="${tclasses.dir}" includeAntRuntime="false"
            debug="on" optimize="${build.optimize}" source="1.5" target="1.5" encoding="utf-8">
       <classpath>
@@ -118,30 +89,27 @@
     </javac>
   </target>
 
-  <!-- build the javadoc documentation -->
-  <target name="javadoc" depends="prepare,compute-builds"
-          description="Generates javadoc documentation.">
+  <target name="javadoc" depends="-prepare" description="Generates javadoc documentation.">
+    <mkdir dir="${javadoc.dir}"/>
+    <tstamp><format property="year" pattern="yyyy" /></tstamp>
     <javadoc windowtitle="${lib.name} API" doctitle="${lib.name} API"
              overview="src/main/javadoc/overview.html" destdir="${javadoc.dir}"
-             additionalparam="-breakiterator"
-             link="http://samskivert.com/code/samskivert/docs/">
+             additionalparam="-breakiterator">
       <packageset dir="${src.dir}">
         <exclude name="com/samskivert/depot/impl/**"/>
         <exclude name="com/samskivert/depot/tests/**"/>
         <exclude name="com/samskivert/depot/EHCacheAdapter.java" unless="build.ehcache"/>
         <exclude name="com/samskivert/depot/tools/**" unless="build.tools"/>
       </packageset>
-      <bottom>Copyright &#169; 2006-${year} Michael Bayne, et. al. All Rights Reserved.</bottom>
+      <bottom>Copyright &#169; 2006-${year} Michael Bayne, et al. All Rights Reserved.</bottom>
       <classpath refid="classpath"/>
       <link href="http://java.sun.com/j2se/1.5/docs/api/"/>
     </javadoc>
   </target>
 
-  <!-- a target for rebuilding everything -->
   <target name="all" depends="clean,compile,javadoc,dist"
           description="Cleans and rebuilds everything including documentation."/>
 
-  <!-- runs our unit tests -->
   <target name="tests" depends="test-compile" description="Runs the unit tests.">
     <!-- allows passing -Dtest=NamePrefix to restrict to subset of tests -->
     <property name="test" value=""/>
@@ -165,50 +133,7 @@
     </unit>
   </target>
 
-  <!-- builds our distribution jar file -->
-  <target name="dist" depends="prepare,compile"
-          description="Compiles the code and builds our jar file.">
-    <jar destfile="${deploy.dir}/${lib.name}.jar" basedir="${classes.dir}">
-      <exclude name="**/tests/**"/>
-    </jar>
-  </target>
-
-  <!-- builds a snapshot zip file -->
-  <target name="snapshot" depends="dist"
-          description="Generates a snapshot zip containing the jar file and its dependencies.">
-    <tstamp><format property="date" pattern="yyyyMMdd" /></tstamp>
-    <mkdir dir="${deploy.dir}/depot-${date}"/>
-    <copy todir="${deploy.dir}/depot-${date}">
-      <fileset dir="${deploy.dir}/lib" includes="*.jar"/>
-      <fileset dir="${deploy.dir}" includes="${lib.name}.jar"/>
-    </copy>
-    <copy file="lib/SNAPSHOT_README" tofile="${deploy.dir}/depot-${date}/README"/>
-    <zip destfile="${deploy.dir}/depot-${date}.zip" basedir="${deploy.dir}">
-      <include name="depot-${date}/**"/>
-    </zip>
-  </target>
-
-  <!-- generate a class hierarchy diagram -->
-  <target name="hiergen" depends="prepare,compile">
-    <taskdef name="viztool" classname="com.samskivert.viztool.DriverTask">
-      <classpath>
-        <fileset dir="../viztool/dist" includes="*.jar"/>
-        <fileset dir="../viztool/lib" includes="*.jar"/>
-      </classpath>
-    </taskdef>
-    <viztool visualizer="com.samskivert.viztool.hierarchy.HierarchyVisualizer"
-             pkgroot="com.samskivert" classes="com.samskivert.depot.*" output="hierarchy.ps">
-      <classpath refid="classpath"/>
-    </viztool>
-  </target>
-
-  <!-- TEMP: runs our test that requires a repository (replace with HSQLDB unit test) -->
-  <target name="repotest" depends="prepare,compile">
-    <copy file="depot.properties" tofile="${classes.dir}/depot.properties"/>
-    <java classpathref="classpath" fork="true" maxmemory="256M"
-          classname="com.samskivert.depot.tests.TestRepository">
-      <jvmarg value="-Dcom.samskivert.depot.cache_debug=true"/>
-    </java>
-    <delete file="${classes.dir}/depot.properties"/>
+  <target name="dist" depends="compile" description="Compiles code and builds jar file.">
+    <jar destfile="${deploy.dir}/${lib.name}.jar" basedir="${classes.dir}"/>
   </target>
 </project>
