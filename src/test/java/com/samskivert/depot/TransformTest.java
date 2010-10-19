@@ -101,11 +101,11 @@ public class TransformTest extends TestBase
 
     public static class CustomTypeTransformer extends Transformer<CustomType, String>
     {
-        public String toPersistent (CustomType value) {
+        @Override public String toPersistent (CustomType value) {
             return value.value;
         }
 
-        public CustomType fromPersistent (String value) {
+        @Override public CustomType fromPersistent (String value) {
             return new CustomType(value);
         }
     }
@@ -116,10 +116,10 @@ public class TransformTest extends TestBase
             @SuppressWarnings("unchecked") Class<Dummy> eclass = (Class<Dummy>)ftype;
             _eclass = eclass;
         }
-        public Short toPersistent (ShortEnum value) {
+        @Override public Short toPersistent (ShortEnum value) {
             return value.toShort();
         }
-        public ShortEnum fromPersistent (Short value) {
+        @Override public ShortEnum fromPersistent (Short value) {
             return fromShort(_eclass, value);
         }
         private enum Dummy implements ShortEnum {

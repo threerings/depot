@@ -23,7 +23,6 @@ package com.samskivert.depot;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,21 +31,17 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
 import com.samskivert.util.ByteEnum;
 import com.samskivert.util.ByteEnumUtil;
 
 import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.Transform;
-
-import com.google.common.base.Preconditions;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Interner;
-import com.google.common.collect.Interners;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 /**
  * Contains various generally useful {@link Transformer} implementations. To use a transformer, you
@@ -97,12 +92,12 @@ public class Transformers
      */
     public static class StringArray extends StringBase<String[]>
     {
-        protected Iterable<String> asIterable (String[] value)
+        @Override protected Iterable<String> asIterable (String[] value)
         {
             return Arrays.asList(value);
         }
 
-        protected Builder<String[]> createBuilder (String encoded)
+        @Override protected Builder<String[]> createBuilder (String encoded)
         {
             // jog through and count the elements so that we can populate the array directly
             final String[] result = new String[countElements(encoded)];
@@ -126,12 +121,12 @@ public class Transformers
      */
     public static class StringIterable extends StringBase<Iterable<String>>
     {
-        protected Iterable<String> asIterable (Iterable<String> value)
+        @Override protected Iterable<String> asIterable (Iterable<String> value)
         {
             return value;
         }
 
-        protected Builder<Iterable<String>> createBuilder (String encoded)
+        @Override protected Builder<Iterable<String>> createBuilder (String encoded)
         {
             Collection<String> adder;
             Collection<String> retval = null;
@@ -200,7 +195,7 @@ public class Transformers
                 if (s == null) {
                     buf.append("\\\n"); // encode nulls as slash followed by the terminator
                 } else {
-                    s = s.replace("\\", "\\\\"); // turn \ into \\ 
+                    s = s.replace("\\", "\\\\"); // turn \ into \\
                     s = s.replace("\n", "\\n");  // turn a newline in a String to "\n"
                     buf.append(s).append('\n');
                 }
