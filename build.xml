@@ -26,10 +26,9 @@
     <artifact:pom id="pom" file="pom.xml"/>
     <artifact:dependencies pathId="classpath" pomRefId="pom"/>
     <path id="test.classpath">
-        <path refid="classpath"/>
-        <pathelement location="${classes.dir}"/>
-        <pathelement location="${tclasses.dir}"/>
-        <pathelement location="${basedir}"/> <!-- for rsrc/ -->
+      <path refid="classpath"/>
+      <pathelement location="${classes.dir}"/>
+      <pathelement location="${tclasses.dir}"/>
     </path>
   </target>
 
