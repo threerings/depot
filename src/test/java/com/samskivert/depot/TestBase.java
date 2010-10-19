@@ -40,7 +40,7 @@ public abstract class TestBase
      * <b>Note:</b> the in-memory HSQL database is shared for the duration of the VM, so tests have
      * to clean up after themselves to avoid conflicting with one another.
      */
-    protected PersistenceContext createPersistenceContext ()
+    protected static PersistenceContext createPersistenceContext ()
     {
         Properties props = new Properties();
         props.put("default.driver", "org.hsqldb.jdbcDriver");

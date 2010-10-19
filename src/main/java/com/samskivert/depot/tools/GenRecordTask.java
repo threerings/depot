@@ -20,13 +20,6 @@
 
 package com.samskivert.depot.tools;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -37,9 +30,12 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
@@ -48,12 +44,17 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Reference;
 import org.apache.tools.ant.util.ClasspathUtils;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+
 import com.samskivert.io.StreamUtil;
 import com.samskivert.util.ClassUtil;
 import com.samskivert.util.GenUtil;
 import com.samskivert.util.StringUtil;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.annotation.GeneratedValue;
 import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.annotation.Transient;
 import com.samskivert.depot.impl.DepotUtil;
@@ -92,15 +93,15 @@ public class GenRecordTask extends Task
         try {
             _prclass = _cloader.loadClass(PersistentRecord.class.getName());
         } catch (Exception e) {
-            throw new BuildException("Can't resolve InvocationListener", e);
+            throw new BuildException("Can't resolve PersistentRecord", e);
         }
 
         for (FileSet fs : _filesets) {
             DirectoryScanner ds = fs.getDirectoryScanner(getProject());
             File fromDir = fs.getDir(getProject());
             String[] srcFiles = ds.getIncludedFiles();
-            for (int f = 0; f < srcFiles.length; f++) {
-                processRecord(new File(fromDir, srcFiles[f]));
+            for (String srcFile : srcFiles) {
+                processRecord(new File(fromDir, srcFile));
             }
         }
     }
@@ -141,18 +142,21 @@ public class GenRecordTask extends Task
             // System.err.println("Skipping " + rclass.getName() + "...");
             return;
         }
-        boolean isAbstract = Modifier.isAbstract(rclass.getModifiers());
 
         // determine our primary key fields for getKey() generation (if we're not an abstract)
         List<Field> kflist = Lists.newArrayList();
-        if (!isAbstract) {
+        if (!Modifier.isAbstract(rclass.getModifiers())) {
             // determine which fields make up our primary key; we'd just use Class.getFields() but
             // that returns things in a random order whereas ClassUtil returns fields in
             // declaration order starting from the top-most class and going down the line
             for (Field field : ClassUtil.getFields(rclass)) {
                 if (hasAnnotation(field, Id.class)) {
                     kflist.add(field);
-                    continue;
+                } else if (hasAnnotation(field, GeneratedValue.class)) {
+                    System.err.println("Skipping " + rclass.getName() + ".  Field '" +
+                        field.getName() + "' has @GeneratedValue, which may only used on primary " +
+                        "keys with @Id.");
+                    return;
                 }
             }
         }
@@ -408,7 +412,7 @@ public class GenRecordTask extends Task
 
     protected static boolean hasAnnotation (Field field, Class<?> annotation)
     {
-        // iterate becase getAnnotation() fails if we're dealing with multiple classloaders
+        // iterate because getAnnotation() fails if we're dealing with multiple classloaders
         for (Annotation a : field.getAnnotations()) {
             if (annotation.getName().equals(a.annotationType().getName())) {
                 return true;
