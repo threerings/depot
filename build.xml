@@ -56,6 +56,7 @@
 
   <target name="clean" description="Cleans out build results.">
     <delete dir="${classes.dir}"/>
+    <delete dir="${tclasses.dir}"/>
     <delete dir="${javadoc.dir}"/>
     <delete failonerror="false"><fileset dir="${deploy.dir}" includes="*.jar"/></delete>
   </target>
