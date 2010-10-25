@@ -193,8 +193,7 @@ public class TransformTest extends TestBase
         assertTrue(FieldMarshaller.createMarshaller(field) != null);
 
         field = TransformRecord.class.getField("custom");
-        assertTrue(FieldMarshaller.createMarshaller(field).getClass().
-                   getName().endsWith("FieldMarshaller$TransformingMarshaller"));
+        assertTrue(FieldMarshaller.createMarshaller(field) != null);
     }
 
 //    @Test public void testInvalidFieldAnnotation ()
