@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src/main/java"/>
-	<classpathentry kind="src" path="src/test/java"/>
+	<classpathentry including="**/*.java" kind="src" output="dist/test-classes" path="src/test/java"/>
+	<classpathentry including="**/*.java" kind="src" path="src/main/java"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/ant/ant/1.7.1/ant-1.7.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/apache/ant/ant-launcher/1.7.1/ant-launcher-1.7.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/net/sf/ehcache/ehcache/1.6.0/ehcache-1.6.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/google/guava/guava/r05/guava-r05.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/hsqldb/hsqldb/2.0.0/hsqldb-2.0.0.jar"/>
+	<classpathentry kind="var" path="M2_REPO/junit/junit/4.8.1/junit-4.8.1.jar"/>
+	<classpathentry kind="var" path="M2_REPO/com/samskivert/samskivert/1.0/samskivert-1.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry exported="true" kind="var" path="EXT_LIBS_DIR/ant.jar"/>
-	<classpathentry exported="true" kind="var" path="EXT_LIBS_DIR/ehcache.jar"/>
-	<classpathentry exported="true" kind="var" path="EXT_LIBS_DIR/guava.jar"/>
-	<classpathentry exported="true" kind="var" path="EXT_LIBS_DIR/junit4.jar"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/samskivert"/>
 	<classpathentry kind="output" path="dist/classes"/>
 </classpath>
