@@ -97,11 +97,10 @@ public abstract class FieldMarshaller<T>
         }
 
         try {
-            Transformer<?,?> xformer = xform.value().newInstance();
-            TransformingMarshaller<?,?> xmarsh =
-                TransformingMarshaller.create(xformer, field, xform);
-            xmarsh.create(field);
-            return xmarsh;
+            // weirdly if we inline the xformer creation into the createTransformingMarshaller
+            // call, we get a type error; must be some subtlety of wildcard capture...
+            Transformer<?, ?> xformer = xform.value().newInstance();
+            return createTransformingMarshaller(xformer, field, xform);
         } catch (InstantiationException e) {
             throw new IllegalArgumentException(
                 Logger.format("Unable to create Transformer", "xclass", xform.value(),
@@ -111,6 +110,47 @@ public abstract class FieldMarshaller<T>
                 Logger.format("Unable to create Transformer", "xclass", xform.value(),
                               "field", field), e);
         }
+    }
+
+    protected static <F,T> FieldMarshaller<T> createTransformingMarshaller (
+        final Transformer<F,T> xformer, Field field, Transform annotation)
+    {
+        Class<?> pojoType = getTransformerType(xformer, "from");
+        if (!pojoType.isAssignableFrom(field.getType())) {
+            throw new IllegalArgumentException(
+                "@Transform error on " + field.getType().getName() + "." +
+                field.getName() + ": " + xformer.getClass().getName() + " cannot convert " +
+                field.getType().getName());
+        }
+        xformer.init(field.getGenericType(), annotation);
+
+        @SuppressWarnings("unchecked") final FieldMarshaller<T> delegate =
+            (FieldMarshaller<T>)createMarshaller(getTransformerType(xformer, "to"));
+        delegate.create(field);
+
+        FieldMarshaller<T> xmarsh =  new FieldMarshaller<T>() {
+            @Override public String getColumnType (ColumnTyper typer, int length) {
+                return delegate.getColumnType(typer, length);
+            }
+            @Override public T getFromObject (Object po)
+                throws IllegalArgumentException, IllegalAccessException {
+                @SuppressWarnings("unchecked") F value = (F)_field.get(po);
+                return xformer.toPersistent(value);
+            }
+            @Override public T getFromSet (ResultSet rs) throws SQLException {
+                return delegate.getFromSet(rs);
+            }
+            @Override public void writeToObject (Object po, T value)
+                throws IllegalArgumentException, IllegalAccessException {
+                _field.set(po, xformer.fromPersistent(value));
+            }
+            @Override public void writeToStatement (PreparedStatement ps, int column, T value)
+                throws SQLException {
+                delegate.writeToStatement(ps, column, value);
+            }
+        };
+        xmarsh.create(field);
+        return xmarsh;
     }
 
     /**
@@ -686,58 +726,6 @@ public abstract class FieldMarshaller<T>
         }
 
         protected Class<E> _eclass;
-    }
-
-    protected static class TransformingMarshaller<F,T> extends FieldMarshaller<T> {
-        // simplifies type jockeying
-        public static <F,T> TransformingMarshaller<F,T> create (
-            Transformer<F,T> xformer, Field field, Transform annotation) {
-            return new TransformingMarshaller<F,T>(xformer, field, annotation);
-        }
-
-        @Override public void create (Field field) {
-            super.create(field);
-            _delegate.create(field);
-        }
-
-        @Override public String getColumnType (ColumnTyper typer, int length) {
-            return _delegate.getColumnType(typer, length);
-        }
-        @Override public T getFromObject (Object po)
-            throws IllegalArgumentException, IllegalAccessException {
-            @SuppressWarnings("unchecked") F value = (F)_field.get(po);
-            return _xformer.toPersistent(value);
-        }
-        @Override public T getFromSet (ResultSet rs) throws SQLException {
-            return _delegate.getFromSet(rs);
-        }
-        @Override public void writeToObject (Object po, T value)
-            throws IllegalArgumentException, IllegalAccessException {
-            _field.set(po, _xformer.fromPersistent(value));
-        }
-        @Override public void writeToStatement (PreparedStatement ps, int column, T value)
-            throws SQLException {
-            _delegate.writeToStatement(ps, column, value);
-        }
-
-        protected TransformingMarshaller (
-            Transformer<F,T> xformer, Field field, Transform annotation) {
-            Class<?> pojoType = getTransformerType(xformer, "from");
-            if (!pojoType.isAssignableFrom(field.getType())) {
-                throw new IllegalArgumentException(
-                    "@Transform error on " + field.getType().getName() + "." +
-                    field.getName() + ": " + xformer.getClass().getName() + " cannot convert " +
-                    field.getType().getName());
-            }
-            @SuppressWarnings("unchecked") FieldMarshaller<T> delegate =
-                (FieldMarshaller<T>)createMarshaller(getTransformerType(xformer, "to"));
-            xformer.init(field.getGenericType(), annotation);
-            _delegate = delegate;
-            _xformer = xformer;
-        }
-
-        protected Transformer<F, T> _xformer;
-        protected FieldMarshaller<T> _delegate;
     }
 
     // used to fool the type system when creating ByteEnumMarshallers; look away
