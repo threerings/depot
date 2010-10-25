@@ -128,7 +128,7 @@ public abstract class FieldMarshaller<T>
             (FieldMarshaller<T>)createMarshaller(getTransformerType(xformer, "to"));
         delegate.create(field);
 
-        FieldMarshaller<T> xmarsh =  new FieldMarshaller<T>() {
+        FieldMarshaller<T> xmarsh = new FieldMarshaller<T>() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return delegate.getColumnType(typer, length);
             }
