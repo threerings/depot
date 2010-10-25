@@ -60,7 +60,7 @@ public class PersistentRecord
      * we hope to make this form of the Key constructor protected.
      */
     protected static <R extends PersistentRecord> Key<R> newKey (
-        Class<R> pClass, Comparable... values)
+        Class<R> pClass, Comparable<?>... values)
     {
         return new Key<R>(pClass, values);
     }

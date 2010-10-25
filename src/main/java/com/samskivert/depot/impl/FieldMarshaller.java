@@ -97,10 +97,9 @@ public abstract class FieldMarshaller<T>
         }
 
         try {
-            @SuppressWarnings("unchecked") Transformer<?,?> xformer =
-                xform.value().newInstance();
-            @SuppressWarnings("unchecked") TransformingMarshaller<?,?> xmarsh =
-                new TransformingMarshaller(xformer, field, xform);
+            Transformer<?,?> xformer = xform.value().newInstance();
+            TransformingMarshaller<?,?> xmarsh =
+                TransformingMarshaller.create(xformer, field, xform);
             xmarsh.create(field);
             return xmarsh;
         } catch (InstantiationException e) {
@@ -381,9 +380,8 @@ public abstract class FieldMarshaller<T>
         // special Enum type hackery (it would be nice to handle this with @Transform, but that
         // introduces some undesirable samskivert-Depot dependencies)
         } else if (ByteEnum.class.isAssignableFrom(ftype)) {
-            @SuppressWarnings("unchecked") ByteEnumMarshaller<?> bem =
-                new ByteEnumMarshaller(ftype);
-            return bem;
+            @SuppressWarnings("unchecked") Class<Dummy> dtype = (Class<Dummy>)ftype;
+            return new ByteEnumMarshaller<Dummy>(dtype);
 
         } else {
             return null;
@@ -691,20 +689,10 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class TransformingMarshaller<F,T> extends FieldMarshaller<T> {
-        public TransformingMarshaller (
-                Transformer<F,T> xformer, Field field, Transform annotation) {
-            Class<?> pojoType = getTransformerType(xformer, "from");
-            if (!pojoType.isAssignableFrom(field.getType())) {
-                throw new IllegalArgumentException(
-                    "@Transform error on " + field.getType().getName() + "." +
-                    field.getName() + ": " + xformer.getClass().getName() + " cannot convert " +
-                    field.getType().getName());
-            }
-            @SuppressWarnings("unchecked") FieldMarshaller<T> delegate =
-                (FieldMarshaller<T>)createMarshaller(getTransformerType(xformer, "to"));
-            xformer.init(field.getGenericType(), annotation);
-            _delegate = delegate;
-            _xformer = xformer;
+        // simplifies type jockeying
+        public static <F,T> TransformingMarshaller<F,T> create (
+            Transformer<F,T> xformer, Field field, Transform annotation) {
+            return new TransformingMarshaller<F,T>(xformer, field, annotation);
         }
 
         @Override public void create (Field field) {
@@ -732,8 +720,30 @@ public abstract class FieldMarshaller<T>
             _delegate.writeToStatement(ps, column, value);
         }
 
+        protected TransformingMarshaller (
+            Transformer<F,T> xformer, Field field, Transform annotation) {
+            Class<?> pojoType = getTransformerType(xformer, "from");
+            if (!pojoType.isAssignableFrom(field.getType())) {
+                throw new IllegalArgumentException(
+                    "@Transform error on " + field.getType().getName() + "." +
+                    field.getName() + ": " + xformer.getClass().getName() + " cannot convert " +
+                    field.getType().getName());
+            }
+            @SuppressWarnings("unchecked") FieldMarshaller<T> delegate =
+                (FieldMarshaller<T>)createMarshaller(getTransformerType(xformer, "to"));
+            xformer.init(field.getGenericType(), annotation);
+            _delegate = delegate;
+            _xformer = xformer;
+        }
+
         protected Transformer<F, T> _xformer;
         protected FieldMarshaller<T> _delegate;
+    }
+
+    // used to fool the type system when creating ByteEnumMarshallers; look away
+    protected static enum Dummy implements ByteEnum {
+        DUMMY;
+        public byte toByte () { throw new UnsupportedOperationException("Dummy!"); }
     }
 
     protected Field _field;
