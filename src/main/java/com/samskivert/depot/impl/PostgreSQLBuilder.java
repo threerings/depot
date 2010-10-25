@@ -316,12 +316,6 @@ public class PostgreSQLBuilder
         public String getDoubleType (int length) {
             return "DOUBLE PRECISION";
         }
-        public String getByteArrayType (int length) {
-            return "BYTEA";
-        }
-        public String getIntArrayType (int length) {
-            return "BYTEA";
-        }
         public String getStringType (int length) {
             return "VARCHAR(" + length + ")";
         }
