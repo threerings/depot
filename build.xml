@@ -109,11 +109,13 @@
     <property name="test" value=""/>
     <taskdef name="unit" classpathref="classpath"
       classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTask"/>
+    <mkdir dir="${deploy.dir}/test-reports"/>
     <unit printsummary="off" haltonfailure="yes" fork="${junit.fork}">
       <classpath refid="test.classpath"/>
       <sysproperty key="com.samskivert.depot.debug" value="${debug}"/>
       <formatter type="brief" usefile="false"/>
-      <batchtest>
+      <formatter type="xml"/>
+      <batchtest todir="${deploy.dir}/test-reports">
         <fileset dir="${test.dir}" includes="**/${test}*Test.java"/>
       </batchtest>
     </unit>
@@ -121,5 +123,14 @@
 
   <target name="dist" depends="compile" description="Compiles code and builds jar file.">
     <jar destfile="${deploy.dir}/${lib.name}.jar" basedir="${classes.dir}"/>
+  </target>
+
+  <property name="maven.deploy.repo" value="file://${user.home}/.m2/repository"/>
+  <target name="maven-deploy" depends="dist,tests" 
+          description="Deploys our build artifacts to a Maven repository.">
+    <artifact:deploy file="${deploy.dir}/${lib.name}.jar" uniqueVersion="false">
+      <remoteRepository url="${maven.deploy.repo}"/>
+      <pom refid="pom"/>
+    </artifact:deploy>
   </target>
 </project>
