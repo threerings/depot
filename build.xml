@@ -97,7 +97,8 @@
       <packageset dir="${src.dir}"/>
       <bottom>Copyright &#169; 2006-${year} Michael Bayne, et al. All Rights Reserved.</bottom>
       <classpath refid="classpath"/>
-      <link href="http://java.sun.com/j2se/1.5/docs/api/"/>
+      <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
+      <link href="http://samskivert.googlecode.com/svn/apidocs/"/>
     </javadoc>
   </target>
 
