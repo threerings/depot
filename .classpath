@@ -6,7 +6,7 @@
 	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/ant/ant/1.7.1/ant-1.7.1.jar" sourcepath="M2_REPO/org/apache/ant/ant/1.7.1/ant-1.7.1-sources.jar"/>
 	<classpathentry exported="true" kind="var" path="M2_REPO/org/apache/ant/ant-launcher/1.7.1/ant-launcher-1.7.1.jar"/>
 	<classpathentry exported="true" kind="var" path="M2_REPO/net/sf/ehcache/ehcache/1.6.0/ehcache-1.6.0.jar"/>
-	<classpathentry exported="true" kind="var" path="M2_REPO/com/google/guava/guava/r07/guava-r07.jar"/>
+	<classpathentry exported="true" kind="var" path="M2_REPO/com/google/guava/guava/r07/guava-r07.jar" sourcepath="/M2_REPO/com/google/guava/guava/r07/guava-r07-sources.jar"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/samskivert"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
