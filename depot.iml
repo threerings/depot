@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="JAVA_MODULE" version="4">
+  <component name="EclipseModuleManager">
+    <varelement var="jar://$M2_REPO$/org/apache/ant/ant/1.7.1/ant-1.7.1.jar!/" value="M2_REPO/org/apache/ant/ant/1.7.1/ant-1.7.1.jar" />
+    <varelement var="file://$M2_REPO$/org/apache/ant/ant/1.7.1/ant-1.7.1-sources.jar" value="src:M2_REPO/org/apache/ant/ant/1.7.1/ant-1.7.1-sources.jar" />
+    <varelement var="jar://$M2_REPO$/org/apache/ant/ant-launcher/1.7.1/ant-launcher-1.7.1.jar!/" value="M2_REPO/org/apache/ant/ant-launcher/1.7.1/ant-launcher-1.7.1.jar" />
+    <varelement var="jar://$M2_REPO$/net/sf/ehcache/ehcache/1.6.0/ehcache-1.6.0.jar!/" value="M2_REPO/net/sf/ehcache/ehcache/1.6.0/ehcache-1.6.0.jar" />
+    <varelement var="jar://$M2_REPO$/com/google/guava/guava/r07/guava-r07.jar!/" value="M2_REPO/com/google/guava/guava/r07/guava-r07.jar" />
+    <varelement var="jar://$M2_REPO$/com/google/guava/guava/r07/guava-r07-sources.jar!/" value="src:/M2_REPO/com/google/guava/guava/r07/guava-r07-sources.jar" />
+  </component>
+  <component name="NewModuleRootManager" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/target/classes" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src/main/java" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="false" />
+    </content>
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="module-library" exported="">
+      <library name="ant-1.7.1.jar">
+        <CLASSES>
+          <root url="jar://$M2_REPO$/org/apache/ant/ant/1.7.1/ant-1.7.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$M2_REPO$/org/apache/ant/ant/1.7.1/ant-1.7.1-sources.jar" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="ant-launcher-1.7.1.jar">
+        <CLASSES>
+          <root url="jar://$M2_REPO$/org/apache/ant/ant-launcher/1.7.1/ant-launcher-1.7.1.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="ehcache-1.6.0.jar">
+        <CLASSES>
+          <root url="jar://$M2_REPO$/net/sf/ehcache/ehcache/1.6.0/ehcache-1.6.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
+      <library name="guava-r07.jar">
+        <CLASSES>
+          <root url="jar://$M2_REPO$/com/google/guava/guava/r07/guava-r07.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$M2_REPO$/com/google/guava/guava/r07/guava-r07-sources.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module" module-name="samskivert" exported="" />
+  </component>
+</module>
+
