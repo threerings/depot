@@ -27,6 +27,7 @@ import com.samskivert.util.StringUtil;
 
 import com.samskivert.depot.annotation.Entity;
 import com.samskivert.depot.annotation.Id;
+import com.samskivert.depot.annotation.Index;
 import com.samskivert.depot.expression.ColumnExp;
 
 /**
@@ -57,7 +58,7 @@ public class TestRecord extends PersistentRecord
 
     public String homeTown;
 
-    // @Index // TODO: this horks HSQLDB
+    @Index
     public Date created;
 
     public Timestamp lastModified;

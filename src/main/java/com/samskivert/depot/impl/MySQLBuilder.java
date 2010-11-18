@@ -24,16 +24,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Set;
 
-import com.samskivert.util.Tuple;
-
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
-import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.expression.ColumnExp;
-import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.operator.FullText;
 
-import com.samskivert.depot.impl.clause.CreateIndexClause;
 import com.samskivert.depot.impl.clause.DeleteClause;
 import com.samskivert.depot.impl.clause.DropIndexClause;
 import com.samskivert.depot.impl.expression.DateFun.DatePart;
@@ -124,20 +119,6 @@ public class MySQLBuilder
         }
 
         @Override
-        public Void visit (CreateIndexClause createIndexClause)
-        {
-            for (Tuple<SQLExpression, Order> field : createIndexClause.getFields()) {
-                if (!(field.left instanceof ColumnExp)) {
-                    log.warning("This database can't handle complex indexes. Aborting creation.",
-                        "ixName", createIndexClause.getName());
-                    return null;
-                }
-            }
-            super.visit(createIndexClause);
-            return null;
-        }
-
-        @Override
         public Void visit (DropIndexClause dropIndexClause)
         {
             // MySQL's indexes are scoped on the table, not on the database, and the
@@ -151,7 +132,7 @@ public class MySQLBuilder
 
         protected MSBuildVisitor (DepotTypes types)
         {
-            super(types);
+            super(types, false);
         }
 
         @Override protected void appendTableName (Class<? extends PersistentRecord> type)
@@ -167,13 +148,6 @@ public class MySQLBuilder
         @Override protected void appendIdentifier (String field)
         {
             _builder.append(field);
-        }
-
-        @Override
-        protected void appendIndexComponent (SQLExpression expression)
-        {
-            // MySQL is never given complex expressions and hates parens, so just recurse
-            expression.accept(this);
         }
 
         protected void renderMatch (FullText fullText)

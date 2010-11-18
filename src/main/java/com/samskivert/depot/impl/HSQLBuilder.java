@@ -20,8 +20,6 @@
 
 package com.samskivert.depot.impl;
 
-import static com.samskivert.Log.log;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -32,17 +30,13 @@ import com.google.common.collect.Lists;
 
 import com.samskivert.jdbc.ColumnDefinition;
 import com.samskivert.util.ArrayUtil;
-import com.samskivert.util.Tuple;
-
 import com.samskivert.depot.Ops;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.annotation.GeneratedValue;
-import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.expression.*;
 import com.samskivert.depot.operator.FullText;
 
-import com.samskivert.depot.impl.clause.CreateIndexClause;
 import com.samskivert.depot.impl.expression.DateFun.DatePart.Part;
 import com.samskivert.depot.impl.expression.DateFun.DatePart;
 import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
@@ -128,23 +122,9 @@ public class HSQLBuilder
             throw new IllegalArgumentException("HSQL does not have built-in date truncation");
         }
 
-        @Override
-        public Void visit (CreateIndexClause createIndexClause)
-        {
-            for (Tuple<SQLExpression, Order> field : createIndexClause.getFields()) {
-                if (!(field.left instanceof ColumnExp)) {
-                    log.warning("This database can't handle complex indexes. Aborting creation.",
-                        "ixName", createIndexClause.getName());
-                    return null;
-                }
-            }
-            super.visit(createIndexClause);
-            return null;
-        }
-
         protected HBuildVisitor (DepotTypes types)
         {
-            super(types);
+            super(types, false);
         }
 
         protected String getDateFunction (Part part)

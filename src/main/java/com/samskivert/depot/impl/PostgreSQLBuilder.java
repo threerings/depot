@@ -151,7 +151,7 @@ public class PostgreSQLBuilder
 
         protected PGBuildVisitor (DepotTypes types)
         {
-            super(types);
+            super(types, true);
         }
     }
 

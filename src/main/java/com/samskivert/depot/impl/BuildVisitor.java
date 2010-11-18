@@ -98,6 +98,8 @@ import com.samskivert.depot.impl.operator.IsNull;
 import com.samskivert.depot.impl.operator.MultiOperator;
 import com.samskivert.depot.impl.operator.Not;
 
+import static com.samskivert.Log.log;
+
 /**
  * Implements the base functionality of the SQL-building pass of {@link SQLBuilder}. Dialectal
  * subclasses of this should be created and returned from {@link SQLBuilder#getBuildVisitor()}.
@@ -499,6 +501,15 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
 
     public Void visit (CreateIndexClause createIndexClause)
     {
+        if (!_allowComplexIndices) {
+            for (Tuple<SQLExpression, Order> field : createIndexClause.getFields()) {
+                if (!(field.left instanceof ColumnExp)) {
+                    log.warning("This database can't handle complex indexes. Aborting creation.",
+                        "ixName", createIndexClause.getName());
+                    return null;
+                }
+            }
+        }
         _builder.append("create ");
         if (createIndexClause.isUnique()) {
             _builder.append("unique ");
@@ -518,7 +529,16 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
             }
             comma = true;
 
-            appendIndexComponent(field.left);
+            // If the index can't be complex, it doesn't need to be wrapped in parenthesis.  Some
+            // databases can't handle parenthesis around their index expressions either, so if a
+            // complex expression is already disallowed, don't wrap it in parenthesis.
+            if (_allowComplexIndices) {
+                _builder.append("(");
+            }
+            field.left.accept(this);
+            if (_allowComplexIndices) {
+                _builder.append(")");
+            }
             if (field.right == Order.DESC) {
                 // ascending is default, print nothing unless explicitly descending
                 _builder.append(" desc");
@@ -876,15 +896,6 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         }
     }
 
-    // output one of potentially many fields in an index expression
-    protected void appendIndexComponent (SQLExpression expression)
-    {
-        // the standard builder wraps each field in its own parens
-        _builder.append("(");
-        expression.accept(this);
-        _builder.append(")");
-    }
-
     // output the column names and values for an insert
     protected void appendInsertColumns (InsertClause insertClause)
     {
@@ -922,9 +933,10 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         _builder.append(")");
     }
 
-    protected BuildVisitor (DepotTypes types)
+    protected BuildVisitor (DepotTypes types, boolean allowComplexIndices)
     {
         _types = types;
+        _allowComplexIndices = allowComplexIndices;
     }
 
     protected static interface Bindable
@@ -984,4 +996,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     protected boolean _innerClause = false;
     protected boolean _enableOverrides = false;
     protected boolean _enableAliasing = false;
+
+    /** If this database allows complex expressions in its indices. */
+    protected final boolean _allowComplexIndices;
 }
