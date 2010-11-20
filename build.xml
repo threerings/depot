@@ -12,7 +12,8 @@
   <property name="maven-ant.vers" value="2.1.1"/>
   <property name="maven-ant.dir" value="${user.home}/.m2/ant-support"/>
   <property name="maven-ant.jar" value="${maven-ant.dir}/maven-ant-tasks-${maven-ant.vers}.jar"/>
-  <property name="maven-ant.url" value="http://mirrors.ibiblio.org/pub/mirrors/apache/maven/binaries"/>
+  <property name="maven-ant.url"
+            value="http://mirrors.ibiblio.org/pub/mirrors/apache/maven/binaries"/>
   <condition property="maven-ant.exists"><available file="${maven-ant.jar}"/></condition>
   <target name="-download-maven-ant" unless="maven-ant.exists">
     <mkdir dir="${maven-ant.dir}"/>
@@ -68,7 +69,7 @@
   <target name="compile" depends="-prepare" description="Compiles the code.">
     <mkdir dir="${classes.dir}"/>
     <copy todir="${classes.dir}">
-      <fileset dir="${src.dir}" includes="**/*.tmpl"/>
+      <fileset dir="src/main/resources" includes="**/*.tmpl"/>
     </copy>
     <javac srcdir="${src.dir}" destdir="${classes.dir}" includeAntRuntime="false"
            debug="on" optimize="${build.optimize}" source="1.5" target="1.5" encoding="utf-8">
