@@ -662,36 +662,41 @@ public abstract class FieldMarshaller<T>
         }
     }
 
-    protected static class IntArrayMarshaller extends FieldMarshaller<byte[]> {
+    protected static class IntArrayMarshaller extends FieldMarshaller<int[]> {
         @Override public String getColumnType (ColumnTyper typer, int length) {
             return typer.getBlobType(length*4);
         }
-        @Override public byte[] getFromObject (Object po)
+        @Override public int[] getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
-            int[] values = (int[]) _field.get(po);
-            if (values == null) {
-                return null;
-            }
-            ByteBuffer bbuf = ByteBuffer.allocate(values.length * 4);
-            bbuf.asIntBuffer().put(values);
-            return bbuf.array();
+            return (int[]) _field.get(po);
         }
-        @Override public byte[] getFromSet (ResultSet rs)
+        @Override public int[] getFromSet (ResultSet rs)
             throws SQLException {
-            return (byte[]) rs.getObject(getColumnName());
-        }
-        @Override public void writeToObject (Object po, byte[] data)
-            throws IllegalArgumentException, IllegalAccessException {
-            int[] value = null;
-            if (data != null) {
-                value = new int[data.length/4];
-                ByteBuffer.wrap(data).asIntBuffer().get(value);
+            byte[] raw = (byte[]) rs.getObject(getColumnName());
+            int[] value;
+            if (raw == null) {
+                value = null;
+            } else {
+                value = new int[raw.length/4];
+                ByteBuffer.wrap(raw).asIntBuffer().get(value);
             }
+            return value;
+        }
+        @Override public void writeToObject (Object po, int[] value)
+            throws IllegalArgumentException, IllegalAccessException {
             _field.set(po, value);
         }
-        @Override public void writeToStatement (PreparedStatement ps, int column, byte[] value)
+        @Override public void writeToStatement (PreparedStatement ps, int column, int[] value)
             throws SQLException {
-            ps.setObject(column, value);
+            byte[] raw;
+            if (value == null) {
+                raw = null;
+            } else {
+                ByteBuffer bbuf = ByteBuffer.allocate(value.length*4);
+                bbuf.asIntBuffer().put(value);
+                raw = bbuf.array();
+            }
+            ps.setObject(column, raw);
         }
     }
 
