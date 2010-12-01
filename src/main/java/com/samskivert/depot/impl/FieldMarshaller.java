@@ -423,6 +423,10 @@ public abstract class FieldMarshaller<T>
             @SuppressWarnings("unchecked") Class<Dummy> dtype = (Class<Dummy>)ftype;
             return new ByteEnumMarshaller<Dummy>(dtype);
 
+        } else if (Enum.class.isAssignableFrom(ftype)) {
+            @SuppressWarnings("unchecked") Class<Dummy> dtype = (Class<Dummy>)ftype;
+            return new EnumMarshaller<Dummy>(dtype);
+
         } else {
             return null;
         }
@@ -723,6 +727,36 @@ public abstract class FieldMarshaller<T>
         @Override public void writeToStatement (PreparedStatement ps, int column, ByteEnum value)
             throws SQLException {
             ps.setByte(column, value.toByte());
+        }
+
+        protected Class<E> _eclass;
+    }
+
+    protected static class EnumMarshaller<E extends Enum<E>> extends FieldMarshaller<E> {
+        public EnumMarshaller (Class<E> clazz) {
+            _eclass = clazz;
+        }
+
+        @Override public String getColumnType (ColumnTyper typer, int length) {
+            return typer.getStringType(length);
+        }
+        @Override public E getFromObject (Object po)
+            throws IllegalArgumentException, IllegalAccessException {
+            @SuppressWarnings("unchecked") E value = (E) _field.get(po);
+            return value;
+        }
+        @Override public E getFromSet (ResultSet rs) throws SQLException {
+            String svalue = rs.getString(getColumnName());
+            return (svalue == null) ? null : Enum.valueOf(_eclass, svalue);
+        }
+        @Override public void writeToObject (Object po, E value)
+            throws IllegalArgumentException, IllegalAccessException {
+            _field.set(po, value);
+        }
+        @Override public void writeToStatement (PreparedStatement ps, int column, E value)
+            throws SQLException {
+            String svalue = (value == null) ? null : value.name();
+            ps.setString(column, svalue);
         }
 
         protected Class<E> _eclass;

@@ -57,6 +57,7 @@ public class AllTypesRecord extends PersistentRecord
     public static final ColumnExp DATE = colexp(_R, "date");
     public static final ColumnExp TIME = colexp(_R, "time");
     public static final ColumnExp TIMESTAMP = colexp(_R, "timestamp");
+    public static final ColumnExp TEST_ENUM = colexp(_R, "testEnum");
     public static final ColumnExp NULL_BOXED_BOOLEAN = colexp(_R, "nullBoxedBoolean");
     public static final ColumnExp NULL_BOXED_BYTE = colexp(_R, "nullBoxedByte");
     public static final ColumnExp NULL_BOXED_SHORT = colexp(_R, "nullBoxedShort");
@@ -70,9 +71,12 @@ public class AllTypesRecord extends PersistentRecord
     public static final ColumnExp NULL_DATE = colexp(_R, "nullDate");
     public static final ColumnExp NULL_TIME = colexp(_R, "nullTime");
     public static final ColumnExp NULL_TIMESTAMP = colexp(_R, "nullTimestamp");
+    public static final ColumnExp NULL_TEST_ENUM = colexp(_R, "nullTestEnum");
     // AUTO-GENERATED: FIELDS END
 
     public static final int SCHEMA_VERSION = 1;
+
+    public enum TestEnum { ONE, TWO, THREE; }
 
     @Id public int recordId;
 
@@ -102,6 +106,8 @@ public class AllTypesRecord extends PersistentRecord
     // public Blob blob; // tested by byte[]
     // public Clob clob; // not clear how to test this
 
+    public TestEnum testEnum;
+
     @Column(nullable=true) public Boolean nullBoxedBoolean;
     @Column(nullable=true) public Byte nullBoxedByte;
     @Column(nullable=true) public Short nullBoxedShort;
@@ -115,6 +121,7 @@ public class AllTypesRecord extends PersistentRecord
     @Column(nullable=true) public Date nullDate;
     @Column(nullable=true) public Time nullTime;
     @Column(nullable=true) public Timestamp nullTimestamp;
+    @Column(nullable=true) public TestEnum nullTestEnum;
 
     @Override public boolean equals (Object other) {
         if (!(other instanceof AllTypesRecord)) {
@@ -141,6 +148,7 @@ public class AllTypesRecord extends PersistentRecord
             date.equals(orec.date) &&
             time.equals(orec.time) &&
             timestamp.equals(orec.timestamp) &&
+            testEnum.equals(orec.testEnum) &&
             (nullBoxedBoolean == orec.nullBoxedBoolean) &&
             (nullBoxedByte == orec.nullBoxedByte) &&
             (nullBoxedShort == orec.nullBoxedShort) &&
@@ -153,7 +161,8 @@ public class AllTypesRecord extends PersistentRecord
             (nullString == orec.nullString) &&
             (nullDate == orec.nullDate) &&
             (nullTime == orec.nullTime) &&
-            (nullTimestamp == orec.nullTimestamp);
+            (nullTimestamp == orec.nullTimestamp) &&
+            (nullTestEnum == orec.nullTestEnum);
     }
 
     public static AllTypesRecord createRecord (int recordId)
@@ -180,6 +189,7 @@ public class AllTypesRecord extends PersistentRecord
         rec.date = Date.valueOf("2010-01-18");
         rec.time = Time.valueOf("19:19:19");
         rec.timestamp = new Timestamp(System.currentTimeMillis()+20);
+        rec.testEnum = TestEnum.TWO;
         return rec;
     }
 
