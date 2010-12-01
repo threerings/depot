@@ -964,6 +964,9 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
                 if (value instanceof ByteEnum) {
                     // byte enums require special conversion
                     stmt.setByte(argIx, ((ByteEnum)value).toByte());
+                } else if (value instanceof Enum) {
+                    // enums are converted to strings
+                    stmt.setString(argIx, ((Enum)value).name());
                 } else if (value instanceof int[]) {
                     // int arrays require conversion to byte arrays
                     int[] data = (int[])value;

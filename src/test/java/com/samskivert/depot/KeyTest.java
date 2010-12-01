@@ -20,6 +20,8 @@
 
 package com.samskivert.depot;
 
+import java.util.EnumSet;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -29,7 +31,7 @@ import com.samskivert.depot.impl.DepotUtil;
 /**
  * Tests some super basic {@link Key} stuff.
  */
-public class KeyTest
+public class KeyTest extends TestBase
 {
     @Test public void testSlowConstructor ()
     {
@@ -65,4 +67,23 @@ public class KeyTest
         }
         assertEquals(recordId, krecordId);
     }
+
+    @Test public void testEnumKey ()
+    {
+        EnumKeyRecord a = new EnumKeyRecord(EnumKeyRecord.Type.A, "ayyy");
+        EnumKeyRecord b = new EnumKeyRecord(EnumKeyRecord.Type.B, "beee");
+        EnumKeyRecord c = new EnumKeyRecord(EnumKeyRecord.Type.C, "ceee");
+        EnumKeyRecord d = new EnumKeyRecord(EnumKeyRecord.Type.D, "deee");
+        _repo.storeEnum(a);
+        _repo.storeEnum(b);
+        _repo.storeEnum(c);
+        _repo.storeEnum(d);
+        assertEquals(4, _repo.loadEnums(EnumSet.allOf(EnumKeyRecord.Type.class)).size());
+
+        assertEquals("beee", _repo.loadEnum(EnumKeyRecord.Type.B).name);
+    }
+
+    // the HSQL in-memory database persists for the lifetime of the VM, which means we have to
+    // clean up after ourselves in every test; thus we go ahead and share a repository
+    protected TestRepository _repo = createTestRepository();
 }
