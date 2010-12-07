@@ -25,11 +25,9 @@ import com.samskivert.depot.annotation.Entity;
 import com.samskivert.depot.expression.ColumnExp;
 
 /**
- * Handy record for computing the count of something. For example:
- * <pre>
- * return load(CountRecord.class, from(ForumThreadRecord.class),
- *             where(ForumThreadRecord.GROUP_ID.eq(groupId)).count;
- * </pre>
+ * Handy record for computing the count of something. In general, you need not use this directly,
+ * but should instead use {@link QueryBuilder#selectCount}. For example: {@code
+ * from(ForumThreadRecord.class).where(ForumThreadRecord.GROUP_ID.eq(groupId)).selectCount()}
  */
 @Computed @Entity
 public class CountRecord extends PersistentRecord

@@ -338,6 +338,15 @@ public abstract class DepotRepository
     }
 
     /**
+     * Returns a builder that can be used to construct a query in a fluent style. For example:
+     * {@code from(FooRecord.class).where(ID.greaterThan(25)).ascending(SIZE).select()}
+     */
+    public <T extends PersistentRecord> QueryBuilder<T> from (Class<T> type)
+    {
+        return new QueryBuilder<T>(this, type);
+    }
+
+    /**
      * Inserts the supplied persistent object into the database, assigning its primary key (if it
      * has one) in the process.
      *

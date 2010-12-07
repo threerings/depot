@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * A test tool for the Depot repository services.
  */
-public class TestRepository extends FluentRepository
+public class TestRepository extends DepotRepository
 {
     public TestRecord loadNoCache (int recordId)
     {
@@ -45,7 +45,7 @@ public class TestRepository extends FluentRepository
 
     public List<EnumKeyRecord> loadEnums (Set<EnumKeyRecord.Type> types)
     {
-        return findAll(EnumKeyRecord.class, where(EnumKeyRecord.TYPE.in(types)));
+        return from(EnumKeyRecord.class).where(EnumKeyRecord.TYPE.in(types)).select();
     }
 
     public void storeEnum (EnumKeyRecord record)

@@ -29,6 +29,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import com.samskivert.depot.annotation.Computed;
+import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.clause.Where;
 
 /**
@@ -63,9 +64,9 @@ public class QueryTest extends TestBase
         assertEquals(0, _repo.deleteAll(TestRecord.class, none));
 
         // test collection caching (TODO: check that the records are ==)
-        Where where = new Where(TestRecord.RECORD_ID.greaterThan(CREATE_RECORDS-50));
-        assertEquals(50, _repo.findAll(TestRecord.class, where).size());
-        assertEquals(50, _repo.findAll(TestRecord.class, where).size());
+        SQLExpression where = TestRecord.RECORD_ID.greaterThan(CREATE_RECORDS-50);
+        assertEquals(50, _repo.from(TestRecord.class).where(where).select().size());
+        assertEquals(50, _repo.from(TestRecord.class).where(where).select().size());
 
         // test a partial key set
         KeySet<TestRecord> some = KeySet.newSimpleKeySet(

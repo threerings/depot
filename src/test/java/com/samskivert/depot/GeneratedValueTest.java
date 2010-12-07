@@ -27,8 +27,6 @@ import org.junit.Test;
 
 import com.google.common.collect.Iterables;
 
-import com.samskivert.depot.clause.Where;
-
 import static org.junit.Assert.assertEquals;
 
 public class GeneratedValueTest
@@ -47,8 +45,8 @@ public class GeneratedValueTest
         assertEquals(0, rec.recordId);
         assertEquals(1, dr.insert(rec));
         assertEquals(1, rec.recordId);
-        List<GeneratedValueRecord> recs =
-            dr.findAll(GeneratedValueRecord.class, new Where(GeneratedValueRecord.VALUE.eq(2)));
+        List<GeneratedValueRecord> recs = dr.from(GeneratedValueRecord.class).
+            where(GeneratedValueRecord.VALUE.eq(2)).select();
         assertEquals(1, Iterables.getOnlyElement(recs).recordId);
     }
 }
