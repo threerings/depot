@@ -161,6 +161,15 @@ public class QueryBuilder<T extends PersistentRecord>
     }
 
     /**
+     * Configures a {@link Limit} clause configured with the supplied count.
+     */
+    public QueryBuilder<T> limit (int count)
+    {
+        _limit = new Limit(0, count);
+        return this;
+    }
+
+    /**
      * Configures a {@link Limit} clause configured with the supplied offset and count.
      */
     public QueryBuilder<T> limit (int offset, int count)
