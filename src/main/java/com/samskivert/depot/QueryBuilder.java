@@ -81,6 +81,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> where (SQLExpression... exprs)
     {
+        requireNull(_where, "Where clause is already configured.");
         switch (exprs.length) {
         case 0:
             throw new IllegalArgumentException("Must supply at least one expression.");
@@ -100,6 +101,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> where (ColumnExp column, Comparable<?> value)
     {
+        requireNull(_where, "Where clause is already configured.");
         _where = new Where(column, value);
         return this;
     }
@@ -111,6 +113,7 @@ public class QueryBuilder<T extends PersistentRecord>
     public QueryBuilder<T> where (ColumnExp index1, Comparable<?> value1,
                                   ColumnExp index2, Comparable<?> value2)
     {
+        requireNull(_where, "Where clause is already configured.");
         _where = new Where(index1, value1, index2, value2);
         return this;
     }
@@ -120,6 +123,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> join (ColumnExp left, ColumnExp right)
     {
+        requireNull(_join, "Join clause is already configured.");
         _join = new Join(left, right);
         return this;
     }
@@ -129,6 +133,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> groupBy (SQLExpression... exprs)
     {
+        requireNull(_groupBy, "GroupBy clause is already configured.");
         _groupBy = new GroupBy(exprs);
         return this;
     }
@@ -138,6 +143,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> randomOrder ()
     {
+        requireNull(_orderBy, "OrderBy clause is already configured.");
         _orderBy = OrderBy.random();
         return this;
     }
@@ -147,6 +153,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> ascending (SQLExpression value)
     {
+        requireNull(_orderBy, "OrderBy clause is already configured.");
         _orderBy = OrderBy.ascending(value);
         return this;
     }
@@ -156,6 +163,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> descending (SQLExpression value)
     {
+        requireNull(_orderBy, "OrderBy clause is already configured.");
         _orderBy = OrderBy.descending(value);
         return this;
     }
@@ -165,6 +173,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> limit (int count)
     {
+        requireNull(_limit, "Limit clause is already configured.");
         _limit = new Limit(0, count);
         return this;
     }
@@ -174,6 +183,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> limit (int offset, int count)
     {
+        requireNull(_limit, "Limit clause is already configured.");
         _limit = new Limit(offset, count);
         return this;
     }
@@ -183,6 +193,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> override (Class<? extends PersistentRecord> fromClass)
     {
+        requireNull(_fromOverride, "FromOverride clause is already configured.");
         _fromOverride = new FromOverride(fromClass);
         return this;
     }
@@ -193,6 +204,7 @@ public class QueryBuilder<T extends PersistentRecord>
     public QueryBuilder<T> override (Class<? extends PersistentRecord> fromClass1,
                                      Class<? extends PersistentRecord> fromClass2)
     {
+        requireNull(_fromOverride, "FromOverride clause is already configured.");
         _fromOverride = new FromOverride(fromClass1, fromClass2);
         return this;
     }
@@ -202,6 +214,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> forUpdate ()
     {
+        requireNull(_forUpdate, "ForUpdate clause is already configured.");
         _forUpdate = new ForUpdate();
         return this;
     }
@@ -248,6 +261,47 @@ public class QueryBuilder<T extends PersistentRecord>
         return _repo.load(CountRecord.class, _cache, getClauseArray()).count;
     }
 
+    /**
+     * Deletes the records that match the configured query clauses. Note that only the where
+     * clauses are used to evaluate a deletion. Attempts to use other clauses will result in
+     * failure.
+     *
+     * @return the number of rows deleted by this action.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
+     */
+    public int delete ()
+    {
+        requireNotNull(_where, "Where clause must be specified for delete.");
+        requireNull(_join, "Join clause not supported by delete.");
+        requireNull(_orderBy, "OrderBy clause not applicable for delete.");
+        requireNull(_groupBy, "GroupBy clause not applicable for delete.");
+        requireNull(_limit, "Limit clause not supported by delete.");
+        requireNull(_fromOverride, "FromOverride clause not applicable for delete.");
+        requireNull(_forUpdate, "ForUpdate clause not supported by delete.");
+        return _repo.deleteAll(_pclass, _where);
+    }
+
+    /**
+     * Deletes the records that match the configured query clauses. The supplied cache invalidator
+     * is used to remove deleted records from the cache.
+     *
+     * @return the number of rows deleted by this action.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
+     */
+    public int delete (CacheInvalidator invalidator)
+    {
+        requireNotNull(_where, "Where clause must be specified for delete.");
+        requireNull(_join, "Join clause not supported by delete.");
+        requireNull(_orderBy, "OrderBy clause not applicable for delete.");
+        requireNull(_groupBy, "GroupBy clause not applicable for delete.");
+        requireNull(_limit, "Limit clause not supported by delete.");
+        requireNull(_fromOverride, "FromOverride clause not applicable for delete.");
+        requireNull(_forUpdate, "ForUpdate clause not supported by delete.");
+        return _repo.deleteAll(_pclass, _where, invalidator);
+    }
+
     protected List<QueryClause> getClauses ()
     {
         List<QueryClause> clauses = Lists.newArrayList();
@@ -271,6 +325,20 @@ public class QueryBuilder<T extends PersistentRecord>
     {
         if (clause != null) {
             clauses.add(clause);
+        }
+    }
+
+    protected void requireNotNull (Object value, String message)
+    {
+        if (value == null) {
+            throw new AssertionError(message);
+        }
+    }
+
+    protected void requireNull (Object value, String message)
+    {
+        if (value != null) {
+            throw new AssertionError(message);
         }
     }
 
