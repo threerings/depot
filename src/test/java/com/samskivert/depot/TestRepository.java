@@ -23,12 +23,10 @@ package com.samskivert.depot;
 import java.util.List;
 import java.util.Set;
 
-import com.samskivert.depot.clause.Where;
-
 /**
  * A test tool for the Depot repository services.
  */
-public class TestRepository extends DepotRepository
+public class TestRepository extends FluentRepository
 {
     public TestRecord loadNoCache (int recordId)
     {
@@ -47,7 +45,7 @@ public class TestRepository extends DepotRepository
 
     public List<EnumKeyRecord> loadEnums (Set<EnumKeyRecord.Type> types)
     {
-        return findAll(EnumKeyRecord.class, new Where(EnumKeyRecord.TYPE.in(types)));
+        return findAll(EnumKeyRecord.class, where(EnumKeyRecord.TYPE.in(types)));
     }
 
     public void storeEnum (EnumKeyRecord record)

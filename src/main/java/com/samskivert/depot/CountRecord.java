@@ -27,9 +27,8 @@ import com.samskivert.depot.expression.ColumnExp;
 /**
  * Handy record for computing the count of something. For example:
  * <pre>
- * return load(CountRecord.class,
- *     new FromOverride(ForumThreadRecord.class),
- *     new Where(ForumThreadRecord.GROUP_ID.eq(groupId)).count;
+ * return load(CountRecord.class, from(ForumThreadRecord.class),
+ *             where(ForumThreadRecord.GROUP_ID.eq(groupId)).count;
  * </pre>
  */
 @Computed @Entity
