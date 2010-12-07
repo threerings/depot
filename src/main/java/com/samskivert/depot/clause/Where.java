@@ -43,7 +43,7 @@ public class Where extends WhereClause
     }
 
     public Where (ColumnExp index1, Comparable<?> value1,
-                ColumnExp index2, Comparable<?> value2)
+                  ColumnExp index2, Comparable<?> value2)
     {
         this(new ColumnExp[] { index1, index2 }, new Comparable<?>[] { value1, value2 });
     }
