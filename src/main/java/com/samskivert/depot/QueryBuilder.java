@@ -381,10 +381,10 @@ public class QueryBuilder<T extends PersistentRecord>
      * Returns a clone of this query builder, including all partially configured state. Useful for
      * constructing partially configured queries and then executing variants.
      */
-    public QueryBuilder clone ()
+    public QueryBuilder<T> clone ()
     {
         try {
-            QueryBuilder qb = (QueryBuilder)super.clone();
+            @SuppressWarnings("unchecked") QueryBuilder<T> qb = (QueryBuilder<T>)super.clone();
             // deep copy the list fields, if we have any
             if (qb._joins != null) {
                 qb._joins = Lists.newArrayList(qb._joins);
