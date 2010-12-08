@@ -157,7 +157,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
             // object, so we turn on overrides here just as we do when expanding SELECT fields
             boolean saved = _enableOverrides;
             _enableOverrides = true;
-            appendRhsColumn(pClass, keyFields[ii]);
+            appendRhsColumn(keyFields[ii]);
             _enableOverrides = saved;
             if (values[ii] == null) {
                 _builder.append(" is null ");
@@ -243,7 +243,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
 
     public Void visit (ColumnExp<?> columnExp)
     {
-        appendRhsColumn(columnExp.getPersistentClass(), columnExp);
+        appendRhsColumn(columnExp);
         return null;
     }
 
@@ -377,7 +377,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
                 // write column to a temporary buffer
                 StringBuilder saved = _builder;
                 _builder = new StringBuilder();
-                appendRhsColumn(pClass, field);
+                appendRhsColumn(field);
                 String column = _builder.toString();
                 _builder = saved;
 
@@ -796,8 +796,9 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
 
     // Appends an expression for the given field on the given persistent record; this can
     // appear in a SELECT list, in WHERE clauses, etc, etc.
-    protected void appendRhsColumn (Class<? extends PersistentRecord> type, ColumnExp<?> field)
+    protected void appendRhsColumn (ColumnExp<?> field)
     {
+        Class<? extends PersistentRecord> type = field.getPersistentClass();
         DepotMarshaller<?> dm = _types.getMarshaller(type);
         if (dm == null) {
             throw new IllegalArgumentException(
@@ -989,7 +990,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     protected StringBuilder _builder = new StringBuilder();
 
     /** A mapping of field overrides per persistent record. */
-    protected Map<Class<? extends PersistentRecord>, Map<String, FieldDefinition>> _definitions=
+    protected Map<Class<? extends PersistentRecord>, Map<String, FieldDefinition>> _definitions =
         Maps.newHashMap();
 
     /** Set this to non-null to suppress table abbreviations from being prepended for a class. */
