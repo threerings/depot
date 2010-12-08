@@ -32,6 +32,7 @@ import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.impl.FieldMarshaller;
 import com.samskivert.depot.impl.Modifier;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.samskivert.depot.Log.log;
 
 /**
@@ -97,25 +98,20 @@ public abstract class SchemaMigration extends Modifier
         @Override
         protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
             if (!liaison.tableContainsColumn(conn, _tableName, _oldColumnName)) {
-                if (liaison.tableContainsColumn(conn, _tableName, _newColumnName)) {
-                    // we'll accept this inconsistency
-                    log.warning(_tableName + "." + _oldColumnName + " already renamed to " +
-                                _newColumnName + ".");
-                    return 0;
-                }
-                // but this is not OK
-                throw new IllegalArgumentException(
-                    _tableName + " does not contain '" + _oldColumnName + "'");
+                // if the new column already exists, log a warning, otherwise freak out
+                checkArgument(liaison.tableContainsColumn(conn, _tableName, _newColumnName),
+                              _tableName + " does not contain '" + _oldColumnName + "'");
+                log.warning(_tableName + "." + _oldColumnName + " already renamed to " +
+                            _newColumnName + ".");
+                return 0;
             }
 
             // nor is this
-            if (liaison.tableContainsColumn(conn, _tableName, _newColumnName)) {
-                throw new IllegalArgumentException(
-                    _tableName + " already contains '" + _newColumnName + "'");
-            }
+            checkArgument(!liaison.tableContainsColumn(conn, _tableName, _newColumnName),
+                          _tableName + " already contains '" + _newColumnName + "'");
 
             log.info("Renaming '" + _oldColumnName + "' to '" + _newColumnName + "' in: " +
-                _tableName);
+                     _tableName);
             return liaison.renameColumn(
                 conn, _tableName, _oldColumnName, _newColumnName, _newColumnDef) ? 1 : 0;
         }
@@ -274,10 +270,8 @@ public abstract class SchemaMigration extends Modifier
         Map<String, FieldMarshaller<?>> marshallers, String fieldName)
     {
         FieldMarshaller<?> marsh = marshallers.get(fieldName);
-        if (marsh == null) {
-            throw new IllegalArgumentException(
-                "'" + _tableName + "' does not contain field '" + fieldName + "'");
-        }
+        checkArgument(marsh != null,
+                      "'" + _tableName + "' does not contain field '" + fieldName + "'");
         return marsh;
     }
 

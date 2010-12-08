@@ -37,6 +37,8 @@ import com.samskivert.depot.impl.DepotMarshaller;
 import com.samskivert.depot.impl.DepotUtil;
 import com.samskivert.depot.impl.FragmentVisitor;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 /**
  * A special form of {@link WhereClause} that uniquely specifies a single database row and thus
  * also a single persistent object. It knows how to invalidate itself upon modification. This class
@@ -181,12 +183,9 @@ public class Key<T extends PersistentRecord> extends WhereClause
     // from ValidatingCacheInvalidator
     public void validateFlushType (Class<?> pClass)
     {
-        if (!pClass.equals(_pClass)) {
-            throw new IllegalArgumentException(
-                "Class mismatch between persistent record and cache invalidator " +
-                "[record=" + pClass.getSimpleName() +
-                ", invtype=" + _pClass.getSimpleName() + "].");
-        }
+        checkArgument(pClass.equals(_pClass),
+                      "Class mismatch between persistent record and cache invalidator " +
+                      "[record=%s, invtype=%s].", pClass.getSimpleName(), _pClass.getSimpleName());
     }
 
     // from CacheInvalidator
@@ -247,9 +246,8 @@ public class Key<T extends PersistentRecord> extends WhereClause
     protected static Comparable<?>[] toCanonicalOrder (
         Class<? extends PersistentRecord> pClass, ColumnExp<?>[] fields, Comparable<?>[] values)
     {
-        if (fields.length != values.length) {
-            throw new IllegalArgumentException("Field and Value arrays must be of equal length.");
-        }
+        checkArgument(fields.length == values.length,
+                      "Field and Value arrays must be of equal length.");
 
         // look up the cached primary key fields for this object
         ColumnExp<?>[] keyFields = DepotUtil.getKeyFields(pClass);
@@ -269,24 +267,16 @@ public class Key<T extends PersistentRecord> extends WhereClause
         Comparable<?>[] cvalues = new Comparable<?>[values.length];
         for (int ii = 0; ii < keyFields.length; ii++) {
             Comparable<?> value = map.remove(keyFields[ii]);
-            if (value == null) {
-                // make sure we were provided with a value for this primary key field
-                throw new IllegalArgumentException(
-                    "Missing value for key field: " + keyFields[ii]);
-            }
-            if (!(value instanceof Serializable)) {
-                throw new IllegalArgumentException(
-                    "Non-serializable argument [key=" + keyFields[ii] +
-                    ", value=" + value + "]");
-            }
+            // make sure we were provided with a value for this primary key field
+            checkArgument(value != null, "Missing value for key field: " + keyFields[ii]);
+            checkArgument(value instanceof Serializable,
+                          "Non-serializable argument [key=%s, value=%s]", keyFields[ii], value);
             cvalues[ii] = value;
         }
 
         // finally make sure we were not given any fields that are not primary key fields
-        if (map.size() > 0) {
-            throw new IllegalArgumentException(
-                "Non-key columns given: " +  StringUtil.join(map.keySet().toArray(), ", "));
-        }
+        checkArgument(map.isEmpty(), "Non-key columns given: " +
+                      StringUtil.join(map.keySet().toArray()));
 
         return cvalues;
     }

@@ -39,6 +39,8 @@ import net.sf.ehcache.distribution.RMICacheReplicatorFactory;
 import net.sf.ehcache.event.CacheEventListener;
 import net.sf.ehcache.store.MemoryStoreEvictionPolicy;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.samskivert.depot.Log.log;
 
 /**
@@ -149,9 +151,8 @@ public class EHCacheAdapter
     {
         long now = System.currentTimeMillis();
         Ehcache cache = _categories.get(category);
-        if (cache == null) {
-            throw new IllegalArgumentException("Unknown category: " + category);
-        }
+        checkArgument(cache != null, "Unknown category: " + category);
+
         @SuppressWarnings("unchecked")
         EHCacheBin<T> bin = (EHCacheBin<T>) _bins.get(cacheId);
         if (bin == null) {
@@ -305,9 +306,8 @@ public class EHCacheAdapter
     {
         public EHCacheKey (String id, Serializable key)
         {
-            if (id == null || key == null) {
-                throw new IllegalArgumentException("Can't handle null key or id");
-            }
+            checkNotNull(id);
+            checkNotNull(key);
             _id = id;
             _key = key;
         }

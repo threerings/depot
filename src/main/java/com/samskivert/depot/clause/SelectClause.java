@@ -32,6 +32,8 @@ import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.impl.FragmentVisitor;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 /**
  * Represents a complete select clause.
  */
@@ -64,17 +66,12 @@ public class SelectClause
                 continue;
             }
             if (clause instanceof WhereClause) {
-                if (_where != null) {
-                    throw new IllegalArgumentException(
-                        "Query can't contain multiple Where clauses.");
-                }
+                checkArgument(_where == null, "Query can't contain multiple Where clauses.");
                 _where = (WhereClause) clause;
 
             } else if (clause instanceof FromOverride) {
-                if (_fromOverride != null) {
-                    throw new IllegalArgumentException(
-                        "Query can't contain multiple FromOverride clauses.");
-                }
+                checkArgument(_fromOverride == null,
+                              "Query can't contain multiple FromOverride clauses.");
                 _fromOverride = (FromOverride) clause;
 
             } else if (clause instanceof Join) {
@@ -84,31 +81,20 @@ public class SelectClause
                 _disMap.put(((FieldDefinition) clause).getField(), ((FieldDefinition) clause));
 
             } else if (clause instanceof OrderBy) {
-                if (_orderBy != null) {
-                    throw new IllegalArgumentException(
-                        "Query can't contain multiple OrderBy clauses.");
-                }
+                checkArgument(_orderBy == null, "Query can't contain multiple OrderBy clauses.");
                 _orderBy = (OrderBy) clause;
 
             } else if (clause instanceof GroupBy) {
-                if (_groupBy != null) {
-                    throw new IllegalArgumentException(
-                        "Query can't contain multiple GroupBy clauses.");
-                }
+                checkArgument(_groupBy == null, "Query can't contain multiple GroupBy clauses.");
                 _groupBy = (GroupBy) clause;
 
             } else if (clause instanceof Limit) {
-                if (_limit != null) {
-                    throw new IllegalArgumentException(
-                        "Query can't contain multiple Limit clauses.");
-                }
+                checkArgument(_limit == null, "Query can't contain multiple Limit clauses.");
                 _limit = (Limit) clause;
 
             } else if (clause instanceof ForUpdate) {
-                if (_forUpdate != null) {
-                    throw new IllegalArgumentException(
-                        "Query can't contain multiple For Update clauses.");
-                }
+                checkArgument(_forUpdate == null,
+                              "Query can't contain multiple For Update clauses.");
                 _forUpdate = (ForUpdate) clause;
 
             } else {

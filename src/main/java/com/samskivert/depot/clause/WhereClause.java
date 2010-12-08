@@ -22,6 +22,8 @@ package com.samskivert.depot.clause;
 
 import com.samskivert.depot.expression.SQLExpression;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 /**
  * Currently only exists as a type without any functionality of its own.
  */
@@ -50,10 +52,8 @@ public abstract class WhereClause implements QueryClause
      */
     protected void validateTypesMatch (Class<?> qClass, Class<?> kClass)
     {
-        if (!qClass.equals(kClass)) {
-            throw new IllegalArgumentException(
-                "Class mismatch between persistent record and key in query " +
-                "[qtype=" + qClass.getSimpleName() + ", ktype=" + kClass.getSimpleName() + "].");
-        }
+        checkArgument(qClass.equals(kClass),
+                      "Class mismatch between persistent record and key in query " +
+                      "[qtype=%s, ktype=%s].", qClass.getSimpleName(), kClass.getSimpleName());
     }
 }

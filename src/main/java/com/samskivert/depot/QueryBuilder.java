@@ -32,6 +32,9 @@ import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.ColumnSet;
 import com.samskivert.depot.impl.FindAllQuery;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
+
 /**
  * The root of a fluent mechanism for constructing queries. Obtain an instance via {@link
  * DepotRepository#from}.
@@ -96,9 +99,7 @@ public class QueryBuilder<T extends PersistentRecord>
     public QueryBuilder<T> where (Iterable<? extends SQLExpression> exprs)
     {
         Iterator<? extends SQLExpression> iter = exprs.iterator();
-        if (!iter.hasNext()) {
-            throw new IllegalArgumentException("Must supply at least one expression.");
-        }
+        checkArgument(iter.hasNext(), "Must supply at least one expression.");
         SQLExpression first = iter.next();
         return where(iter.hasNext() ? new Where(Ops.and(exprs)) : new Where(first));
     }
@@ -128,7 +129,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> where (WhereClause where)
     {
-        requireNull(_where, "Where clause is already configured.");
+        checkState(_where == null, "Where clause is already configured.");
         _where = where;
         return this;
     }
@@ -177,7 +178,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> groupBy (SQLExpression... exprs)
     {
-        requireNull(_groupBy, "GroupBy clause is already configured.");
+        checkState(_groupBy == null, "GroupBy clause is already configured.");
         _groupBy = new GroupBy(exprs);
         return this;
     }
@@ -211,7 +212,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> orderBy (OrderBy orderBy)
     {
-        requireNull(_orderBy, "OrderBy clause is already configured.");
+        checkState(_orderBy == null, "OrderBy clause is already configured.");
         _orderBy = orderBy;
         return this;
     }
@@ -221,7 +222,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> limit (int count)
     {
-        requireNull(_limit, "Limit clause is already configured.");
+        checkState(_limit == null, "Limit clause is already configured.");
         _limit = new Limit(0, count);
         return this;
     }
@@ -231,7 +232,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> limit (int offset, int count)
     {
-        requireNull(_limit, "Limit clause is already configured.");
+        checkState(_limit == null, "Limit clause is already configured.");
         _limit = new Limit(offset, count);
         return this;
     }
@@ -258,7 +259,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> override (FromOverride fromOverride)
     {
-        requireNull(_fromOverride, "FromOverride clause is already configured.");
+        checkState(_fromOverride == null, "FromOverride clause is already configured.");
         _fromOverride = fromOverride;
         return this;
     }
@@ -304,7 +305,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> forUpdate ()
     {
-        requireNull(_forUpdate, "ForUpdate clause is already configured.");
+        checkState(_forUpdate == null, "ForUpdate clause is already configured.");
         _forUpdate = new ForUpdate();
         return this;
     }
@@ -450,30 +451,16 @@ public class QueryBuilder<T extends PersistentRecord>
         }
     }
 
-    protected void requireNotNull (Object value, String message)
-    {
-        if (value == null) {
-            throw new IllegalStateException(message);
-        }
-    }
-
-    protected void requireNull (Object value, String message)
-    {
-        if (value != null) {
-            throw new IllegalStateException(message);
-        }
-    }
-
     protected void assertValidDelete ()
     {
-        requireNotNull(_where, "Where clause must be specified for delete.");
-        requireNull(_joins, "Join clauses not supported by delete.");
-        requireNull(_orderBy, "OrderBy clause not applicable for delete.");
-        requireNull(_groupBy, "GroupBy clause not applicable for delete.");
-        requireNull(_limit, "Limit clause not supported by delete.");
-        requireNull(_fromOverride, "FromOverride clause not applicable for delete.");
-        requireNull(_fieldDefs, "FieldDefinition clauses not applicable for delete.");
-        requireNull(_forUpdate, "ForUpdate clause not supported by delete.");
+        checkState(_where != null, "Where clause must be specified for delete.");
+        checkState(_joins == null, "Join clauses not supported by delete.");
+        checkState(_orderBy == null, "OrderBy clause not applicable for delete.");
+        checkState(_groupBy == null, "GroupBy clause not applicable for delete.");
+        checkState(_limit == null, "Limit clause not supported by delete.");
+        checkState(_fromOverride == null, "FromOverride clause not applicable for delete.");
+        checkState(_fieldDefs == null, "FieldDefinition clauses not applicable for delete.");
+        checkState(_forUpdate == null, "ForUpdate clause not supported by delete.");
     }
 
     protected final PersistenceContext _ctx;
