@@ -82,7 +82,7 @@ public class QueryTest extends TestBase
         _repo.deleteAll(TestRecord.class, new Where(TestRecord.RECORD_ID.lessEq(CREATE_RECORDS/2)));
         assertEquals(CREATE_RECORDS/2, _repo.findAll(TestRecord.class).size());
 
-        _repo.deleteAll(TestRecord.class, new Where(Exps.literal("true")));
+        _repo.deleteAll(TestRecord.class, new Where(Exps.trueLiteral()));
         assertEquals(0, _repo.findAll(TestRecord.class).size());
 
 //         // TODO: try to break our In() clause

@@ -81,6 +81,8 @@ public class KeyTest extends TestBase
         assertEquals(4, _repo.loadEnums(EnumSet.allOf(EnumKeyRecord.Type.class)).size());
 
         assertEquals("beee", _repo.loadEnum(EnumKeyRecord.Type.B).name);
+
+        _repo.from(EnumKeyRecord.class).where(Exps.trueLiteral()).delete();
     }
 
     // the HSQL in-memory database persists for the lifetime of the VM, which means we have to
