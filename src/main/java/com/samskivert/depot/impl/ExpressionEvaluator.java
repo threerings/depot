@@ -175,7 +175,7 @@ public class ExpressionEvaluator
         return null;
     }
 
-    public Object visit (ColumnExp columnExp)
+    public Object visit (ColumnExp<?> columnExp)
     {
         Class<? extends PersistentRecord> pClass = columnExp.getPersistentClass();
         if (pClass != _pClass) {
@@ -186,7 +186,7 @@ public class ExpressionEvaluator
             Field field = pClass.getField(columnExp.name);
             if (field == null) {
                 log.warning("Couldn't locate field on class", "field", columnExp.name,
-                    "class", pClass);
+                            "class", pClass);
                 return new NoValue("Internal Error");
             }
             return field.get(_pRec);
@@ -241,7 +241,7 @@ public class ExpressionEvaluator
             return new NoValue("Column lookup on unknown persistent class: " + pClass);
         }
 
-        ColumnExp[] keyFields = DepotUtil.getKeyFields(pClass);
+        ColumnExp<?>[] keyFields = DepotUtil.getKeyFields(pClass);
         Comparable<?>[] values = key.getValues();
 
         for (int ii = 0; ii < keyFields.length; ii ++) {

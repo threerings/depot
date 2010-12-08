@@ -28,8 +28,8 @@ public class GeneratedValueRecord extends PersistentRecord
 {
     // AUTO-GENERATED: FIELDS START
     public static final Class<GeneratedValueRecord> _R = GeneratedValueRecord.class;
-    public static final ColumnExp RECORD_ID = colexp(_R, "recordId");
-    public static final ColumnExp VALUE = colexp(_R, "value");
+    public static final ColumnExp<Integer> RECORD_ID = colexp(_R, "recordId");
+    public static final ColumnExp<Integer> VALUE = colexp(_R, "value");
     // AUTO-GENERATED: FIELDS END
 
     public static final int SCHEMA_VERSION = 1;

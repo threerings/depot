@@ -20,6 +20,7 @@
 
 package com.samskivert.depot;
 
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;

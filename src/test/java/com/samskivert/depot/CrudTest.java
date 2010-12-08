@@ -63,9 +63,9 @@ public class CrudTest extends TestBase
         String name = "Bob";
         int age = 25;
         int[] numbers = { 1, 2, 3, 4, 5 };
-        _repo.updatePartial(TestRecord.getKey(in.recordId),
-                            ImmutableMap.of(TestRecord.NAME, name, TestRecord.AGE, age,
-                                            TestRecord.NUMBERS, numbers));
+        _repo.updatePartial(TestRecord.getKey(in.recordId), ImmutableMap.of(
+                                TestRecord.NAME, name, TestRecord.AGE, age,
+                                TestRecord.NUMBERS, numbers));
         TestRecord up = _repo.loadNoCache(in.recordId);
         assertEquals(name, up.name);
         assertEquals(age, up.age);

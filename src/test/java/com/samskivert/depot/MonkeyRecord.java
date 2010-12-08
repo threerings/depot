@@ -30,9 +30,9 @@ public class MonkeyRecord extends PersistentRecord
 {
     // AUTO-GENERATED: FIELDS START
     public static final Class<MonkeyRecord> _R = MonkeyRecord.class;
-    public static final ColumnExp SPECIES = colexp(_R, "species");
-    public static final ColumnExp MONKEY_ID = colexp(_R, "monkeyId");
-    public static final ColumnExp NAME = colexp(_R, "name");
+    public static final ColumnExp<Integer> SPECIES = colexp(_R, "species");
+    public static final ColumnExp<Integer> MONKEY_ID = colexp(_R, "monkeyId");
+    public static final ColumnExp<String> NAME = colexp(_R, "name");
     // AUTO-GENERATED: FIELDS END
 
     /** This monkey's species. This is part of our key so that we have a composite key. */

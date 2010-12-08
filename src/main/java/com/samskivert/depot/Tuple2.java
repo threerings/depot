@@ -2,7 +2,7 @@
 // $Id$
 //
 // Depot library - a Java relational persistence library
-// Copyright (C) 2006-2009 Michael Bayne and Pär Winzell
+// Copyright (C) 2006-2010 Michael Bayne and Pär Winzell
 //
 // This library is free software; you can redistribute it and/or modify it
 // under the terms of the GNU Lesser General Public License as published
@@ -20,24 +20,27 @@
 
 package com.samskivert.depot;
 
-import com.samskivert.depot.annotation.Computed;
-import com.samskivert.depot.annotation.Entity;
-import com.samskivert.depot.expression.ColumnExp;
+import java.io.Serializable;
+
+import com.samskivert.depot.impl.QueryResult;
 
 /**
- * Handy record for computing the count of something. In general, you need not use this directly,
- * but should instead use {@link QueryBuilder#selectCount}. For example: {@code
- * from(ForumThreadRecord.class).where(ForumThreadRecord.GROUP_ID.eq(groupId)).selectCount()}
+ * Contains a two column result.
  */
-@Computed @Entity
-public class CountRecord extends PersistentRecord
+public class Tuple2<A,B> implements Serializable
 {
-    // AUTO-GENERATED: FIELDS START
-    public static final Class<CountRecord> _R = CountRecord.class;
-    public static final ColumnExp<Integer> COUNT = colexp(_R, "count");
-    // AUTO-GENERATED: FIELDS END
+    public final A a;
+    public final B b;
 
-    /** The computed count. */
-    @Computed(fieldDefinition="count(*)")
-    public int count;
+    public Tuple2 (A a, B b)
+    {
+        this.a = a;
+        this.b = b;
+    }
+
+    @Override
+    public String toString ()
+    {
+        return "[" + a + "," + b + "]";
+    }
 }

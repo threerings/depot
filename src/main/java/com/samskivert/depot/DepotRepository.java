@@ -337,13 +337,20 @@ public abstract class DepotRepository
         return _ctx.invoke(new FindAllKeysQuery<T>(_ctx, type, forUpdate, clauses));
     }
 
+    // public <T extends PersistentRecord> List<Object> findAll (
+    //     Class<T> type, Iterable<? extends QueryClause> clauses)
+    //     throws DatabaseException
+    // {
+    //     return _ctx.invoke(new FindAllQuery.ForColumns<T>(_ctx, type, clauses, column));
+    // }
+
     /**
      * Returns a builder that can be used to construct a query in a fluent style. For example:
      * {@code from(FooRecord.class).where(ID.greaterThan(25)).ascending(SIZE).select()}
      */
     public <T extends PersistentRecord> QueryBuilder<T> from (Class<T> type)
     {
-        return new QueryBuilder<T>(this, type);
+        return new QueryBuilder<T>(_ctx, this, type);
     }
 
     /**
@@ -422,7 +429,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    public <T extends PersistentRecord> int update (T record, final ColumnExp... modifiedFields)
+    public <T extends PersistentRecord> int update (T record, final ColumnExp<?>... modifiedFields)
         throws DatabaseException
     {
         @SuppressWarnings("unchecked") Class<T> pClass = (Class<T>) record.getClass();
@@ -451,7 +458,7 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     public <T extends PersistentRecord> int updatePartial (
-        Key<T> key, ColumnExp field, Object value, Object... more)
+        Key<T> key, ColumnExp<?> field, Object value, Object... more)
         throws DatabaseException
     {
         return updatePartial(key.getPersistentClass(), key, key, field, value, more);
@@ -471,7 +478,8 @@ public abstract class DepotRepository
      * values that duplicate another row already in the database.
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    public <T extends PersistentRecord> int updatePartial (Key<T> key, Map<ColumnExp, ?> updates)
+    public <T extends PersistentRecord> int updatePartial (
+        Key<T> key, Map<? extends ColumnExp<?>, ?> updates)
         throws DatabaseException
     {
         return updatePartial(key.getPersistentClass(), key, key, updates);
@@ -498,15 +506,15 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     public <T extends PersistentRecord> int updatePartial (
-        Class<T> type, final WhereClause key, CacheInvalidator invalidator,
-        Map<ColumnExp, ?> updates)
+        Class<T> type, WhereClause key, CacheInvalidator invalidator,
+        Map<? extends ColumnExp<?>, ?> updates)
         throws DatabaseException
     {
         // separate the arguments into keys and values
-        final ColumnExp[] fields = new ColumnExp[updates.size()];
+        final ColumnExp<?>[] fields = new ColumnExp<?>[updates.size()];
         final SQLExpression[] values = new SQLExpression[fields.length];
         int ii = 0;
-        for (Map.Entry<ColumnExp, ?> entry : updates.entrySet()) {
+        for (Map.Entry<? extends ColumnExp<?>, ?> entry : updates.entrySet()) {
             fields[ii] = entry.getKey();
             values[ii++] = makeValue(entry.getValue());
         }
@@ -536,16 +544,16 @@ public abstract class DepotRepository
      */
     public <T extends PersistentRecord> int updatePartial (
         Class<T> type, final WhereClause key, CacheInvalidator invalidator,
-        ColumnExp field, Object value, Object... more)
+        ColumnExp<?> field, Object value, Object... more)
         throws DatabaseException
     {
         // separate the updates into keys and values
-        final ColumnExp[] fields = new ColumnExp[1+more.length/2];
+        final ColumnExp<?>[] fields = new ColumnExp<?>[1+more.length/2];
         final SQLExpression[] values = new SQLExpression[fields.length];
         fields[0] = field;
         values[0] = makeValue(value);
         for (int ii = 1, idx = 0; ii < fields.length; ii++) {
-            fields[ii] = (ColumnExp)more[idx++];
+            fields[ii] = (ColumnExp<?>)more[idx++];
             values[ii] = makeValue(more[idx++]);
         }
         return updatePartial(type, key, invalidator, fields, values);
@@ -572,7 +580,7 @@ public abstract class DepotRepository
      */
     public <T extends PersistentRecord> int updatePartial (
         Class<T> type, final WhereClause key, CacheInvalidator invalidator,
-        ColumnExp[] fields, SQLExpression[] values)
+        ColumnExp<?>[] fields, SQLExpression[] values)
         throws DatabaseException
     {
         requireNotComputed(type, "updatePartial");

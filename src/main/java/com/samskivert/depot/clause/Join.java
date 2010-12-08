@@ -37,7 +37,7 @@ public class Join implements QueryClause
     /** Indicates the join type to be used. The default is INNER. */
     public static enum Type { INNER, LEFT_OUTER, RIGHT_OUTER }
 
-    public Join (ColumnExp primary, ColumnExp join)
+    public Join (ColumnExp<?> primary, ColumnExp<?> join)
     {
         _joinClass = join.getPersistentClass();
         _joinCondition = new Equals(primary, join);

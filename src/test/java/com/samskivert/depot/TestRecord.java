@@ -38,13 +38,13 @@ public class TestRecord extends PersistentRecord
 {
     // AUTO-GENERATED: FIELDS START
     public static final Class<TestRecord> _R = TestRecord.class;
-    public static final ColumnExp RECORD_ID = colexp(_R, "recordId");
-    public static final ColumnExp NAME = colexp(_R, "name");
-    public static final ColumnExp AGE = colexp(_R, "age");
-    public static final ColumnExp HOME_TOWN = colexp(_R, "homeTown");
-    public static final ColumnExp CREATED = colexp(_R, "created");
-    public static final ColumnExp LAST_MODIFIED = colexp(_R, "lastModified");
-    public static final ColumnExp NUMBERS = colexp(_R, "numbers");
+    public static final ColumnExp<Integer> RECORD_ID = colexp(_R, "recordId");
+    public static final ColumnExp<String> NAME = colexp(_R, "name");
+    public static final ColumnExp<Integer> AGE = colexp(_R, "age");
+    public static final ColumnExp<String> HOME_TOWN = colexp(_R, "homeTown");
+    public static final ColumnExp<Date> CREATED = colexp(_R, "created");
+    public static final ColumnExp<Timestamp> LAST_MODIFIED = colexp(_R, "lastModified");
+    public static final ColumnExp<int[]> NUMBERS = colexp(_R, "numbers");
     // AUTO-GENERATED: FIELDS END
 
     public static final int SCHEMA_VERSION = 3;

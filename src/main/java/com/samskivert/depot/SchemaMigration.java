@@ -76,7 +76,7 @@ public abstract class SchemaMigration extends Modifier
      */
     public static class Rename extends SchemaMigration
     {
-        public Rename (int targetVersion, String oldColumnName, ColumnExp newColumn) {
+        public Rename (int targetVersion, String oldColumnName, ColumnExp<?> newColumn) {
             super(targetVersion);
             _oldColumnName = oldColumnName;
             _fieldName = newColumn.name;
@@ -131,7 +131,7 @@ public abstract class SchemaMigration extends Modifier
      */
     public static class Retype extends SchemaMigration
     {
-        public Retype (int targetVersion, ColumnExp column) {
+        public Retype (int targetVersion, ColumnExp<?> column) {
             super(targetVersion);
             _fieldName = column.name;
         }
@@ -170,7 +170,7 @@ public abstract class SchemaMigration extends Modifier
      */
     public static class Add extends SchemaMigration
     {
-        public Add (int targetVersion, ColumnExp column, String defaultValue) {
+        public Add (int targetVersion, ColumnExp<?> column, String defaultValue) {
             super(targetVersion);
             _fieldName = column.name;
             _defaultValue = defaultValue;

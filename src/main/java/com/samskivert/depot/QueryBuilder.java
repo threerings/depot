@@ -29,6 +29,8 @@ import com.google.common.collect.Lists;
 import com.samskivert.depot.clause.*;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.impl.ColumnSet;
+import com.samskivert.depot.impl.FindAllQuery;
 
 /**
  * The root of a fluent mechanism for constructing queries. Obtain an instance via {@link
@@ -37,8 +39,9 @@ import com.samskivert.depot.expression.SQLExpression;
 public class QueryBuilder<T extends PersistentRecord>
     implements Cloneable
 {
-    public QueryBuilder (DepotRepository repo, Class<T> pclass)
+    public QueryBuilder (PersistenceContext ctx, DepotRepository repo, Class<T> pclass)
     {
+        _ctx = ctx;
         _repo = repo;
         _pclass = pclass;
     }
@@ -104,7 +107,7 @@ public class QueryBuilder<T extends PersistentRecord>
      * Configures a {@link Where} clause that selects rows where the supplied column equals the
      * supplied value.
      */
-    public QueryBuilder<T> where (ColumnExp column, Comparable<?> value)
+    public <V extends Comparable<? super V>> QueryBuilder<T> where (ColumnExp<V> column, V value)
     {
         return where(new Where(column, value));
     }
@@ -113,8 +116,8 @@ public class QueryBuilder<T extends PersistentRecord>
      * Configures a {@link Where} clause that selects rows where both supplied columns equal both
      * supplied values.
      */
-    public QueryBuilder<T> where (ColumnExp index1, Comparable<?> value1,
-                                  ColumnExp index2, Comparable<?> value2)
+    public <V1 extends Comparable<? super V1>, V2 extends Comparable<? super V2>>
+        QueryBuilder<T> where (ColumnExp<V1> index1, V1 value1, ColumnExp<V2> index2, V2 value2)
     {
         return where(new Where(index1, value1, index2, value2));
     }
@@ -133,7 +136,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Adds a {@link Join} clause configured with the supplied left and right columns.
      */
-    public QueryBuilder<T> join (ColumnExp left, ColumnExp right)
+    public QueryBuilder<T> join (ColumnExp<?> left, ColumnExp<?> right)
     {
         return join(new Join(left, right));
     }
@@ -151,7 +154,7 @@ public class QueryBuilder<T extends PersistentRecord>
      * Adds a {@link Join} clause configured with the supplied left and right columns and join
      * type.
      */
-    public QueryBuilder<T> join (ColumnExp left, ColumnExp right, Join.Type type)
+    public QueryBuilder<T> join (ColumnExp<?> left, ColumnExp<?> right, Join.Type type)
     {
         return join(new Join(left, right).setType(type));
     }
@@ -279,7 +282,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Adds a {@link FieldDefinition} clause.
      */
-    public QueryBuilder<T> fieldDef (ColumnExp field, SQLExpression override)
+    public QueryBuilder<T> fieldDef (ColumnExp<?> field, SQLExpression override)
     {
         return fieldDef(new FieldDefinition(field, override));
     }
@@ -346,6 +349,24 @@ public class QueryBuilder<T extends PersistentRecord>
     {
         _fromOverride = new FromOverride(_pclass);
         return _repo.load(CountRecord.class, _cache, getClauseArray()).count;
+    }
+
+    /**
+     * Returns just the supplied column from the rows matching the query.
+     */
+    public <V> List<V> select (ColumnExp<V> column)
+    {
+        return _ctx.invoke(new FindAllQuery.ForColumns<T,V>(
+                               _ctx, ColumnSet.create(_pclass, column), getClauses()));
+    }
+
+    /**
+     * Returns just the supplied columns from the rows matching the query.
+     */
+    public <V1, V2> List<Tuple2<V1,V2>> select (ColumnExp<V1> col1, ColumnExp<V2> col2)
+    {
+        return _ctx.invoke(new FindAllQuery.ForColumns<T,Tuple2<V1,V2>>(
+                               _ctx, ColumnSet.create(_pclass, col1, col2), getClauses()));
     }
 
     /**
@@ -455,6 +476,7 @@ public class QueryBuilder<T extends PersistentRecord>
         requireNull(_forUpdate, "ForUpdate clause not supported by delete.");
     }
 
+    protected final PersistenceContext _ctx;
     protected final DepotRepository _repo;
     protected final Class<T> _pclass;
 

@@ -160,7 +160,7 @@ public class MySQLBuilder
                 if (ii > 0) {
                     _builder.append(", ");
                 }
-                new ColumnExp(pClass, fields[ii]).accept(this);
+                new ColumnExp<Object>(pClass, fields[ii]).accept(this);
             }
             _builder.append(") against (");
             bindValue(fullText.getQuery());

@@ -76,7 +76,7 @@ import static com.samskivert.depot.Log.log;
  * Handles the marshalling and unmarshalling of persistent instances to JDBC primitives ({@link
  * PreparedStatement} and {@link ResultSet}).
  */
-public class DepotMarshaller<T extends PersistentRecord>
+public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshaller<T,T>
 {
     /** The name of a private static field that must be defined for all persistent object classes.
      * It is used to handle schema migration. If automatic schema migration is not desired, define
@@ -119,7 +119,7 @@ public class DepotMarshaller<T extends PersistentRecord>
         boolean seenIdentityGenerator = false;
 
         // introspect on the class and create marshallers and indices for persistent fields
-        List<ColumnExp> fields = Lists.newArrayList();
+        List<ColumnExp<?>> fields = Lists.newArrayList();
         ListMultimap<String, Tuple<SQLExpression, Order>> namedFieldIndices =
             ArrayListMultimap.create();
         ListMultimap<String, Tuple<SQLExpression, Order>> uniqueNamedFieldIndices =
@@ -146,7 +146,7 @@ public class DepotMarshaller<T extends PersistentRecord>
 
             FieldMarshaller<?> fm = FieldMarshaller.createMarshaller(field);
             _fields.put(field.getName(), fm);
-            ColumnExp fieldColumn = new ColumnExp(_pClass, field.getName());
+            ColumnExp<?> fieldColumn = new ColumnExp<Object>(_pClass, field.getName());
             fields.add(fieldColumn);
 
             // check to see if this is our primary key
@@ -245,7 +245,7 @@ public class DepotMarshaller<T extends PersistentRecord>
         }
 
         // generate our full list of fields/columns for use in queries
-        _allFields = fields.toArray(new ColumnExp[fields.size()]);
+        _allFields = fields.toArray(new ColumnExp<?>[fields.size()]);
 
         // now check for @Entity annotations on the entire superclass chain
         Class<? extends PersistentRecord> iterClass = pClass.asSubclass(PersistentRecord.class);
@@ -254,7 +254,7 @@ public class DepotMarshaller<T extends PersistentRecord>
             if (entity != null) {
                 // add any indices needed for uniqueness constraints
                 for (UniqueConstraint constraint : entity.uniqueConstraints()) {
-                    ColumnExp[] colExps = new ColumnExp[constraint.fields().length];
+                    ColumnExp<?>[] colExps = new ColumnExp<?>[constraint.fields().length];
                     int ii = 0;
                     for (String field : constraint.fields()) {
                         FieldMarshaller<?> fm = _fields.get(field);
@@ -262,7 +262,7 @@ public class DepotMarshaller<T extends PersistentRecord>
                             throw new IllegalArgumentException(
                                 "Unknown unique constraint field: " + field);
                         }
-                        colExps[ii ++] = new ColumnExp(_pClass, field);
+                        colExps[ii ++] = new ColumnExp<Object>(_pClass, field);
                     }
                     _indexes.add(buildIndex(constraint.name(), true, colExps));
                 }
@@ -316,7 +316,7 @@ public class DepotMarshaller<T extends PersistentRecord>
     /**
      * Returns all the persistent fields of our class, in definition order.
      */
-    public ColumnExp[] getFieldNames ()
+    public ColumnExp<?>[] getFieldNames ()
     {
         return _allFields;
     }
@@ -324,7 +324,7 @@ public class DepotMarshaller<T extends PersistentRecord>
     /**
      * Returns all the persistent fields that correspond to concrete table columns.
      */
-    public ColumnExp[] getColumnFieldNames ()
+    public ColumnExp<?>[] getColumnFieldNames ()
     {
         return _columnFields;
     }
@@ -374,11 +374,11 @@ public class DepotMarshaller<T extends PersistentRecord>
      * Return the names of the columns that constitute the primary key of our associated persistent
      * record.
      */
-    public ColumnExp[] getPrimaryKeyFields ()
+    public ColumnExp<?>[] getPrimaryKeyFields ()
     {
-        ColumnExp[] pkcols = new ColumnExp[_pkColumns.size()];
+        ColumnExp<?>[] pkcols = new ColumnExp<?>[_pkColumns.size()];
         for (int ii = 0; ii < pkcols.length; ii ++) {
-            pkcols[ii] = new ColumnExp(_pClass, _pkColumns.get(ii).getField().getName());
+            pkcols[ii] = new ColumnExp<Object>(_pClass, _pkColumns.get(ii).getField().getName());
         }
         return pkcols;
     }
@@ -533,10 +533,10 @@ public class DepotMarshaller<T extends PersistentRecord>
 
         // figure out the list of fields that correspond to actual table columns and generate the
         // SQL used to create and migrate our table (unless we're a computed entity)
-        _columnFields = new ColumnExp[_allFields.length];
+        _columnFields = new ColumnExp<?>[_allFields.length];
         ColumnDefinition[] declarations = new ColumnDefinition[_allFields.length];
         int jj = 0;
-        for (ColumnExp field : _allFields) {
+        for (ColumnExp<?> field : _allFields) {
             FieldMarshaller<?> fm = _fields.get(field.name);
             // include all persistent non-computed fields
             ColumnDefinition colDef = fm.getColumnDefinition();
@@ -778,7 +778,7 @@ public class DepotMarshaller<T extends PersistentRecord>
         Set<String> preMigrateColumns = Sets.newHashSet(metaData.tableColumns);
 
         // add any missing columns
-        for (ColumnExp field : _columnFields) {
+        for (ColumnExp<?> field : _columnFields) {
             final FieldMarshaller<?> fmarsh = _fields.get(field.name);
             if (metaData.tableColumns.remove(fmarsh.getColumnName())) {
                 continue;
@@ -969,10 +969,10 @@ public class DepotMarshaller<T extends PersistentRecord>
     protected CreateIndexClause buildIndex (String name, boolean unique, Object config)
     {
         List<Tuple<SQLExpression, Order>> definition = Lists.newArrayList();
-        if (config instanceof ColumnExp) {
-            definition.add(new Tuple<SQLExpression, Order>((ColumnExp)config, Order.ASC));
-        } else if (config instanceof ColumnExp[]) {
-            for (ColumnExp column : (ColumnExp[])config) {
+        if (config instanceof ColumnExp<?>) {
+            definition.add(new Tuple<SQLExpression, Order>((ColumnExp<?>)config, Order.ASC));
+        } else if (config instanceof ColumnExp<?>[]) {
+            for (ColumnExp<?> column : (ColumnExp<?>[])config) {
                 definition.add(new Tuple<SQLExpression, Order>(column, Order.ASC));
             }
         } else if (config instanceof SQLExpression) {
@@ -994,7 +994,7 @@ public class DepotMarshaller<T extends PersistentRecord>
     }
 
     // translate an array of field names to an array of column names
-    protected String[] fieldsToColumns (ColumnExp[] fields)
+    protected String[] fieldsToColumns (ColumnExp<?>[] fields)
     {
         String[] columns = new String[fields.length];
         for (int ii = 0; ii < columns.length; ii ++) {
@@ -1015,7 +1015,7 @@ public class DepotMarshaller<T extends PersistentRecord>
         TableMetaData meta, PersistenceContext ctx, SQLBuilder builder)
         throws DatabaseException
     {
-        for (ColumnExp field : _columnFields) {
+        for (ColumnExp<?> field : _columnFields) {
             FieldMarshaller<?> fmarsh = _fields.get(field.name);
             meta.tableColumns.remove(fmarsh.getColumnName());
         }
@@ -1135,10 +1135,10 @@ public class DepotMarshaller<T extends PersistentRecord>
     protected List<FieldMarshaller<?>> _pkColumns;
 
     /** The persisent fields of our object, in definition order. */
-    protected ColumnExp[] _allFields;
+    protected ColumnExp<?>[] _allFields;
 
     /** The fields of our object with directly corresponding table columns. */
-    protected ColumnExp[] _columnFields;
+    protected ColumnExp<?>[] _columnFields;
 
     /** The indexes defined for this record. */
     protected List<CreateIndexClause> _indexes = Lists.newArrayList();

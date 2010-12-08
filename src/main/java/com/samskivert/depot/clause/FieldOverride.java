@@ -50,7 +50,7 @@ public class FieldOverride extends FieldDefinition
         super(field, override);
     }
 
-    public FieldOverride (ColumnExp field, SQLExpression override)
+    public FieldOverride (ColumnExp<?> field, SQLExpression override)
     {
         super(field, override);
     }

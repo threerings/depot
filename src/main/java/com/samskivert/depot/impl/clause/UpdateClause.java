@@ -37,7 +37,7 @@ public class UpdateClause
     implements QueryClause
 {
     public UpdateClause (Class<? extends PersistentRecord> pClass, WhereClause where,
-                         ColumnExp[] fields, PersistentRecord pojo)
+                         ColumnExp<?>[] fields, PersistentRecord pojo)
     {
         _pClass = pClass;
         _where = where;
@@ -47,7 +47,7 @@ public class UpdateClause
     }
 
     public UpdateClause (Class<? extends PersistentRecord> pClass, WhereClause where,
-                         ColumnExp[] fields, SQLExpression[] values)
+                         ColumnExp<?>[] fields, SQLExpression[] values)
     {
         _pClass = pClass;
         _fields = fields;
@@ -61,7 +61,7 @@ public class UpdateClause
         return _where;
     }
 
-    public ColumnExp[] getFields ()
+    public ColumnExp<?>[] getFields ()
     {
         return _fields;
     }
@@ -108,7 +108,7 @@ public class UpdateClause
     protected WhereClause _where;
 
     /** The persistent fields to update. */
-    protected ColumnExp[] _fields;
+    protected ColumnExp<?>[] _fields;
 
     /** The field values, or null. */
     protected SQLExpression[] _values;

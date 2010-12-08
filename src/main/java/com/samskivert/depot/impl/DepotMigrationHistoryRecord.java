@@ -35,8 +35,8 @@ public class DepotMigrationHistoryRecord extends PersistentRecord
 {
     // AUTO-GENERATED: FIELDS START
     public static final Class<DepotMigrationHistoryRecord> _R = DepotMigrationHistoryRecord.class;
-    public static final ColumnExp IDENT = colexp(_R, "ident");
-    public static final ColumnExp WHEN_COMPLETED = colexp(_R, "whenCompleted");
+    public static final ColumnExp<String> IDENT = colexp(_R, "ident");
+    public static final ColumnExp<Timestamp> WHEN_COMPLETED = colexp(_R, "whenCompleted");
     // AUTO-GENERATED: FIELDS END
 
     /** Our schema version. Probably not likely to change. */

@@ -30,7 +30,7 @@ import com.samskivert.depot.impl.FragmentVisitor;
  * An expression that unambiguously identifies a field of a class, for example
  * <code>GameRecord.itemId</code>.
  */
-public class ColumnExp extends FluentExp
+public class ColumnExp<T> extends FluentExp
 {
     /** The name of the column we reference. */
     public final String name;
@@ -47,13 +47,13 @@ public class ColumnExp extends FluentExp
      * expression. This is useful for "casting" a column expression from a parent class to a
      * derived class.
      */
-    public ColumnExp as (Class<? extends PersistentRecord> oClass)
+    public ColumnExp<T> as (Class<? extends PersistentRecord> oClass)
     {
-        return new ColumnExp(oClass, name);
+        return new ColumnExp<T>(oClass, name);
     }
 
     /** Returns a {@link Join} on this column and the supplied target. */
-    public Join join (ColumnExp join)
+    public Join join (ColumnExp<?> join)
     {
         return new Join(this, join);
     }
@@ -84,9 +84,9 @@ public class ColumnExp extends FluentExp
     @Override // from Object
     public boolean equals (Object other)
     {
-        return (other instanceof ColumnExp) &&
-            ((ColumnExp)other)._pClass.equals(_pClass) &&
-            ((ColumnExp)other).name.equals(this.name);
+        return (other instanceof ColumnExp<?>) &&
+            ((ColumnExp<?>)other)._pClass.equals(_pClass) &&
+            ((ColumnExp<?>)other).name.equals(this.name);
     }
 
     @Override // from Object

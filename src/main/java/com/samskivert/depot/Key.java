@@ -73,30 +73,32 @@ public class Key<T extends PersistentRecord> extends WhereClause
     /**
      * Creates a single column key.
      */
-    public static <T extends PersistentRecord> Key<T> newKey (
-        Class<T> pClass, ColumnExp ix, Comparable<?> val)
+    public static <T extends PersistentRecord, V extends Comparable<V>> Key<T> newKey (
+        Class<T> pClass, ColumnExp<V> ix, V val)
     {
-        return new Key<T>(pClass, new ColumnExp[] { ix }, new Comparable[] { val });
+        return new Key<T>(pClass, new ColumnExp<?>[] { ix }, new Comparable<?>[] { val });
     }
 
     /**
      * Creates a two column key.
      */
-    public static <T extends PersistentRecord> Key<T> newKey (
-        Class<T> pClass, ColumnExp ix1, Comparable<?> val1, ColumnExp ix2, Comparable<?> val2)
+    public static <T extends PersistentRecord, V1 extends Comparable<V1>, V2 extends Comparable<V2>>
+        Key<T> newKey (Class<T> pClass, ColumnExp<V1> ix1, V1 val1, ColumnExp<V2> ix2, V2 val2)
     {
-        return new Key<T>(pClass, new ColumnExp[] { ix1, ix2 }, new Comparable[] { val1, val2 });
+        return new Key<T>(pClass, new ColumnExp<?>[] { ix1, ix2 },
+                          new Comparable<?>[] { val1, val2 });
     }
 
     /**
      * Creates a three column key.
      */
-    public static <T extends PersistentRecord> Key<T> newKey (
-        Class<T> pClass, ColumnExp ix1, Comparable<?> val1, ColumnExp ix2, Comparable<?> val2,
-        ColumnExp ix3, Comparable<?> val3)
+    public static <T extends PersistentRecord, V1 extends Comparable<V1>,
+                   V2 extends Comparable<V2>, V3 extends Comparable<V3>>
+        Key<T> newKey (Class<T> pClass, ColumnExp<V1> ix1, V1 val1, ColumnExp<V2> ix2, V2 val2,
+                       ColumnExp<V3> ix3, V3 val3)
     {
-        return new Key<T>(pClass, new ColumnExp[] { ix1, ix2, ix3 },
-                          new Comparable[] { val1, val2, val3 });
+        return new Key<T>(pClass, new ColumnExp<?>[] { ix1, ix2, ix3 },
+                          new Comparable<?>[] { val1, val2, val3 });
     }
 
     /**
@@ -126,7 +128,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
     /**
      * Constructs a new multi-column {@code Key} with the given values.
      */
-    public Key (Class<T> pClass, ColumnExp[] fields, Comparable<?>[] values)
+    public Key (Class<T> pClass, ColumnExp<?>[] fields, Comparable<?>[] values)
     {
         this(pClass, toCanonicalOrder(pClass, fields, values));
     }
@@ -198,7 +200,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
      */
     public void toShortString (StringBuilder builder)
     {
-        ColumnExp[] keyFields = DepotUtil.getKeyFields(_pClass);
+        ColumnExp<?>[] keyFields = DepotUtil.getKeyFields(_pClass);
         for (int ii = 0; ii < keyFields.length; ii ++) {
             if (ii > 0) {
                 builder.append(":");
@@ -243,14 +245,14 @@ public class Key<T extends PersistentRecord> extends WhereClause
     }
 
     protected static Comparable<?>[] toCanonicalOrder (
-        Class<? extends PersistentRecord> pClass, ColumnExp[] fields, Comparable<?>[] values)
+        Class<? extends PersistentRecord> pClass, ColumnExp<?>[] fields, Comparable<?>[] values)
     {
         if (fields.length != values.length) {
             throw new IllegalArgumentException("Field and Value arrays must be of equal length.");
         }
 
         // look up the cached primary key fields for this object
-        ColumnExp[] keyFields = DepotUtil.getKeyFields(pClass);
+        ColumnExp<?>[] keyFields = DepotUtil.getKeyFields(pClass);
 
         // fast path!
         if (fields.length == 1 && keyFields.length == 1 && keyFields[0].equals(fields[0])) {
@@ -258,7 +260,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
         }
 
         // build a local map of field name -> field value
-        Map<ColumnExp, Comparable<?>> map = Maps.newHashMap();
+        Map<ColumnExp<?>, Comparable<?>> map = Maps.newHashMap();
         for (int ii = 0; ii < fields.length; ii++) {
             map.put(fields[ii], values[ii]);
         }

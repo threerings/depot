@@ -147,7 +147,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     public Void visit (Key.Expression key)
     {
         Class<? extends PersistentRecord> pClass = key.getPersistentClass();
-        ColumnExp[] keyFields = DepotUtil.getKeyFields(pClass);
+        ColumnExp<?>[] keyFields = DepotUtil.getKeyFields(pClass);
         Comparable<?>[] values = key.getValues();
         for (int ii = 0; ii < keyFields.length; ii ++) {
             if (ii > 0) {
@@ -241,7 +241,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         return null;
     }
 
-    public Void visit (ColumnExp columnExp)
+    public Void visit (ColumnExp<?> columnExp)
     {
         appendRhsColumn(columnExp.getPersistentClass(), columnExp);
         return null;
@@ -373,7 +373,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
             // while expanding column names in the SELECT query, do aliasing and expansion
             _enableAliasing = _enableOverrides = true;
 
-            for (ColumnExp field : selectClause.getFields()) {
+            for (ColumnExp<?> field : selectClause.getFields()) {
                 // write column to a temporary buffer
                 StringBuilder saved = _builder;
                 _builder = new StringBuilder();
@@ -457,7 +457,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         appendTableAbbreviation(pClass);
         _builder.append(" set ");
 
-        ColumnExp[] fields = updateClause.getFields();
+        ColumnExp<?>[] fields = updateClause.getFields();
         Object pojo = updateClause.getPojo();
         SQLExpression[] values = updateClause.getValues();
         for (int ii = 0; ii < fields.length; ii ++) {
@@ -503,7 +503,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     {
         if (!_allowComplexIndices) {
             for (Tuple<SQLExpression, Order> field : createIndexClause.getFields()) {
-                if (!(field.left instanceof ColumnExp)) {
+                if (!(field.left instanceof ColumnExp<?>)) {
                     log.warning("This database can't handle complex indexes. Aborting creation.",
                         "ixName", createIndexClause.getName());
                     return null;
@@ -757,7 +757,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     }
 
     protected Void bindField (
-        Class<? extends PersistentRecord> pClass, ColumnExp field, Object pojo)
+        Class<? extends PersistentRecord> pClass, ColumnExp<?> field, Object pojo)
     {
         final DepotMarshaller<?> marshaller = _types.getMarshaller(pClass);
         _bindables.add(newBindable(marshaller, field, pojo));
@@ -781,7 +781,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     // equivalent of an lvalue; something that can appear to the left of an equals sign.
     // We do not prepend this identifier with a table abbreviation, nor do we expand
     // field overrides, shadowOf declarations, or the like: it is just a column name.
-    protected void appendLhsColumn (Class<? extends PersistentRecord> type, ColumnExp field)
+    protected void appendLhsColumn (Class<? extends PersistentRecord> type, ColumnExp<?> field)
     {
         // TODO: nix type and use the class from the supplied ColumnExp
         DepotMarshaller<?> dm = _types.getMarshaller(type);
@@ -796,7 +796,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
 
     // Appends an expression for the given field on the given persistent record; this can
     // appear in a SELECT list, in WHERE clauses, etc, etc.
-    protected void appendRhsColumn (Class<? extends PersistentRecord> type, ColumnExp field)
+    protected void appendRhsColumn (Class<? extends PersistentRecord> type, ColumnExp<?> field)
     {
         DepotMarshaller<?> dm = _types.getMarshaller(type);
         if (dm == null) {
@@ -903,11 +903,11 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         Object pojo = insertClause.getPojo();
         DepotMarshaller<?> marsh = _types.getMarshaller(pClass);
         Set<String> idFields = insertClause.getIdentityFields();
-        ColumnExp[] fields = marsh.getColumnFieldNames();
+        ColumnExp<?>[] fields = marsh.getColumnFieldNames();
 
         _builder.append("(");
         boolean comma = false;
-        for (ColumnExp field : fields) {
+        for (ColumnExp<?> field : fields) {
             if (idFields.contains(field.name)) {
                 continue;
             }
@@ -920,7 +920,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         _builder.append(") values (");
 
         comma = false;
-        for (ColumnExp field : fields) {
+        for (ColumnExp<?> field : fields) {
             if (idFields.contains(field.name)) {
                 continue;
             }
@@ -945,7 +945,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     }
 
     protected static Bindable newBindable (
-        final DepotMarshaller<?> marshaller, final ColumnExp field, final Object pojo)
+        final DepotMarshaller<?> marshaller, final ColumnExp<?> field, final Object pojo)
     {
         return new Bindable() {
             public void doBind (Connection conn, PreparedStatement stmt, int argIx)

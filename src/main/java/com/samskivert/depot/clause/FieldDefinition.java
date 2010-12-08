@@ -46,7 +46,7 @@ public class FieldDefinition implements QueryClause
 
     public FieldDefinition (String field, Class<? extends PersistentRecord> pClass, String pCol)
     {
-        this(field, new ColumnExp(pClass, pCol));
+        this(field, new ColumnExp<Object>(pClass, pCol));
     }
 
     public FieldDefinition (String field, SQLExpression override)
@@ -55,7 +55,7 @@ public class FieldDefinition implements QueryClause
         _definition = override;
     }
 
-    public FieldDefinition (ColumnExp field, SQLExpression override)
+    public FieldDefinition (ColumnExp<?> field, SQLExpression override)
     {
         _field = field.name;
         _definition = override;

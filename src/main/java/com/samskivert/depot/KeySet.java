@@ -62,7 +62,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             return new EmptyKeySet<T>(pClass);
         }
 
-        ColumnExp[] keyFields = DepotUtil.getKeyFields(pClass);
+        ColumnExp<?>[] keyFields = DepotUtil.getKeyFields(pClass);
         if (keyFields.length == 1) {
             Comparable<?> first = keys.iterator().next().getValues()[0];
             Comparable<?>[] keyArray;
@@ -99,7 +99,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
     public static <T extends PersistentRecord> KeySet<T> newSimpleKeySet (
         Class<T> pClass, Collection<? extends Comparable<?>> keys)
     {
-        ColumnExp[] keyFields = DepotUtil.getKeyFields(pClass);
+        ColumnExp<?>[] keyFields = DepotUtil.getKeyFields(pClass);
         if (keyFields.length != 1) {
             throw new IllegalArgumentException(
                 "Cannot create KeySet using simple keys for record with non-simple primary key " +

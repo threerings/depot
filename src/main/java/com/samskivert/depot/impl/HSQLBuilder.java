@@ -76,7 +76,7 @@ public class HSQLBuilder
                 for (String ftsWord : ftsWords) {
                     // build comparisons between each word and column
                     bits.add(new Like(new Lower(
-                        new ColumnExp(pClass, field)), "%"+ftsWord+"%", true));
+                        new ColumnExp<Object>(pClass, field)), "%"+ftsWord+"%", true));
                 }
             }
             // then just OR them all together and we have our query

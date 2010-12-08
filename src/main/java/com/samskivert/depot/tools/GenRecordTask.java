@@ -44,6 +44,7 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Reference;
 import org.apache.tools.ant.util.ClasspathUtils;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -276,6 +277,7 @@ public class GenRecordTask extends Task
 
             // create our substitution mappings
             Map<String, String> fsubs = Maps.newHashMap(subs);
+            fsubs.put("type", getTypeName(f.getType()));
             fsubs.put("field", fname);
             fsubs.put("capfield", StringUtil.unStudlyName(fname).toUpperCase());
 
@@ -458,6 +460,17 @@ public class GenRecordTask extends Task
         return name;
     }
 
+    protected static String getTypeName (Class<?> clazz)
+    {
+        Class<?> nclass = clazz.isPrimitive() ? BOXES.get(clazz) : clazz;
+        Class<?> eclass = nclass.getEnclosingClass();
+        if (eclass != null) {
+            return getTypeName(eclass) + "." + nclass.getSimpleName();
+        } else {
+            return nclass.getSimpleName();
+        }
+    }
+
     /** A list of filesets that contain tile images. */
     protected List<FileSet> _filesets = Lists.newArrayList();
 
@@ -490,4 +503,15 @@ public class GenRecordTask extends Task
     /** A regular expression for matching the class or interface declaration. */
     protected static final Pattern NAME_PATTERN = Pattern.compile(
         "^\\s*public\\s+(?:abstract\\s+)?(interface|class)\\s+(\\w+)(\\W|$)");
+
+    protected static final Map<Class<?>, Class<?>> BOXES =
+        ImmutableMap.<Class<?>,Class<?>>builder().
+        put(Boolean.TYPE, Boolean.class).
+        put(Byte.TYPE, Byte.class).
+        put(Short.TYPE, Short.class).
+        put(Character.TYPE, Character.class).
+        put(Integer.TYPE, Integer.class).
+        put(Long.TYPE, Long.class).
+        put(Float.TYPE, Float.class).
+        put(Double.TYPE, Double.class).build();
 }

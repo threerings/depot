@@ -43,7 +43,7 @@ public class SelectClause
      * class for rows that match the supplied clauses.
      */
     public SelectClause (Class<? extends PersistentRecord> pClass,
-                         ColumnExp[] columns, QueryClause... clauses)
+                         ColumnExp<?>[] columns, QueryClause... clauses)
     {
         this(pClass, columns, Arrays.asList(clauses));
     }
@@ -52,7 +52,7 @@ public class SelectClause
      * Creates a new select clause, selecting the supplied columns from the specified persistent
      * class for rows that match the supplied clauses.
      */
-    public SelectClause (Class<? extends PersistentRecord> pClass, ColumnExp[] columns,
+    public SelectClause (Class<? extends PersistentRecord> pClass, ColumnExp<?>[] columns,
                          Iterable<? extends QueryClause> clauses)
     {
         _pClass = pClass;
@@ -133,7 +133,7 @@ public class SelectClause
         return _pClass;
     }
 
-    public ColumnExp[] getFields ()
+    public ColumnExp<?>[] getFields ()
     {
         return _fields;
     }
@@ -231,7 +231,7 @@ public class SelectClause
     protected Class<? extends PersistentRecord> _pClass;
 
     /** The persistent fields to select. */
-    protected ColumnExp[] _fields;
+    protected ColumnExp<?>[] _fields;
 
     /** The from override clause, if any. */
     protected FromOverride _fromOverride;

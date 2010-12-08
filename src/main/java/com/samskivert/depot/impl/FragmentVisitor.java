@@ -95,7 +95,7 @@ public interface FragmentVisitor<T>
     public T visit (In in);
     public T visit (FullText.Match match);
     public T visit (FullText.Rank match);
-    public T visit (ColumnExp columnExp);
+    public T visit (ColumnExp<?> columnExp);
     public T visit (Not not);
     public T visit (GroupBy groupBy);
     public T visit (ForUpdate forUpdate);

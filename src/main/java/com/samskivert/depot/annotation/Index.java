@@ -41,7 +41,7 @@ public @interface Index
      * If this is defined, a static method must be defined on the record that provides the index
      * configuration. The method must match one of the following two signatures:
      * <pre>
-     * public static ColumnExp[] indexName ()
+     * public static ColumnExp<?>[] indexName ()
      * public static List&lt;Tuple&lt;SQLExpression, OrderBy.Order>> indexName ()
      * </pre>
      * The first form will result in a simple multicolum index being created

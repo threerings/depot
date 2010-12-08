@@ -138,7 +138,7 @@ public class PostgreSQLBuilder
             // see if we will be inserting any columns whatsoever
             Class<? extends PersistentRecord> pClass = insertClause.getPersistentClass();
             Set<String> idFields = insertClause.getIdentityFields();
-            for (ColumnExp field : _types.getMarshaller(pClass).getColumnFieldNames()) {
+            for (ColumnExp<?> field : _types.getMarshaller(pClass).getColumnFieldNames()) {
                 if (!idFields.contains(field.name)) {
                     // we found a field we're inserting, so call super and finish
                     super.appendInsertColumns(insertClause);

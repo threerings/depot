@@ -35,7 +35,7 @@ import com.samskivert.util.Tuple;
  */
 class MultiKeySet<T extends PersistentRecord> extends KeySet<T>
 {
-    public MultiKeySet (Class<T> pClass, ColumnExp[] keyFields, Comparable<?>[][] keys)
+    public MultiKeySet (Class<T> pClass, ColumnExp<?>[] keyFields, Comparable<?>[][] keys)
     {
         super(pClass);
         _keys = keys;
@@ -207,5 +207,5 @@ class MultiKeySet<T extends PersistentRecord> extends KeySet<T>
     }
 
     protected Comparable<?>[][] _keys;
-    protected ColumnExp[] _keyFields;
+    protected ColumnExp<?>[] _keyFields;
 }
