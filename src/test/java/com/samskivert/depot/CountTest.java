@@ -41,7 +41,7 @@ public class CountTest extends TestBase
         assertEquals(49, _repo.from(TestRecord.class).
                      where(TestRecord.RECORD_ID.lessThan(50)).selectCount());
 
-        _repo.deleteAll(TestRecord.class, new Where(Exps.literal("true")));
+        _repo.deleteAll(TestRecord.class, new Where(Exps.trueLiteral()));
 
         assertEquals(0, _repo.from(TestRecord.class).
                      where(TestRecord.RECORD_ID.lessThan(50)).selectCount());
