@@ -453,14 +453,14 @@ public class QueryBuilder<T extends PersistentRecord>
     protected void requireNotNull (Object value, String message)
     {
         if (value == null) {
-            throw new AssertionError(message);
+            throw new IllegalStateException(message);
         }
     }
 
     protected void requireNull (Object value, String message)
     {
         if (value != null) {
-            throw new AssertionError(message);
+            throw new IllegalStateException(message);
         }
     }
 
