@@ -40,6 +40,22 @@ public class Exps
     }
 
     /**
+     * Creates an expression that evaluates to true.
+     */
+    public static SQLExpression trueLiteral ()
+    {
+        return literal("true");
+    }
+
+    /**
+     * Creates an expression that evaluates to false.
+     */
+    public static SQLExpression falseLiteral ()
+    {
+        return literal("false");
+    }
+
+    /**
      * Creates a literal expression with the supplied SQL snippet. Note: you're probably breaking
      * cross platform compatibility by using this construction.
      */
