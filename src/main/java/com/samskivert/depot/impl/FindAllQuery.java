@@ -308,6 +308,14 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
         public ColumnSetQueryMarshaller (PersistenceContext ctx, ColumnSet<T,R> cset) {
             _cset = cset;
             _cmarsh = ctx.getMarshaller(cset.ptype);
+            _marshes = Maps.newHashMap();
+            _marshes.put(cset.ptype, _cmarsh);
+            for (ColumnExp<?> cexp : cset.columns) {
+                Class<? extends PersistentRecord> cclass = cexp.getPersistentClass();
+                if (!_marshes.containsKey(cclass)) {
+                    _marshes.put(cclass, ctx.getMarshaller(cexp.getPersistentClass()));
+                }
+            }
         }
 
         public String getTableName () {
@@ -325,13 +333,16 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
         public R createObject (ResultSet rs) throws SQLException {
             Object[] data = new Object[_cset.columns.length];
             for (int ii = 0; ii < data.length; ii++) {
-                data[ii] = _cmarsh.getFieldMarshaller(_cset.columns[ii].name).getFromSet(rs);
+                ColumnExp<?> col = _cset.columns[ii];
+                data[ii] = _marshes.get(col.getPersistentClass()).
+                    getFieldMarshaller(col.name).getFromSet(rs, ii+1);
             }
             return _cset.createObject(data);
         }
 
         protected ColumnSet<T,R> _cset;
         protected DepotMarshaller<T> _cmarsh;
+        protected Map<Class<? extends PersistentRecord>, DepotMarshaller<?>> _marshes;
     }
 
     // from Query
