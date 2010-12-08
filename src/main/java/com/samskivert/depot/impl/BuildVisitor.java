@@ -98,6 +98,7 @@ import com.samskivert.depot.impl.operator.IsNull;
 import com.samskivert.depot.impl.operator.MultiOperator;
 import com.samskivert.depot.impl.operator.Not;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.samskivert.Log.log;
 
 /**
@@ -355,10 +356,8 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         }
         _builder.append("select ");
 
-        if (_definitions.containsKey(pClass)) {
-            throw new IllegalArgumentException(
-                "Can not yet nest SELECTs on the same persistent record.");
-        }
+        checkArgument(!_definitions.containsKey(pClass),
+                      "Can not yet nest SELECTs on the same persistent record.");
 
         Map<String, FieldDefinition> definitionMap = Maps.newHashMap();
         for (FieldDefinition definition : selectClause.getFieldDefinitions()) {
@@ -444,10 +443,8 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
 
     public Void visit (UpdateClause updateClause)
     {
-        if (updateClause.getWhereClause() == null) {
-            throw new IllegalArgumentException(
-                "I dare not currently perform UPDATE without a WHERE clause.");
-        }
+        checkArgument(updateClause.getWhereClause() != null,
+                      "I dare not currently perform UPDATE without a WHERE clause.");
         Class<? extends PersistentRecord> pClass = updateClause.getPersistentClass();
         _innerClause = true;
 
@@ -785,10 +782,8 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     {
         // TODO: nix type and use the class from the supplied ColumnExp
         DepotMarshaller<?> dm = _types.getMarshaller(type);
-        if (dm == null) {
-            throw new IllegalArgumentException(
-                "Unknown field on persistent record [record=" + type + ", field=" + field + "]");
-        }
+        checkArgument(dm != null, "Unknown field on persistent record [record=%s, field=%s]",
+                      type, field);
 
         FieldMarshaller<?> fm = dm.getFieldMarshaller(field.name);
         appendIdentifier(fm.getColumnName());
@@ -800,10 +795,8 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     {
         Class<? extends PersistentRecord> type = field.getPersistentClass();
         DepotMarshaller<?> dm = _types.getMarshaller(type);
-        if (dm == null) {
-            throw new IllegalArgumentException(
-                "Unknown field on persistent record [record=" + type + ", field=" + field + "]");
-        }
+        checkArgument(dm != null, "Unknown field on persistent record [record=%s, field=%s]",
+                      type, field);
 
         // first, see if there's a field definition
         FieldMarshaller<?> fm = dm.getFieldMarshaller(field.name);
@@ -813,15 +806,12 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
             if (fieldDef != null) {
                 boolean useOverride;
                 if (fieldDef instanceof FieldOverride) {
-                    if (fm.getComputed() != null && dm.getComputed() != null) {
-                        throw new IllegalArgumentException(
-                            "FieldOverride cannot be used on @Computed field: " + field);
-                    }
+                    checkArgument(fm.getComputed() == null || dm.getComputed() == null,
+                                  "FieldOverride cannot be used on @Computed field: " + field);
                     useOverride = _enableOverrides;
-                } else if (fm.getComputed() == null && dm.getComputed() == null) {
-                    throw new IllegalArgumentException(
-                        "FieldDefinition must not be used on concrete field: " + field);
                 } else {
+                    checkArgument(fm.getComputed() != null || dm.getComputed() != null,
+                                  "FieldDefinition must not be used on concrete field: " + field);
                     useOverride = true;
                 }
 

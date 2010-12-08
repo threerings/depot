@@ -35,6 +35,8 @@ import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.expression.SQLExpression;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 /**
  * Maintains a record of the persistent classes brought into the context of the associated SQL,
  * i.e. any class associated with a concrete table that would appear in FROM or JOIN clauses or as
@@ -121,9 +123,7 @@ public class DepotTypes
     {
         if (_useTableAbbreviations) {
             Integer ix = _classIx.get(cl);
-            if (ix == null) {
-                throw new IllegalArgumentException("Unknown persistence class: " + cl);
-            }
+            checkArgument(ix != null, "Unknown persistence class: " + cl);
             return "T" + (ix+1);
         }
         return getTableName(cl);
@@ -140,10 +140,7 @@ public class DepotTypes
     public String getColumnName (Class<? extends PersistentRecord> cl, String field)
     {
         FieldMarshaller<?> fm = getMarshaller(cl).getFieldMarshaller(field);
-        if (fm == null) {
-            throw new IllegalArgumentException(
-                "Field not known on class [field=" + field + ", class=" + cl + "]");
-        }
+        checkArgument(fm != null, "Field not known on class [field=%s, class=%s]", field, cl);
         return fm.getColumnName();
     }
 
@@ -156,9 +153,7 @@ public class DepotTypes
     public DepotMarshaller<?> getMarshaller (Class<? extends PersistentRecord> cl)
     {
         DepotMarshaller<?> marsh = _classMap.get(cl);
-        if (marsh == null) {
-            throw new IllegalArgumentException("Persistent class not known: " + cl);
-        }
+        checkArgument(marsh != null, "Persistent class not known: " + cl);
         return marsh;
     }
 

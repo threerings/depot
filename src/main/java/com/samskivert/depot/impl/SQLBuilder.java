@@ -36,6 +36,8 @@ import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.jdbc.ColumnDefinition;
 import com.samskivert.util.ByteEnum;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static com.samskivert.depot.Log.log;
 
 /**
@@ -74,9 +76,7 @@ public abstract class SQLBuilder
     public PreparedStatement prepare (Connection conn)
         throws SQLException
     {
-        if (_buildVisitor == null) {
-            throw new IllegalArgumentException("Cannot prepare query until it's been built.");
-        }
+        checkState(_buildVisitor != null, "Cannot prepare query until it's been built.");
 
         PreparedStatement stmt = conn.prepareStatement(_buildVisitor.getQuery());
 
@@ -136,10 +136,8 @@ public abstract class SQLBuilder
         }
 
         // sanity check nullability
-        if (coldef.nullable && field.getType().isPrimitive()) {
-            throw new IllegalArgumentException(
-                "Primitive Java type cannot be nullable [field=" + field.getName() + "]");
-        }
+        checkArgument(!coldef.nullable || !field.getType().isPrimitive(),
+                      "Primitive Java type cannot be nullable [field=" + field.getName() + "]");
 
         return coldef;
     }

@@ -51,6 +51,7 @@ import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.impl.operator.In;
 import com.samskivert.jdbc.DatabaseLiaison;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.samskivert.depot.Log.log;
 
 /**
@@ -86,15 +87,11 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
         {
             super(ctx, type);
 
-            if (_dmarsh.getComputed() != null) {
-                throw new IllegalArgumentException(
-                    "This algorithm doesn't work on @Computed records.");
-            }
+            checkArgument(_dmarsh.getComputed() == null,
+                          "This algorithm doesn't work on @Computed records.");
             for (QueryClause clause : clauses) {
-                if (clause instanceof FieldOverride) {
-                    throw new IllegalArgumentException(
-                        "This algorithm doesn't work with FieldOverrides.");
-                }
+                checkArgument(!(clause instanceof FieldOverride),
+                              "This algorithm doesn't work with FieldOverrides.");
             }
 
             _select = new SelectClause(_type, _dmarsh.getPrimaryKeyFields(), clauses);

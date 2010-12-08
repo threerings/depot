@@ -47,6 +47,8 @@ import com.samskivert.util.ByteEnumUtil;
 import com.samskivert.util.Logger;
 import com.samskivert.util.StringUtil;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 /**
  * Handles the marshalling and unmarshalling of a particular field of a persistent object.
  *
@@ -91,9 +93,7 @@ public abstract class FieldMarshaller<T>
 
             // finally look for an @Transform annotation on the field type (expensive)
             xform = findTransformAnnotation(field.getType());
-            if (xform == null) {
-                throw new IllegalArgumentException("Cannot marshall " + field + ".");
-            }
+            checkArgument(xform != null, "Cannot marshall " + field + ".");
         }
 
         try {
@@ -116,12 +116,9 @@ public abstract class FieldMarshaller<T>
         final Transformer<F,T> xformer, Field field, Transform annotation)
     {
         Class<?> pojoType = getTransformerType(xformer, "from");
-        if (!pojoType.isAssignableFrom(field.getType())) {
-            throw new IllegalArgumentException(
-                "@Transform error on " + field.getType().getName() + "." +
-                field.getName() + ": " + xformer.getClass().getName() + " cannot convert " +
-                field.getType().getName());
-        }
+        checkArgument(pojoType.isAssignableFrom(field.getType()),
+                      "@Transform error on %s.%s: %s cannot convert %s", field.getType().getName(),
+                      field.getName(), xformer.getClass().getName(), field.getType().getName());
         xformer.init(field.getGenericType(), annotation);
 
         @SuppressWarnings("unchecked") final FieldMarshaller<T> delegate =
@@ -455,11 +452,8 @@ public abstract class FieldMarshaller<T>
                 }
             }
         }
-        if (ttype == null) {
-            throw new IllegalArgumentException(
-                Logger.format("Transformer lacks " + which + "Persistent() method!?",
-                              "xclass", xformer.getClass()));
-        }
+        checkArgument(ttype != null, "Transformer lacks %sPersistent() method!? [xclass=%s]",
+                      which, xformer.getClass());
         return ttype;
     }
 
@@ -745,10 +739,8 @@ public abstract class FieldMarshaller<T>
         @Override public void create (Field field) {
             super.create(field);
             // do some sanity checking so that the unsafe business we do below is safer
-            if (!Enum.class.isAssignableFrom(_eclass)) {
-                throw new IllegalArgumentException(
-                    "ByteEnum not implemented by real Enum: " + field);
-            }
+            checkArgument(Enum.class.isAssignableFrom(_eclass),
+                          "ByteEnum not implemented by real Enum: " + field);
         }
 
         @Override public String getColumnType (ColumnTyper typer, int length) {

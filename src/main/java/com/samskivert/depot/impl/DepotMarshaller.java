@@ -70,6 +70,7 @@ import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.clause.CreateIndexClause;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.samskivert.depot.Log.log;
 
 /**
@@ -90,8 +91,8 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
     {
         _pClass = pClass;
 
-        Preconditions.checkArgument(!java.lang.reflect.Modifier.isAbstract(pClass.getModifiers()),
-            "Can't handle reference to abstract record: " + pClass.getName());
+        checkArgument(!java.lang.reflect.Modifier.isAbstract(pClass.getModifiers()),
+                      "Can't handle reference to abstract record: " + pClass.getName());
 
         Entity entity = pClass.getAnnotation(Entity.class);
 
@@ -173,17 +174,13 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
                     ftype.equals(Short.TYPE) || ftype.equals(Short.class) ||
                     ftype.equals(Integer.TYPE) || ftype.equals(Integer.class) ||
                     ftype.equals(Long.TYPE) || ftype.equals(Long.class));
-                if (!isNumeric) {
-                    throw new IllegalArgumentException(
-                        "Cannot use @GeneratedValue on non-numeric column: " + field.getName());
-                }
+                checkArgument(isNumeric, "Cannot use @GeneratedValue on non-numeric column: %s",
+                              field.getName());
                 switch(gv.strategy()) {
                 case AUTO:
                 case IDENTITY:
-                    if (seenIdentityGenerator) {
-                        throw new IllegalArgumentException(
-                            "Persistent records can have at most one AUTO/IDENTITY generator.");
-                    }
+                    checkArgument(!seenIdentityGenerator, "Persistent records can have at " +
+                                  "most one AUTO/IDENTITY generator.");
                     _valueGenerators.put(field.getName(), new IdentityValueGenerator(gv, this, fm));
                     seenIdentityGenerator = true;
                     break;
@@ -191,10 +188,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
                 case TABLE:
                     String name = gv.generator();
                     generator = context.tableGenerators.get(name);
-                    if (generator == null) {
-                        throw new IllegalArgumentException(
-                            "Unknown generator [generator=" + name + "]");
-                    }
+                    checkArgument(generator != null, "Unknown generator [generator=" + name + "]");
                     _valueGenerators.put(
                         field.getName(), new TableValueGenerator(generator, gv, this, fm));
                     break;
@@ -212,13 +206,12 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
                 Tuple<SQLExpression, Order> entry =
                     new Tuple<SQLExpression, Order>(fieldColumn, Order.ASC);
                 if (index.unique()) {
-                    Preconditions.checkArgument(!namedFieldIndices.containsKey(index.name()),
-                        "All @Index for a particular name must be unique or non-unique");
+                    checkArgument(!namedFieldIndices.containsKey(index.name()),
+                                  "All @Index for a particular name must be unique or non-unique");
                     uniqueNamedFieldIndices.put(name, entry);
                 } else {
-                    Preconditions.checkArgument(
-                        !uniqueNamedFieldIndices.containsKey(index.name()),
-                        "All @Index for a particular name must be unique or non-unique");
+                    checkArgument(!uniqueNamedFieldIndices.containsKey(index.name()),
+                                  "All @Index for a particular name must be unique or non-unique");
                     namedFieldIndices.put(name, entry);
                 }
             }
@@ -258,10 +251,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
                     int ii = 0;
                     for (String field : constraint.fields()) {
                         FieldMarshaller<?> fm = _fields.get(field);
-                        if (fm == null) {
-                            throw new IllegalArgumentException(
-                                "Unknown unique constraint field: " + field);
-                        }
+                        checkArgument(fm != null, "Unknown unique constraint field: " + field);
                         colExps[ii ++] = new ColumnExp<Object>(_pClass, field);
                     }
                     _indexes.add(buildIndex(constraint.name(), true, colExps));
@@ -338,10 +328,8 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
     public FullTextIndex getFullTextIndex (String name)
     {
         FullTextIndex fti = _fullTextIndexes.get(name);
-        if (fti == null) {
-            throw new IllegalStateException("Persistent class missing full text index " +
-                                            "[class=" + _pClass + ", index=" + name + "]");
-        }
+        checkArgument(fti != null, "Persistent class missing full text index " +
+                      "[class=" + _pClass + ", index=" + name + "]");
         return fti;
     }
 
@@ -486,10 +474,9 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
         Comparable<?>[] values = new Comparable<?>[_pkColumns.size()];
         for (int ii = 0; ii < _pkColumns.size(); ii++) {
             Object keyValue = _pkColumns.get(ii).getFromSet(rs);
-            if (!(keyValue instanceof Comparable<?>)) {
-                throw new IllegalArgumentException("Key field must be Comparable<?> [field=" +
-                                                   _pkColumns.get(ii).getColumnName() + "]");
-            }
+            checkArgument((keyValue instanceof Comparable<?>),
+                          "Key field must be Comparable<?> [field=%s]",
+                          _pkColumns.get(ii).getColumnName());
             values[ii] = (Comparable<?>) keyValue;
         }
         return new Key<T>(_pClass, values);
@@ -999,10 +986,8 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
         String[] columns = new String[fields.length];
         for (int ii = 0; ii < columns.length; ii ++) {
             FieldMarshaller<?> fm = _fields.get(fields[ii].name);
-            if (fm == null) {
-                throw new IllegalArgumentException(
-                    "Unknown field on record [field=" + fields[ii] + ", class=" + _pClass + "]");
-            }
+            checkArgument(fm != null, "Unknown field on record [field=%s, class=%s]",
+                          fields[ii], _pClass);
             columns[ii] = fm.getColumnName();
         }
         return columns;

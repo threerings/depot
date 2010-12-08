@@ -289,8 +289,7 @@ public class PostgreSQLBuilder
         case English:
             return "pg_catalog.english";
         default:
-            throw new IllegalArgumentException(
-                "Unknown full text configuration: " + configuration);
+            throw new IllegalArgumentException("Unknown full text configuration: " + configuration);
         }
     }
 

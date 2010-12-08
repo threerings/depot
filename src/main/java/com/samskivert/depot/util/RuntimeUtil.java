@@ -35,6 +35,8 @@ import com.google.common.collect.Maps;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.util.Tuple;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 /**
  * Creates functions that map persistent records to runtime counterparts and vice versa. A few bits
  * of magic are provided to help in mapping from the persistent world to the runtime work. Namely:
@@ -176,12 +178,9 @@ public class RuntimeUtil
         }
 
         // if we have no persistent field for the runtime field, we're now out of luck
-        if (pfield == null) {
-            throw new IllegalArgumentException(
-                "Cannot create mapping for " + rfield + ". Neither " +
-                pclass.getSimpleName() + "." + rfield.getName() + " nor " +
-                rfield.getType() + " " + getter + "() exist.");
-        }
+        checkArgument(pfield != null, 
+                      "Cannot create mapping for %s. Neither %s.%s nor %s %s() exist.",
+                      rfield, pclass.getSimpleName(), rfield.getName(), rfield.getType(), getter);
 
         // if the fields match exactly, return a getter that just gets the field
         if (rfield.getType().equals(pfield.getType())) {
@@ -222,10 +221,8 @@ public class RuntimeUtil
         }
 
         // if we have no persistent field for this runtime field, we're now out of luck
-        if (pfield == null) {
-            throw new IllegalArgumentException("Cannot create setter for " + rfield + ". " +
-                                               "No corresponding field exists in " + pclass + ".");
-        }
+        checkArgument(pfield != null, "Cannot create setter for " + rfield + ". " +
+                      "No corresponding field exists in " + pclass + ".");
 
         // if the fields match exactly, return a setter that just sets the field
         if (rfield.getType().equals(pfield.getType())) {

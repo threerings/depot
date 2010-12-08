@@ -62,6 +62,7 @@ import com.samskivert.depot.impl.clause.UpdateClause;
 import com.samskivert.depot.impl.expression.ValueExp;
 import com.samskivert.depot.impl.util.SeqImpl;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.samskivert.depot.Log.log;
 
 /**
@@ -275,7 +276,6 @@ public abstract class DepotRepository
             }
             if (cache == CacheStrategy.BEST) {
                 cache = (reason != null) ? CacheStrategy.NONE : CacheStrategy.SHORT_KEYS;
-
             } else if (reason != null) {
                 // if user explicitly asked for a strategy we can't do, protest
                 throw new IllegalArgumentException(
@@ -413,9 +413,7 @@ public abstract class DepotRepository
         requireNotComputed(pClass, "update");
         DepotMarshaller<? extends PersistentRecord> marsh = _ctx.getMarshaller(pClass);
         Key<? extends PersistentRecord> key = marsh.getPrimaryKey(record);
-        if (key == null) {
-            throw new IllegalArgumentException("Can't update record with null primary key.");
-        }
+        checkArgument(key != null, "Can't update record with null primary key.");
         return doUpdate(key, new UpdateClause(pClass, key, marsh.getColumnFieldNames(), record));
     }
 
@@ -436,9 +434,7 @@ public abstract class DepotRepository
         requireNotComputed(pClass, "update");
         DepotMarshaller<T> marsh = _ctx.getMarshaller(pClass);
         Key<T> key = marsh.getPrimaryKey(record);
-        if (key == null) {
-            throw new IllegalArgumentException("Can't update record with null primary key.");
-        }
+        checkArgument(key != null, "Can't update record with null primary key.");
         return doUpdate(key, new UpdateClause(pClass, key, modifiedFields, record));
     }
 
@@ -667,9 +663,7 @@ public abstract class DepotRepository
     {
         @SuppressWarnings("unchecked") Class<T> type = (Class<T>)record.getClass();
         Key<T> primaryKey = _ctx.getMarshaller(type).getPrimaryKey(record);
-        if (primaryKey == null) {
-            throw new IllegalArgumentException("Can't delete record with null primary key.");
-        }
+        checkArgument(primaryKey != null, "Can't delete record with null primary key.");
         return delete(primaryKey);
     }
 
