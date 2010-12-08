@@ -35,6 +35,7 @@ import com.samskivert.depot.expression.SQLExpression;
  * DepotRepository#from}.
  */
 public class QueryBuilder<T extends PersistentRecord>
+    implements Cloneable
 {
     public QueryBuilder (DepotRepository repo, Class<T> pclass)
     {
@@ -130,7 +131,7 @@ public class QueryBuilder<T extends PersistentRecord>
     }
 
     /**
-     * Configures a {@link Join} clause configured with the supplied left and right columns.
+     * Adds a {@link Join} clause configured with the supplied left and right columns.
      */
     public QueryBuilder<T> join (ColumnExp left, ColumnExp right)
     {
@@ -138,7 +139,7 @@ public class QueryBuilder<T extends PersistentRecord>
     }
 
     /**
-     * Configures a {@link Join} clause configured with the join condition.
+     * Adds a {@link Join} clause configured with the join condition.
      */
     public QueryBuilder<T> join (Class<? extends PersistentRecord> joinClass,
                                  SQLExpression joinCondition)
@@ -147,8 +148,8 @@ public class QueryBuilder<T extends PersistentRecord>
     }
 
     /**
-     * Configures a {@link Join} clause configured with the supplied left and right columns and
-     * join type.
+     * Adds a {@link Join} clause configured with the supplied left and right columns and join
+     * type.
      */
     public QueryBuilder<T> join (ColumnExp left, ColumnExp right, Join.Type type)
     {
@@ -156,12 +157,15 @@ public class QueryBuilder<T extends PersistentRecord>
     }
 
     /**
-     * Configures the query with the supplied {@link Join} clause.
+     * Configures the query with the supplied {@link Join} clause. Multiple join clauses are
+     * allowed.
      */
     public QueryBuilder<T> join (Join join)
     {
-        requireNull(_join, "Join clause is already configured.");
-        _join = join;
+        if (_joins == null) {
+            _joins = Lists.newArrayList();
+        }
+        _joins.add(join);
         return this;
     }
 
@@ -257,7 +261,7 @@ public class QueryBuilder<T extends PersistentRecord>
     }
 
     /**
-     * Configures a {@link FieldDefinition} clause.
+     * Adds a {@link FieldDefinition} clause.
      */
     public QueryBuilder<T> fieldDef (String field, String value)
     {
@@ -265,7 +269,7 @@ public class QueryBuilder<T extends PersistentRecord>
     }
 
     /**
-     * Configures a {@link FieldDefinition} clause.
+     * Adds a {@link FieldDefinition} clause.
      */
     public QueryBuilder<T> fieldDef (String field, SQLExpression override)
     {
@@ -273,7 +277,7 @@ public class QueryBuilder<T extends PersistentRecord>
     }
 
     /**
-     * Configures a {@link FieldDefinition} clause.
+     * Adds a {@link FieldDefinition} clause.
      */
     public QueryBuilder<T> fieldDef (ColumnExp field, SQLExpression override)
     {
@@ -281,7 +285,7 @@ public class QueryBuilder<T extends PersistentRecord>
     }
 
     /**
-     * Configures a {@link FieldDefinition} clause.
+     * Adds a {@link FieldDefinition} clause.
      */
     public QueryBuilder<T> fieldDef (FieldDefinition fieldDef)
     {
@@ -373,11 +377,34 @@ public class QueryBuilder<T extends PersistentRecord>
         return _repo.deleteAll(_pclass, _where, invalidator);
     }
 
+    /**
+     * Returns a clone of this query builder, including all partially configured state. Useful for
+     * constructing partially configured queries and then executing variants.
+     */
+    public QueryBuilder clone ()
+    {
+        try {
+            QueryBuilder qb = (QueryBuilder)super.clone();
+            // deep copy the list fields, if we have any
+            if (qb._joins != null) {
+                qb._joins = Lists.newArrayList(qb._joins);
+            }
+            if (qb._fieldDefs != null) {
+                qb._fieldDefs = Lists.newArrayList(qb._fieldDefs);
+            }
+            return qb;
+        } catch (Throwable t) {
+            throw new AssertionError(t);
+        }
+    }
+
     protected List<QueryClause> getClauses ()
     {
         List<QueryClause> clauses = Lists.newArrayList();
         addIfNotNull(clauses, _where);
-        addIfNotNull(clauses, _join);
+        if (_joins != null) {
+            clauses.addAll(_joins);
+        }
         addIfNotNull(clauses, _orderBy);
         addIfNotNull(clauses, _groupBy);
         addIfNotNull(clauses, _limit);
@@ -419,7 +446,7 @@ public class QueryBuilder<T extends PersistentRecord>
     protected void assertValidDelete ()
     {
         requireNotNull(_where, "Where clause must be specified for delete.");
-        requireNull(_join, "Join clause not supported by delete.");
+        requireNull(_joins, "Join clauses not supported by delete.");
         requireNull(_orderBy, "OrderBy clause not applicable for delete.");
         requireNull(_groupBy, "GroupBy clause not applicable for delete.");
         requireNull(_limit, "Limit clause not supported by delete.");
@@ -434,11 +461,12 @@ public class QueryBuilder<T extends PersistentRecord>
     protected DepotRepository.CacheStrategy _cache = DepotRepository.CacheStrategy.BEST;
 
     protected WhereClause _where;
-    protected Join _join;
     protected OrderBy _orderBy;
     protected GroupBy _groupBy;
     protected Limit _limit;
     protected FromOverride _fromOverride;
     protected ForUpdate _forUpdate;
+
+    protected List<Join> _joins;
     protected List<FieldDefinition> _fieldDefs;
 }
