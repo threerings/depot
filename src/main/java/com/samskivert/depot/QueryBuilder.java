@@ -20,6 +20,8 @@
 
 package com.samskivert.depot;
 
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -42,37 +44,37 @@ public class QueryBuilder<T extends PersistentRecord>
 
     /** Disables the use of the cache for this query. */
     public QueryBuilder<T> noCache () {
-        _cache = DepotRepository.CacheStrategy.BEST;
-        return this;
+        return cache(DepotRepository.CacheStrategy.BEST);
     }
 
     /** Configures the use of {@link CacheStrategy#BEST} for this query. */
     public QueryBuilder<T> cacheBest () {
-        _cache = DepotRepository.CacheStrategy.BEST;
-        return this;
+        return cache(DepotRepository.CacheStrategy.BEST);
     }
 
     /** Configures the use of {@link CacheStrategy#RECORDS} for this query. */
     public QueryBuilder<T> cacheRecords () {
-        _cache = DepotRepository.CacheStrategy.RECORDS;
-        return this;
+        return cache(DepotRepository.CacheStrategy.RECORDS);
     }
 
     /** Configures the use of {@link CacheStrategy#SHORT_KEYS} for this query. */
     public QueryBuilder<T> cacheShortKeys () {
-        _cache = DepotRepository.CacheStrategy.SHORT_KEYS;
-        return this;
+        return cache(DepotRepository.CacheStrategy.SHORT_KEYS);
     }
 
     /** Configures the use of {@link CacheStrategy#LONG_KEYS} for this query. */
     public QueryBuilder<T> cacheLongKeys () {
-        _cache = DepotRepository.CacheStrategy.LONG_KEYS;
-        return this;
+        return cache(DepotRepository.CacheStrategy.LONG_KEYS);
     }
 
     /** Configures the use of {@link CacheStrategy#CONTENTS} for this query. */
     public QueryBuilder<T> cacheContents () {
-        _cache = DepotRepository.CacheStrategy.CONTENTS;
+        return cache(DepotRepository.CacheStrategy.CONTENTS);
+    }
+
+    /** Configures the specified caching policy this query. */
+    public QueryBuilder<T> cache (DepotRepository.CacheStrategy cache) {
+        _cache = cache;
         return this;
     }
 
@@ -81,18 +83,20 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> where (SQLExpression... exprs)
     {
-        requireNull(_where, "Where clause is already configured.");
-        switch (exprs.length) {
-        case 0:
+        return where(Arrays.asList(exprs));
+    }
+
+    /**
+     * Configures a {@link Where} clause that ANDs together all of the supplied expressions.
+     */
+    public QueryBuilder<T> where (Iterable<? extends SQLExpression> exprs)
+    {
+        Iterator<? extends SQLExpression> iter = exprs.iterator();
+        if (!iter.hasNext()) {
             throw new IllegalArgumentException("Must supply at least one expression.");
-        case 1:
-            _where = new Where(exprs[0]);
-            break;
-        default:
-            _where = new Where(Ops.and(exprs));
-            break;
         }
-        return this;
+        SQLExpression first = iter.next();
+        return where(iter.hasNext() ? new Where(Ops.and(exprs)) : new Where(first));
     }
 
     /**
@@ -101,9 +105,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> where (ColumnExp column, Comparable<?> value)
     {
-        requireNull(_where, "Where clause is already configured.");
-        _where = new Where(column, value);
-        return this;
+        return where(new Where(column, value));
     }
 
     /**
@@ -113,8 +115,17 @@ public class QueryBuilder<T extends PersistentRecord>
     public QueryBuilder<T> where (ColumnExp index1, Comparable<?> value1,
                                   ColumnExp index2, Comparable<?> value2)
     {
+        return where(new Where(index1, value1, index2, value2));
+    }
+
+    /**
+     * Configures a {@link Where} clause that selects rows where both supplied columns equal both
+     * supplied values.
+     */
+    public QueryBuilder<T> where (WhereClause where)
+    {
         requireNull(_where, "Where clause is already configured.");
-        _where = new Where(index1, value1, index2, value2);
+        _where = where;
         return this;
     }
 
@@ -123,8 +134,34 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> join (ColumnExp left, ColumnExp right)
     {
+        return join(new Join(left, right));
+    }
+
+    /**
+     * Configures a {@link Join} clause configured with the join condition.
+     */
+    public QueryBuilder<T> join (Class<? extends PersistentRecord> joinClass,
+                                 SQLExpression joinCondition)
+    {
+        return join(new Join(joinClass, joinCondition));
+    }
+
+    /**
+     * Configures a {@link Join} clause configured with the supplied left and right columns and
+     * join type.
+     */
+    public QueryBuilder<T> join (ColumnExp left, ColumnExp right, Join.Type type)
+    {
+        return join(new Join(left, right).setType(type));
+    }
+
+    /**
+     * Configures the query with the supplied {@link Join} clause.
+     */
+    public QueryBuilder<T> join (Join join)
+    {
         requireNull(_join, "Join clause is already configured.");
-        _join = new Join(left, right);
+        _join = join;
         return this;
     }
 
@@ -143,9 +180,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> randomOrder ()
     {
-        requireNull(_orderBy, "OrderBy clause is already configured.");
-        _orderBy = OrderBy.random();
-        return this;
+        return orderBy(OrderBy.random());
     }
 
     /**
@@ -153,9 +188,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> ascending (SQLExpression value)
     {
-        requireNull(_orderBy, "OrderBy clause is already configured.");
-        _orderBy = OrderBy.ascending(value);
-        return this;
+        return orderBy(OrderBy.ascending(value));
     }
 
     /**
@@ -163,8 +196,16 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> descending (SQLExpression value)
     {
+        return orderBy(OrderBy.descending(value));
+    }
+
+    /**
+     * Configures the query with the supplied {@link OrderBy} clause.
+     */
+    public QueryBuilder<T> orderBy (OrderBy orderBy)
+    {
         requireNull(_orderBy, "OrderBy clause is already configured.");
-        _orderBy = OrderBy.descending(value);
+        _orderBy = orderBy;
         return this;
     }
 
@@ -193,9 +234,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public QueryBuilder<T> override (Class<? extends PersistentRecord> fromClass)
     {
-        requireNull(_fromOverride, "FromOverride clause is already configured.");
-        _fromOverride = new FromOverride(fromClass);
-        return this;
+        return override(new FromOverride(fromClass));
     }
 
     /**
@@ -204,8 +243,52 @@ public class QueryBuilder<T extends PersistentRecord>
     public QueryBuilder<T> override (Class<? extends PersistentRecord> fromClass1,
                                      Class<? extends PersistentRecord> fromClass2)
     {
+        return override(new FromOverride(fromClass1, fromClass2));
+    }
+
+    /**
+     * Configures the query with the supplied {@link FromOverride} clause.
+     */
+    public QueryBuilder<T> override (FromOverride fromOverride)
+    {
         requireNull(_fromOverride, "FromOverride clause is already configured.");
-        _fromOverride = new FromOverride(fromClass1, fromClass2);
+        _fromOverride = fromOverride;
+        return this;
+    }
+
+    /**
+     * Configures a {@link FieldDefinition} clause.
+     */
+    public QueryBuilder<T> fieldDef (String field, String value)
+    {
+        return fieldDef(new FieldDefinition(field, value));
+    }
+
+    /**
+     * Configures a {@link FieldDefinition} clause.
+     */
+    public QueryBuilder<T> fieldDef (String field, SQLExpression override)
+    {
+        return fieldDef(new FieldDefinition(field, override));
+    }
+
+    /**
+     * Configures a {@link FieldDefinition} clause.
+     */
+    public QueryBuilder<T> fieldDef (ColumnExp field, SQLExpression override)
+    {
+        return fieldDef(new FieldDefinition(field, override));
+    }
+
+    /**
+     * Configures a {@link FieldDefinition} clause.
+     */
+    public QueryBuilder<T> fieldDef (FieldDefinition fieldDef)
+    {
+        if (_fieldDefs == null) {
+            _fieldDefs = Lists.newArrayList();
+        }
+        _fieldDefs.add(fieldDef);
         return this;
     }
 
@@ -272,13 +355,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public int delete ()
     {
-        requireNotNull(_where, "Where clause must be specified for delete.");
-        requireNull(_join, "Join clause not supported by delete.");
-        requireNull(_orderBy, "OrderBy clause not applicable for delete.");
-        requireNull(_groupBy, "GroupBy clause not applicable for delete.");
-        requireNull(_limit, "Limit clause not supported by delete.");
-        requireNull(_fromOverride, "FromOverride clause not applicable for delete.");
-        requireNull(_forUpdate, "ForUpdate clause not supported by delete.");
+        assertValidDelete();
         return _repo.deleteAll(_pclass, _where);
     }
 
@@ -292,13 +369,7 @@ public class QueryBuilder<T extends PersistentRecord>
      */
     public int delete (CacheInvalidator invalidator)
     {
-        requireNotNull(_where, "Where clause must be specified for delete.");
-        requireNull(_join, "Join clause not supported by delete.");
-        requireNull(_orderBy, "OrderBy clause not applicable for delete.");
-        requireNull(_groupBy, "GroupBy clause not applicable for delete.");
-        requireNull(_limit, "Limit clause not supported by delete.");
-        requireNull(_fromOverride, "FromOverride clause not applicable for delete.");
-        requireNull(_forUpdate, "ForUpdate clause not supported by delete.");
+        assertValidDelete();
         return _repo.deleteAll(_pclass, _where, invalidator);
     }
 
@@ -311,6 +382,9 @@ public class QueryBuilder<T extends PersistentRecord>
         addIfNotNull(clauses, _groupBy);
         addIfNotNull(clauses, _limit);
         addIfNotNull(clauses, _fromOverride);
+        if (_fieldDefs != null) {
+            clauses.addAll(_fieldDefs);
+        }
         addIfNotNull(clauses, _forUpdate);
         return clauses;
     }
@@ -342,16 +416,29 @@ public class QueryBuilder<T extends PersistentRecord>
         }
     }
 
+    protected void assertValidDelete ()
+    {
+        requireNotNull(_where, "Where clause must be specified for delete.");
+        requireNull(_join, "Join clause not supported by delete.");
+        requireNull(_orderBy, "OrderBy clause not applicable for delete.");
+        requireNull(_groupBy, "GroupBy clause not applicable for delete.");
+        requireNull(_limit, "Limit clause not supported by delete.");
+        requireNull(_fromOverride, "FromOverride clause not applicable for delete.");
+        requireNull(_fieldDefs, "FieldDefinition clauses not applicable for delete.");
+        requireNull(_forUpdate, "ForUpdate clause not supported by delete.");
+    }
+
     protected final DepotRepository _repo;
     protected final Class<T> _pclass;
 
     protected DepotRepository.CacheStrategy _cache = DepotRepository.CacheStrategy.BEST;
 
-    protected Where _where;
+    protected WhereClause _where;
     protected Join _join;
     protected OrderBy _orderBy;
     protected GroupBy _groupBy;
     protected Limit _limit;
     protected FromOverride _fromOverride;
     protected ForUpdate _forUpdate;
+    protected List<FieldDefinition> _fieldDefs;
 }
