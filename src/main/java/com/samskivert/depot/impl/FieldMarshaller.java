@@ -140,6 +140,9 @@ public abstract class FieldMarshaller<T>
             @Override public T getFromSet (ResultSet rs) throws SQLException {
                 return delegate.getFromSet(rs);
             }
+            @Override public T getFromSet (ResultSet rs, int index) throws SQLException {
+                return delegate.getFromSet(rs, index);
+            }
             @Override public void writeToObject (Object po, T value)
                 throws IllegalArgumentException, IllegalAccessException {
                 _field.set(po, xformer.fromPersistent(value));
@@ -238,6 +241,12 @@ public abstract class FieldMarshaller<T>
         throws SQLException;
 
     /**
+     * Reads and returns this field from the result set.
+     */
+    public abstract T getFromSet (ResultSet rs, int index)
+        throws SQLException;
+
+    /**
      * Writes the given value to the given persistent value.
      */
     public abstract void writeToObject (Object po, T value)
@@ -319,11 +328,12 @@ public abstract class FieldMarshaller<T>
                 @Override public String getColumnType (ColumnTyper typer, int length) {
                     return typer.getByteType(length);
                 }
-                @Override public Object getFromSet (ResultSet rs)
-                    throws SQLException {
-                    // work around the fact that HSQLDB (at least) returns Integer rather than
-                    // Byte for TINYINT columns
-                    Object value = super.getFromSet(rs);
+                @Override public Object getFromSet (ResultSet rs) throws SQLException {
+                    return massageResult(super.getFromSet(rs));
+                }
+                // works around the fact that HSQLDB (at least) returns Integer rather than Byte
+                // for TINYINT columns
+                protected Object massageResult (Object value) {
                     return (value == null) ? null : ((Number)value).byteValue();
                 }
             };
@@ -332,11 +342,12 @@ public abstract class FieldMarshaller<T>
                 @Override public String getColumnType (ColumnTyper typer, int length) {
                     return typer.getShortType(length);
                 }
-                @Override public Object getFromSet (ResultSet rs)
-                    throws SQLException {
-                    // work around the fact that HSQLDB (at least) returns Integer rather than
-                    // Short for SMALLINT columns
-                    Object value = super.getFromSet(rs);
+                @Override public Object getFromSet (ResultSet rs) throws SQLException {
+                    return massageResult(super.getFromSet(rs));
+                }
+                // works around the fact that HSQLDB (at least) returns Integer rather than Short
+                // for SMALLINT columns
+                protected Object massageResult (Object value) {
                     return (value == null) ? null : ((Number)value).shortValue();
                 }
             };
@@ -357,11 +368,12 @@ public abstract class FieldMarshaller<T>
                 @Override public String getColumnType (ColumnTyper typer, int length) {
                     return typer.getFloatType(length);
                 }
-                @Override public Object getFromSet (ResultSet rs)
-                    throws SQLException {
-                    // work around the fact that HSQLDB (at least) returns Double rather than
-                    // Float for REAL columns
-                    Object value = super.getFromSet(rs);
+                @Override public Object getFromSet (ResultSet rs) throws SQLException {
+                    return massageResult(super.getFromSet(rs));
+                }
+                // works around the fact that HSQLDB (at least) returns Double rather than Float
+                // for REAL columns
+                protected Object massageResult (Object value) {
                     return (value == null) ? null : ((Number)value).floatValue();
                 }
             };
@@ -475,9 +487,11 @@ public abstract class FieldMarshaller<T>
             throws IllegalArgumentException, IllegalAccessException {
             return _field.getBoolean(po);
         }
-        @Override public Boolean getFromSet (ResultSet rs)
-            throws SQLException {
+        @Override public Boolean getFromSet (ResultSet rs) throws SQLException {
             return rs.getBoolean(getColumnName());
+        }
+        @Override public Boolean getFromSet (ResultSet rs, int index) throws SQLException {
+            return rs.getBoolean(index);
         }
         @Override public void writeToObject (Object po, Boolean value)
             throws IllegalArgumentException, IllegalAccessException {
@@ -497,9 +511,11 @@ public abstract class FieldMarshaller<T>
             throws IllegalArgumentException, IllegalAccessException {
             return _field.getByte(po);
         }
-        @Override public Byte getFromSet (ResultSet rs)
-            throws SQLException {
+        @Override public Byte getFromSet (ResultSet rs) throws SQLException {
             return rs.getByte(getColumnName());
+        }
+        @Override public Byte getFromSet (ResultSet rs, int index) throws SQLException {
+            return rs.getByte(index);
         }
         @Override public void writeToObject (Object po, Byte value)
             throws IllegalArgumentException, IllegalAccessException {
@@ -519,9 +535,11 @@ public abstract class FieldMarshaller<T>
             throws IllegalArgumentException, IllegalAccessException {
             return _field.getShort(po);
         }
-        @Override public Short getFromSet (ResultSet rs)
-            throws SQLException {
+        @Override public Short getFromSet (ResultSet rs) throws SQLException {
             return rs.getShort(getColumnName());
+        }
+        @Override public Short getFromSet (ResultSet rs, int index) throws SQLException {
+            return rs.getShort(index);
         }
         @Override public void writeToObject (Object po, Short value)
             throws IllegalArgumentException, IllegalAccessException {
@@ -541,9 +559,11 @@ public abstract class FieldMarshaller<T>
             throws IllegalArgumentException, IllegalAccessException {
             return _field.getInt(po);
         }
-        @Override public Integer getFromSet (ResultSet rs)
-            throws SQLException {
+        @Override public Integer getFromSet (ResultSet rs) throws SQLException {
             return rs.getInt(getColumnName());
+        }
+        @Override public Integer getFromSet (ResultSet rs, int index) throws SQLException {
+            return rs.getInt(index);
         }
         @Override public void writeToObject (Object po, Integer value)
             throws IllegalArgumentException, IllegalAccessException {
@@ -563,9 +583,11 @@ public abstract class FieldMarshaller<T>
             throws IllegalArgumentException, IllegalAccessException {
             return _field.getLong(po);
         }
-        @Override public Long getFromSet (ResultSet rs)
-            throws SQLException {
+        @Override public Long getFromSet (ResultSet rs) throws SQLException {
             return rs.getLong(getColumnName());
+        }
+        @Override public Long getFromSet (ResultSet rs, int index) throws SQLException {
+            return rs.getLong(index);
         }
         @Override public void writeToObject (Object po, Long value)
             throws IllegalArgumentException, IllegalAccessException {
@@ -585,9 +607,11 @@ public abstract class FieldMarshaller<T>
             throws IllegalArgumentException, IllegalAccessException {
             return _field.getFloat(po);
         }
-        @Override public Float getFromSet (ResultSet rs)
-            throws SQLException {
+        @Override public Float getFromSet (ResultSet rs) throws SQLException {
             return rs.getFloat(getColumnName());
+        }
+        @Override public Float getFromSet (ResultSet rs, int index) throws SQLException {
+            return rs.getFloat(index);
         }
         @Override public void writeToObject (Object po, Float value)
             throws IllegalArgumentException, IllegalAccessException {
@@ -607,9 +631,11 @@ public abstract class FieldMarshaller<T>
             throws IllegalArgumentException, IllegalAccessException {
             return _field.getDouble(po);
         }
-        @Override public Double getFromSet (ResultSet rs)
-            throws SQLException {
+        @Override public Double getFromSet (ResultSet rs) throws SQLException {
             return rs.getDouble(getColumnName());
+        }
+        @Override public Double getFromSet (ResultSet rs, int index) throws SQLException {
+            return rs.getDouble(index);
         }
         @Override public void writeToObject (Object po, Double value)
             throws IllegalArgumentException, IllegalAccessException {
@@ -626,9 +652,11 @@ public abstract class FieldMarshaller<T>
             throws IllegalArgumentException, IllegalAccessException {
             return _field.get(po);
         }
-        @Override public Object getFromSet (ResultSet rs)
-            throws SQLException {
+        @Override public Object getFromSet (ResultSet rs) throws SQLException {
             return rs.getObject(getColumnName());
+        }
+        @Override public Object getFromSet (ResultSet rs, int index) throws SQLException {
+            return rs.getObject(index);
         }
         @Override public void writeToObject (Object po, Object value)
             throws IllegalArgumentException, IllegalAccessException {
@@ -648,9 +676,11 @@ public abstract class FieldMarshaller<T>
             throws IllegalArgumentException, IllegalAccessException {
             return (byte[]) _field.get(po);
         }
-        @Override public byte[] getFromSet (ResultSet rs)
-            throws SQLException {
+        @Override public byte[] getFromSet (ResultSet rs) throws SQLException {
             return rs.getBytes(getColumnName());
+        }
+        @Override public byte[] getFromSet (ResultSet rs, int index) throws SQLException {
+            return rs.getBytes(index);
         }
         @Override public void writeToObject (Object po, byte[] value)
             throws IllegalArgumentException, IllegalAccessException {
@@ -670,17 +700,13 @@ public abstract class FieldMarshaller<T>
             throws IllegalArgumentException, IllegalAccessException {
             return (int[]) _field.get(po);
         }
-        @Override public int[] getFromSet (ResultSet rs)
-            throws SQLException {
-            byte[] raw = (byte[]) rs.getObject(getColumnName());
-            int[] value;
-            if (raw == null) {
-                value = null;
-            } else {
-                value = new int[raw.length/4];
-                ByteBuffer.wrap(raw).asIntBuffer().get(value);
-            }
-            return value;
+        @Override public int[] getFromSet (ResultSet rs) throws SQLException {
+            // TODO: why not use getBytes()?
+            return fromBytes((byte[]) rs.getObject(getColumnName()));
+        }
+        @Override public int[] getFromSet (ResultSet rs, int index) throws SQLException {
+            // TODO: why not use getBytes()?
+            return fromBytes((byte[]) rs.getObject(index));
         }
         @Override public void writeToObject (Object po, int[] value)
             throws IllegalArgumentException, IllegalAccessException {
@@ -697,6 +723,16 @@ public abstract class FieldMarshaller<T>
                 raw = bbuf.array();
             }
             ps.setObject(column, raw);
+        }
+        protected final int[] fromBytes (byte[] raw) {
+            int[] value;
+            if (raw == null) {
+                value = null;
+            } else {
+                value = new int[raw.length/4];
+                ByteBuffer.wrap(raw).asIntBuffer().get(value);
+            }
+            return value;
         }
     }
 
@@ -725,6 +761,9 @@ public abstract class FieldMarshaller<T>
         @Override public ByteEnum getFromSet (ResultSet rs) throws SQLException {
             return ByteEnumUtil.fromByte(_eclass, rs.getByte(getColumnName()));
         }
+        @Override public ByteEnum getFromSet (ResultSet rs, int index) throws SQLException {
+            return ByteEnumUtil.fromByte(_eclass, rs.getByte(index));
+        }
         @Override public void writeToObject (Object po, ByteEnum value)
             throws IllegalArgumentException, IllegalAccessException {
             _field.set(po, value);
@@ -751,8 +790,10 @@ public abstract class FieldMarshaller<T>
             return value;
         }
         @Override public E getFromSet (ResultSet rs) throws SQLException {
-            String svalue = rs.getString(getColumnName());
-            return (svalue == null) ? null : Enum.valueOf(_eclass, svalue);
+            return fromString(rs.getString(getColumnName()));
+        }
+        @Override public E getFromSet (ResultSet rs, int index) throws SQLException {
+            return fromString(rs.getString(index));
         }
         @Override public void writeToObject (Object po, E value)
             throws IllegalArgumentException, IllegalAccessException {
@@ -762,6 +803,9 @@ public abstract class FieldMarshaller<T>
             throws SQLException {
             String svalue = (value == null) ? null : value.name();
             ps.setString(column, svalue);
+        }
+        protected final E fromString (String svalue) {
+            return (svalue == null) ? null : Enum.valueOf(_eclass, svalue);
         }
 
         protected Class<E> _eclass;
