@@ -44,13 +44,13 @@
     <dependency>
       <groupId>com.samskivert</groupId>
       <artifactId>samskivert</artifactId>
-      <version>[1.1)</version>
+      <version>[1.1,)</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>[r07)</version>
+      <version>[r07,)</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
