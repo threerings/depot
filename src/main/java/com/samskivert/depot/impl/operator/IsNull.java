@@ -30,14 +30,14 @@ import com.samskivert.depot.impl.FragmentVisitor;
  * The SQL 'is null' operator.
  */
 public class IsNull
-    implements SQLExpression
+    implements SQLExpression<Boolean>
 {
-    public IsNull (SQLExpression expression)
+    public IsNull (SQLExpression<?> expression)
     {
         _expression = expression;
     }
 
-    public SQLExpression getExpression ()
+    public SQLExpression<?> getExpression ()
     {
         return _expression;
     }
@@ -59,5 +59,5 @@ public class IsNull
         return "IsNull(" + _expression + ")";
     }
 
-    protected SQLExpression _expression;
+    protected SQLExpression<?> _expression;
 }

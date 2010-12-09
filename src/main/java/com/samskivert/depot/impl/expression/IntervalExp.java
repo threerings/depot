@@ -30,7 +30,7 @@ import com.samskivert.depot.impl.FragmentVisitor;
  * A code for representing a date interval.
  */
 public class IntervalExp
-    implements SQLExpression
+    implements SQLExpression<Integer>
 {
     /** The units that can be used for an interval. */
     public enum Unit { YEAR, MONTH, DAY, HOUR, MINUTE, SECOND }

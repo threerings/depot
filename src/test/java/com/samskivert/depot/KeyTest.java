@@ -39,7 +39,7 @@ public class KeyTest extends TestBase
         Key<MonkeyRecord> key = MonkeyRecord.getKey(species, monkeyId);
 
         // make sure that the arguments we passed in got assigned in the right positions
-        ColumnExp[] kfs = DepotUtil.getKeyFields(MonkeyRecord.class);
+        ColumnExp<?>[] kfs = DepotUtil.getKeyFields(MonkeyRecord.class);
         int kspecies = 0, kmonkeyId = 0;
         for (int ii = 0; ii < kfs.length; ii++) {
             if (MonkeyRecord.SPECIES.equals(kfs[ii])) {
@@ -58,7 +58,7 @@ public class KeyTest extends TestBase
         Key<TestRecord> key = TestRecord.getKey(recordId);
 
         // make sure that the arguments we passed in got assigned in the right positions
-        ColumnExp[] kfs = DepotUtil.getKeyFields(TestRecord.class);
+        ColumnExp<?>[] kfs = DepotUtil.getKeyFields(TestRecord.class);
         int krecordId = 0;
         for (int ii = 0; ii < kfs.length; ii++) {
             if (TestRecord.RECORD_ID.equals(kfs[ii])) {
@@ -82,7 +82,7 @@ public class KeyTest extends TestBase
 
         assertEquals("beee", _repo.loadEnum(EnumKeyRecord.Type.B).name);
 
-        _repo.from(EnumKeyRecord.class).where(Exps.trueLiteral()).delete();
+        _repo.from(EnumKeyRecord.class).whereTrue().delete();
     }
 
     // the HSQL in-memory database persists for the lifetime of the VM, which means we have to

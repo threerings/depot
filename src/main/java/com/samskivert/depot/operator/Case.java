@@ -33,10 +33,10 @@ import com.samskivert.util.Tuple;
 /**
  * The SQL 'case' operator.
  */
-public class Case
-    implements SQLExpression
+public class Case<T>
+    implements SQLExpression<T>
 {
-    public Case (SQLExpression... exps)
+    public Case (SQLExpression<?>... exps)
     {
         int i = 0;
         while (i+1 < exps.length) {
@@ -46,12 +46,12 @@ public class Case
         _elseExp = (i < exps.length) ? exps[i] : null;
     }
 
-    public List<Tuple<SQLExpression, SQLExpression>> getWhenExps ()
+    public List<Tuple<SQLExpression<?>, SQLExpression<?>>> getWhenExps ()
     {
         return _whenExps;
     }
 
-    public SQLExpression getElseExp ()
+    public SQLExpression<?> getElseExp ()
     {
         return _elseExp;
     }
@@ -65,7 +65,7 @@ public class Case
     // from SQLExpression
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
-        for (Tuple<SQLExpression, SQLExpression> tuple : _whenExps) {
+        for (Tuple<SQLExpression<?>, SQLExpression<?>> tuple : _whenExps) {
             tuple.left.addClasses(classSet);
             tuple.right.addClasses(classSet);
         }
@@ -79,7 +79,7 @@ public class Case
     {
         StringBuilder builder = new StringBuilder();
         builder.append("Case(");
-        for (Tuple<SQLExpression, SQLExpression> tuple : _whenExps) {
+        for (Tuple<SQLExpression<?>, SQLExpression<?>> tuple : _whenExps) {
             builder.append(tuple.left.toString()).append("->");
             builder.append(tuple.right.toString()).append(",");
         }
@@ -89,6 +89,6 @@ public class Case
         return builder.toString();
     }
 
-    protected List<Tuple<SQLExpression, SQLExpression>> _whenExps = Lists.newArrayList();
-    protected SQLExpression _elseExp;
+    protected List<Tuple<SQLExpression<?>, SQLExpression<?>>> _whenExps = Lists.newArrayList();
+    protected SQLExpression<?> _elseExp;
 }

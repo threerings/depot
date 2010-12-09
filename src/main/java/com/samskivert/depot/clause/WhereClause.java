@@ -32,7 +32,7 @@ public abstract class WhereClause implements QueryClause
     /**
      * Returns the condition associated with this where clause.
      */
-    public abstract SQLExpression getWhereExpression ();
+    public abstract SQLExpression<?> getWhereExpression ();
 
     /**
      * Validates that the supplied persistent record type is the type matched by this where clause.

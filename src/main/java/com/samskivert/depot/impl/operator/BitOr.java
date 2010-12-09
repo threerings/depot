@@ -25,14 +25,14 @@ import com.samskivert.depot.expression.SQLExpression;
 /**
  * The SQL '|' operator.
  */
-public class BitOr extends Arithmetic
+public class BitOr<T extends Number> extends Arithmetic<T>
 {
-    public BitOr (SQLExpression column, Comparable<?> value)
+    public BitOr (SQLExpression<?> column, T value)
     {
         super(column, value);
     }
 
-    public BitOr (SQLExpression... values)
+    public BitOr (SQLExpression<?>... values)
     {
         super(values);
     }

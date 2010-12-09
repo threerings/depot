@@ -25,15 +25,15 @@ import com.samskivert.depot.expression.SQLExpression;
 /**
  * The SQL 'like' (and 'not like') operator.
  */
-public class Like extends BinaryOperator
+public class Like extends BinaryOperator<Boolean>
 {
-    public Like (SQLExpression column, Comparable<?> value, boolean like)
+    public Like (SQLExpression<?> column, Comparable<?> value, boolean like)
     {
         super(column, value);
         _like = like;
     }
 
-    public Like (SQLExpression column, SQLExpression value, boolean like)
+    public Like (SQLExpression<?> column, SQLExpression<?> value, boolean like)
     {
         super(column, value);
         _like = like;

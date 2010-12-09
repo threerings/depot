@@ -20,6 +20,9 @@
 
 package com.samskivert.depot.impl.expression;
 
+import java.sql.Date;
+import java.sql.Timestamp;
+
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FragmentVisitor;
 import com.samskivert.depot.impl.expression.Function.NoArgFun;
@@ -27,12 +30,12 @@ import com.samskivert.depot.impl.expression.Function.OneArgFun;
 
 public abstract class DateFun
 {
-    public static class DatePart extends OneArgFun {
+    public static class DatePart extends OneArgFun<Integer> {
         public enum Part {
             DAY_OF_MONTH, DAY_OF_WEEK, DAY_OF_YEAR, HOUR, MINUTE, MONTH,
             SECOND, WEEK, YEAR, EPOCH
         }
-        public DatePart (SQLExpression date, Part part) {
+        public DatePart (SQLExpression<?> date, Part part) {
             super(date);
             _part = part;
         }
@@ -48,7 +51,7 @@ public abstract class DateFun
         protected Part _part;
     }
 
-    public static class DateTruncate extends OneArgFun {
+    public static class DateTruncate extends OneArgFun<Date> {
         /**
          * The degree of truncation to perform, in time units. Currently only DAY, due to lacking
          * MySQL support, but we hope for future versions to match PostgreSQL.
@@ -60,7 +63,7 @@ public abstract class DateFun
          * Truncate a SQL timestamp value, currently only to the nearest day (Truncation.DAY) due
          * to lacking MySQL support, but we hope for future versions to match PostgreSQL.
          */
-        public DateTruncate (SQLExpression date, Truncation truncation) {
+        public DateTruncate (SQLExpression<?> date, Truncation truncation) {
             super(date);
             _truncation= truncation;
         }
@@ -76,7 +79,7 @@ public abstract class DateFun
         protected Truncation _truncation;
     }
 
-    public static class Now extends NoArgFun {
+    public static class Now extends NoArgFun<Timestamp> {
         public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }

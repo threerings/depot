@@ -31,7 +31,7 @@ import com.samskivert.depot.impl.FragmentVisitor;
  * The SQL 'exists' operator.
  */
 public class Exists
-    implements SQLExpression
+    implements SQLExpression<Boolean>
 {
     public Exists (SelectClause clause)
     {

@@ -12,9 +12,9 @@ import com.samskivert.depot.impl.FragmentVisitor;
 /**
  * Represents an operator with any number of operands.
  */
-public abstract class MultiOperator extends BaseOperator
+public abstract class MultiOperator<T> extends BaseOperator<T>
 {
-    public MultiOperator (SQLExpression ... operands)
+    public MultiOperator (SQLExpression<?>... operands)
     {
         super(operands);
     }
@@ -38,7 +38,7 @@ public abstract class MultiOperator extends BaseOperator
     @Override // from SQLFragment
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
-        for (SQLExpression operand : _args) {
+        for (SQLExpression<?> operand : _args) {
             operand.addClasses(classSet);
         }
     }
@@ -47,7 +47,7 @@ public abstract class MultiOperator extends BaseOperator
     public String toString ()
     {
         StringBuilder builder = new StringBuilder("(");
-        for (SQLExpression operand : _args) {
+        for (SQLExpression<?> operand : _args) {
             if (builder.length() > 1) {
                 builder.append(operator());
             }

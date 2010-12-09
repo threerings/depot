@@ -32,7 +32,7 @@ public class StringFuncs
     /**
      * Creates an expression that evaluates to the string length of the supplied expression.
      */
-    public static FluentExp length (SQLExpression exp)
+    public static FluentExp<Integer> length (SQLExpression<String> exp)
     {
         return new Length(exp);
     }
@@ -40,7 +40,7 @@ public class StringFuncs
     /**
      * Creates an expression that down-cases the supplied expression.
      */
-    public static FluentExp lower (SQLExpression exp)
+    public static FluentExp<String> lower (SQLExpression<String> exp)
     {
         return new Lower(exp);
     }
@@ -49,7 +49,8 @@ public class StringFuncs
      * Creates an expression that locates the given substring expression within the given
      * string expression and returns the index.
      */
-    public static FluentExp position (SQLExpression substring, SQLExpression string)
+    public static FluentExp<Integer> position (SQLExpression<String> substring,
+                                               SQLExpression<String> string)
     {
         return new Position(substring, string);
     }
@@ -58,8 +59,8 @@ public class StringFuncs
      * Creates an expression that evaluates to a substring of the given string expression,
      * starting at the given index and of the given length.
      */
-    public static FluentExp substring (
-        SQLExpression string, SQLExpression from, SQLExpression count)
+    public static FluentExp<String> substring (
+        SQLExpression<String> string, SQLExpression<String> from, SQLExpression<Integer> count)
     {
         return new Substring(string, from, count);
     }
@@ -68,7 +69,7 @@ public class StringFuncs
      * Creates an expression that removes whitespace from the beginning and end of the supplied
      * string expression.
      */
-    public static FluentExp trim (SQLExpression exp)
+    public static FluentExp<String> trim (SQLExpression<String> exp)
     {
         return new Trim(exp);
     }
@@ -76,7 +77,7 @@ public class StringFuncs
     /**
      * Creates an expression that up-cases the supplied string expression.
      */
-    public static FluentExp upper (SQLExpression exp)
+    public static FluentExp<String> upper (SQLExpression<String> exp)
     {
         return new Upper(exp);
     }

@@ -3,23 +3,23 @@
 
 package com.samskivert.depot.impl.operator;
 
+import com.samskivert.depot.Exps;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FragmentVisitor;
-import com.samskivert.depot.impl.expression.ValueExp;
 
 /**
  * Does the real work for simple binary operators such as Equals.
  */
-public abstract class BinaryOperator extends BaseOperator
+public abstract class BinaryOperator<T> extends BaseOperator<T>
 {
-    public BinaryOperator (SQLExpression lhs, SQLExpression rhs)
+    public BinaryOperator (SQLExpression<?> lhs, SQLExpression<?> rhs)
     {
         super(lhs, rhs);
     }
 
-    public BinaryOperator (SQLExpression lhs, Comparable<?> rhs)
+    public BinaryOperator (SQLExpression<?> lhs, Comparable<?> rhs)
     {
-        this(lhs, new ValueExp(rhs));
+        this(lhs, Exps.value(rhs));
     }
 
     /**
@@ -38,12 +38,12 @@ public abstract class BinaryOperator extends BaseOperator
         return builder.visit(this);
     }
 
-    public SQLExpression getLeftHandSide ()
+    public SQLExpression<?> getLeftHandSide ()
     {
         return _args[0];
     }
 
-    public SQLExpression getRightHandSide ()
+    public SQLExpression<?> getRightHandSide ()
     {
         return _args[1];
     }

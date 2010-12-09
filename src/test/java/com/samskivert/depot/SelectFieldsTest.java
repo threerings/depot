@@ -53,8 +53,10 @@ public class SelectFieldsTest extends TestBase
 
         List<Tuple2<Integer,String>> data = _repo.from(TestRecord.class).where(
             TestRecord.RECORD_ID.greaterThan(7)).select(TestRecord.RECORD_ID, TestRecord.NAME);
-        assertEquals(data, Lists.newArrayList(Tuple2.newTuple(8, "Elvis"),
-                                              Tuple2.newTuple(9, "Elvis")));
+        List<Tuple2<Integer,String>> want = Lists.newArrayList();
+        want.add(Tuple2.newTuple(8, "Elvis"));
+        want.add(Tuple2.newTuple(9, "Elvis"));
+        assertEquals(data, want);
 
         // test a basic join
         List<Tuple2<Integer,EnumKeyRecord.Type>> jdata = _repo.from(TestRecord.class).join(
@@ -62,8 +64,8 @@ public class SelectFieldsTest extends TestBase
         System.out.println(jdata);
 
         // finally clean up after ourselves
-        _repo.from(TestRecord.class).where(Exps.trueLiteral()).delete();
-        _repo.from(EnumKeyRecord.class).where(Exps.trueLiteral()).delete();
+        _repo.from(TestRecord.class).whereTrue().delete();
+        _repo.from(EnumKeyRecord.class).whereTrue().delete();
     }
 
     // the HSQL in-memory database persists for the lifetime of the VM, which means we have to

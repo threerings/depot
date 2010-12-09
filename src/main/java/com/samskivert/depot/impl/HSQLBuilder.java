@@ -71,12 +71,12 @@ public class HSQLBuilder
             }
 
             // now iterate over the cartesian product of the query words & the fields
-            List<SQLExpression> bits = Lists.newArrayList();
+            List<SQLExpression<?>> bits = Lists.newArrayList();
             for (String field : fields) {
                 for (String ftsWord : ftsWords) {
                     // build comparisons between each word and column
-                    bits.add(new Like(new Lower(
-                        new ColumnExp<Object>(pClass, field)), "%"+ftsWord+"%", true));
+                    bits.add(new Like(new Lower(new ColumnExp<String>(pClass, field)),
+                                      "%"+ftsWord+"%", true));
                 }
             }
             // then just OR them all together and we have our query
@@ -93,7 +93,7 @@ public class HSQLBuilder
         }
 
         @Override
-        public Void visit (MultiOperator operator)
+        public Void visit (MultiOperator<?> operator)
         {
             // HSQL doesn't handle & and | operators
             if (operator instanceof BitAnd) {
@@ -225,7 +225,7 @@ public class HSQLBuilder
     }
 
     /** Holds the Full Text Seach condition between build and bind phases. */
-    protected SQLExpression _ftsCondition;
+    protected SQLExpression<?> _ftsCondition;
 
     protected static final FieldMarshaller.ColumnTyper TYPER = new FieldMarshaller.ColumnTyper() {
         public String getBooleanType (int length) {

@@ -89,8 +89,8 @@ public interface FragmentVisitor<T>
 {
     public T visit (FieldDefinition fieldOverride);
     public T visit (FromOverride fromOverride);
-    public T visit (MultiOperator multiOperator);
-    public T visit (BinaryOperator binaryOperator);
+    public T visit (MultiOperator<?> multiOperator);
+    public T visit (BinaryOperator<?> binaryOperator);
     public T visit (IsNull isNull);
     public T visit (In in);
     public T visit (FullText.Match match);
@@ -102,8 +102,8 @@ public interface FragmentVisitor<T>
     public T visit (OrderBy orderBy);
     public T visit (Join join);
     public T visit (Limit limit);
-    public T visit (LiteralExp literal);
-    public T visit (ValueExp value);
+    public T visit (LiteralExp<?> literal);
+    public T visit (ValueExp<?> value);
     public T visit (IntervalExp interval);
     public T visit (WhereClause where);
     public T visit (Key.Expression key);
@@ -114,22 +114,22 @@ public interface FragmentVisitor<T>
     public T visit (InsertClause insertClause);
     public T visit (CreateIndexClause createIndexClause);
     public T visit (DropIndexClause dropIndexClause);
-    public T visit (Case caseExp);
+    public T visit (Case<?> caseExp);
 
     // Numerical
-    public T visit (Abs exp);
-    public T visit (Ceil exp);
-    public T visit (Exp exp);
-    public T visit (Floor exp);
-    public T visit (Ln exp);
-    public T visit (Log10 exp);
-    public T visit (Pi exp);
-    public T visit (Power exp);
-    public T visit (Random exp);
-    public T visit (Round exp);
-    public T visit (Sign exp);
-    public T visit (Sqrt exp);
-    public T visit (Trunc exp);
+    public T visit (Abs<?> exp);
+    public T visit (Ceil<?> exp);
+    public T visit (Exp<?> exp);
+    public T visit (Floor<?> exp);
+    public T visit (Ln<?> exp);
+    public T visit (Log10<?> exp);
+    public T visit (Pi<?> exp);
+    public T visit (Power<?,?> exp);
+    public T visit (Random<?> exp);
+    public T visit (Round<?> exp);
+    public T visit (Sign<?> exp);
+    public T visit (Sqrt<?> exp);
+    public T visit (Trunc<?> exp);
 
     // String
     public T visit (Length exp);
@@ -145,15 +145,15 @@ public interface FragmentVisitor<T>
     public T visit (Now exp);
 
     // Aggregation
-    public T visit (Average exp);
+    public T visit (Average<?> exp);
     public T visit (Count exp);
     public T visit (Every exp);
-    public T visit (Max exp);
-    public T visit (Min exp);
-    public T visit (Sum exp);
+    public T visit (Max<?> exp);
+    public T visit (Min<?> exp);
+    public T visit (Sum<?> exp);
 
     // Conditional
-    public T visit (Coalesce exp);
-    public T visit (Greatest exp);
-    public T visit (Least exp);
+    public T visit (Coalesce<?> exp);
+    public T visit (Greatest<?> exp);
+    public T visit (Least<?> exp);
 }

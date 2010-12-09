@@ -25,14 +25,14 @@ import com.samskivert.depot.expression.SQLExpression;
 /**
  * The SQL '>' operator.
  */
-public class GreaterThan extends BinaryOperator
+public class GreaterThan extends BinaryOperator<Boolean>
 {
-    public GreaterThan (SQLExpression column, Comparable<?> value)
+    public GreaterThan (SQLExpression<?> column, Comparable<?> value)
     {
         super(column, value);
     }
 
-    public GreaterThan (SQLExpression column, SQLExpression value)
+    public GreaterThan (SQLExpression<?> column, SQLExpression<?> value)
     {
         super(column, value);
     }

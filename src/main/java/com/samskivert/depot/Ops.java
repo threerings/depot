@@ -41,7 +41,7 @@ public class Ops
     /**
      * Creates a NOT expression with the supplied target expression.
      */
-    public static SQLExpression not (SQLExpression expr)
+    public static SQLExpression<Boolean> not (SQLExpression<Boolean> expr)
     {
         return new Not(expr);
     }
@@ -49,7 +49,7 @@ public class Ops
     /**
      * Creates an AND expression with the supplied target expressions.
      */
-    public static FluentExp and (Iterable<? extends SQLExpression> conditions)
+    public static FluentExp<Boolean> and (Iterable<? extends SQLExpression<?>> conditions)
     {
         return and(Iterables.toArray(conditions, SQLExpression.class));
     }
@@ -57,9 +57,9 @@ public class Ops
     /**
      * Creates an AND expression with the supplied target expressions.
      */
-    public static FluentExp and (SQLExpression... conditions)
+    public static FluentExp<Boolean> and (SQLExpression<?>... conditions)
     {
-        return new MultiOperator(conditions) {
+        return new MultiOperator<Boolean>(conditions) {
             @Override public String operator() {
                 return " and ";
             }
@@ -86,7 +86,7 @@ public class Ops
     /**
      * Creates an OR expression with the supplied target expressions.
      */
-    public static FluentExp or (Iterable<? extends SQLExpression> conditions)
+    public static FluentExp<Boolean> or (Iterable<? extends SQLExpression<?>> conditions)
     {
         return or(Iterables.toArray(conditions, SQLExpression.class));
     }
@@ -94,9 +94,9 @@ public class Ops
     /**
      * Creates an OR expression with the supplied target expressions.
      */
-    public static FluentExp or (SQLExpression... conditions)
+    public static FluentExp<Boolean> or (SQLExpression<?>... conditions)
     {
-        return new MultiOperator(conditions) {
+        return new MultiOperator<Boolean>(conditions) {
             @Override public String operator() {
                 return " or ";
             }
@@ -121,7 +121,7 @@ public class Ops
     /**
      * Returns an expression that matches when the source is like the supplied value.
      */
-    public static FluentExp like (SQLExpression source, Comparable<?> value)
+    public static FluentExp<Boolean> like (SQLExpression<?> source, Comparable<?> value)
     {
         return new Like(source, value, true);
     }
@@ -129,7 +129,7 @@ public class Ops
     /**
      * Returns an expression that matches when the source is like the supplied expression.
      */
-    public static FluentExp like (SQLExpression source, SQLExpression expr)
+    public static FluentExp<Boolean> like (SQLExpression<?> source, SQLExpression<?> expr)
     {
         return new Like(source, expr, true);
     }
@@ -137,7 +137,7 @@ public class Ops
     /**
      * Returns an expression that matches when the source is NOT like the supplied value.
      */
-    public static FluentExp notLike (SQLExpression source, Comparable<?> value)
+    public static FluentExp<Boolean> notLike (SQLExpression<?> source, Comparable<?> value)
     {
         return new Like(source, value, false);
     }
@@ -145,7 +145,7 @@ public class Ops
     /**
      * Returns an expression that matches when the source is NOT like the supplied expression.
      */
-    public static FluentExp notLike (SQLExpression source, SQLExpression expr)
+    public static FluentExp<Boolean> notLike (SQLExpression<?> source, SQLExpression<?> expr)
     {
         return new Like(source, expr, false);
     }
@@ -153,7 +153,7 @@ public class Ops
     /**
      * Creates an EXISTS expression with the supplied select clause.
      */
-    public static SQLExpression exists (SelectClause target)
+    public static SQLExpression<Boolean> exists (SelectClause target)
     {
         return new Exists(target);
     }
@@ -161,16 +161,32 @@ public class Ops
     /**
      * Adds the supplied expressions together.
      */
-    public static FluentExp add (SQLExpression... exprs)
+    public static <T extends Number> FluentExp<T> add (SQLExpression<T> e1, SQLExpression<T> e2)
     {
-        return new Add(exprs);
+        return new Add<T>(new SQLExpression<?>[] { e1, e2 });
+    }
+
+    /**
+     * Adds the supplied expressions together.
+     */
+    public static <T extends Number> FluentExp<T> add (Iterable<SQLExpression<T>> exprs)
+    {
+        return new Add<T>(Iterables.toArray(exprs, SQLExpression.class));
     }
 
     /**
      * Multiplies the supplied expressions together.
      */
-    public static FluentExp mul (SQLExpression... exprs)
+    public static <T extends Number> FluentExp<T> mul (SQLExpression<T> e1, SQLExpression<T> e2)
     {
-        return new Mul(exprs);
+        return new Mul<T>(new SQLExpression<?>[] { e1, e2 });
+    }
+
+    /**
+     * Multiplies the supplied expressions together.
+     */
+    public static <T extends Number> FluentExp<T> mul (Iterable<SQLExpression<T>> exprs)
+    {
+        return new Mul<T>(Iterables.toArray(exprs, SQLExpression.class));
     }
 }

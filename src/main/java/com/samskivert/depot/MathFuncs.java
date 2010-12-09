@@ -32,105 +32,106 @@ public class MathFuncs
     /**
      * Creates an expression that computes the absolute value of the supplied expression.
      */
-    public static FluentExp abs (SQLExpression expr)
+    public static <T extends Number> FluentExp<T> abs (SQLExpression<T> expr)
     {
-        return new Abs(expr);
+        return new Abs<T>(expr);
     }
 
     /**
      * Creates an expression that computes the integer ceiling of the supplied expression.
      */
-    public static FluentExp ceil (SQLExpression exp)
+    public static <T extends Number> FluentExp<T> ceil (SQLExpression<T> exp)
     {
-        return new Ceil(exp);
+        return new Ceil<T>(exp);
     }
 
     /**
      * Creates an expression that computes the exponential of the supplied expression.
      */
-    public static FluentExp exp (SQLExpression exp)
+    public static <T extends Number> FluentExp<T> exp (SQLExpression<T> exp)
     {
-        return new Exp(exp);
+        return new Exp<T>(exp);
     }
 
     /**
      * Creates an expression that computes the integer floor of the supplied expression.
      */
-    public static FluentExp floor (SQLExpression exp)
+    public static <T extends Number> FluentExp<T> floor (SQLExpression<T> exp)
     {
-        return new Floor(exp);
+        return new Floor<T>(exp);
     }
 
     /**
      * Creates an expression that computes the natural logarithm of the supplied expression.
      */
-    public static FluentExp ln (SQLExpression exp)
+    public static <T extends Number> FluentExp<T> ln (SQLExpression<T> exp)
     {
-        return new Ln(exp);
+        return new Ln<T>(exp);
     }
 
     /**
      * Creates an expression that computes the base-10 logarithm of the supplied expression.
      */
-    public static FluentExp log10 (SQLExpression value)
+    public static <T extends Number> FluentExp<T> log10 (SQLExpression<T> value)
     {
-        return new Log10(value);
+        return new Log10<T>(value);
     }
 
     /**
      * Creates an expression that evaluates to the constant PI.
      */
-    public static FluentExp pi ()
+    public static <T extends Number> FluentExp<T> pi ()
     {
-        return new Pi();
+        return new Pi<T>();
     }
 
     /**
      * Creates an expression that computes the value expression to the given power.
      */
-    public static FluentExp power (SQLExpression value, SQLExpression power)
+    public static <R extends Number, P extends Number> FluentExp<R> power (SQLExpression<R> value,
+                                                                           SQLExpression<P> power)
     {
-        return new Power(value, power);
+        return new Power<R, P>(value, power);
     }
 
     /**
      * Creates an expression that returns a random number between 0.0 and 1.0.
      */
-    public static FluentExp random ()
+    public static <T extends Number> FluentExp<T> random ()
     {
-        return new Random();
+        return new Random<T>();
     }
 
     /**
      * Creates an expression that computes the whole number nearest the supplied expression.
      */
-    public static FluentExp round (SQLExpression exp)
+    public static <T extends Number> FluentExp<T> round (SQLExpression<T> exp)
     {
-        return new Round(exp);
+        return new Round<T>(exp);
     }
 
     /**
      * Creates an expression that computes the sign of the supplied expression.
      */
-    public static FluentExp sign (SQLExpression exp)
+    public static <T extends Number> FluentExp<T> sign (SQLExpression<T> exp)
     {
-        return new Sign(exp);
+        return new Sign<T>(exp);
     }
 
     /**
      * Creates an expression that computes the square root of the supplied expression.
      */
-    public static FluentExp sqrt (SQLExpression exp)
+    public static <T extends Number> FluentExp<T> sqrt (SQLExpression<T> exp)
     {
-        return new Sqrt(exp);
+        return new Sqrt<T>(exp);
     }
 
     /**
      * Creates an expression that computes the truncation of the supplied expression,
      * i.e. the next closest whole number to zero.
      */
-    public static FluentExp trunc (SQLExpression exp)
+    public static <T extends Number> FluentExp<T> trunc (SQLExpression<T> exp)
     {
-        return new Trunc(exp);
+        return new Trunc<T>(exp);
     }
 }

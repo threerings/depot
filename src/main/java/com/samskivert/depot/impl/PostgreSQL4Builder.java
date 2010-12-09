@@ -28,7 +28,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 
 import com.samskivert.depot.DatabaseException;
-import com.samskivert.depot.impl.expression.ValueExp;
+import com.samskivert.depot.Exps;
 import com.samskivert.depot.impl.operator.In;
 import com.samskivert.util.ByteEnum;
 
@@ -43,7 +43,7 @@ public class PostgreSQL4Builder extends PostgreSQLBuilder
             // if the In() expression is empty, replace it with a 'false'
             final Comparable<?>[] values = in.getValues();
             if (values.length == 0) {
-                new ValueExp(false).accept(this);
+                Exps.value(false).accept(this);
                 return null;
             }
             in.getExpression().accept(this);

@@ -34,7 +34,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
@@ -121,9 +120,9 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
 
         // introspect on the class and create marshallers and indices for persistent fields
         List<ColumnExp<?>> fields = Lists.newArrayList();
-        ListMultimap<String, Tuple<SQLExpression, Order>> namedFieldIndices =
+        ListMultimap<String, Tuple<SQLExpression<?>, Order>> namedFieldIndices =
             ArrayListMultimap.create();
-        ListMultimap<String, Tuple<SQLExpression, Order>> uniqueNamedFieldIndices =
+        ListMultimap<String, Tuple<SQLExpression<?>, Order>> uniqueNamedFieldIndices =
             ArrayListMultimap.create();
         for (Field field : _pClass.getFields()) {
             int mods = field.getModifiers();
@@ -203,8 +202,8 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             Index index = field.getAnnotation(Index.class);
             if (index != null) {
                 String name = index.name().equals("") ? field.getName() + "Index" : index.name();
-                Tuple<SQLExpression, Order> entry =
-                    new Tuple<SQLExpression, Order>(fieldColumn, Order.ASC);
+                Tuple<SQLExpression<?>, Order> entry =
+                    new Tuple<SQLExpression<?>, Order>(fieldColumn, Order.ASC);
                 if (index.unique()) {
                     checkArgument(!namedFieldIndices.containsKey(index.name()),
                                   "All @Index for a particular name must be unique or non-unique");
@@ -955,22 +954,22 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
 
     protected CreateIndexClause buildIndex (String name, boolean unique, Object config)
     {
-        List<Tuple<SQLExpression, Order>> definition = Lists.newArrayList();
+        List<Tuple<SQLExpression<?>, Order>> definition = Lists.newArrayList();
         if (config instanceof ColumnExp<?>) {
-            definition.add(new Tuple<SQLExpression, Order>((ColumnExp<?>)config, Order.ASC));
+            definition.add(new Tuple<SQLExpression<?>, Order>((ColumnExp<?>)config, Order.ASC));
         } else if (config instanceof ColumnExp<?>[]) {
             for (ColumnExp<?> column : (ColumnExp<?>[])config) {
-                definition.add(new Tuple<SQLExpression, Order>(column, Order.ASC));
+                definition.add(new Tuple<SQLExpression<?>, Order>(column, Order.ASC));
             }
         } else if (config instanceof SQLExpression) {
-            definition.add(new Tuple<SQLExpression, Order>((SQLExpression)config, Order.ASC));
+            definition.add(new Tuple<SQLExpression<?>, Order>((SQLExpression<?>)config, Order.ASC));
         } else if (config instanceof Tuple<?,?>) {
-            @SuppressWarnings("unchecked") Tuple<SQLExpression, Order> tuple =
-                (Tuple<SQLExpression, Order>)config;
+            @SuppressWarnings("unchecked") Tuple<SQLExpression<?>, Order> tuple =
+                (Tuple<SQLExpression<?>, Order>)config;
             definition.add(tuple);
         } else if (config instanceof List<?>) {
-            @SuppressWarnings("unchecked") List<Tuple<SQLExpression, Order>> defs =
-                (List<Tuple<SQLExpression, Order>>)config;
+            @SuppressWarnings("unchecked") List<Tuple<SQLExpression<?>, Order>> defs =
+                (List<Tuple<SQLExpression<?>, Order>>)config;
             definition.addAll(defs);
         } else {
             throw new IllegalArgumentException(

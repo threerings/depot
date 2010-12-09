@@ -30,7 +30,6 @@ import static org.junit.Assert.*;
 
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.clause.Where;
 
 /**
  * Tests queries.
@@ -64,7 +63,7 @@ public class QueryTest extends TestBase
         assertEquals(0, _repo.deleteAll(TestRecord.class, none));
 
         // test collection caching (TODO: check that the records are ==)
-        SQLExpression where = TestRecord.RECORD_ID.greaterThan(CREATE_RECORDS-50);
+        SQLExpression<Boolean> where = TestRecord.RECORD_ID.greaterThan(CREATE_RECORDS-50);
         assertEquals(50, _repo.from(TestRecord.class).where(where).select().size());
         assertEquals(50, _repo.from(TestRecord.class).where(where).select().size());
 
@@ -79,10 +78,10 @@ public class QueryTest extends TestBase
         }
 
         assertEquals(CREATE_RECORDS, _repo.findAll(TestRecord.class).size());
-        _repo.deleteAll(TestRecord.class, new Where(TestRecord.RECORD_ID.lessEq(CREATE_RECORDS/2)));
+        _repo.from(TestRecord.class).where(TestRecord.RECORD_ID.lessEq(CREATE_RECORDS/2)).delete();
         assertEquals(CREATE_RECORDS/2, _repo.findAll(TestRecord.class).size());
 
-        _repo.deleteAll(TestRecord.class, new Where(Exps.trueLiteral()));
+        _repo.from(TestRecord.class).whereTrue().delete();
         assertEquals(0, _repo.findAll(TestRecord.class).size());
 
 //         // TODO: try to break our In() clause

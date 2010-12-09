@@ -32,7 +32,7 @@ import com.samskivert.depot.impl.FragmentVisitor;
  */
 public class FullText
 {
-    public class Rank extends FluentExp
+    public class Rank extends FluentExp<Number>
     {
         // from SQLExpression
         public Object accept (FragmentVisitor<?> builder)
@@ -57,7 +57,7 @@ public class FullText
         }
     }
 
-    public class Match extends FluentExp
+    public class Match extends FluentExp<Boolean>
     {
         // from SQLExpression
         public Object accept (FragmentVisitor<?> builder)

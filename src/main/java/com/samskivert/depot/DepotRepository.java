@@ -508,7 +508,7 @@ public abstract class DepotRepository
     {
         // separate the arguments into keys and values
         final ColumnExp<?>[] fields = new ColumnExp<?>[updates.size()];
-        final SQLExpression[] values = new SQLExpression[fields.length];
+        final SQLExpression<?>[] values = new SQLExpression<?>[fields.length];
         int ii = 0;
         for (Map.Entry<? extends ColumnExp<?>, ?> entry : updates.entrySet()) {
             fields[ii] = entry.getKey();
@@ -545,7 +545,7 @@ public abstract class DepotRepository
     {
         // separate the updates into keys and values
         final ColumnExp<?>[] fields = new ColumnExp<?>[1+more.length/2];
-        final SQLExpression[] values = new SQLExpression[fields.length];
+        final SQLExpression<?>[] values = new SQLExpression<?>[fields.length];
         fields[0] = field;
         values[0] = makeValue(value);
         for (int ii = 1, idx = 0; ii < fields.length; ii++) {
@@ -576,7 +576,7 @@ public abstract class DepotRepository
      */
     public <T extends PersistentRecord> int updatePartial (
         Class<T> type, final WhereClause key, CacheInvalidator invalidator,
-        ColumnExp<?>[] fields, SQLExpression[] values)
+        ColumnExp<?>[] fields, SQLExpression<?>[] values)
         throws DatabaseException
     {
         requireNotComputed(type, "updatePartial");
@@ -908,9 +908,14 @@ public abstract class DepotRepository
         }
     }
 
-    protected SQLExpression makeValue (Object value)
+    protected <T> SQLExpression<T> makeValue (T value)
     {
-        return (value instanceof SQLExpression) ? (SQLExpression)value : new ValueExp(value);
+        if (value instanceof SQLExpression<?>) {
+            @SuppressWarnings("unchecked") SQLExpression<T> eval = (SQLExpression<T>)value;
+            return eval;
+        } else {
+            return new ValueExp<T>(value);
+        }
     }
 
     /**

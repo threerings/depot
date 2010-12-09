@@ -31,23 +31,23 @@ import com.samskivert.depot.impl.FragmentVisitor;
  * The SQL 'in (...)' operator.
  */
 public class In
-    implements SQLExpression
+    implements SQLExpression<Boolean>
 {
     /** The maximum number of keys allowed in an IN() clause. */
     public static final int MAX_KEYS = Short.MAX_VALUE;
 
-    public In (SQLExpression expression, Comparable<?>... values)
+    public In (SQLExpression<?> expression, Comparable<?>... values)
     {
         _expression = expression;
         _values = values;
     }
 
-    public In (SQLExpression pColumn, Iterable<? extends Comparable<?>> values)
+    public In (SQLExpression<?> pColumn, Iterable<? extends Comparable<?>> values)
     {
         this(pColumn, Iterables.toArray(values, Comparable.class));
     }
 
-    public SQLExpression getExpression ()
+    public SQLExpression<?> getExpression ()
     {
         return _expression;
     }
@@ -84,6 +84,6 @@ public class In
         return builder.append(")").toString();
     }
 
-    protected SQLExpression _expression;
+    protected SQLExpression<?> _expression;
     protected Comparable<?>[] _values;
 }

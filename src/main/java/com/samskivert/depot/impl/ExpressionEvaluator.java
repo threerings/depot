@@ -107,9 +107,9 @@ public class ExpressionEvaluator
         _pRec = pRec;
     }
 
-    public Object visit (MultiOperator multiOperator)
+    public Object visit (MultiOperator<?> multiOperator)
     {
-        SQLExpression[] operands = multiOperator.getArgs();
+        SQLExpression<?>[] operands = multiOperator.getArgs();
         Object[] values = new Object[operands.length];
         for (int ii = 0; ii < operands.length; ii ++) {
             values[ii] = operands[ii].accept(this);
@@ -121,7 +121,7 @@ public class ExpressionEvaluator
         return multiOperator.evaluate(values);
     }
 
-    public Object visit (BinaryOperator binaryOperator)
+    public Object visit (BinaryOperator<?> binaryOperator)
     {
         Object left = binaryOperator.getLeftHandSide().accept(this);
         Object right = binaryOperator.getRightHandSide().accept(this);
@@ -157,9 +157,9 @@ public class ExpressionEvaluator
         return new NoValue("Full Text Match not implemented");
     }
 
-    public Object visit (Case caseExp)
+    public Object visit (Case<?> caseExp)
     {
-        for (Tuple<SQLExpression, SQLExpression> exp : caseExp.getWhenExps()) {
+        for (Tuple<SQLExpression<?>, SQLExpression<?>> exp : caseExp.getWhenExps()) {
             Object result = exp.left.accept(this);
             if (result instanceof NoValue || !(result instanceof Boolean)) {
                 return new NoValue("Failed to evaluate case: " + exp.left + " -> " + result);
@@ -168,7 +168,7 @@ public class ExpressionEvaluator
                 return exp.right.accept(this);
             }
         }
-        SQLExpression elseExp = caseExp.getElseExp();
+        SQLExpression<?> elseExp = caseExp.getElseExp();
         if (elseExp != null) {
             return elseExp.accept(this);
         }
@@ -209,12 +209,12 @@ public class ExpressionEvaluator
         return new NoValue("Boolean negation of non-boolean value: " + result);
     }
 
-    public Object visit (LiteralExp literalExp)
+    public Object visit (LiteralExp<?> literalExp)
     {
         return new NoValue("Cannot evaluate LiteralExp: " + literalExp);
     }
 
-    public Object visit (ValueExp valueExp)
+    public Object visit (ValueExp<?> valueExp)
     {
         return valueExp.getValue();
     }
@@ -336,67 +336,67 @@ public class ExpressionEvaluator
     //
     // NUMERICAL FUNCTIONS
 
-    public Void visit (Abs exp)
+    public Void visit (Abs<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Ceil exp)
+    public Void visit (Ceil<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Exp exp)
+    public Void visit (Exp<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Floor exp)
+    public Void visit (Floor<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Ln exp)
+    public Void visit (Ln<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Log10 exp)
+    public Void visit (Log10<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Pi exp)
+    public Void visit (Pi<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Power exp)
+    public Void visit (Power<?,?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Random exp)
+    public Void visit (Random<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Round exp)
+    public Void visit (Round<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Sign exp)
+    public Void visit (Sign<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Sqrt exp)
+    public Void visit (Sqrt<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Trunc exp)
+    public Void visit (Trunc<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
@@ -449,7 +449,7 @@ public class ExpressionEvaluator
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Average exp)
+    public Void visit (Average<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
@@ -464,17 +464,17 @@ public class ExpressionEvaluator
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Max exp)
+    public Void visit (Max<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Min exp)
+    public Void visit (Min<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Sum exp)
+    public Void visit (Sum<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
@@ -482,17 +482,17 @@ public class ExpressionEvaluator
     //
     // CONDITIONAL FUNCTIONS
 
-    public Void visit (Coalesce exp)
+    public Void visit (Coalesce<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Greatest exp)
+    public Void visit (Greatest<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Least exp)
+    public Void visit (Least<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }

@@ -25,14 +25,14 @@ import com.samskivert.depot.expression.SQLExpression;
 /**
  * The SQL '*' operator.
  */
-public class Mul extends Arithmetic
+public class Mul<T extends Number> extends Arithmetic<T>
 {
-    public Mul (SQLExpression column, Comparable<?> value)
+    public Mul (SQLExpression<?> column, T value)
     {
         super(column, value);
     }
 
-    public Mul (SQLExpression... values)
+    public Mul (SQLExpression<?>... values)
     {
         super(values);
     }

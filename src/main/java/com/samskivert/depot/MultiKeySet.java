@@ -42,7 +42,7 @@ class MultiKeySet<T extends PersistentRecord> extends KeySet<T>
         _keyFields = keyFields;
     }
 
-    @Override public SQLExpression getWhereExpression ()
+    @Override public SQLExpression<?> getWhereExpression ()
     {
         Set<Integer> columns = Sets.newHashSet();
         for (int ii = 0; ii < _keyFields.length; ii ++) {
@@ -85,10 +85,10 @@ class MultiKeySet<T extends PersistentRecord> extends KeySet<T>
     }
 
     // note: this method will destructively modify its arguments
-    protected SQLExpression rowsToSQLExpression (
+    protected SQLExpression<?> rowsToSQLExpression (
         List<Comparable<?>[]> keys, Set<Integer> columnsLeft)
     {
-        List<SQLExpression> matches = Lists.newArrayList();
+        List<SQLExpression<?>> matches = Lists.newArrayList();
 
         while (!keys.isEmpty()) {
             // go through each column that is still in play, finding the single largest common
@@ -148,7 +148,7 @@ class MultiKeySet<T extends PersistentRecord> extends KeySet<T>
     // find all the rows that contain the given chunk value in the given column. delete these
     // (destructively modifying the input argument) and replace them with an optimized
     // SQLExpression, which is returned
-    protected SQLExpression extractChunk (List<Comparable<?>[]> rows, Set<Integer> columnsLeft,
+    protected SQLExpression<?> extractChunk (List<Comparable<?>[]> rows, Set<Integer> columnsLeft,
         int column, Comparable<?> value)
     {
         Iterator<Comparable<?>[]> iterator = rows.iterator();
@@ -165,7 +165,7 @@ class MultiKeySet<T extends PersistentRecord> extends KeySet<T>
         Set<Integer> otherColumns = Sets.newHashSet(columnsLeft);
         otherColumns.remove(column);
 
-        SQLExpression otherCondition;
+        SQLExpression<?> otherCondition;
         if (otherColumns.size() == 1) {
             // if there's just two columns, we're doing (A = ? and B in (?, ?, ?, ...))
             int otherColumn = otherColumns.iterator().next();
@@ -188,15 +188,15 @@ class MultiKeySet<T extends PersistentRecord> extends KeySet<T>
 
     // given unoptimizable key rows, gather them up into simple SQLExpressions according to
     // the naive algorithm
-    protected List<SQLExpression> gatherDetritus (
+    protected List<SQLExpression<?>> gatherDetritus (
         List<Comparable<?>[]> keys, Set<Integer> columnsLeft)
     {
-        List<SQLExpression> conditions = Lists.newArrayList();
+        List<SQLExpression<?>> conditions = Lists.newArrayList();
 
         Iterator<Comparable<?>[]> iterator = keys.iterator();
         while (iterator.hasNext()) {
             Comparable<?>[] row = iterator.next();
-            List<SQLExpression> bits = Lists.newArrayList();
+            List<SQLExpression<?>> bits = Lists.newArrayList();
             for (int column : columnsLeft) {
                 bits.add(_keyFields[column].eq(row[column]));
             }

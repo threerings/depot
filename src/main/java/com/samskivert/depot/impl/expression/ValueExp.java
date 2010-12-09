@@ -29,9 +29,9 @@ import com.samskivert.depot.impl.FragmentVisitor;
 /**
  * A Java value that is bound as a parameter to the query, e.g. 1 or 'abc'.
  */
-public class ValueExp extends FluentExp
+public class ValueExp<T> extends FluentExp<T>
 {
-    public ValueExp (Object value)
+    public ValueExp (T value)
     {
         _value = value;
     }
@@ -47,7 +47,7 @@ public class ValueExp extends FluentExp
     {
     }
 
-    public Object getValue ()
+    public T getValue ()
     {
         return _value;
     }
@@ -59,5 +59,5 @@ public class ValueExp extends FluentExp
     }
 
     /** The value to be bound to the SQL parameters. */
-    protected Object _value;
+    protected T _value;
 }

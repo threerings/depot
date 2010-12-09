@@ -33,6 +33,7 @@ import com.google.common.collect.Maps;
 import com.samskivert.util.ByteEnum;
 import com.samskivert.util.Tuple;
 
+import com.samskivert.depot.Exps;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.Computed;
@@ -170,9 +171,9 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         return null;
     }
 
-    public Void visit (MultiOperator multiOperator)
+    public Void visit (MultiOperator<?> multiOperator)
     {
-        SQLExpression[] conditions = multiOperator.getArgs();
+        SQLExpression<?>[] conditions = multiOperator.getArgs();
         for (int ii = 0; ii < conditions.length; ii++) {
             if (ii > 0) {
                 _builder.append(" ").append(multiOperator.operator()).append(" ");
@@ -184,7 +185,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         return null;
     }
 
-    public Void visit (BinaryOperator binaryOperator)
+    public Void visit (BinaryOperator<?> binaryOperator)
     {
         _builder.append('(');
         binaryOperator.getLeftHandSide().accept(this);
@@ -205,7 +206,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     {
         // if the In() expression is empty, replace it with a 'false'
         if (in.getValues().length == 0) {
-            new ValueExp(false).accept(this);
+            Exps.value(false).accept(this);
             return null;
         }
         in.getExpression().accept(this);
@@ -224,16 +225,16 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     public abstract Void visit (FullText.Match match);
     public abstract Void visit (FullText.Rank rank);
 
-    public Void visit (Case caseExp)
+    public Void visit (Case<?> caseExp)
     {
         _builder.append("(case ");
-        for (Tuple<SQLExpression, SQLExpression> tuple : caseExp.getWhenExps()) {
+        for (Tuple<SQLExpression<?>, SQLExpression<?>> tuple : caseExp.getWhenExps()) {
             _builder.append(" when ");
             tuple.left.accept(this);
             _builder.append(" then ");
             tuple.right.accept(this);
         }
-        SQLExpression elseExp = caseExp.getElseExp();
+        SQLExpression<?> elseExp = caseExp.getElseExp();
         if (elseExp != null) {
             _builder.append(" else ");
             elseExp.accept(this);
@@ -260,7 +261,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     {
         _builder.append(" group by ");
 
-        SQLExpression[] values = groupBy.getValues();
+        SQLExpression<?>[] values = groupBy.getValues();
         for (int ii = 0; ii < values.length; ii++) {
             if (ii > 0) {
                 _builder.append(", ");
@@ -280,7 +281,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     {
         _builder.append(" order by ");
 
-        SQLExpression[] values = orderBy.getValues();
+        SQLExpression<?>[] values = orderBy.getValues();
         OrderBy.Order[] orders = orderBy.getOrders();
         for (int ii = 0; ii < values.length; ii++) {
             if (ii > 0) {
@@ -320,13 +321,13 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         return null;
     }
 
-    public Void visit (LiteralExp literalExp)
+    public Void visit (LiteralExp<?> literalExp)
     {
         _builder.append(literalExp.getText());
         return null;
     }
 
-    public Void visit (ValueExp valueExp)
+    public Void visit (ValueExp<?> valueExp)
     {
         bindValue(valueExp.getValue());
         return null;
@@ -456,7 +457,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
 
         ColumnExp<?>[] fields = updateClause.getFields();
         Object pojo = updateClause.getPojo();
-        SQLExpression[] values = updateClause.getValues();
+        SQLExpression<?>[] values = updateClause.getValues();
         for (int ii = 0; ii < fields.length; ii ++) {
             if (ii > 0) {
                 _builder.append(", ");
@@ -499,7 +500,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     public Void visit (CreateIndexClause createIndexClause)
     {
         if (!_allowComplexIndices) {
-            for (Tuple<SQLExpression, Order> field : createIndexClause.getFields()) {
+            for (Tuple<SQLExpression<?>, Order> field : createIndexClause.getFields()) {
                 if (!(field.left instanceof ColumnExp<?>)) {
                     log.warning("This database can't handle complex indexes. Aborting creation.",
                         "ixName", createIndexClause.getName());
@@ -520,7 +521,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         // turn off table abbreviations here
         _defaultType = createIndexClause.getPersistentClass();
         boolean comma = false;
-        for (Tuple<SQLExpression, Order> field : createIndexClause.getFields()) {
+        for (Tuple<SQLExpression<?>, Order> field : createIndexClause.getFields()) {
             if (comma) {
                 _builder.append(", ");
             }
@@ -558,67 +559,67 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     //
     // NUMERICAL FUNCTIONS
 
-    public Void visit (Abs exp)
+    public Void visit (Abs<?> exp)
     {
         return appendFunctionCall("abs", exp.getArg());
     }
 
-    public Void visit (Ceil exp)
+    public Void visit (Ceil<?> exp)
     {
         return appendFunctionCall("ceil", exp.getArg());
     }
 
-    public Void visit (Exp exp)
+    public Void visit (Exp<?> exp)
     {
         return appendFunctionCall("exp", exp.getArg());
     }
 
-    public Void visit (Floor exp)
+    public Void visit (Floor<?> exp)
     {
         return appendFunctionCall("floor", exp.getArg());
     }
 
-    public Void visit (Ln exp)
+    public Void visit (Ln<?> exp)
     {
         return appendFunctionCall("ln", exp.getArg());
     }
 
-    public Void visit (Log10 exp)
+    public Void visit (Log10<?> exp)
     {
         return appendFunctionCall("log", exp.getArg());
     }
 
-    public Void visit (Pi exp)
+    public Void visit (Pi<?> exp)
     {
         return appendFunctionCall("PI");
     }
 
-    public Void visit (Power exp)
+    public Void visit (Power<?,?> exp)
     {
         return appendFunctionCall("power", exp.getPower(), exp.getValue());
     }
 
-    public Void visit (Random exp)
+    public Void visit (Random<?> exp)
     {
         return appendFunctionCall("random");
     }
 
-    public Void visit (Round exp)
+    public Void visit (Round<?> exp)
     {
         return appendFunctionCall("round", exp.getArg());
     }
 
-    public Void visit (Sign exp)
+    public Void visit (Sign<?> exp)
     {
         return appendFunctionCall("sign", exp.getArg());
     }
 
-    public Void visit (Sqrt exp)
+    public Void visit (Sqrt<?> exp)
     {
         return appendFunctionCall("sqrt", exp.getArg());
     }
 
-    public Void visit (Trunc exp)
+    public Void visit (Trunc<?> exp)
     {
         return appendFunctionCall("trunc", exp.getArg());
     }
@@ -668,7 +669,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         return null;
     }
 
-    public Void visit (Average exp)
+    public Void visit (Average<?> exp)
     {
         return appendAggregateFunctionCall("average", exp);
     }
@@ -683,17 +684,17 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         return appendAggregateFunctionCall("every", exp);
     }
 
-    public Void visit (Max exp)
+    public Void visit (Max<?> exp)
     {
         return appendAggregateFunctionCall("max", exp);
     }
 
-    public Void visit (Min exp)
+    public Void visit (Min<?> exp)
     {
         return appendAggregateFunctionCall("min", exp);
     }
 
-    public Void visit (Sum exp)
+    public Void visit (Sum<?> exp)
     {
         return appendAggregateFunctionCall("sum", exp);
     }
@@ -701,22 +702,22 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     //
     // CONDITIONAL FUNCTIONS
 
-    public Void visit (Coalesce exp)
+    public Void visit (Coalesce<?> exp)
     {
         return appendFunctionCall("coalesce", exp.getArgs());
     }
 
-    public Void visit (Greatest exp)
+    public Void visit (Greatest<?> exp)
     {
         return appendFunctionCall("greatest", exp.getArgs());
     }
 
-    public Void visit (Least exp)
+    public Void visit (Least<?> exp)
     {
         return appendFunctionCall("least", exp.getArgs());
     }
 
-    protected Void appendAggregateFunctionCall (String function, AggregateFun exp)
+    protected Void appendAggregateFunctionCall (String function, AggregateFun<?> exp)
     {
         _builder.append(" ").append(function).append("(");
         if (exp.isDistinct()) {
@@ -727,7 +728,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         return null;
     }
 
-    protected Void appendFunctionCall (String function, SQLExpression... args)
+    protected Void appendFunctionCall (String function, SQLExpression<?>... args)
     {
         _builder.append(" ").append(function).append("(");
         appendArguments(args);
@@ -735,7 +736,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         return null;
     }
 
-    protected Void appendArguments (SQLExpression... args)
+    protected Void appendArguments (SQLExpression<?>... args)
     {
         for (int ii = 0; ii < args.length; ii ++) {
             if (ii > 0) {
@@ -955,9 +956,9 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
                 if (value instanceof ByteEnum) {
                     // byte enums require special conversion
                     stmt.setByte(argIx, ((ByteEnum)value).toByte());
-                } else if (value instanceof Enum) {
+                } else if (value instanceof Enum<?>) {
                     // enums are converted to strings
-                    stmt.setString(argIx, ((Enum)value).name());
+                    stmt.setString(argIx, ((Enum<?>)value).name());
                 } else if (value instanceof int[]) {
                     // int arrays require conversion to byte arrays
                     int[] data = (int[])value;

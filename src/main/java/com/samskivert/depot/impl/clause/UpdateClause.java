@@ -47,7 +47,7 @@ public class UpdateClause
     }
 
     public UpdateClause (Class<? extends PersistentRecord> pClass, WhereClause where,
-                         ColumnExp<?>[] fields, SQLExpression[] values)
+                         ColumnExp<?>[] fields, SQLExpression<?>[] values)
     {
         _pClass = pClass;
         _fields = fields;
@@ -66,7 +66,7 @@ public class UpdateClause
         return _fields;
     }
 
-    public SQLExpression[] getValues ()
+    public SQLExpression<?>[] getValues ()
     {
         return _values;
     }
@@ -111,7 +111,7 @@ public class UpdateClause
     protected ColumnExp<?>[] _fields;
 
     /** The field values, or null. */
-    protected SQLExpression[] _values;
+    protected SQLExpression<?>[] _values;
 
     /** The object from which to fetch values, or null. */
     protected PersistentRecord _pojo;

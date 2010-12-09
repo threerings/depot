@@ -50,7 +50,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
 {
     /** Handles the matching of the key columns to its bound values. This is needed so that we can
      * combine a bunch of keys into a {@link KeySet}. */
-    public static class Expression implements SQLExpression
+    public static class Expression implements SQLExpression<Object>
     {
         public Expression (Class<? extends PersistentRecord> pClass, Comparable<?>[] values) {
             _pClass = pClass;
@@ -163,7 +163,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
     }
 
     @Override // from WhereClause
-    public SQLExpression getWhereExpression ()
+    public SQLExpression<?> getWhereExpression ()
     {
         return new Expression(_pClass, _values);
     }

@@ -24,13 +24,13 @@ import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FragmentVisitor;
 import com.samskivert.depot.impl.expression.Function.OneArgFun;
 
-public abstract class AggregateFun extends OneArgFun
+public abstract class AggregateFun<T> extends OneArgFun<T>
 {
-    public static class Average extends AggregateFun {
-        public Average (SQLExpression argument) {
+    public static class Average<T extends Number> extends AggregateFun<T> {
+        public Average (SQLExpression<T> argument) {
             this(argument, false);
         }
-        public Average (SQLExpression argument, boolean distinct) {
+        public Average (SQLExpression<T> argument, boolean distinct) {
             super(argument, distinct);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -41,11 +41,11 @@ public abstract class AggregateFun extends OneArgFun
         }
     }
 
-    public static class Count extends AggregateFun {
-        public Count (SQLExpression argument) {
+    public static class Count extends AggregateFun<Integer> {
+        public Count (SQLExpression<?> argument) {
             this(argument, false);
         }
-        public Count (SQLExpression argument, boolean distinct) {
+        public Count (SQLExpression<?> argument, boolean distinct) {
             super(argument, distinct);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -56,11 +56,11 @@ public abstract class AggregateFun extends OneArgFun
         }
     }
 
-    public static class Every extends AggregateFun {
-        public Every (SQLExpression argument) {
+    public static class Every extends AggregateFun<Boolean> {
+        public Every (SQLExpression<?> argument) {
             this(argument, false);
         }
-        public Every (SQLExpression argument, boolean distinct) {
+        public Every (SQLExpression<?> argument, boolean distinct) {
             super(argument, distinct);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -71,11 +71,11 @@ public abstract class AggregateFun extends OneArgFun
         }
     }
 
-    public static class Max extends AggregateFun {
-        public Max (SQLExpression argument) {
+    public static class Max<T extends Number> extends AggregateFun<T> {
+        public Max (SQLExpression<T> argument) {
             this(argument, false);
         }
-        public Max (SQLExpression argument, boolean distinct) {
+        public Max (SQLExpression<T> argument, boolean distinct) {
             super(argument, distinct);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -86,11 +86,11 @@ public abstract class AggregateFun extends OneArgFun
         }
     }
 
-    public static class Min extends AggregateFun {
-        public Min (SQLExpression argument) {
+    public static class Min<T extends Number> extends AggregateFun<T> {
+        public Min (SQLExpression<T> argument) {
             this(argument, false);
         }
-        public Min (SQLExpression argument, boolean distinct) {
+        public Min (SQLExpression<T> argument, boolean distinct) {
             super(argument, distinct);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -101,11 +101,11 @@ public abstract class AggregateFun extends OneArgFun
         }
     }
 
-    public static class Sum extends AggregateFun {
-        public Sum (SQLExpression argument) {
+    public static class Sum<T extends Number> extends AggregateFun<T> {
+        public Sum (SQLExpression<T> argument) {
             this(argument, false);
         }
-        public Sum (SQLExpression argument, boolean distinct) {
+        public Sum (SQLExpression<T> argument, boolean distinct) {
             super(argument, distinct);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -116,7 +116,7 @@ public abstract class AggregateFun extends OneArgFun
         }
     }
 
-    public AggregateFun (SQLExpression argument, boolean distinct)
+    public AggregateFun (SQLExpression<?> argument, boolean distinct)
     {
         super(argument);
         _distinct = distinct;

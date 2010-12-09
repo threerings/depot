@@ -43,7 +43,7 @@ public class CreateIndexClause
      * database.
      */
     public CreateIndexClause (Class<? extends PersistentRecord> pClass, String name, boolean unique,
-                              List<Tuple<SQLExpression, Order>> fields)
+                              List<Tuple<SQLExpression<?>, Order>> fields)
     {
         _pClass = pClass;
         _name = name;
@@ -66,7 +66,7 @@ public class CreateIndexClause
         return _unique;
     }
 
-    public List<Tuple<SQLExpression,Order>> getFields ()
+    public List<Tuple<SQLExpression<?>,Order>> getFields ()
     {
         return _fields;
     }
@@ -88,5 +88,5 @@ public class CreateIndexClause
     protected boolean _unique;
 
     /** The components of the index, e.g. columns or functions of columns. */
-    protected List<Tuple<SQLExpression,Order>> _fields;
+    protected List<Tuple<SQLExpression<?>,Order>> _fields;
 }

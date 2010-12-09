@@ -25,14 +25,14 @@ import com.samskivert.depot.expression.SQLExpression;
 /**
  * The SQL '&' operator.
  */
-public class BitAnd extends Arithmetic
+public class BitAnd<T extends Number> extends Arithmetic<T>
 {
-    public BitAnd (SQLExpression column, Comparable<?> value)
+    public BitAnd (SQLExpression<?> column, T value)
     {
         super(column, value);
     }
 
-    public BitAnd (SQLExpression... values)
+    public BitAnd (SQLExpression<?>... values)
     {
         super(values);
     }

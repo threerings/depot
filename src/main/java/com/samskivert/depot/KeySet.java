@@ -127,8 +127,8 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             super(pClass);
         }
 
-        @Override public SQLExpression getWhereExpression () {
-            return new LiteralExp("(1 = 0)");
+        @Override public SQLExpression<?> getWhereExpression () {
+            return new LiteralExp<Boolean>("false");
         }
 
         // from Iterable<Key<T>>
@@ -169,7 +169,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             _keys = keys;
         }
 
-        @Override public SQLExpression getWhereExpression () {
+        @Override public SQLExpression<?> getWhereExpression () {
             // Single-column keys result in the compact IN(keyVal1, keyVal2, ...)
             return new In(DepotUtil.getKeyFields(_pClass)[0], _keys);
         }

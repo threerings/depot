@@ -27,7 +27,6 @@ import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FragmentVisitor;
-import com.samskivert.depot.impl.expression.ValueExp;
 import com.samskivert.depot.impl.operator.Equals;
 import com.samskivert.depot.impl.operator.IsNull;
 
@@ -63,13 +62,13 @@ public class Where extends WhereClause
         this(toCondition(columns, values));
     }
 
-    public Where (SQLExpression condition)
+    public Where (SQLExpression<?> condition)
     {
         _condition = condition;
     }
 
     @Override // from WhereClause
-    public SQLExpression getWhereExpression ()
+    public SQLExpression<?> getWhereExpression ()
     {
         return _condition;
     }
@@ -92,15 +91,15 @@ public class Where extends WhereClause
         return String.valueOf(_condition);
     }
 
-    protected static SQLExpression toCondition (ColumnExp<?>[] columns, Comparable<?>[] values)
+    protected static SQLExpression<?> toCondition (ColumnExp<?>[] columns, Comparable<?>[] values)
     {
-        SQLExpression[] comparisons = new SQLExpression[columns.length];
+        SQLExpression<?>[] comparisons = new SQLExpression[columns.length];
         for (int ii = 0; ii < columns.length; ii ++) {
             comparisons[ii] = (values[ii] == null) ? new IsNull(columns[ii]) :
-                new Equals(columns[ii], new ValueExp(values[ii]));
+                new Equals(columns[ii], values[ii]);
         }
         return Ops.and(comparisons);
     }
 
-    protected SQLExpression _condition;
+    protected SQLExpression<?> _condition;
 }

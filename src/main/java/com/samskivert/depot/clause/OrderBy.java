@@ -41,32 +41,32 @@ public class OrderBy implements QueryClause
      */
     public static OrderBy random ()
     {
-        return ascending(new LiteralExp("rand()"));
+        return ascending(new LiteralExp<Object>("rand()"));
     }
 
     /**
      * Creates and returns an ascending order by clause on the supplied expression.
      */
-    public static OrderBy ascending (SQLExpression value)
+    public static OrderBy ascending (SQLExpression<?> value)
     {
-        return new OrderBy(new SQLExpression[] { value } , new Order[] { Order.ASC });
+        return new OrderBy(new SQLExpression<?>[] { value } , new Order[] { Order.ASC });
     }
 
     /**
      * Creates and returns a descending order by clause on the supplied expression.
      */
-    public static OrderBy descending (SQLExpression value)
+    public static OrderBy descending (SQLExpression<?> value)
     {
-        return new OrderBy(new SQLExpression[] { value }, new Order[] { Order.DESC });
+        return new OrderBy(new SQLExpression<?>[] { value }, new Order[] { Order.DESC });
     }
 
-    public OrderBy (SQLExpression[] values, Order[] orders)
+    public OrderBy (SQLExpression<?>[] values, Order[] orders)
     {
         _values = values;
         _orders = orders;
     }
 
-    public SQLExpression[] getValues ()
+    public SQLExpression<?>[] getValues ()
     {
         return _values;
     }
@@ -79,7 +79,7 @@ public class OrderBy implements QueryClause
     /**
      * Concatenates the supplied order expression to this one, returns a new expression.
      */
-    public OrderBy thenAscending (SQLExpression value)
+    public OrderBy thenAscending (SQLExpression<?> value)
     {
         return new OrderBy(ArrayUtil.append(_values, value),
                            ArrayUtil.append(_orders, Order.ASC));
@@ -88,7 +88,7 @@ public class OrderBy implements QueryClause
     /**
      * Creates and returns a descending order by clause on the supplied expression.
      */
-    public OrderBy thenDescending (SQLExpression value)
+    public OrderBy thenDescending (SQLExpression<?> value)
     {
         return new OrderBy(ArrayUtil.append(_values, value),
                            ArrayUtil.append(_orders, Order.DESC));
@@ -103,7 +103,7 @@ public class OrderBy implements QueryClause
     // from SQLExpression
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
-        for (SQLExpression expression : _values) {
+        for (SQLExpression<?> expression : _values) {
             expression.addClasses(classSet);
         }
     }
@@ -122,7 +122,7 @@ public class OrderBy implements QueryClause
     }
 
     /** The expressions that are generated for the clause. */
-    protected SQLExpression[] _values;
+    protected SQLExpression<?>[] _values;
 
     /** Whether the ordering is to be ascending or descending. */
     protected Order[] _orders;

@@ -28,8 +28,9 @@ import com.samskivert.depot.impl.expression.Function.TwoArgFun;
 
 public abstract class StringFun
 {
-    public static class Length extends OneArgFun {
-        public Length (SQLExpression argument) {
+    public static class Length extends OneArgFun<Integer> {
+        // can take both String or array types (anything that turns into byte[])
+        public Length (SQLExpression<?> argument) {
             super(argument);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -40,8 +41,8 @@ public abstract class StringFun
         }
     }
 
-    public static class Lower extends OneArgFun {
-        public Lower (SQLExpression argument) {
+    public static class Lower extends OneArgFun<String> {
+        public Lower (SQLExpression<String> argument) {
             super(argument);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -52,8 +53,8 @@ public abstract class StringFun
         }
     }
 
-    public static class Position extends TwoArgFun {
-        public Position (SQLExpression substring, SQLExpression string) {
+    public static class Position extends TwoArgFun<Integer> {
+        public Position (SQLExpression<String> substring, SQLExpression<String> string) {
             super(substring, string);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -62,16 +63,17 @@ public abstract class StringFun
         public String getCanonicalFunctionName () {
             return "position";
         }
-        public SQLExpression getSubString () {
+        public SQLExpression<?> getSubString () {
             return _arg1;
         }
-        public SQLExpression getString () {
+        public SQLExpression<?> getString () {
             return _arg2;
         }
     }
 
-    public static class Substring extends ManyArgFun {
-        public Substring (SQLExpression string, SQLExpression from, SQLExpression count) {
+    public static class Substring extends ManyArgFun<String> {
+        public Substring (SQLExpression<String> string, SQLExpression<String> from,
+                          SQLExpression<Integer> count) {
             super(string, from, count);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -82,8 +84,8 @@ public abstract class StringFun
         }
     }
 
-    public static class Trim extends OneArgFun {
-        public Trim (SQLExpression argument) {
+    public static class Trim extends OneArgFun<String> {
+        public Trim (SQLExpression<String> argument) {
             super(argument);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -94,8 +96,8 @@ public abstract class StringFun
         }
     }
 
-    public static class Upper extends OneArgFun {
-        public Upper (SQLExpression argument) {
+    public static class Upper extends OneArgFun<String> {
+        public Upper (SQLExpression<String> argument) {
             super(argument);
         }
         public Object accept (FragmentVisitor<?> visitor) {

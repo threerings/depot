@@ -26,14 +26,14 @@ import com.samskivert.depot.impl.expression.ValueExp;
 /**
  * A convenient container for implementations of arithmetic operators.
  */
-public abstract class Arithmetic extends MultiOperator
+public abstract class Arithmetic<T extends Number> extends MultiOperator<T>
 {
-    public Arithmetic (SQLExpression column, Comparable<?> value)
+    public Arithmetic (SQLExpression<?> column, T value)
     {
-        super(column, new ValueExp(value));
+        super(column, new ValueExp<T>(value));
     }
 
-    public Arithmetic (SQLExpression... values)
+    public Arithmetic (SQLExpression<?>... values)
     {
         super(values);
     }

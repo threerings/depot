@@ -29,8 +29,8 @@ import com.samskivert.depot.impl.FragmentVisitor;
 /**
  * An expression for things we don't support natively, e.g. COUNT(*).
  */
-public class LiteralExp
-    implements SQLExpression
+public class LiteralExp<T>
+    implements SQLExpression<T>
 {
     public LiteralExp (String text)
     {

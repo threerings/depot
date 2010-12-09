@@ -86,9 +86,19 @@ public class QueryBuilder<T extends PersistentRecord>
     }
 
     /**
+     * Configures a {@link Where} clause that matches all rows. For selections, a where clause can
+     * simply be omitted, but for deletions, this method must be used if you intend to delete all
+     * rows in the table.
+     */
+    public QueryBuilder<T> whereTrue ()
+    {
+        return where(Exps.literal("true"));
+    }
+
+    /**
      * Configures a {@link Where} clause that ANDs together all of the supplied expressions.
      */
-    public QueryBuilder<T> where (SQLExpression... exprs)
+    public QueryBuilder<T> where (SQLExpression<?>... exprs)
     {
         return where(Arrays.asList(exprs));
     }
@@ -96,11 +106,11 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures a {@link Where} clause that ANDs together all of the supplied expressions.
      */
-    public QueryBuilder<T> where (Iterable<? extends SQLExpression> exprs)
+    public QueryBuilder<T> where (Iterable<? extends SQLExpression<?>> exprs)
     {
-        Iterator<? extends SQLExpression> iter = exprs.iterator();
+        Iterator<? extends SQLExpression<?>> iter = exprs.iterator();
         checkArgument(iter.hasNext(), "Must supply at least one expression.");
-        SQLExpression first = iter.next();
+        SQLExpression<?> first = iter.next();
         return where(iter.hasNext() ? new Where(Ops.and(exprs)) : new Where(first));
     }
 
@@ -146,7 +156,7 @@ public class QueryBuilder<T extends PersistentRecord>
      * Adds a {@link Join} clause configured with the join condition.
      */
     public QueryBuilder<T> join (Class<? extends PersistentRecord> joinClass,
-                                 SQLExpression joinCondition)
+                                 SQLExpression<?> joinCondition)
     {
         return join(new Join(joinClass, joinCondition));
     }
@@ -176,7 +186,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures a {@link GroupBy} clause on the supplied group expressions.
      */
-    public QueryBuilder<T> groupBy (SQLExpression... exprs)
+    public QueryBuilder<T> groupBy (SQLExpression<?>... exprs)
     {
         checkState(_groupBy == null, "GroupBy clause is already configured.");
         _groupBy = new GroupBy(exprs);
@@ -194,7 +204,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures an {@link OrderBy} clause that ascends on the supplied expression.
      */
-    public QueryBuilder<T> ascending (SQLExpression value)
+    public QueryBuilder<T> ascending (SQLExpression<?> value)
     {
         return orderBy(OrderBy.ascending(value));
     }
@@ -202,7 +212,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures an {@link OrderBy} clause that descends on the supplied expression.
      */
-    public QueryBuilder<T> descending (SQLExpression value)
+    public QueryBuilder<T> descending (SQLExpression<?> value)
     {
         return orderBy(OrderBy.descending(value));
     }
@@ -275,7 +285,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Adds a {@link FieldDefinition} clause.
      */
-    public QueryBuilder<T> fieldDef (String field, SQLExpression override)
+    public QueryBuilder<T> fieldDef (String field, SQLExpression<?> override)
     {
         return fieldDef(new FieldDefinition(field, override));
     }
@@ -283,7 +293,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Adds a {@link FieldDefinition} clause.
      */
-    public QueryBuilder<T> fieldDef (ColumnExp<?> field, SQLExpression override)
+    public QueryBuilder<T> fieldDef (ColumnExp<?> field, SQLExpression<?> override)
     {
         return fieldDef(new FieldDefinition(field, override));
     }

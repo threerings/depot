@@ -25,7 +25,7 @@ import com.samskivert.depot.SQLFragment;
 /**
  * Represents an SQL expression, e.g. column name, function, or constant.
  */
-public interface SQLExpression extends SQLFragment
+public interface SQLExpression<T> extends SQLFragment
 {
     /** Used internally to represent the lack of a value. */
     public static final class NoValue

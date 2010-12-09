@@ -45,12 +45,13 @@ public class FieldOverride extends FieldDefinition
         super(field, pClass, pCol);
     }
 
-    public FieldOverride (String field, SQLExpression override)
+    public FieldOverride (String field, SQLExpression<?> override)
     {
         super(field, override);
     }
 
-    public FieldOverride (ColumnExp<?> field, SQLExpression override)
+    
+    public FieldOverride (ColumnExp<?> field, SQLExpression<?> override)
     {
         super(field, override);
     }

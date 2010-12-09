@@ -24,6 +24,7 @@ import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.expression.AggregateFun.*;
 import com.samskivert.depot.impl.expression.ConditionalFun.*;
+import com.samskivert.depot.impl.expression.StringFun.*;
 
 /**
  * Provides static methods for function construction.
@@ -34,25 +35,25 @@ public class Funcs
      * Creates an aggregate expression that averages all values from the supplied expression.
      * This would usually be used in a FieldOverride and supplied with a ColumnExp.
      */
-    public static FluentExp average (SQLExpression expr)
+    public static <T extends Number> FluentExp<T> average (SQLExpression<T> expr)
     {
-        return new Average(expr);
+        return new Average<T>(expr);
     }
 
     /**
      * Creates an expression that averages all distinct values from the supplied expression.
      * This would usually be used in a FieldOverride and supplied with a ColumnExp.
      */
-    public static FluentExp averageDistinct (SQLExpression expr)
+    public static <T extends Number> FluentExp<T> averageDistinct (SQLExpression<T> expr)
     {
-        return new Average(expr, true);
+        return new Average<T>(expr, true);
     }
 
     /**
      * Creates an aggregate expression that counts the number of rows from the supplied
      * expression. This would usually be used in a FieldOverride and supplied with a ColumnExp.
      */
-    public static FluentExp count (SQLExpression expr)
+    public static FluentExp<Integer> count (SQLExpression<?> expr)
     {
         return new Count(expr);
     }
@@ -62,7 +63,7 @@ public class Funcs
      * supplied expression. This would usually be used in a FieldOverride and supplied with a
      * ColumnExp.
      */
-    public static FluentExp countDistinct (SQLExpression expr)
+    public static FluentExp<Integer> countDistinct (SQLExpression<?> expr)
     {
         return new Count(expr, true);
     }
@@ -72,7 +73,7 @@ public class Funcs
      * expression is also true. This would usually be used in a FieldOverride and supplied with
      * a ColumnExp.
      */
-    public static FluentExp every (SQLExpression expr)
+    public static FluentExp<Boolean> every (SQLExpression<?> expr)
     {
         return new Every(expr);
     }
@@ -82,9 +83,9 @@ public class Funcs
      * supplied expression. This would usually be used in a FieldOverride and supplied with
      * a ColumnExp.
      */
-    public static FluentExp max (SQLExpression expr)
+    public static <T extends Number> FluentExp<T> max (SQLExpression<T> expr)
     {
-        return new Max(expr);
+        return new Max<T>(expr);
     }
 
     /**
@@ -92,41 +93,76 @@ public class Funcs
      * supplied expression. This would usually be used in a FieldOverride and supplied with
      * a ColumnExp.
      */
-    public static FluentExp min (SQLExpression expr)
+    public static <T extends Number> FluentExp<T> min (SQLExpression<T> expr)
     {
-        return new Min(expr);
+        return new Min<T>(expr);
     }
 
     /**
      * Creates an aggregate expression that sums all the values from the supplied expression.
      * This would usually be used in a FieldOverride and supplied with a ColumnExp.
      */
-    public static FluentExp sum (SQLExpression expr)
+    public static <T extends Number> FluentExp<T> sum (SQLExpression<T> expr)
     {
-        return new Sum(expr);
+        return new Sum<T>(expr);
     }
 
     /**
      * Creates an expression that evaluates to the first supplied expression that is not null.
      */
-    public static FluentExp coalesce (SQLExpression... args)
+    public static <T> FluentExp<T> coalesce (SQLExpression<? extends T> arg1,
+                                             SQLExpression<? extends T> arg2)
     {
-        return new Coalesce(args);
+        return new Coalesce<T>(arg1, arg2);
+    }
+
+    /**
+     * Creates an expression that evaluates to the first supplied expression that is not null.
+     */
+    public static <T> FluentExp<T> coalesce (SQLExpression<? extends T>... args)
+    {
+        return new Coalesce<T>(args);
     }
 
     /**
      * Creates an expression that evaluates to the largest of the given expressions.
      */
-    public static FluentExp greatest (SQLExpression... args)
+    public static <T extends Number> FluentExp<T> greatest (SQLExpression<? extends T> arg1,
+                                                            SQLExpression<? extends T> arg2)
     {
-        return new Greatest(args);
+        return new Greatest<T>(arg1, arg2);
+    }
+
+    /**
+     * Creates an expression that evaluates to the largest of the given expressions.
+     */
+    public static <T extends Number> FluentExp<T> greatest (SQLExpression<? extends T>... args)
+    {
+        return new Greatest<T>(args);
     }
 
     /**
      * Creates an expression that evaluates to the smallest of the given expressions.
      */
-    public static FluentExp least (SQLExpression... args)
+    public static <T extends Number> FluentExp<T> least (SQLExpression<? extends T> arg1,
+                                                         SQLExpression<? extends T> arg2)
     {
-        return new Least(args);
+        return new Least<T>(arg1, arg2);
+    }
+
+    /**
+     * Creates an expression that evaluates to the smallest of the given expressions.
+     */
+    public static <T extends Number> FluentExp<T> least (SQLExpression<? extends T>... args)
+    {
+        return new Least<T>(args);
+    }
+
+    /**
+     * Creates an expression that evaluates to the length of the supplied array column.
+     */
+    public static FluentExp<Integer> arrayLength (SQLExpression<?> exp)
+    {
+        return new Length(exp);
     }
 }

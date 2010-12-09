@@ -26,9 +26,12 @@ import com.samskivert.depot.impl.expression.Function.ManyArgFun;
 
 public abstract class ConditionalFun
 {
-    public static class Coalesce extends ManyArgFun {
-        public Coalesce (SQLExpression... args) {
+    public static class Coalesce<T> extends ManyArgFun<T> {
+        public Coalesce (SQLExpression<? extends T>... args) {
             super(args);
+        }
+        public Coalesce (SQLExpression<? extends T> arg1, SQLExpression<? extends T> arg2) {
+            super(arg1, arg2);
         }
         public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
@@ -38,9 +41,12 @@ public abstract class ConditionalFun
         }
     }
 
-    public static class Greatest extends ManyArgFun {
-        public Greatest (SQLExpression... args) {
+    public static class Greatest<T extends Number> extends ManyArgFun<T> {
+        public Greatest (SQLExpression<? extends T>... args) {
             super(args);
+        }
+        public Greatest (SQLExpression<? extends T> arg1, SQLExpression<? extends T> arg2) {
+            super(arg1, arg2);
         }
         public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
@@ -50,9 +56,12 @@ public abstract class ConditionalFun
         }
     }
 
-    public static class Least extends ManyArgFun {
-        public Least (SQLExpression... args) {
+    public static class Least<T extends Number> extends ManyArgFun<T> {
+        public Least (SQLExpression<? extends T>... args) {
             super(args);
+        }
+        public Least (SQLExpression<? extends T> arg1, SQLExpression<? extends T> arg2) {
+            super(arg1, arg2);
         }
         public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);

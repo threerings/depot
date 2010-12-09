@@ -72,7 +72,7 @@ public class MySQLBuilder
             return null;
         }
 
-        @Override public Void visit (Trunc exp)
+        @Override public Void visit (Trunc<?> exp)
         {
             return appendFunctionCall("truncate", exp.getArg());
         }

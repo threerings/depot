@@ -25,14 +25,14 @@ import com.samskivert.depot.expression.SQLExpression;
 /**
  * The SQL '=' operator.
  */
-public class Equals extends BinaryOperator
+public class Equals extends BinaryOperator<Boolean>
 {
-    public Equals (SQLExpression column, Comparable<?> value)
+    public Equals (SQLExpression<?> column, Comparable<?> value)
     {
         super(column, value);
     }
 
-    public Equals (SQLExpression column, SQLExpression value)
+    public Equals (SQLExpression<?> column, SQLExpression<?> value)
     {
         super(column, value);
     }

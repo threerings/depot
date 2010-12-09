@@ -34,40 +34,24 @@ public class Exps
     /**
      * Wraps the supplied object in a value expression.
      */
-    public static FluentExp value (Object value)
+    public static <T> FluentExp<T> value (T value)
     {
-        return new ValueExp(value);
-    }
-
-    /**
-     * Creates an expression that evaluates to true.
-     */
-    public static SQLExpression trueLiteral ()
-    {
-        return literal("true");
-    }
-
-    /**
-     * Creates an expression that evaluates to false.
-     */
-    public static SQLExpression falseLiteral ()
-    {
-        return literal("false");
+        return new ValueExp<T>(value);
     }
 
     /**
      * Creates a literal expression with the supplied SQL snippet. Note: you're probably breaking
      * cross platform compatibility by using this construction.
      */
-    public static SQLExpression literal (String text)
+    public static <T> SQLExpression<T> literal (String text)
     {
-        return new LiteralExp(text);
+        return new LiteralExp<T>(text);
     }
 
     /**
      * Creates an interval for the specified number of years.
      */
-    public static SQLExpression years (int amount)
+    public static SQLExpression<Integer> years (int amount)
     {
         return new IntervalExp(IntervalExp.Unit.YEAR, amount);
     }
@@ -75,7 +59,7 @@ public class Exps
     /**
      * Creates an interval for the specified number of months.
      */
-    public static SQLExpression months (int amount)
+    public static SQLExpression<Integer> months (int amount)
     {
         return new IntervalExp(IntervalExp.Unit.MONTH, amount);
     }
@@ -83,7 +67,7 @@ public class Exps
     /**
      * Creates an interval for the specified number of days.
      */
-    public static SQLExpression days (int amount)
+    public static SQLExpression<Integer> days (int amount)
     {
         return new IntervalExp(IntervalExp.Unit.DAY, amount);
     }
@@ -91,7 +75,7 @@ public class Exps
     /**
      * Creates an interval for the specified number of hours.
      */
-    public static SQLExpression hours (int amount)
+    public static SQLExpression<Integer> hours (int amount)
     {
         return new IntervalExp(IntervalExp.Unit.HOUR, amount);
     }
@@ -99,7 +83,7 @@ public class Exps
     /**
      * Creates an interval for the specified number of minutes.
      */
-    public static SQLExpression minutes (int amount)
+    public static SQLExpression<Integer> minutes (int amount)
     {
         return new IntervalExp(IntervalExp.Unit.MINUTE, amount);
     }
@@ -107,7 +91,7 @@ public class Exps
     /**
      * Creates an interval for the specified number of seconds.
      */
-    public static SQLExpression seconds (int amount)
+    public static SQLExpression<Integer> seconds (int amount)
     {
         return new IntervalExp(IntervalExp.Unit.SECOND, amount);
     }

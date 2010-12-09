@@ -30,14 +30,14 @@ import com.samskivert.depot.impl.FragmentVisitor;
  * Represents the truth negation of another conditon.
  */
 public class Not
-    implements SQLExpression
+    implements SQLExpression<Boolean>
 {
-    public Not (SQLExpression condition)
+    public Not (SQLExpression<Boolean> condition)
     {
         _condition = condition;
     }
 
-    public SQLExpression getCondition ()
+    public SQLExpression<Boolean> getCondition ()
     {
         return _condition;
     }
@@ -60,5 +60,5 @@ public class Not
         return "Not(" + _condition + ")";
     }
 
-    protected SQLExpression _condition;
+    protected SQLExpression<Boolean> _condition;
 }

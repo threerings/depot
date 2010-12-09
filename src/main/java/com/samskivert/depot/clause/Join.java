@@ -43,7 +43,7 @@ public class Join implements QueryClause
         _joinCondition = new Equals(primary, join);
     }
 
-    public Join (Class<? extends PersistentRecord> joinClass, SQLExpression joinCondition)
+    public Join (Class<? extends PersistentRecord> joinClass, SQLExpression<?> joinCondition)
     {
         _joinClass = joinClass;
         _joinCondition = joinCondition;
@@ -68,7 +68,7 @@ public class Join implements QueryClause
         return _joinClass;
     }
 
-    public SQLExpression getJoinCondition ()
+    public SQLExpression<?> getJoinCondition ()
     {
         return _joinCondition;
     }
@@ -99,5 +99,6 @@ public class Join implements QueryClause
     protected Class<? extends PersistentRecord> _joinClass;
 
     /** The condition used to join in the new table. */
-    protected SQLExpression _joinCondition;
+    
+    protected SQLExpression<?> _joinCondition;
 }

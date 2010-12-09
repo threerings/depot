@@ -25,14 +25,14 @@ import com.samskivert.depot.expression.SQLExpression;
 /**
  * The SQL '+' operator.
  */
-public class Add extends Arithmetic
+public class Add<T extends Number> extends Arithmetic<T>
 {
-    public Add (SQLExpression column, Comparable<?> value)
+    public Add (SQLExpression<?> column, T value)
     {
         super(column, value);
     }
 
-    public Add (SQLExpression... values)
+    public Add (SQLExpression<?>... values)
     {
         super(values);
     }

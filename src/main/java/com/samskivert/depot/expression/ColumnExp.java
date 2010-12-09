@@ -30,7 +30,7 @@ import com.samskivert.depot.impl.FragmentVisitor;
  * An expression that unambiguously identifies a field of a class, for example
  * <code>GameRecord.itemId</code>.
  */
-public class ColumnExp<T> extends FluentExp
+public class ColumnExp<T> extends FluentExp<T>
 {
     /** The name of the column we reference. */
     public final String name;

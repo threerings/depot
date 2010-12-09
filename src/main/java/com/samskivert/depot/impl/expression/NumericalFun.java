@@ -28,8 +28,8 @@ import com.samskivert.depot.impl.expression.Function.TwoArgFun;
 
 public abstract class NumericalFun
 {
-    public static class Abs extends OneArgFun {
-        public Abs (SQLExpression argument) {
+    public static class Abs<T extends Number> extends OneArgFun<T> {
+        public Abs (SQLExpression<T> argument) {
             super(argument);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -40,8 +40,8 @@ public abstract class NumericalFun
         }
     }
 
-    public static class Ceil extends OneArgFun {
-        public Ceil (SQLExpression argument) {
+    public static class Ceil<T extends Number> extends OneArgFun<T> {
+        public Ceil (SQLExpression<T> argument) {
             super(argument);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -52,8 +52,8 @@ public abstract class NumericalFun
         }
     }
 
-    public static class Exp extends OneArgFun {
-        public Exp (SQLExpression argument) {
+    public static class Exp<T extends Number> extends OneArgFun<T> {
+        public Exp (SQLExpression<T> argument) {
             super(argument);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -64,8 +64,8 @@ public abstract class NumericalFun
         }
     }
 
-    public static class Floor extends OneArgFun {
-        public Floor (SQLExpression argument) {
+    public static class Floor<T extends Number> extends OneArgFun<T> {
+        public Floor (SQLExpression<T> argument) {
             super(argument);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -76,8 +76,8 @@ public abstract class NumericalFun
         }
     }
 
-    public static class Ln extends OneArgFun {
-        public Ln (SQLExpression argument) {
+    public static class Ln<T extends Number> extends OneArgFun<T> {
+        public Ln (SQLExpression<T> argument) {
             super(argument);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -88,8 +88,8 @@ public abstract class NumericalFun
         }
     }
 
-    public static class Log10 extends OneArgFun {
-        public Log10 (SQLExpression value) {
+    public static class Log10<T extends Number> extends OneArgFun<T> {
+        public Log10 (SQLExpression<T> value) {
             super(value);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -100,7 +100,7 @@ public abstract class NumericalFun
         }
     }
 
-    public static class Pi extends NoArgFun {
+    public static class Pi<T extends Number> extends NoArgFun<T> {
         public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
@@ -109,8 +109,8 @@ public abstract class NumericalFun
         }
     }
 
-    public static class Power extends TwoArgFun {
-        public Power (SQLExpression value, SQLExpression power) {
+    public static class Power<R extends Number,P extends Number> extends TwoArgFun<R> {
+        public Power (SQLExpression<R> value, SQLExpression<P> power) {
             super(value, power);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -119,15 +119,15 @@ public abstract class NumericalFun
         public String getCanonicalFunctionName () {
             return "Power";
         }
-        public SQLExpression getValue () {
+        public SQLExpression<?> getValue () {
             return _arg1;
         }
-        public SQLExpression getPower () {
+        public SQLExpression<?> getPower () {
             return _arg2;
         }
     }
 
-    public static class Random extends NoArgFun {
+    public static class Random<T extends Number> extends NoArgFun<T> {
         public Object accept (FragmentVisitor<?> visitor) {
             return visitor.visit(this);
         }
@@ -136,8 +136,8 @@ public abstract class NumericalFun
         }
     }
 
-    public static class Round extends OneArgFun {
-        public Round (SQLExpression argument) {
+    public static class Round<T extends Number> extends OneArgFun<T> {
+        public Round (SQLExpression<T> argument) {
             super(argument);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -148,8 +148,8 @@ public abstract class NumericalFun
         }
     }
 
-    public static class Sign extends OneArgFun {
-        public Sign (SQLExpression argument) {
+    public static class Sign<T extends Number> extends OneArgFun<T> {
+        public Sign (SQLExpression<T> argument) {
             super(argument);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -160,8 +160,8 @@ public abstract class NumericalFun
         }
     }
 
-    public static class Sqrt extends OneArgFun {
-        public Sqrt (SQLExpression argument) {
+    public static class Sqrt<T extends Number> extends OneArgFun<T> {
+        public Sqrt (SQLExpression<T> argument) {
             super(argument);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -172,8 +172,8 @@ public abstract class NumericalFun
         }
     }
 
-    public static class Trunc extends OneArgFun {
-        public Trunc (SQLExpression argument) {
+    public static class Trunc<T extends Number> extends OneArgFun<T> {
+        public Trunc (SQLExpression<T> argument) {
             super(argument);
         }
         public Object accept (FragmentVisitor<?> visitor) {

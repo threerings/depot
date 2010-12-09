@@ -134,13 +134,13 @@ public class TransformTest extends TestBase
     {
         // AUTO-GENERATED: FIELDS START
         public static final Class<TransformRecord> _R = TransformRecord.class;
-        public static final ColumnExp RECORD_ID = colexp(_R, "recordId");
-        public static final ColumnExp STRINGS = colexp(_R, "strings");
-        public static final ColumnExp STRING_LIST = colexp(_R, "stringList");
-        public static final ColumnExp STRING_SET = colexp(_R, "stringSet");
-        public static final ColumnExp CUSTOM = colexp(_R, "custom");
-        public static final ColumnExp ORDINAL = colexp(_R, "ordinal");
-        public static final ColumnExp BOBS = colexp(_R, "bobs");
+        public static final ColumnExp<Integer> RECORD_ID = colexp(_R, "recordId");
+        public static final ColumnExp<String[]> STRINGS = colexp(_R, "strings");
+        public static final ColumnExp<List<String>> STRING_LIST = colexp(_R, "stringList");
+        public static final ColumnExp<Set<String>> STRING_SET = colexp(_R, "stringSet");
+        public static final ColumnExp<CustomType> CUSTOM = colexp(_R, "custom");
+        public static final ColumnExp<Ordinal> ORDINAL = colexp(_R, "ordinal");
+        public static final ColumnExp<Set<ExtraOrdinal>> BOBS = colexp(_R, "bobs");
         // AUTO-GENERATED: FIELDS END
 
         public static final int SCHEMA_VERSION = 1;

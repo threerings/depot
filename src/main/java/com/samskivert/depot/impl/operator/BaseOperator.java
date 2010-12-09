@@ -15,7 +15,7 @@ import com.samskivert.depot.impl.expression.ArgumentExp;
 /**
  * A base class for all operators.
  */
-public abstract class BaseOperator extends ArgumentExp
+public abstract class BaseOperator<T> extends ArgumentExp<T>
 {
     public static Function<Object, Long> INTEGRAL = new Function<Object, Long>() {
         public Long apply (Object o) {
@@ -60,7 +60,7 @@ public abstract class BaseOperator extends ArgumentExp
         return v;
     }
 
-    protected BaseOperator (SQLExpression... operands)
+    protected BaseOperator (SQLExpression<?>... operands)
     {
         super(operands);
     }

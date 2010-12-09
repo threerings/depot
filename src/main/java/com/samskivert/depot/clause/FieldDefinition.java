@@ -41,7 +41,7 @@ public class FieldDefinition implements QueryClause
 {
     public FieldDefinition (String field, String str)
     {
-        this(field, new LiteralExp(str));
+        this(field, new LiteralExp<Object>(str));
     }
 
     public FieldDefinition (String field, Class<? extends PersistentRecord> pClass, String pCol)
@@ -49,13 +49,13 @@ public class FieldDefinition implements QueryClause
         this(field, new ColumnExp<Object>(pClass, pCol));
     }
 
-    public FieldDefinition (String field, SQLExpression override)
+    public FieldDefinition (String field, SQLExpression<?> override)
     {
         _field = field;
         _definition = override;
     }
 
-    public FieldDefinition (ColumnExp<?> field, SQLExpression override)
+    public FieldDefinition (ColumnExp<?> field, SQLExpression<?> override)
     {
         _field = field.name;
         _definition = override;
@@ -69,7 +69,7 @@ public class FieldDefinition implements QueryClause
         return _field;
     }
 
-    public SQLExpression getDefinition ()
+    public SQLExpression<?> getDefinition ()
     {
         return _definition;
     }
@@ -90,6 +90,6 @@ public class FieldDefinition implements QueryClause
     protected String _field;
 
     /** The defining expression. */
-    protected SQLExpression _definition;
+    protected SQLExpression<?> _definition;
 
 }

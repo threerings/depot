@@ -31,12 +31,12 @@ import com.samskivert.depot.impl.FragmentVisitor;
  */
 public class GroupBy implements QueryClause
 {
-    public GroupBy (SQLExpression... values)
+    public GroupBy (SQLExpression<?>... values)
     {
         _values = values;
     }
 
-    public SQLExpression[] getValues ()
+    public SQLExpression<?>[] getValues ()
     {
         return _values;
     }
@@ -53,6 +53,6 @@ public class GroupBy implements QueryClause
     }
 
     /** The expressions that are generated for the clause. */
-    protected SQLExpression[] _values;
+    protected SQLExpression<?>[] _values;
 
 }

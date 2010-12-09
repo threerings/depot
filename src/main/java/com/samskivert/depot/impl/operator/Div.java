@@ -27,14 +27,14 @@ import com.samskivert.depot.expression.SQLExpression;
 /**
  * The SQL '/' operator.
  */
-public class Div extends Arithmetic
+public class Div<T extends Number> extends Arithmetic<T>
 {
-    public Div (SQLExpression column, Comparable<?> value)
+    public Div (SQLExpression<?> column, T value)
     {
         super(column, value);
     }
 
-    public Div (SQLExpression... values)
+    public Div (SQLExpression<?>... values)
     {
         super(values);
     }

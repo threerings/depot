@@ -25,14 +25,14 @@ import com.samskivert.depot.expression.SQLExpression;
 /**
  * The SQL '<' operator.
  */
-public class LessThan extends BinaryOperator
+public class LessThan extends BinaryOperator<Boolean>
 {
-    public LessThan (SQLExpression column, Comparable<?> value)
+    public LessThan (SQLExpression<?> column, Comparable<?> value)
     {
         super(column, value);
     }
 
-    public LessThan (SQLExpression column, SQLExpression value)
+    public LessThan (SQLExpression<?> column, SQLExpression<?> value)
     {
         super(column, value);
     }

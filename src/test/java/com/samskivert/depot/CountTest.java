@@ -23,8 +23,6 @@ package com.samskivert.depot;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.samskivert.depot.clause.Where;
-
 /**
  * Tests row counting.
  */
@@ -41,7 +39,7 @@ public class CountTest extends TestBase
         assertEquals(49, _repo.from(TestRecord.class).
                      where(TestRecord.RECORD_ID.lessThan(50)).selectCount());
 
-        _repo.deleteAll(TestRecord.class, new Where(Exps.trueLiteral()));
+        _repo.from(TestRecord.class).whereTrue().delete();
 
         assertEquals(0, _repo.from(TestRecord.class).
                      where(TestRecord.RECORD_ID.lessThan(50)).selectCount());
