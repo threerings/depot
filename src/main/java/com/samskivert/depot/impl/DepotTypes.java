@@ -150,9 +150,10 @@ public class DepotTypes
      *
      * @exception IllegalArgumentException thrown if the specified class is not known.
      */
-    public DepotMarshaller<?> getMarshaller (Class<? extends PersistentRecord> cl)
+    public <T extends PersistentRecord> DepotMarshaller<T> getMarshaller (Class<T> cl)
     {
-        DepotMarshaller<?> marsh = _classMap.get(cl);
+        @SuppressWarnings("unchecked") DepotMarshaller<T> marsh =
+            (DepotMarshaller<T>)_classMap.get(cl);
         checkArgument(marsh != null, "Persistent class not known: " + cl);
         return marsh;
     }

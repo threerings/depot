@@ -271,9 +271,10 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
                            Iterable<? extends QueryClause> clauses)
             throws DatabaseException
         {
-            super(cset.ptype, new ColumnSetQueryMarshaller<T,R>(ctx, cset),
-                  new NonCloningCloner<R>());
+            super(cset.ptype, null, new NonCloningCloner<R>());
             _select = new SelectClause(cset.ptype, cset.columns, clauses);
+            _types = DepotTypes.getDepotTypes(ctx, _select);
+            _marsh = new ColumnSetQueryMarshaller<T,R>(cset, _types);
         }
 
         @Override // from Query
@@ -286,7 +287,7 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
         public List<R> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
-            SQLBuilder builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, _select));
+            SQLBuilder builder = ctx.getSQLBuilder(_types);
             builder.newQuery(_select);
             ResultSet rs = builder.prepare(conn).executeQuery();
             List<R> result = Lists.newArrayList();
@@ -297,26 +298,19 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
         }
 
         protected SelectClause _select;
+        protected DepotTypes _types;
     }
 
     protected static class ColumnSetQueryMarshaller<T extends PersistentRecord,R>
         implements QueryMarshaller<T,R>
     {
-        public ColumnSetQueryMarshaller (PersistenceContext ctx, ColumnSet<T,R> cset) {
+        public ColumnSetQueryMarshaller (ColumnSet<T,R> cset, DepotTypes types) {
             _cset = cset;
-            _cmarsh = ctx.getMarshaller(cset.ptype);
-            _marshes = Maps.newHashMap();
-            _marshes.put(cset.ptype, _cmarsh);
-            for (ColumnExp<?> cexp : cset.columns) {
-                Class<? extends PersistentRecord> cclass = cexp.getPersistentClass();
-                if (!_marshes.containsKey(cclass)) {
-                    _marshes.put(cclass, ctx.getMarshaller(cexp.getPersistentClass()));
-                }
-            }
+            _types = types;
         }
 
         public String getTableName () {
-            return _cmarsh.getTableName();
+            return _types.getTableName(_cset.ptype);
         }
 
         public ColumnExp<?>[] getFieldNames () {
@@ -324,22 +318,21 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
         }
 
         public Key<T> getPrimaryKey (Object object) {
-            return _cmarsh.getPrimaryKey(object);
+            return _types.getMarshaller(_cset.ptype).getPrimaryKey(object);
         }
 
         public R createObject (ResultSet rs) throws SQLException {
             Object[] data = new Object[_cset.columns.length];
             for (int ii = 0; ii < data.length; ii++) {
                 ColumnExp<?> col = _cset.columns[ii];
-                data[ii] = _marshes.get(col.getPersistentClass()).
+                data[ii] = _types.getMarshaller(col.getPersistentClass()).
                     getFieldMarshaller(col.name).getFromSet(rs, ii+1);
             }
             return _cset.createObject(data);
         }
 
         protected ColumnSet<T,R> _cset;
-        protected DepotMarshaller<T> _cmarsh;
-        protected Map<Class<? extends PersistentRecord>, DepotMarshaller<?>> _marshes;
+        protected DepotTypes _types;
     }
 
     // from Query
