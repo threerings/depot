@@ -39,9 +39,8 @@ public class Case<T>
     public Case (SQLExpression<?>... exps)
     {
         int i = 0;
-        while (i+1 < exps.length) {
-            _whenExps.add(Tuple.newTuple(exps[i], exps[i+1]));
-            i += 2;
+        for (; i + 1 < exps.length; i += 2) {
+            _whenExps.add(Tuple.<SQLExpression<?>, SQLExpression<?>>newTuple(exps[i], exps[i + 1]));
         }
         _elseExp = (i < exps.length) ? exps[i] : null;
     }
