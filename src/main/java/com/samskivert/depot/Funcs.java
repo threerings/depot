@@ -127,8 +127,8 @@ public class Funcs
     /**
      * Creates an expression that evaluates to the largest of the given expressions.
      */
-    public static <T extends Number> FluentExp<T> greatest (SQLExpression<? extends T> arg1,
-                                                            SQLExpression<? extends T> arg2)
+    public static <T> FluentExp<T> greatest (SQLExpression<? extends T> arg1,
+                                             SQLExpression<? extends T> arg2)
     {
         return new Greatest<T>(arg1, arg2);
     }
@@ -136,7 +136,7 @@ public class Funcs
     /**
      * Creates an expression that evaluates to the largest of the given expressions.
      */
-    public static <T extends Number> FluentExp<T> greatest (SQLExpression<? extends T>... args)
+    public static <T> FluentExp<T> greatest (SQLExpression<? extends T>... args)
     {
         return new Greatest<T>(args);
     }
@@ -144,8 +144,8 @@ public class Funcs
     /**
      * Creates an expression that evaluates to the smallest of the given expressions.
      */
-    public static <T extends Number> FluentExp<T> least (SQLExpression<? extends T> arg1,
-                                                         SQLExpression<? extends T> arg2)
+    public static <T> FluentExp<T> least (SQLExpression<? extends T> arg1,
+                                          SQLExpression<? extends T> arg2)
     {
         return new Least<T>(arg1, arg2);
     }
@@ -153,7 +153,7 @@ public class Funcs
     /**
      * Creates an expression that evaluates to the smallest of the given expressions.
      */
-    public static <T extends Number> FluentExp<T> least (SQLExpression<? extends T>... args)
+    public static <T> FluentExp<T> least (SQLExpression<? extends T>... args)
     {
         return new Least<T>(args);
     }

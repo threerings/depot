@@ -41,7 +41,7 @@ public abstract class ConditionalFun
         }
     }
 
-    public static class Greatest<T extends Number> extends ManyArgFun<T> {
+    public static class Greatest<T> extends ManyArgFun<T> {
         public Greatest (SQLExpression<? extends T>... args) {
             super(args);
         }
@@ -56,7 +56,7 @@ public abstract class ConditionalFun
         }
     }
 
-    public static class Least<T extends Number> extends ManyArgFun<T> {
+    public static class Least<T> extends ManyArgFun<T> {
         public Least (SQLExpression<? extends T>... args) {
             super(args);
         }
