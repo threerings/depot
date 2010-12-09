@@ -40,10 +40,10 @@ import static com.google.common.base.Preconditions.checkState;
  * The root of a fluent mechanism for constructing queries. Obtain an instance via {@link
  * DepotRepository#from}.
  */
-public class QueryBuilder<T extends PersistentRecord>
+public class Query<T extends PersistentRecord>
     implements Cloneable
 {
-    public QueryBuilder (PersistenceContext ctx, DepotRepository repo, Class<T> pclass)
+    public Query (PersistenceContext ctx, DepotRepository repo, Class<T> pclass)
     {
         _ctx = ctx;
         _repo = repo;
@@ -51,37 +51,37 @@ public class QueryBuilder<T extends PersistentRecord>
     }
 
     /** Disables the use of the cache for this query. */
-    public QueryBuilder<T> noCache () {
+    public Query<T> noCache () {
         return cache(DepotRepository.CacheStrategy.BEST);
     }
 
     /** Configures the use of {@link CacheStrategy#BEST} for this query. */
-    public QueryBuilder<T> cacheBest () {
+    public Query<T> cacheBest () {
         return cache(DepotRepository.CacheStrategy.BEST);
     }
 
     /** Configures the use of {@link CacheStrategy#RECORDS} for this query. */
-    public QueryBuilder<T> cacheRecords () {
+    public Query<T> cacheRecords () {
         return cache(DepotRepository.CacheStrategy.RECORDS);
     }
 
     /** Configures the use of {@link CacheStrategy#SHORT_KEYS} for this query. */
-    public QueryBuilder<T> cacheShortKeys () {
+    public Query<T> cacheShortKeys () {
         return cache(DepotRepository.CacheStrategy.SHORT_KEYS);
     }
 
     /** Configures the use of {@link CacheStrategy#LONG_KEYS} for this query. */
-    public QueryBuilder<T> cacheLongKeys () {
+    public Query<T> cacheLongKeys () {
         return cache(DepotRepository.CacheStrategy.LONG_KEYS);
     }
 
     /** Configures the use of {@link CacheStrategy#CONTENTS} for this query. */
-    public QueryBuilder<T> cacheContents () {
+    public Query<T> cacheContents () {
         return cache(DepotRepository.CacheStrategy.CONTENTS);
     }
 
     /** Configures the specified caching policy this query. */
-    public QueryBuilder<T> cache (DepotRepository.CacheStrategy cache) {
+    public Query<T> cache (DepotRepository.CacheStrategy cache) {
         _cache = cache;
         return this;
     }
@@ -91,7 +91,7 @@ public class QueryBuilder<T extends PersistentRecord>
      * simply be omitted, but for deletions, this method must be used if you intend to delete all
      * rows in the table.
      */
-    public QueryBuilder<T> whereTrue ()
+    public Query<T> whereTrue ()
     {
         return where(Exps.literal("true"));
     }
@@ -99,7 +99,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures a {@link Where} clause that ANDs together all of the supplied expressions.
      */
-    public QueryBuilder<T> where (SQLExpression<?>... exprs)
+    public Query<T> where (SQLExpression<?>... exprs)
     {
         return where(Arrays.asList(exprs));
     }
@@ -107,7 +107,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures a {@link Where} clause that ANDs together all of the supplied expressions.
      */
-    public QueryBuilder<T> where (Iterable<? extends SQLExpression<?>> exprs)
+    public Query<T> where (Iterable<? extends SQLExpression<?>> exprs)
     {
         Iterator<? extends SQLExpression<?>> iter = exprs.iterator();
         checkArgument(iter.hasNext(), "Must supply at least one expression.");
@@ -119,7 +119,7 @@ public class QueryBuilder<T extends PersistentRecord>
      * Configures a {@link Where} clause that selects rows where the supplied column equals the
      * supplied value.
      */
-    public <V extends Comparable<? super V>> QueryBuilder<T> where (ColumnExp<V> column, V value)
+    public <V extends Comparable<? super V>> Query<T> where (ColumnExp<V> column, V value)
     {
         return where(new Where(column, value));
     }
@@ -129,7 +129,7 @@ public class QueryBuilder<T extends PersistentRecord>
      * supplied values.
      */
     public <V1 extends Comparable<? super V1>, V2 extends Comparable<? super V2>>
-        QueryBuilder<T> where (ColumnExp<V1> index1, V1 value1, ColumnExp<V2> index2, V2 value2)
+        Query<T> where (ColumnExp<V1> index1, V1 value1, ColumnExp<V2> index2, V2 value2)
     {
         return where(new Where(index1, value1, index2, value2));
     }
@@ -138,7 +138,7 @@ public class QueryBuilder<T extends PersistentRecord>
      * Configures a {@link Where} clause that selects rows where both supplied columns equal both
      * supplied values.
      */
-    public QueryBuilder<T> where (WhereClause where)
+    public Query<T> where (WhereClause where)
     {
         checkState(_where == null, "Where clause is already configured.");
         _where = where;
@@ -148,7 +148,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Adds a {@link Join} clause configured with the supplied left and right columns.
      */
-    public QueryBuilder<T> join (ColumnExp<?> left, ColumnExp<?> right)
+    public Query<T> join (ColumnExp<?> left, ColumnExp<?> right)
     {
         return join(new Join(left, right));
     }
@@ -156,8 +156,8 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Adds a {@link Join} clause configured with the join condition.
      */
-    public QueryBuilder<T> join (Class<? extends PersistentRecord> joinClass,
-                                 SQLExpression<?> joinCondition)
+    public Query<T> join (Class<? extends PersistentRecord> joinClass,
+                          SQLExpression<?> joinCondition)
     {
         return join(new Join(joinClass, joinCondition));
     }
@@ -166,7 +166,7 @@ public class QueryBuilder<T extends PersistentRecord>
      * Adds a {@link Join} clause configured with the supplied left and right columns and join
      * type.
      */
-    public QueryBuilder<T> join (ColumnExp<?> left, ColumnExp<?> right, Join.Type type)
+    public Query<T> join (ColumnExp<?> left, ColumnExp<?> right, Join.Type type)
     {
         return join(new Join(left, right).setType(type));
     }
@@ -175,7 +175,7 @@ public class QueryBuilder<T extends PersistentRecord>
      * Configures the query with the supplied {@link Join} clause. Multiple join clauses are
      * allowed.
      */
-    public QueryBuilder<T> join (Join join)
+    public Query<T> join (Join join)
     {
         if (_joins == null) {
             _joins = Lists.newArrayList();
@@ -187,7 +187,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures a {@link GroupBy} clause on the supplied group expressions.
      */
-    public QueryBuilder<T> groupBy (SQLExpression<?>... exprs)
+    public Query<T> groupBy (SQLExpression<?>... exprs)
     {
         checkState(_groupBy == null, "GroupBy clause is already configured.");
         _groupBy = new GroupBy(exprs);
@@ -197,7 +197,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures an {@link OrderBy} clause configured to randomly order the results.
      */
-    public QueryBuilder<T> randomOrder ()
+    public Query<T> randomOrder ()
     {
         return orderBy(OrderBy.random());
     }
@@ -205,7 +205,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures an {@link OrderBy} clause that ascends on the supplied expression.
      */
-    public QueryBuilder<T> ascending (SQLExpression<?> value)
+    public Query<T> ascending (SQLExpression<?> value)
     {
         return orderBy(OrderBy.ascending(value));
     }
@@ -213,7 +213,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures an {@link OrderBy} clause that descends on the supplied expression.
      */
-    public QueryBuilder<T> descending (SQLExpression<?> value)
+    public Query<T> descending (SQLExpression<?> value)
     {
         return orderBy(OrderBy.descending(value));
     }
@@ -221,7 +221,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures the query with the supplied {@link OrderBy} clause.
      */
-    public QueryBuilder<T> orderBy (OrderBy orderBy)
+    public Query<T> orderBy (OrderBy orderBy)
     {
         checkState(_orderBy == null, "OrderBy clause is already configured.");
         _orderBy = orderBy;
@@ -231,7 +231,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures a {@link Limit} clause configured with the supplied count.
      */
-    public QueryBuilder<T> limit (int count)
+    public Query<T> limit (int count)
     {
         checkState(_limit == null, "Limit clause is already configured.");
         _limit = new Limit(0, count);
@@ -241,7 +241,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures a {@link Limit} clause configured with the supplied offset and count.
      */
-    public QueryBuilder<T> limit (int offset, int count)
+    public Query<T> limit (int offset, int count)
     {
         checkState(_limit == null, "Limit clause is already configured.");
         _limit = new Limit(offset, count);
@@ -251,7 +251,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures a {@link FromOverride} clause configured with the supplied override class.
      */
-    public QueryBuilder<T> override (Class<? extends PersistentRecord> fromClass)
+    public Query<T> override (Class<? extends PersistentRecord> fromClass)
     {
         return override(new FromOverride(fromClass));
     }
@@ -259,8 +259,8 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures a {@link FromOverride} clause configured with the supplied override classes.
      */
-    public QueryBuilder<T> override (Class<? extends PersistentRecord> fromClass1,
-                                     Class<? extends PersistentRecord> fromClass2)
+    public Query<T> override (Class<? extends PersistentRecord> fromClass1,
+                              Class<? extends PersistentRecord> fromClass2)
     {
         return override(new FromOverride(fromClass1, fromClass2));
     }
@@ -268,7 +268,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures the query with the supplied {@link FromOverride} clause.
      */
-    public QueryBuilder<T> override (FromOverride fromOverride)
+    public Query<T> override (FromOverride fromOverride)
     {
         checkState(_fromOverride == null, "FromOverride clause is already configured.");
         _fromOverride = fromOverride;
@@ -278,7 +278,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Adds a {@link FieldDefinition} clause.
      */
-    public QueryBuilder<T> fieldDef (String field, String value)
+    public Query<T> fieldDef (String field, String value)
     {
         return fieldDef(new FieldDefinition(field, value));
     }
@@ -286,7 +286,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Adds a {@link FieldDefinition} clause.
      */
-    public QueryBuilder<T> fieldDef (String field, SQLExpression<?> override)
+    public Query<T> fieldDef (String field, SQLExpression<?> override)
     {
         return fieldDef(new FieldDefinition(field, override));
     }
@@ -294,7 +294,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Adds a {@link FieldDefinition} clause.
      */
-    public QueryBuilder<T> fieldDef (ColumnExp<?> field, SQLExpression<?> override)
+    public Query<T> fieldDef (ColumnExp<?> field, SQLExpression<?> override)
     {
         return fieldDef(new FieldDefinition(field, override));
     }
@@ -302,7 +302,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Adds a {@link FieldDefinition} clause.
      */
-    public QueryBuilder<T> fieldDef (FieldDefinition fieldDef)
+    public Query<T> fieldDef (FieldDefinition fieldDef)
     {
         if (_fieldDefs == null) {
             _fieldDefs = Lists.newArrayList();
@@ -314,7 +314,7 @@ public class QueryBuilder<T extends PersistentRecord>
     /**
      * Configures a {@link ForUpdate} clause which marks this query as selecting for update.
      */
-    public QueryBuilder<T> forUpdate ()
+    public Query<T> forUpdate ()
     {
         checkState(_forUpdate == null, "ForUpdate clause is already configured.");
         _forUpdate = new ForUpdate();
@@ -498,10 +498,10 @@ public class QueryBuilder<T extends PersistentRecord>
      * Returns a clone of this query builder, including all partially configured state. Useful for
      * constructing partially configured queries and then executing variants.
      */
-    public QueryBuilder<T> clone ()
+    public Query<T> clone ()
     {
         try {
-            @SuppressWarnings("unchecked") QueryBuilder<T> qb = (QueryBuilder<T>)super.clone();
+            @SuppressWarnings("unchecked") Query<T> qb = (Query<T>)super.clone();
             // deep copy the list fields, if we have any
             if (qb._joins != null) {
                 qb._joins = Lists.newArrayList(qb._joins);

@@ -72,20 +72,17 @@ public class ProjectionTest extends TestBase
 
     @Test public void testTupleN ()
     {
+        Query<TestRecord> one = _repo.from(TestRecord.class).where(TestRecord.RECORD_ID.eq(1));
         assertEquals(Tuple2.create(1, "Elvis"),
-                     _repo.from(TestRecord.class).where(TestRecord.RECORD_ID.eq(1)).
-                     load(TestRecord.RECORD_ID, TestRecord.NAME));
+                     one.load(TestRecord.RECORD_ID, TestRecord.NAME));
         assertEquals(Tuple3.create(1, "Elvis", 99),
-                     _repo.from(TestRecord.class).where(TestRecord.RECORD_ID.eq(1)).
-                     load(TestRecord.RECORD_ID, TestRecord.NAME, TestRecord.AGE));
+                     one.load(TestRecord.RECORD_ID, TestRecord.NAME, TestRecord.AGE));
         assertEquals(Tuple4.create(1, "Elvis", 99, "Right here"),
-                     _repo.from(TestRecord.class).where(TestRecord.RECORD_ID.eq(1)).
-                     load(TestRecord.RECORD_ID, TestRecord.NAME, TestRecord.AGE,
-                          TestRecord.HOME_TOWN));
+                     one.load(TestRecord.RECORD_ID, TestRecord.NAME, TestRecord.AGE,
+                              TestRecord.HOME_TOWN));
         assertEquals(Tuple5.create(1, "Elvis", 99, "Right here", EnumKeyRecord.Type.A),
-                     _repo.from(TestRecord.class).where(TestRecord.RECORD_ID.eq(1)).
-                     load(TestRecord.RECORD_ID, TestRecord.NAME, TestRecord.AGE,
-                          TestRecord.HOME_TOWN, TestRecord.TYPE));
+                     one.load(TestRecord.RECORD_ID, TestRecord.NAME, TestRecord.AGE,
+                              TestRecord.HOME_TOWN, TestRecord.TYPE));
     }
 
     @Test public void testProjectedJoin ()
@@ -98,7 +95,7 @@ public class ProjectionTest extends TestBase
 
     @Test public void testNoMatches ()
     {
-        QueryBuilder<TestRecord> empty =
+        Query<TestRecord> empty =
             _repo.from(TestRecord.class).where(TestRecord.AGE.greaterThan(100));
 
         // test a projection from a query that returns no matches
