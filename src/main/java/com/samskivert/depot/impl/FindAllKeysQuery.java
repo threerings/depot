@@ -43,7 +43,7 @@ import static com.samskivert.depot.Log.log;
 /**
  * Loads all primary keys for the records matching the supplied clause.
  */
-public class FindAllKeysQuery<T extends PersistentRecord> extends Query<List<Key<T>>>
+public class FindAllKeysQuery<T extends PersistentRecord> extends Fetcher<List<Key<T>>>
 {
     public FindAllKeysQuery (PersistenceContext ctx, Class<T> type, boolean forUpdate,
                              Iterable<? extends QueryClause> clauses)
@@ -62,13 +62,13 @@ public class FindAllKeysQuery<T extends PersistentRecord> extends Query<List<Key
         return !_forUpdate;
     }
 
-    @Override // from Query
+    @Override // from Fetcher
     public List<Key<T>> getCachedResult (PersistenceContext ctx)
     {
         return null; // TODO
     }
 
-    // from Query
+    // from Fetcher
     public List<Key<T>> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
         throws SQLException
     {
@@ -85,7 +85,7 @@ public class FindAllKeysQuery<T extends PersistentRecord> extends Query<List<Key
         return keys;
     }
 
-    // from Query
+    // from Fetcher
     public void updateStats (Stats stats)
     {
         stats.noteQuery(0, 1, 0, 0, 0); // one uncached query

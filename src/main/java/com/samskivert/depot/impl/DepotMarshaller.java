@@ -1037,7 +1037,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
         public static TableMetaData load (PersistenceContext ctx, final String tableName)
             throws DatabaseException
         {
-            return ctx.invoke(new Query.Trivial<TableMetaData>() {
+            return ctx.invoke(new Fetcher.Trivial<TableMetaData>() {
                 public TableMetaData invoke (PersistenceContext ctx, Connection conn,
                                              DatabaseLiaison dl) throws SQLException {
                     return new TableMetaData(conn.getMetaData(), tableName);

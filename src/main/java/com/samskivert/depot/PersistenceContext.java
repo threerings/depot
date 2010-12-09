@@ -50,7 +50,7 @@ import com.samskivert.depot.impl.DepotTypes;
 import com.samskivert.depot.impl.KeyCacheKey;
 import com.samskivert.depot.impl.Modifier;
 import com.samskivert.depot.impl.Operation;
-import com.samskivert.depot.impl.Query;
+import com.samskivert.depot.impl.Fetcher;
 import com.samskivert.depot.impl.SQLBuilder;
 
 import static com.samskivert.depot.Log.log;
@@ -278,17 +278,17 @@ public class PersistenceContext
     /**
      * Invokes a non-modifying query and returns its result.
      */
-    public <T> T invoke (Query<T> query)
+    public <T> T invoke (Fetcher<T> fetcher)
         throws DatabaseException
     {
         // we check to see if the query is already cached before invoking it to avoid requesting a
         // database connection if we don't actually need one
-        T result = query.getCachedResult(this);
+        T result = fetcher.getCachedResult(this);
         if (result != null) {
-            query.updateStats(_stats);
+            fetcher.updateStats(_stats);
             return result;
         }
-        return invoke(query, true);
+        return invoke(fetcher, true);
     }
 
     /**

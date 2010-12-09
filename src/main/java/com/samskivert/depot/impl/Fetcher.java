@@ -25,13 +25,13 @@ import com.samskivert.depot.PersistenceContext;
 /**
  * The base of all read-only queries.
  */
-public abstract class Query<T>
+public abstract class Fetcher<T>
     implements Operation<T>
 {
     /** A simple base class for non-complex queries. */
-    public static abstract class Trivial<T> extends Query<T>
+    public static abstract class Trivial<T> extends Fetcher<T>
     {
-        @Override // from Query
+        @Override // from Fetcher
         public T getCachedResult (PersistenceContext ctx) {
             return null;
         }

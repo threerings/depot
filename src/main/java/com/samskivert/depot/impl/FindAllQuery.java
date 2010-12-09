@@ -60,7 +60,7 @@ import static com.samskivert.depot.Log.log;
  * a collection of persistent objects using one of two included strategies.
  */
 public abstract class FindAllQuery<T extends PersistentRecord,R>
-    extends Query<List<R>>
+    extends Fetcher<List<R>>
 {
     /**
      * A base class for queries that fetch a full record at a time.
@@ -113,7 +113,7 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
 
         }
 
-        @Override // from Query
+        @Override // from Fetcher
         public List<T> getCachedResult (PersistenceContext ctx)
         {
             if (_qkey == null) {
@@ -128,7 +128,7 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
             return (_fetchKeys.size() == 0) ? resolve(_keys, _entities) : null;
         }
 
-        // from Query
+        // from Fetcher
         public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
@@ -185,7 +185,7 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
             _keys = keys;
         }
 
-        @Override // from Query
+        @Override // from Fetcher
         public List<T> getCachedResult (PersistenceContext ctx)
         {
             // look up what we can from the cache
@@ -195,7 +195,7 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
             return _fetchKeys.isEmpty() ? resolve(_keys, _entities) : null;
         }
 
-        // from Query
+        // from Fetcher
         public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
@@ -228,7 +228,7 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
             }
         }
 
-        @Override // from Query
+        @Override // from Fetcher
         public List<T> getCachedResult (PersistenceContext ctx)
         {
             if (_qkey != null) {
@@ -238,7 +238,7 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
             return null;
         }
 
-        // from Query
+        // from Fetcher
         public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
@@ -278,13 +278,13 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
             _marsh = new ProjectionQueryMarshaller<T,R>(cset, _types);
         }
 
-        @Override // from Query
+        @Override // from Fetcher
         public List<R> getCachedResult (PersistenceContext ctx)
         {
             return null;
         }
 
-        // from Query
+        // from Fetcher
         public List<R> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
             throws SQLException
         {
@@ -345,7 +345,7 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
         protected DepotTypes _types;
     }
 
-    // from Query
+    // from Fetcher
     public void updateStats (Stats stats)
     {
         stats.noteQuery(_cachedQueries, _uncachedQueries, _explicitQueries,
