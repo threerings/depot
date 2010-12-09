@@ -29,7 +29,7 @@ import com.google.common.collect.Lists;
 import com.samskivert.depot.clause.*;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.impl.ColumnSet;
+import com.samskivert.depot.impl.Projector;
 import com.samskivert.depot.impl.FindAllQuery;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -363,21 +363,37 @@ public class QueryBuilder<T extends PersistentRecord>
     }
 
     /**
-     * Returns just the supplied column from the rows matching the query.
+     * Returns the value from the first row that matches the configured query clauses.
      */
-    public <V> List<V> select (ColumnExp<V> column)
+    public <V> V load (SQLExpression<V> selexp)
     {
-        return _ctx.invoke(new FindAllQuery.ForColumns<T,V>(
-                               _ctx, ColumnSet.create(_pclass, column), getClauses()));
+        return select(selexp).get(0); // TODO: revamp FindOneQuery and use that
     }
 
     /**
-     * Returns just the supplied columns from the rows matching the query.
+     * Returns the value from the first row that matches the configured query clauses.
      */
-    public <V1, V2> List<Tuple2<V1,V2>> select (ColumnExp<V1> col1, ColumnExp<V2> col2)
+    public <V1, V2> Tuple2<V1, V2> load (SQLExpression<V1> exp1, SQLExpression<V2> exp2)
     {
-        return _ctx.invoke(new FindAllQuery.ForColumns<T,Tuple2<V1,V2>>(
-                               _ctx, ColumnSet.create(_pclass, col1, col2), getClauses()));
+        return select(exp1, exp2).get(0); // TODO: revamp FindOneQuery and use that
+    }
+
+    /**
+     * Returns just the supplied expression from the rows matching the query.
+     */
+    public <V> List<V> select (SQLExpression<V> selexp)
+    {
+        return _ctx.invoke(new FindAllQuery.Projection<T,V>(
+                               _ctx, Projector.create(_pclass, selexp), getClauses()));
+    }
+
+    /**
+     * Returns just the supplied expressions from the rows matching the query.
+     */
+    public <V1, V2> List<Tuple2<V1,V2>> select (SQLExpression<V1> exp1, SQLExpression<V2> exp2)
+    {
+        return _ctx.invoke(new FindAllQuery.Projection<T,Tuple2<V1,V2>>(
+                               _ctx, Projector.create(_pclass, exp1, exp2), getClauses()));
     }
 
     /**

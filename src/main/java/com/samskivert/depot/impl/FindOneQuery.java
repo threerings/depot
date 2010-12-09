@@ -49,7 +49,7 @@ public class FindOneQuery<T extends PersistentRecord> extends Query<T>
     {
         _strategy = strategy;
         _marsh = ctx.getMarshaller(type);
-        _select = new SelectClause(type, _marsh.getFieldNames(), clauses);
+        _select = new SelectClause(type, _marsh.getSelections(), clauses);
         WhereClause where = _select.getWhereClause();
         if (where != null) {
             _select.getWhereClause().validateQueryType(type); // sanity check

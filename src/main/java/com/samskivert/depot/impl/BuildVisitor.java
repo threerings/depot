@@ -373,11 +373,11 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
             // while expanding column names in the SELECT query, do aliasing and expansion
             _enableAliasing = _enableOverrides = true;
 
-            for (ColumnExp<?> field : selectClause.getFields()) {
+            for (SQLExpression<?> selexp : selectClause.getSelections()) {
                 // write column to a temporary buffer
                 StringBuilder saved = _builder;
                 _builder = new StringBuilder();
-                appendRhsColumn(field);
+                selexp.accept(this);
                 String column = _builder.toString();
                 _builder = saved;
 

@@ -48,6 +48,7 @@ import com.samskivert.depot.clause.FieldOverride;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.SelectClause;
 import com.samskivert.depot.expression.ColumnExp;
+import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.operator.In;
 import com.samskivert.jdbc.DatabaseLiaison;
 
@@ -218,7 +219,7 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
         {
             super(ctx, type);
 
-            _select = new SelectClause(type, _dmarsh.getFieldNames(), clauses);
+            _select = new SelectClause(type, _dmarsh.getSelections(), clauses);
 
             if (cachedContents) {
                 _qkey = new SimpleCacheKey(_dmarsh.getTableName() + "Contents", _select.toString());
@@ -264,17 +265,17 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
         protected SimpleCacheKey _qkey;
     }
 
-    public static class ForColumns<T extends PersistentRecord,R>
+    public static class Projection<T extends PersistentRecord,R>
         extends FindAllQuery<T,R>
     {
-        public ForColumns (PersistenceContext ctx, ColumnSet<T,R> cset,
+        public Projection (PersistenceContext ctx, Projector<T,R> cset,
                            Iterable<? extends QueryClause> clauses)
             throws DatabaseException
         {
             super(cset.ptype, null, new NonCloningCloner<R>());
-            _select = new SelectClause(cset.ptype, cset.columns, clauses);
+            _select = new SelectClause(cset.ptype, cset.selexps, clauses);
             _types = DepotTypes.getDepotTypes(ctx, _select);
-            _marsh = new ColumnSetQueryMarshaller<T,R>(cset, _types);
+            _marsh = new ProjectionQueryMarshaller<T,R>(cset, _types);
         }
 
         @Override // from Query
@@ -301,10 +302,10 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
         protected DepotTypes _types;
     }
 
-    protected static class ColumnSetQueryMarshaller<T extends PersistentRecord,R>
+    protected static class ProjectionQueryMarshaller<T extends PersistentRecord,R>
         implements QueryMarshaller<T,R>
     {
-        public ColumnSetQueryMarshaller (ColumnSet<T,R> cset, DepotTypes types) {
+        public ProjectionQueryMarshaller (Projector<T,R> cset, DepotTypes types) {
             _cset = cset;
             _types = types;
         }
@@ -313,8 +314,8 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
             return _types.getTableName(_cset.ptype);
         }
 
-        public ColumnExp<?>[] getFieldNames () {
-            return _cset.columns;
+        public SQLExpression<?>[] getSelections () {
+            return _cset.selexps;
         }
 
         public Key<T> getPrimaryKey (Object object) {
@@ -322,16 +323,25 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
         }
 
         public R createObject (ResultSet rs) throws SQLException {
-            Object[] data = new Object[_cset.columns.length];
+            Object[] data = new Object[_cset.selexps.length];
             for (int ii = 0; ii < data.length; ii++) {
-                ColumnExp<?> col = _cset.columns[ii];
-                data[ii] = _types.getMarshaller(col.getPersistentClass()).
-                    getFieldMarshaller(col.name).getFromSet(rs, ii+1);
+                SQLExpression<?> exp = _cset.selexps[ii];
+                if (exp instanceof ColumnExp<?>) {
+                    ColumnExp<?> col = (ColumnExp<?>)exp;
+                    data[ii] = _types.getMarshaller(col.getPersistentClass()).
+                        getFieldMarshaller(col.name).getFromSet(rs, ii+1);
+                } else {
+                    // TEMP: in the case of selecting computed expressions, we rely on the types to
+                    // be correct by construction; TODO: this will probably bite us when JDBC
+                    // drivers choose Long instead of Integer or whatnot, so we'll need to set up
+                    // more complex machinery
+                    data[ii] = rs.getObject(ii+1);
+                }
             }
             return _cset.createObject(data);
         }
 
-        protected ColumnSet<T,R> _cset;
+        protected Projector<T,R> _cset;
         protected DepotTypes _types;
     }
 
@@ -419,7 +429,7 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
         throws SQLException
     {
         SelectClause select = new SelectClause(
-            _type, _marsh.getFieldNames(), (QueryClause) KeySet.newKeySet(_type, keys));
+            _type, _marsh.getSelections(), (QueryClause) KeySet.newKeySet(_type, keys));
         SQLBuilder builder = ctx.getSQLBuilder(DepotTypes.getDepotTypes(ctx, select));
         builder.newQuery(select);
         Set<Key<T>> got = Sets.newHashSet();

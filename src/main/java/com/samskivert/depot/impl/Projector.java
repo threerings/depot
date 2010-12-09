@@ -22,17 +22,18 @@ package com.samskivert.depot.impl;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.Tuple2;
-import com.samskivert.depot.expression.ColumnExp;
+import com.samskivert.depot.expression.SQLExpression;
 
 /**
- * Contains a set of columns which are to be selected from a query result.
+ * Contains a set of selection expressions which are to be projected (selected) from a set of
+ * tables. Handles the necessary type conversions to turn the results into typed tuples.
  */
-public abstract class ColumnSet<T extends PersistentRecord,R>
+public abstract class Projector<T extends PersistentRecord,R>
 {
-    public static <T extends PersistentRecord, V> ColumnSet<T,V> create (
-        Class<T> ptype, ColumnExp<V> column)
+    public static <T extends PersistentRecord, V> Projector<T,V> create (
+        Class<T> ptype, SQLExpression<V> column)
     {
-        return new ColumnSet<T, V>(ptype, new ColumnExp[] { column }) {
+        return new Projector<T, V>(ptype, new SQLExpression[] { column }) {
             public V createObject (Object[] results) {
                 @SuppressWarnings("unchecked") V result = (V)results[0];
                 return result;
@@ -40,10 +41,10 @@ public abstract class ColumnSet<T extends PersistentRecord,R>
         };
     }
 
-    public static <T extends PersistentRecord, V1, V2> ColumnSet<T,Tuple2<V1,V2>> create (
-        Class<T> ptype, ColumnExp<V1> col1, ColumnExp<V2> col2)
+    public static <T extends PersistentRecord, V1, V2> Projector<T,Tuple2<V1,V2>> create (
+        Class<T> ptype, SQLExpression<V1> col1, SQLExpression<V2> col2)
     {
-        return new ColumnSet<T, Tuple2<V1,V2>>(ptype, new ColumnExp[] { col1, col2 }) {
+        return new Projector<T, Tuple2<V1,V2>>(ptype, new SQLExpression[] { col1, col2 }) {
             public Tuple2<V1,V2> createObject (Object[] results) {
                 @SuppressWarnings("unchecked") V1 r1 = (V1)results[0];
                 @SuppressWarnings("unchecked") V2 r2 = (V2)results[1];
@@ -53,13 +54,13 @@ public abstract class ColumnSet<T extends PersistentRecord,R>
     }
 
     public final Class<T> ptype;
-    public final ColumnExp<?>[] columns;
+    public final SQLExpression<?>[] selexps;
 
     public abstract R createObject (Object[] results);
 
-    protected ColumnSet (Class<T> ptype, ColumnExp<?>[] columns)
+    protected Projector (Class<T> ptype, SQLExpression<?>[] selexps)
     {
         this.ptype = ptype;
-        this.columns = columns;
+        this.selexps = selexps;
     }
 }

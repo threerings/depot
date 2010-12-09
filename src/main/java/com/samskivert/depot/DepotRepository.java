@@ -337,13 +337,6 @@ public abstract class DepotRepository
         return _ctx.invoke(new FindAllKeysQuery<T>(_ctx, type, forUpdate, clauses));
     }
 
-    // public <T extends PersistentRecord> List<Object> findAll (
-    //     Class<T> type, Iterable<? extends QueryClause> clauses)
-    //     throws DatabaseException
-    // {
-    //     return _ctx.invoke(new FindAllQuery.ForColumns<T>(_ctx, type, clauses, column));
-    // }
-
     /**
      * Returns a builder that can be used to construct a query in a fluent style. For example:
      * {@code from(FooRecord.class).where(ID.greaterThan(25)).ascending(SIZE).select()}

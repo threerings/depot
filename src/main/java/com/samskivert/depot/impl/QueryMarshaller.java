@@ -25,7 +25,7 @@ import java.sql.SQLException;
 
 import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.expression.ColumnExp;
+import com.samskivert.depot.expression.SQLExpression;
 
 /**
  * Marshalls the results for a query.
@@ -39,9 +39,9 @@ public interface QueryMarshaller<T extends PersistentRecord,R>
     String getTableName ();
 
     /**
-     * Returns the field names being selected for this query.
+     * Returns the expressions being selected for this query.
      */
-    ColumnExp<?>[] getFieldNames ();
+    SQLExpression<?>[] getSelections ();
 
     /**
      * Extracts the primary key from the supplied object.

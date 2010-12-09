@@ -54,14 +54,29 @@ public class SelectFieldsTest extends TestBase
         List<Tuple2<Integer,String>> data = _repo.from(TestRecord.class).where(
             TestRecord.RECORD_ID.greaterThan(7)).select(TestRecord.RECORD_ID, TestRecord.NAME);
         List<Tuple2<Integer,String>> want = Lists.newArrayList();
-        want.add(Tuple2.newTuple(8, "Elvis"));
-        want.add(Tuple2.newTuple(9, "Elvis"));
+        want.add(Tuple2.create(8, "Elvis"));
+        want.add(Tuple2.create(9, "Elvis"));
         assertEquals(data, want);
 
         // test a basic join
         List<Tuple2<Integer,EnumKeyRecord.Type>> jdata = _repo.from(TestRecord.class).join(
             TestRecord.NAME, EnumKeyRecord.NAME).select(TestRecord.RECORD_ID, EnumKeyRecord.TYPE);
-        System.out.println(jdata);
+        assertEquals(20, jdata.size());
+
+        // test computed expressions on the RHS (the casts are just to cope with JUnit's overloads)
+        assertEquals(9, (int)_repo.from(TestRecord.class).load(Funcs.max(TestRecord.RECORD_ID)));
+        assertEquals(10, (int)_repo.from(TestRecord.class).load(Funcs.count(TestRecord.RECORD_ID)));
+        assertEquals(0, (int)_repo.from(TestRecord.class).load(Funcs.min(TestRecord.RECORD_ID)));
+        assertEquals(Tuple2.create(9, 0), _repo.from(TestRecord.class).load(
+                         Funcs.max(TestRecord.RECORD_ID), Funcs.min(TestRecord.RECORD_ID)));
+
+        List<Tuple2<String, Integer>> ewant = Lists.newArrayList();
+        ewant.add(Tuple2.create("Abraham", 1));
+        ewant.add(Tuple2.create("Elvis", 2));
+        ewant.add(Tuple2.create("Moses", 1));
+        assertEquals(ewant, _repo.from(EnumKeyRecord.class).
+                     groupBy(EnumKeyRecord.NAME).ascending(EnumKeyRecord.NAME).
+                     select(EnumKeyRecord.NAME, Funcs.count(EnumKeyRecord.TYPE)));
 
         // finally clean up after ourselves
         _repo.from(TestRecord.class).whereTrue().delete();

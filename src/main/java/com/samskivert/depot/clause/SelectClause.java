@@ -29,7 +29,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.expression.ColumnExp;
+import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FragmentVisitor;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -41,24 +41,24 @@ public class SelectClause
     implements QueryClause
 {
     /**
-     * Creates a new select clause, selecting the supplied columns from the specified persistent
-     * class for rows that match the supplied clauses.
+     * Creates a new select clause, selecting the supplied expressions from the specified
+     * persistent class (and potentially joined classes) for rows that match the supplied clauses.
      */
     public SelectClause (Class<? extends PersistentRecord> pClass,
-                         ColumnExp<?>[] columns, QueryClause... clauses)
+                         SQLExpression<?>[] selexps, QueryClause... clauses)
     {
-        this(pClass, columns, Arrays.asList(clauses));
+        this(pClass, selexps, Arrays.asList(clauses));
     }
 
     /**
-     * Creates a new select clause, selecting the supplied columns from the specified persistent
-     * class for rows that match the supplied clauses.
+     * Creates a new select clause, selecting the supplied expressions from the specified
+     * persistent class (and potentially joined classes) for rows that match the supplied clauses.
      */
-    public SelectClause (Class<? extends PersistentRecord> pClass, ColumnExp<?>[] columns,
+    public SelectClause (Class<? extends PersistentRecord> pClass, SQLExpression<?>[] selexps,
                          Iterable<? extends QueryClause> clauses)
     {
         _pClass = pClass;
-        _fields = columns;
+        _selexps = selexps;
 
         // iterate over the clauses and sort them into the different types we understand
         for (QueryClause clause : clauses) {
@@ -119,9 +119,9 @@ public class SelectClause
         return _pClass;
     }
 
-    public ColumnExp<?>[] getFields ()
+    public SQLExpression<?>[] getSelections ()
     {
-        return _fields;
+        return _selexps;
     }
 
     public FromOverride getFromOverride ()
@@ -216,8 +216,8 @@ public class SelectClause
     /** The persistent class this select defines. */
     protected Class<? extends PersistentRecord> _pClass;
 
-    /** The persistent fields to select. */
-    protected ColumnExp<?>[] _fields;
+    /** The expressions being selected. */
+    protected SQLExpression<?>[] _selexps;
 
     /** The from override clause, if any. */
     protected FromOverride _fromOverride;

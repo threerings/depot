@@ -302,11 +302,10 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
         return _tableName;
     }
 
-    /**
-     * Returns all the persistent fields of our class, in definition order.
-     */
-    public ColumnExp<?>[] getFieldNames ()
+    // from QueryMarshaller
+    public SQLExpression<?>[] getSelections ()
     {
+        // when we're used in a query, we select all of our fields, in order
         return _allFields;
     }
 

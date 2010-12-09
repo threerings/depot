@@ -38,7 +38,7 @@ public class Tuple2<A,B> implements Serializable
     public final B b;
 
     /** Constructs an initialized two tuple. */
-    public static <A, B> Tuple2<A, B> newTuple (A a, B b)
+    public static <A, B> Tuple2<A, B> create (A a, B b)
     {
         return new Tuple2<A, B>(a, b);
     }
