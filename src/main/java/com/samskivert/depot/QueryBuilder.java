@@ -29,8 +29,9 @@ import com.google.common.collect.Lists;
 import com.samskivert.depot.clause.*;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.depot.impl.Projector;
 import com.samskivert.depot.impl.FindAllQuery;
+import com.samskivert.depot.impl.Projector;
+import com.samskivert.depot.util.*; // TupleN
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -379,6 +380,35 @@ public class QueryBuilder<T extends PersistentRecord>
     }
 
     /**
+     * Returns the value from the first row that matches the configured query clauses.
+     */
+    public <V1, V2, V3> Tuple3<V1, V2, V3> load (
+        SQLExpression<V1> exp1, SQLExpression<V2> exp2, SQLExpression<V3> exp3)
+    {
+        return select(exp1, exp2, exp3).get(0); // TODO: revamp FindOneQuery and use that
+    }
+
+    /**
+     * Returns the value from the first row that matches the configured query clauses.
+     */
+    public <V1, V2, V3, V4> Tuple4<V1, V2, V3, V4> load (
+        SQLExpression<V1> exp1, SQLExpression<V2> exp2,
+        SQLExpression<V3> exp3, SQLExpression<V4> exp4)
+    {
+        return select(exp1, exp2, exp3, exp4).get(0); // TODO: revamp FindOneQuery and use that
+    }
+
+    /**
+     * Returns the value from the first row that matches the configured query clauses.
+     */
+    public <V1, V2, V3, V4, V5> Tuple5<V1, V2, V3, V4, V5> load (
+        SQLExpression<V1> exp1, SQLExpression<V2> exp2, SQLExpression<V3> exp3,
+        SQLExpression<V4> exp4, SQLExpression<V5> exp5)
+    {
+        return select(exp1, exp2, exp3, exp4, exp5).get(0); // TODO: use revamped FindOneQuery
+    }
+
+    /**
      * Returns just the supplied expression from the rows matching the query.
      */
     public <V> List<V> select (SQLExpression<V> selexp)
@@ -394,6 +424,40 @@ public class QueryBuilder<T extends PersistentRecord>
     {
         return _ctx.invoke(new FindAllQuery.Projection<T,Tuple2<V1,V2>>(
                                _ctx, Projector.create(_pclass, exp1, exp2), getClauses()));
+    }
+
+    /**
+     * Returns just the supplied expressions from the rows matching the query.
+     */
+    public <V1, V2, V3> List<Tuple3<V1,V2,V3>> select (
+        SQLExpression<V1> exp1, SQLExpression<V2> exp2, SQLExpression<V3> exp3)
+    {
+        return _ctx.invoke(new FindAllQuery.Projection<T,Tuple3<V1,V2,V3>>(
+                               _ctx, Projector.create(_pclass, exp1, exp2, exp3), getClauses()));
+    }
+
+    /**
+     * Returns just the supplied expressions from the rows matching the query.
+     */
+    public <V1, V2, V3, V4> List<Tuple4<V1,V2,V3,V4>> select (
+        SQLExpression<V1> exp1, SQLExpression<V2> exp2,
+        SQLExpression<V3> exp3, SQLExpression<V4> exp4)
+    {
+        return _ctx.invoke(new FindAllQuery.Projection<T,Tuple4<V1,V2,V3,V4>>(
+                               _ctx, Projector.create(_pclass, exp1, exp2, exp3, exp4),
+                               getClauses()));
+    }
+
+    /**
+     * Returns just the supplied expressions from the rows matching the query.
+     */
+    public <V1, V2, V3, V4, V5> List<Tuple5<V1,V2,V3,V4,V5>> select (
+        SQLExpression<V1> exp1, SQLExpression<V2> exp2, SQLExpression<V3> exp3,
+        SQLExpression<V4> exp4, SQLExpression<V5> exp5)
+    {
+        return _ctx.invoke(new FindAllQuery.Projection<T,Tuple5<V1,V2,V3,V4,V5>>(
+                               _ctx, Projector.create(_pclass, exp1, exp2, exp3, exp4, exp5),
+                               getClauses()));
     }
 
     /**

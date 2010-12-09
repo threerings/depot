@@ -23,7 +23,7 @@ package com.samskivert.depot;
 import java.util.List;
 
 import com.google.common.collect.Lists;
-import com.samskivert.depot.Tuple2;
+import com.samskivert.depot.util.*; // TupleN
 
 import org.junit.After;
 import org.junit.Before;
@@ -31,9 +31,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * Tests individual field selection.
+ * Tests projection selections, aggregates, etc.
  */
-public class SelectFieldsTest extends TestBase
+public class ProjectionTest extends TestBase
 {
     @Before public void createRecords ()
     {
@@ -68,6 +68,24 @@ public class SelectFieldsTest extends TestBase
         want.add(Tuple2.create(8, "Elvis"));
         want.add(Tuple2.create(9, "Elvis"));
         assertEquals(data, want);
+    }
+
+    @Test public void testTupleN ()
+    {
+        assertEquals(Tuple2.create(1, "Elvis"),
+                     _repo.from(TestRecord.class).where(TestRecord.RECORD_ID.eq(1)).
+                     load(TestRecord.RECORD_ID, TestRecord.NAME));
+        assertEquals(Tuple3.create(1, "Elvis", 99),
+                     _repo.from(TestRecord.class).where(TestRecord.RECORD_ID.eq(1)).
+                     load(TestRecord.RECORD_ID, TestRecord.NAME, TestRecord.AGE));
+        assertEquals(Tuple4.create(1, "Elvis", 99, "Right here"),
+                     _repo.from(TestRecord.class).where(TestRecord.RECORD_ID.eq(1)).
+                     load(TestRecord.RECORD_ID, TestRecord.NAME, TestRecord.AGE,
+                          TestRecord.HOME_TOWN));
+        assertEquals(Tuple5.create(1, "Elvis", 99, "Right here", EnumKeyRecord.Type.A),
+                     _repo.from(TestRecord.class).where(TestRecord.RECORD_ID.eq(1)).
+                     load(TestRecord.RECORD_ID, TestRecord.NAME, TestRecord.AGE,
+                          TestRecord.HOME_TOWN, TestRecord.TYPE));
     }
 
     @Test public void testProjectedJoin ()

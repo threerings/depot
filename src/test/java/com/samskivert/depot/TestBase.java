@@ -75,6 +75,7 @@ public abstract class TestBase
         rec.age = 99;
         rec.created = now;
         rec.homeTown = "Right here";
+        rec.type = EnumKeyRecord.Type.A;
         rec.lastModified = tnow;
         rec.numbers = new int[] { 9, 0, 2, 1, 0 };
         return rec;
@@ -90,6 +91,7 @@ public abstract class TestBase
         assertEquals(expect.age, got.age);
         assertEquals(expect.created, got.created);
         assertEquals(expect.homeTown, got.homeTown);
+        assertEquals(expect.type, got.type);
         assertEquals(expect.lastModified, got.lastModified);
         assertTrue(Arrays.equals(expect.numbers, got.numbers));
     }

@@ -21,8 +21,8 @@
 package com.samskivert.depot.impl;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.Tuple2;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.util.*; // TupleN
 
 /**
  * Contains a set of selection expressions which are to be projected (selected) from a set of
@@ -49,6 +49,54 @@ public abstract class Projector<T extends PersistentRecord,R>
                 @SuppressWarnings("unchecked") V1 r1 = (V1)results[0];
                 @SuppressWarnings("unchecked") V2 r2 = (V2)results[1];
                 return new Tuple2<V1,V2>(r1, r2);
+            }
+        };
+    }
+
+    public static <T extends PersistentRecord, V1, V2, V3> Projector<T,Tuple3<V1,V2,V3>> create (
+        Class<T> ptype, SQLExpression<V1> col1, SQLExpression<V2> col2, SQLExpression<V3> col3)
+    {
+        return new Projector<T, Tuple3<V1,V2,V3>>(ptype, new SQLExpression[] { col1, col2, col3 }) {
+            public Tuple3<V1,V2,V3> createObject (Object[] results) {
+                @SuppressWarnings("unchecked") V1 r1 = (V1)results[0];
+                @SuppressWarnings("unchecked") V2 r2 = (V2)results[1];
+                @SuppressWarnings("unchecked") V3 r3 = (V3)results[2];
+                return new Tuple3<V1,V2,V3>(r1, r2, r3);
+            }
+        };
+    }
+
+    public static <T extends PersistentRecord, V1, V2, V3, V4>
+        Projector<T,Tuple4<V1,V2,V3,V4>> create (
+            Class<T> ptype, SQLExpression<V1> col1, SQLExpression<V2> col2, SQLExpression<V3> col3,
+            SQLExpression<V4> col4)
+    {
+        return new Projector<T, Tuple4<V1,V2,V3,V4>>(
+            ptype, new SQLExpression[] { col1, col2, col3, col4 }) {
+            public Tuple4<V1,V2,V3,V4> createObject (Object[] results) {
+                @SuppressWarnings("unchecked") V1 r1 = (V1)results[0];
+                @SuppressWarnings("unchecked") V2 r2 = (V2)results[1];
+                @SuppressWarnings("unchecked") V3 r3 = (V3)results[2];
+                @SuppressWarnings("unchecked") V4 r4 = (V4)results[3];
+                return new Tuple4<V1,V2,V3,V4>(r1, r2, r3, r4);
+            }
+        };
+    }
+
+    public static <T extends PersistentRecord, V1, V2, V3, V4, V5>
+        Projector<T,Tuple5<V1,V2,V3,V4,V5>> create (
+            Class<T> ptype, SQLExpression<V1> col1, SQLExpression<V2> col2, SQLExpression<V3> col3,
+            SQLExpression<V4> col4, SQLExpression<V5> col5)
+    {
+        return new Projector<T, Tuple5<V1,V2,V3,V4,V5>>(
+            ptype, new SQLExpression[] { col1, col2, col3, col4, col5 }) {
+            public Tuple5<V1,V2,V3,V4,V5> createObject (Object[] results) {
+                @SuppressWarnings("unchecked") V1 r1 = (V1)results[0];
+                @SuppressWarnings("unchecked") V2 r2 = (V2)results[1];
+                @SuppressWarnings("unchecked") V3 r3 = (V3)results[2];
+                @SuppressWarnings("unchecked") V4 r4 = (V4)results[3];
+                @SuppressWarnings("unchecked") V5 r5 = (V5)results[4];
+                return new Tuple5<V1,V2,V3,V4,V5>(r1, r2, r3, r4, r5);
             }
         };
     }

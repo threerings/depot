@@ -42,6 +42,7 @@ public class TestRecord extends PersistentRecord
     public static final ColumnExp<String> NAME = colexp(_R, "name");
     public static final ColumnExp<Integer> AGE = colexp(_R, "age");
     public static final ColumnExp<String> HOME_TOWN = colexp(_R, "homeTown");
+    public static final ColumnExp<EnumKeyRecord.Type> TYPE = colexp(_R, "type");
     public static final ColumnExp<Date> CREATED = colexp(_R, "created");
     public static final ColumnExp<Timestamp> LAST_MODIFIED = colexp(_R, "lastModified");
     public static final ColumnExp<int[]> NUMBERS = colexp(_R, "numbers");
@@ -57,6 +58,8 @@ public class TestRecord extends PersistentRecord
     public int age;
 
     public String homeTown;
+
+    public EnumKeyRecord.Type type;
 
     @Index
     public Date created;
