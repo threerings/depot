@@ -25,6 +25,8 @@ import java.util.List;
 import com.google.common.collect.Lists;
 import com.samskivert.depot.Tuple2;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -33,7 +35,7 @@ import static org.junit.Assert.*;
  */
 public class SelectFieldsTest extends TestBase
 {
-    @Test public void testCreateReadDelete ()
+    @Before public void createRecords ()
     {
         for (int ii = 0; ii < 10; ii++) {
             _repo.insert(createTestRecord(ii));
@@ -42,7 +44,16 @@ public class SelectFieldsTest extends TestBase
         _repo.insert(new EnumKeyRecord(EnumKeyRecord.Type.B, "Moses"));
         _repo.insert(new EnumKeyRecord(EnumKeyRecord.Type.C, "Abraham"));
         _repo.insert(new EnumKeyRecord(EnumKeyRecord.Type.D, "Elvis"));
+    }
 
+    @After public void cleanup ()
+    {
+        _repo.from(TestRecord.class).whereTrue().delete();
+        _repo.from(EnumKeyRecord.class).whereTrue().delete();
+    }
+
+    @Test public void testProjection ()
+    {
         // test some basic one and two column selects
         List<Integer> allKeys = _repo.from(TestRecord.class).select(TestRecord.RECORD_ID);
         assertEquals(allKeys, Lists.newArrayList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9));
@@ -57,12 +68,18 @@ public class SelectFieldsTest extends TestBase
         want.add(Tuple2.create(8, "Elvis"));
         want.add(Tuple2.create(9, "Elvis"));
         assertEquals(data, want);
+    }
 
+    @Test public void testProjectedJoin ()
+    {
         // test a basic join
         List<Tuple2<Integer,EnumKeyRecord.Type>> jdata = _repo.from(TestRecord.class).join(
             TestRecord.NAME, EnumKeyRecord.NAME).select(TestRecord.RECORD_ID, EnumKeyRecord.TYPE);
         assertEquals(20, jdata.size());
+    }
 
+    @Test public void testAggregates ()
+    {
         // test computed expressions on the RHS (the casts are just to cope with JUnit's overloads)
         assertEquals(9, (int)_repo.from(TestRecord.class).load(Funcs.max(TestRecord.RECORD_ID)));
         assertEquals(10, (int)_repo.from(TestRecord.class).load(Funcs.count(TestRecord.RECORD_ID)));
@@ -77,10 +94,6 @@ public class SelectFieldsTest extends TestBase
         assertEquals(ewant, _repo.from(EnumKeyRecord.class).
                      groupBy(EnumKeyRecord.NAME).ascending(EnumKeyRecord.NAME).
                      select(EnumKeyRecord.NAME, Funcs.count(EnumKeyRecord.TYPE)));
-
-        // finally clean up after ourselves
-        _repo.from(TestRecord.class).whereTrue().delete();
-        _repo.from(EnumKeyRecord.class).whereTrue().delete();
     }
 
     // the HSQL in-memory database persists for the lifetime of the VM, which means we have to
