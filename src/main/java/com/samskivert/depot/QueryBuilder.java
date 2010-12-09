@@ -364,48 +364,53 @@ public class QueryBuilder<T extends PersistentRecord>
     }
 
     /**
-     * Returns the value from the first row that matches the configured query clauses.
+     * Returns the value from the first row that matches the configured query clauses. This value
+     * may be null if the query clauses match no rows.
      */
     public <V> V load (SQLExpression<V> selexp)
     {
-        return select(selexp).get(0); // TODO: revamp FindOneQuery and use that
+        return getLoaded(select(selexp)); // TODO: revamp FindOneQuery and use that
     }
 
     /**
-     * Returns the value from the first row that matches the configured query clauses.
+     * Returns the value from the first row that matches the configured query clauses. This value
+     * may be null if the query clauses match no rows.
      */
     public <V1, V2> Tuple2<V1, V2> load (SQLExpression<V1> exp1, SQLExpression<V2> exp2)
     {
-        return select(exp1, exp2).get(0); // TODO: revamp FindOneQuery and use that
+        return getLoaded(select(exp1, exp2)); // TODO: revamp FindOneQuery and use that
     }
 
     /**
-     * Returns the value from the first row that matches the configured query clauses.
+     * Returns the value from the first row that matches the configured query clauses. This value
+     * may be null if the query clauses match no rows.
      */
     public <V1, V2, V3> Tuple3<V1, V2, V3> load (
         SQLExpression<V1> exp1, SQLExpression<V2> exp2, SQLExpression<V3> exp3)
     {
-        return select(exp1, exp2, exp3).get(0); // TODO: revamp FindOneQuery and use that
+        return getLoaded(select(exp1, exp2, exp3)); // TODO: revamp FindOneQuery and use that
     }
 
     /**
-     * Returns the value from the first row that matches the configured query clauses.
+     * Returns the value from the first row that matches the configured query clauses. This value
+     * may be null if the query clauses match no rows.
      */
     public <V1, V2, V3, V4> Tuple4<V1, V2, V3, V4> load (
         SQLExpression<V1> exp1, SQLExpression<V2> exp2,
         SQLExpression<V3> exp3, SQLExpression<V4> exp4)
     {
-        return select(exp1, exp2, exp3, exp4).get(0); // TODO: revamp FindOneQuery and use that
+        return getLoaded(select(exp1, exp2, exp3, exp4)); // TODO: revamp FindOneQuery and use that
     }
 
     /**
-     * Returns the value from the first row that matches the configured query clauses.
+     * Returns the value from the first row that matches the configured query clauses. This value
+     * may be null if the query clauses match no rows.
      */
     public <V1, V2, V3, V4, V5> Tuple5<V1, V2, V3, V4, V5> load (
         SQLExpression<V1> exp1, SQLExpression<V2> exp2, SQLExpression<V3> exp3,
         SQLExpression<V4> exp4, SQLExpression<V5> exp5)
     {
-        return select(exp1, exp2, exp3, exp4, exp5).get(0); // TODO: use revamped FindOneQuery
+        return getLoaded(select(exp1, exp2, exp3, exp4, exp5)); // TODO: use revamped FindOneQuery
     }
 
     /**
@@ -551,6 +556,11 @@ public class QueryBuilder<T extends PersistentRecord>
         checkState(_fromOverride == null, "FromOverride clause not applicable for delete.");
         checkState(_fieldDefs == null, "FieldDefinition clauses not applicable for delete.");
         checkState(_forUpdate == null, "ForUpdate clause not supported by delete.");
+    }
+
+    protected static <T> T getLoaded (List<T> selections)
+    {
+        return selections.isEmpty() ? null : selections.get(0);
     }
 
     protected final PersistenceContext _ctx;

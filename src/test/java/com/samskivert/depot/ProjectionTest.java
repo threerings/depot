@@ -96,6 +96,19 @@ public class ProjectionTest extends TestBase
         assertEquals(20, jdata.size());
     }
 
+    @Test public void testNoMatches ()
+    {
+        QueryBuilder<TestRecord> empty =
+            _repo.from(TestRecord.class).where(TestRecord.AGE.greaterThan(100));
+
+        // test a projection from a query that returns no matches
+        assertNull(empty.load(TestRecord.RECORD_ID));
+        assertEquals(0, empty.select().size());
+
+        // test an aggregate on a query that matches no rows
+        assertNull(empty.load(Funcs.max(TestRecord.RECORD_ID)));
+    }
+
     @Test public void testAggregates ()
     {
         // test computed expressions on the RHS (the casts are just to cope with JUnit's overloads)
