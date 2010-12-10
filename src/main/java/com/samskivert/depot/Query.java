@@ -466,6 +466,15 @@ public class Query<T extends PersistentRecord>
     }
 
     /**
+     * Returns just the supplied expression from the rows matching the query.
+     */
+    public <V> List<V> selectInto (Class<V> resultClass, SQLExpression<?>... selexps)
+    {
+        Projector<T,V> proj = Projector.create(_pclass, resultClass, selexps);
+        return _ctx.invoke(new FindAllQuery.Projection<T,V>(_ctx, proj, getClauses()));
+    }
+
+    /**
      * Deletes the records that match the configured query clauses. Note that only the where
      * clauses are used to evaluate a deletion. Attempts to use other clauses will result in
      * failure.
