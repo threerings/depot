@@ -38,7 +38,7 @@ public abstract class Projector<T extends PersistentRecord,R>
         Class<T> ptype, SQLExpression<V> column)
     {
         return new Projector<T, V>(ptype, new SQLExpression<?>[] { column }) {
-            public V createObject (Object[] results) {
+            @Override public V createObject (Object[] results) {
                 @SuppressWarnings("unchecked") V result = (V)results[0];
                 return result;
             }
@@ -49,7 +49,7 @@ public abstract class Projector<T extends PersistentRecord,R>
         Class<T> ptype, SQLExpression<V1> col1, SQLExpression<V2> col2)
     {
         return new Projector<T, Tuple2<V1,V2>>(ptype, new SQLExpression<?>[] { col1, col2 }) {
-            public Tuple2<V1,V2> createObject (Object[] results) {
+            @Override public Tuple2<V1,V2> createObject (Object[] results) {
                 @SuppressWarnings("unchecked") V1 r1 = (V1)results[0];
                 @SuppressWarnings("unchecked") V2 r2 = (V2)results[1];
                 return new Tuple2<V1,V2>(r1, r2);
@@ -62,7 +62,7 @@ public abstract class Projector<T extends PersistentRecord,R>
     {
         return new Projector<T, Tuple3<V1,V2,V3>>(
             ptype, new SQLExpression<?>[] { col1, col2, col3 }) {
-            public Tuple3<V1,V2,V3> createObject (Object[] results) {
+            @Override public Tuple3<V1,V2,V3> createObject (Object[] results) {
                 @SuppressWarnings("unchecked") V1 r1 = (V1)results[0];
                 @SuppressWarnings("unchecked") V2 r2 = (V2)results[1];
                 @SuppressWarnings("unchecked") V3 r3 = (V3)results[2];
@@ -78,7 +78,7 @@ public abstract class Projector<T extends PersistentRecord,R>
     {
         return new Projector<T, Tuple4<V1,V2,V3,V4>>(
             ptype, new SQLExpression<?>[] { col1, col2, col3, col4 }) {
-            public Tuple4<V1,V2,V3,V4> createObject (Object[] results) {
+            @Override public Tuple4<V1,V2,V3,V4> createObject (Object[] results) {
                 @SuppressWarnings("unchecked") V1 r1 = (V1)results[0];
                 @SuppressWarnings("unchecked") V2 r2 = (V2)results[1];
                 @SuppressWarnings("unchecked") V3 r3 = (V3)results[2];
@@ -95,7 +95,7 @@ public abstract class Projector<T extends PersistentRecord,R>
     {
         return new Projector<T, Tuple5<V1,V2,V3,V4,V5>>(
             ptype, new SQLExpression<?>[] { col1, col2, col3, col4, col5 }) {
-            public Tuple5<V1,V2,V3,V4,V5> createObject (Object[] results) {
+            @Override public Tuple5<V1,V2,V3,V4,V5> createObject (Object[] results) {
                 @SuppressWarnings("unchecked") V1 r1 = (V1)results[0];
                 @SuppressWarnings("unchecked") V2 r2 = (V2)results[1];
                 @SuppressWarnings("unchecked") V3 r3 = (V3)results[2];
