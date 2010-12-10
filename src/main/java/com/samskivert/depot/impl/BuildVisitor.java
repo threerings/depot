@@ -596,7 +596,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
 
     public Void visit (Power<?,?> exp)
     {
-        return appendFunctionCall("power", exp.getPower(), exp.getValue());
+        return appendFunctionCall("power", exp.getValue(), exp.getPower());
     }
 
     public Void visit (Random<?> exp)
