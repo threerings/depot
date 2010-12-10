@@ -462,12 +462,17 @@ public class GenRecordTask extends Task
 
     protected static String getTypeName (Class<?> clazz)
     {
-        Class<?> nclass = clazz.isPrimitive() ? BOXES.get(clazz) : clazz;
-        Class<?> eclass = nclass.getEnclosingClass();
-        if (eclass != null) {
-            return getTypeName(eclass) + "." + nclass.getSimpleName();
+        if (clazz.isArray()) {
+            Class<?> cclass = clazz.getComponentType();
+            return (cclass.isPrimitive() ? cclass.getSimpleName() : getTypeName(cclass)) + "[]";
         } else {
-            return nclass.getSimpleName();
+            Class<?> nclass = clazz.isPrimitive() ? BOXES.get(clazz) : clazz;
+            Class<?> eclass = nclass.getEnclosingClass();
+            if (eclass != null) {
+                return getTypeName(eclass) + "." + nclass.getSimpleName();
+            } else {
+                return nclass.getSimpleName();
+            }
         }
     }
 
