@@ -27,10 +27,10 @@ import com.samskivert.depot.impl.expression.Function.OneArgFun;
 public abstract class AggregateFun<T> extends OneArgFun<T>
 {
     public static class Average<T extends Number> extends AggregateFun<T> {
-        public Average (SQLExpression<T> argument) {
+        public Average (SQLExpression<? extends T> argument) {
             this(argument, false);
         }
-        public Average (SQLExpression<T> argument, boolean distinct) {
+        public Average (SQLExpression<? extends T> argument, boolean distinct) {
             super(argument, distinct);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -72,10 +72,10 @@ public abstract class AggregateFun<T> extends OneArgFun<T>
     }
 
     public static class Max<T extends Number> extends AggregateFun<T> {
-        public Max (SQLExpression<T> argument) {
+        public Max (SQLExpression<? extends T> argument) {
             this(argument, false);
         }
-        public Max (SQLExpression<T> argument, boolean distinct) {
+        public Max (SQLExpression<? extends T> argument, boolean distinct) {
             super(argument, distinct);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -87,10 +87,10 @@ public abstract class AggregateFun<T> extends OneArgFun<T>
     }
 
     public static class Min<T extends Number> extends AggregateFun<T> {
-        public Min (SQLExpression<T> argument) {
+        public Min (SQLExpression<? extends T> argument) {
             this(argument, false);
         }
-        public Min (SQLExpression<T> argument, boolean distinct) {
+        public Min (SQLExpression<? extends T> argument, boolean distinct) {
             super(argument, distinct);
         }
         public Object accept (FragmentVisitor<?> visitor) {
@@ -102,10 +102,10 @@ public abstract class AggregateFun<T> extends OneArgFun<T>
     }
 
     public static class Sum<T extends Number> extends AggregateFun<T> {
-        public Sum (SQLExpression<T> argument) {
+        public Sum (SQLExpression<? extends T> argument) {
             this(argument, false);
         }
-        public Sum (SQLExpression<T> argument, boolean distinct) {
+        public Sum (SQLExpression<? extends T> argument, boolean distinct) {
             super(argument, distinct);
         }
         public Object accept (FragmentVisitor<?> visitor) {

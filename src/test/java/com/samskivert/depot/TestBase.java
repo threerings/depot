@@ -73,6 +73,7 @@ public abstract class TestBase
         rec.recordId = recordId;
         rec.name = "Elvis";
         rec.age = 99;
+        rec.awesomeness = 0.75f;
         rec.created = now;
         rec.homeTown = "Right here";
         rec.type = EnumKeyRecord.Type.A;
@@ -89,6 +90,7 @@ public abstract class TestBase
         assertEquals(expect.recordId, got.recordId);
         assertEquals(expect.name, got.name);
         assertEquals(expect.age, got.age);
+        assertEquals(expect.awesomeness, got.awesomeness, 0);
         assertEquals(expect.created, got.created);
         assertEquals(expect.homeTown, got.homeTown);
         assertEquals(expect.type, got.type);

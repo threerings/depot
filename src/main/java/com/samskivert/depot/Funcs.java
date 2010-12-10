@@ -32,21 +32,25 @@ import com.samskivert.depot.impl.expression.StringFun.*;
 public class Funcs
 {
     /**
-     * Creates an aggregate expression that averages all values from the supplied expression.
-     * This would usually be used in a FieldOverride and supplied with a ColumnExp.
+     * Creates an aggregate expression that averages all values from the supplied expression. Note
+     * that this method forces the result to type {@link Number} because databases may perform
+     * widening under the hood, and using Number allows the application to do the appropriate
+     * conversion at runtime.
      */
-    public static <T extends Number> FluentExp<T> average (SQLExpression<T> expr)
+    public static FluentExp<Number> average (SQLExpression<? extends Number> expr)
     {
-        return new Average<T>(expr);
+        return new Average<Number>(expr);
     }
 
     /**
-     * Creates an expression that averages all distinct values from the supplied expression.
-     * This would usually be used in a FieldOverride and supplied with a ColumnExp.
+     * Creates an expression that averages all distinct values from the supplied expression. Note
+     * that this method forces the result to type {@link Number} because databases may perform
+     * widening under the hood, and using Number allows the application to do the appropriate
+     * conversion at runtime.
      */
-    public static <T extends Number> FluentExp<T> averageDistinct (SQLExpression<T> expr)
+    public static FluentExp<Number> averageDistinct (SQLExpression<? extends Number> expr)
     {
-        return new Average<T>(expr, true);
+        return new Average<Number>(expr, true);
     }
 
     /**
@@ -99,12 +103,14 @@ public class Funcs
     }
 
     /**
-     * Creates an aggregate expression that sums all the values from the supplied expression.
-     * This would usually be used in a FieldOverride and supplied with a ColumnExp.
+     * Creates an aggregate expression that sums all the values from the supplied expression. Note
+     * that this method forces the result to type {@link Number} because databases may perform
+     * widening under the hood, and using Number allows the application to do the appropriate
+     * conversion at runtime.
      */
-    public static <T extends Number> FluentExp<T> sum (SQLExpression<T> expr)
+    public static FluentExp<Number> sum (SQLExpression<? extends Number> expr)
     {
-        return new Sum<T>(expr);
+        return new Sum<Number>(expr);
     }
 
     /**
@@ -161,7 +167,7 @@ public class Funcs
     /**
      * Creates an expression that evaluates to the length of the supplied array column.
      */
-    public static FluentExp<Integer> arrayLength (SQLExpression<?> exp)
+    public static FluentExp<Number> arrayLength (SQLExpression<?> exp)
     {
         return new Length(exp);
     }

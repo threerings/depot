@@ -32,7 +32,7 @@ public class StringFuncs
     /**
      * Creates an expression that evaluates to the string length of the supplied expression.
      */
-    public static FluentExp<Integer> length (SQLExpression<String> exp)
+    public static FluentExp<Number> length (SQLExpression<String> exp)
     {
         return new Length(exp);
     }
@@ -49,8 +49,8 @@ public class StringFuncs
      * Creates an expression that locates the given substring expression within the given
      * string expression and returns the index.
      */
-    public static FluentExp<Integer> position (SQLExpression<String> substring,
-                                               SQLExpression<String> string)
+    public static FluentExp<Number> position (SQLExpression<String> substring,
+                                              SQLExpression<String> string)
     {
         return new Position(substring, string);
     }
@@ -59,8 +59,18 @@ public class StringFuncs
      * Creates an expression that evaluates to a substring of the given string expression,
      * starting at the given index and of the given length.
      */
-    public static FluentExp<String> substring (
-        SQLExpression<String> string, SQLExpression<String> from, SQLExpression<Integer> count)
+    public static FluentExp<String> substring (SQLExpression<String> string, int from, int count)
+    {
+        return new Substring(string, Exps.value(from), Exps.value(count));
+    }
+
+    /**
+     * Creates an expression that evaluates to a substring of the given string expression,
+     * starting at the given index and of the given length.
+     */
+    public static FluentExp<String> substring (SQLExpression<String> string,
+                                               SQLExpression<Integer> from,
+                                               SQLExpression<Integer> count)
     {
         return new Substring(string, from, count);
     }

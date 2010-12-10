@@ -371,7 +371,7 @@ public class ExpressionEvaluator
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }
 
-    public Void visit (Power<?,?> exp)
+    public Void visit (Power<?> exp)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exp);
     }

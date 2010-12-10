@@ -41,6 +41,7 @@ public class TestRecord extends PersistentRecord
     public static final ColumnExp<Integer> RECORD_ID = colexp(_R, "recordId");
     public static final ColumnExp<String> NAME = colexp(_R, "name");
     public static final ColumnExp<Integer> AGE = colexp(_R, "age");
+    public static final ColumnExp<Float> AWESOMENESS = colexp(_R, "awesomeness");
     public static final ColumnExp<String> HOME_TOWN = colexp(_R, "homeTown");
     public static final ColumnExp<EnumKeyRecord.Type> TYPE = colexp(_R, "type");
     public static final ColumnExp<Date> CREATED = colexp(_R, "created");
@@ -56,6 +57,8 @@ public class TestRecord extends PersistentRecord
     public String name;
 
     public int age;
+
+    public float awesomeness;
 
     public String homeTown;
 

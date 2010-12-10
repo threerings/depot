@@ -28,7 +28,7 @@ import com.samskivert.depot.impl.expression.Function.TwoArgFun;
 
 public abstract class StringFun
 {
-    public static class Length extends OneArgFun<Integer> {
+    public static class Length extends OneArgFun<Number> {
         // can take both String or array types (anything that turns into byte[])
         public Length (SQLExpression<?> argument) {
             super(argument);
@@ -53,7 +53,7 @@ public abstract class StringFun
         }
     }
 
-    public static class Position extends TwoArgFun<Integer> {
+    public static class Position extends TwoArgFun<Number> {
         public Position (SQLExpression<String> substring, SQLExpression<String> string) {
             super(substring, string);
         }
@@ -72,8 +72,8 @@ public abstract class StringFun
     }
 
     public static class Substring extends ManyArgFun<String> {
-        public Substring (SQLExpression<String> string, SQLExpression<String> from,
-                          SQLExpression<Integer> count) {
+        public Substring (SQLExpression<String> string,
+                          SQLExpression<Integer> from, SQLExpression<Integer> count) {
             super(string, from, count);
         }
         public Object accept (FragmentVisitor<?> visitor) {

@@ -594,7 +594,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         return appendFunctionCall("PI");
     }
 
-    public Void visit (Power<?,?> exp)
+    public Void visit (Power<?> exp)
     {
         return appendFunctionCall("power", exp.getValue(), exp.getPower());
     }

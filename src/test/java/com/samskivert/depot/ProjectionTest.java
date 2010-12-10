@@ -108,13 +108,6 @@ public class ProjectionTest extends TestBase
 
     @Test public void testAggregates ()
     {
-        // test computed expressions on the RHS (the casts are just to cope with JUnit's overloads)
-        assertEquals(9, (int)_repo.from(TestRecord.class).load(Funcs.max(TestRecord.RECORD_ID)));
-        assertEquals(10, (int)_repo.from(TestRecord.class).load(Funcs.count(TestRecord.RECORD_ID)));
-        assertEquals(0, (int)_repo.from(TestRecord.class).load(Funcs.min(TestRecord.RECORD_ID)));
-        assertEquals(Tuple2.create(9, 0), _repo.from(TestRecord.class).load(
-                         Funcs.max(TestRecord.RECORD_ID), Funcs.min(TestRecord.RECORD_ID)));
-
         List<Tuple2<String, Integer>> ewant = Lists.newArrayList();
         ewant.add(Tuple2.create("Abraham", 1));
         ewant.add(Tuple2.create("Elvis", 2));
@@ -122,6 +115,84 @@ public class ProjectionTest extends TestBase
         assertEquals(ewant, _repo.from(EnumKeyRecord.class).
                      groupBy(EnumKeyRecord.NAME).ascending(EnumKeyRecord.NAME).
                      select(EnumKeyRecord.NAME, Funcs.count(EnumKeyRecord.TYPE)));
+    }
+
+    @Test public void testFuncs ()
+    {
+        Query<TestRecord> query = _repo.from(TestRecord.class);
+
+        assertEquals(4, query.load(Funcs.average(TestRecord.RECORD_ID)).intValue());
+        assertEquals(4, query.load(Funcs.averageDistinct(TestRecord.RECORD_ID)).intValue());
+
+        assertEquals(10, query.load(Funcs.count(TestRecord.RECORD_ID)).intValue());
+        assertEquals(false, query.load(Funcs.every(TestRecord.RECORD_ID.greaterThan(5))));
+        assertEquals(true, query.load(Funcs.every(TestRecord.RECORD_ID.lessThan(100))));
+
+        assertEquals(9, query.load(Funcs.max(TestRecord.RECORD_ID)).intValue());
+        assertEquals(0, query.load(Funcs.min(TestRecord.RECORD_ID)).intValue());
+        assertEquals(45, query.load(Funcs.sum(TestRecord.RECORD_ID)).intValue());
+
+        // TODO: not sure what a good test for Funcs.coalesce() is...
+
+        List<Integer> greatest = Lists.newArrayList(99, 99, 99, 99, 99, 99, 99, 99, 99, 99);
+        assertEquals(greatest, query.select(Funcs.greatest(TestRecord.RECORD_ID, TestRecord.AGE)));
+
+        List<Integer> least = Lists.newArrayList(0, 1, 2, 3, 4, 5, 6, 7, 8, 9);
+        assertEquals(least, query.select(Funcs.least(TestRecord.RECORD_ID, TestRecord.AGE)));
+
+        // length(blob) not supported by HSQLDB
+        // assertEquals(4*5, (int)query.select(Funcs.arrayLength(TestRecord.NUMBERS)));
+    }
+
+    @Test public void testStringFuncs ()
+    {
+        Query<TestRecord> first = _repo.from(TestRecord.class).where(TestRecord.RECORD_ID.eq(1));
+
+        assertEquals(5, first.load(StringFuncs.length(TestRecord.NAME)).intValue());
+        assertEquals("elvis", first.load(StringFuncs.lower(TestRecord.NAME)));
+        assertEquals(3, first.load(StringFuncs.position(
+                                       Exps.value("vis"), TestRecord.NAME)).intValue());
+        assertEquals("lvi", first.load(StringFuncs.substring(TestRecord.NAME, 2, 3)));
+        assertEquals("Elvis", first.load(StringFuncs.trim(TestRecord.NAME)));
+        assertEquals("ELVIS", first.load(StringFuncs.upper(TestRecord.NAME)));
+    }
+
+    @Test public void testMathFuncs ()
+    {
+        Query<TestRecord> first = _repo.from(TestRecord.class).where(TestRecord.RECORD_ID.eq(1));
+
+        assertEquals(99, first.load(MathFuncs.abs(TestRecord.AGE)).intValue());
+        assertEquals(1f, first.load(MathFuncs.ceil(TestRecord.AWESOMENESS)).floatValue(), 0);
+        assertEquals(0f, first.load(MathFuncs.floor(TestRecord.AWESOMENESS)).floatValue(), 0);
+
+        assertEquals(Math.exp(0.75), first.load(
+                         MathFuncs.exp(TestRecord.AWESOMENESS)).doubleValue(), 0.0001);
+
+        assertEquals(Math.log(0.75), first.load(
+                         MathFuncs.ln(TestRecord.AWESOMENESS)).doubleValue(), 0.0001);
+
+        assertEquals(Math.PI, first.load(MathFuncs.<Double>pi()), 0.0001);
+
+        assertTrue(first.load(MathFuncs.<Double>random()) < 1.0);
+
+        assertEquals(1, first.load(MathFuncs.round(TestRecord.AWESOMENESS)).intValue());
+        assertEquals(1, first.load(MathFuncs.sign(TestRecord.AWESOMENESS)).intValue());
+        assertEquals(Math.sqrt(0.75), first.load(
+                         MathFuncs.sqrt(TestRecord.AWESOMENESS)).doubleValue(), 0.0001);
+
+        assertEquals(Math.pow(0.75f, 10), first.load(
+                         MathFuncs.power(TestRecord.AWESOMENESS, Exps.value(10))).doubleValue(),
+                     0.0001);
+
+        // HSQLDB log10 seems not to work either, it returns some wildly incorrect value
+        // assertEquals(Math.log10(0.75), first.load(
+        //                  MathFuncs.log10(TestRecord.AWESOMENESS)).doubleValue(), 0.0001);
+
+        // HSQLDB truncate(a,b) simply doesn't work, if you supply trunacte(a, >=0) then you get
+        // back a regardless of the number of decimal places a contains or the number you requested
+        // to truncate to, and if you supply truncate(a, <0) you get back 0 regardless of a
+        // assertEquals(0, first.load(
+        //                  MathFuncs.trunc(TestRecord.AWESOMENESS)).doubleValue(), 0.0001);
     }
 
     // the HSQL in-memory database persists for the lifetime of the VM, which means we have to

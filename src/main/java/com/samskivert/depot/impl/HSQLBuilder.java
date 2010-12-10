@@ -30,6 +30,8 @@ import com.google.common.collect.Lists;
 
 import com.samskivert.jdbc.ColumnDefinition;
 import com.samskivert.util.ArrayUtil;
+
+import com.samskivert.depot.Exps;
 import com.samskivert.depot.Ops;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
@@ -37,10 +39,14 @@ import com.samskivert.depot.annotation.GeneratedValue;
 import com.samskivert.depot.expression.*;
 import com.samskivert.depot.operator.FullText;
 
+import com.samskivert.depot.impl.expression.AggregateFun;
 import com.samskivert.depot.impl.expression.DateFun.DatePart.Part;
 import com.samskivert.depot.impl.expression.DateFun.DatePart;
 import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
+import com.samskivert.depot.impl.expression.LiteralExp;
+import com.samskivert.depot.impl.expression.NumericalFun;
 import com.samskivert.depot.impl.expression.StringFun.Lower;
+import com.samskivert.depot.impl.expression.ValueExp;
 import com.samskivert.depot.impl.operator.BitAnd;
 import com.samskivert.depot.impl.operator.BitOr;
 import com.samskivert.depot.impl.operator.Like;
@@ -51,6 +57,41 @@ public class HSQLBuilder
 {
     public class HBuildVisitor extends BuildVisitor
     {
+        @Override public Void visit (AggregateFun.Average<?> exp)
+        {
+            return appendAggregateFunctionCall("avg", exp);
+        }
+
+        @Override public Void visit (NumericalFun.Round<?> exp)
+        {
+            // HSQLDB requires a number of digits after the decimal place argument, so we supply
+            // zero to emulate round on other databases
+            return appendFunctionCall("round", exp.getArg(), Exps.value(0));
+        }
+
+        @Override public Void visit (NumericalFun.Trunc<?> exp)
+        {
+            // TODO: this would work if HSQLDB truncate actually worked, but it doesn't; we'll
+            // leave it in here in case some future bug fixed version of HSQLDB does work
+            return appendFunctionCall("truncate", exp.getArg(), Exps.value(0));
+        }
+
+        @Override public Void visit (NumericalFun.Random<?> exp)
+        {
+            return appendFunctionCall("rand");
+        }
+
+        @Override public Void visit (NumericalFun.Power<?> exp)
+        {
+            // HSQLDB can't handle a value argument to power(a, b), so we turn the ValueExp into a
+            // LiteralExp
+            SQLExpression<?> power = exp.getPower();
+            if (power instanceof ValueExp<?>) {
+                power = new LiteralExp<String>(((ValueExp<?>)power).getValue().toString());
+            }
+            return appendFunctionCall("power", exp.getValue(), power);
+        }
+
         @Override public Void visit (FullText.Match match)
         {
             // HSQL doesn't have real full text search, so we fake it by creating a condition like

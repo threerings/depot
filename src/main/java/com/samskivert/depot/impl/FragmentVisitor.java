@@ -124,7 +124,7 @@ public interface FragmentVisitor<T>
     public T visit (Ln<?> exp);
     public T visit (Log10<?> exp);
     public T visit (Pi<?> exp);
-    public T visit (Power<?,?> exp);
+    public T visit (Power<?> exp);
     public T visit (Random<?> exp);
     public T visit (Round<?> exp);
     public T visit (Sign<?> exp);
