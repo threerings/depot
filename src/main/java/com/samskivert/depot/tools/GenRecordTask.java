@@ -20,25 +20,24 @@
 
 package com.samskivert.depot.tools;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
+import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Reference;
@@ -49,16 +48,15 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import com.samskivert.io.StreamUtil;
-import com.samskivert.util.ClassUtil;
-import com.samskivert.util.GenUtil;
-import com.samskivert.util.StringUtil;
-
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.GeneratedValue;
 import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.annotation.Transient;
 import com.samskivert.depot.impl.DepotUtil;
+import com.samskivert.io.StreamUtil;
+import com.samskivert.util.ClassUtil;
+import com.samskivert.util.GenUtil;
+import com.samskivert.util.StringUtil;
 
 /**
  * An ant task that updates the column constants for a persistent record.
@@ -140,7 +138,7 @@ public class GenRecordTask extends Task
     {
         // make sure we extend persistent record
         if (!_prclass.isAssignableFrom(rclass)) {
-            // System.err.println("Skipping " + rclass.getName() + "...");
+            log("Skipping non-record '" + rclass.getName() + "'", Project.MSG_VERBOSE);
             return;
         }
 
@@ -154,9 +152,9 @@ public class GenRecordTask extends Task
                 if (hasAnnotation(field, Id.class)) {
                     kflist.add(field);
                 } else if (hasAnnotation(field, GeneratedValue.class)) {
-                    System.err.println("Skipping " + rclass.getName() + ".  Field '" +
+                    log("Skipping " + rclass.getName() + ".  Field '" +
                         field.getName() + "' has @GeneratedValue, which may only used on primary " +
-                        "keys with @Id.");
+                        "keys with @Id.", Project.MSG_WARN);
                     return;
                 }
             }
@@ -188,7 +186,7 @@ public class GenRecordTask extends Task
             lines = llist.toArray(new String[llist.size()]);
             bin.close();
         } catch (IOException ioe) {
-            System.err.println("Error reading '" + source + "': " + ioe);
+            log("Error reading '" + source + "'", ioe, Project.MSG_WARN);
             return;
         }
 
@@ -354,8 +352,9 @@ public class GenRecordTask extends Task
 
             bout.close();
         } catch (IOException ioe) {
-            System.err.println("Error writing to '" + source + "': " + ioe);
+            log("Error writing to '" + source + "'", ioe, Project.MSG_WARN);
         }
+        log("Processed '" + source + "'", Project.MSG_VERBOSE);
     }
 
     /**
