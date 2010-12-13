@@ -202,6 +202,13 @@ public class ProjectionTest extends TestBase
                      selectInto(IdName.class, TestRecord.RECORD_ID, TestRecord.NAME).toString());
     }
 
+    @Test public void testSelectBuilder ()
+    {
+        assertEquals("[0 Elvis, 1 Elvis]",
+                     _repo.from(TestRecord.class).where(TestRecord.RECORD_ID.lessThan(2)).
+                     select(IDNAME_BUILDER, TestRecord.RECORD_ID, TestRecord.NAME).toString());
+    }
+
     protected static class IdName {
         public final int id;
         public final String name;
@@ -213,6 +220,13 @@ public class ProjectionTest extends TestBase
             return id + " " + name;
         }
     }
+
+    protected static Builder2<IdName, Integer, String> IDNAME_BUILDER =
+        new Builder2<IdName, Integer, String>() {
+            public IdName build (Integer a, String b) {
+                return new IdName(a, b);
+            }
+        };
 
     // the HSQL in-memory database persists for the lifetime of the VM, which means we have to
     // clean up after ourselves in every test; thus we go ahead and share a repository

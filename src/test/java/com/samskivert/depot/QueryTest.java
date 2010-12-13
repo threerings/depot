@@ -20,16 +20,20 @@
 
 package com.samskivert.depot;
 
-import java.util.Collections;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import com.google.common.collect.Sets;
-import com.samskivert.util.RandomUtil;
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import com.google.common.collect.Sets;
 
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.util.Builder2;
+import com.samskivert.util.RandomUtil;
 
 /**
  * Tests queries.
@@ -53,6 +57,7 @@ public class QueryTest extends TestBase
             TestRecord record = createTestRecord(ii);
             record.name = "Spam! " + ii;
             record.age = RandomUtil.getInt(100);
+            record.awesomeness = RandomUtil.getFloat(1.0F);
             record.homeTown = "Over there";
             _repo.insert(record);
         }
@@ -75,6 +80,19 @@ public class QueryTest extends TestBase
         // make sure our computed records work
         for (TestNameRecord tnr : _repo.findAll(TestNameRecord.class)) {
             assertEquals("Spam! " + tnr.recordId, tnr.name);
+        }
+
+        Builder2<Float, Integer, Float> ageAwesome = new Builder2<Float, Integer, Float>() {
+            public Float build (Integer a, Float b) {
+                return a * b;
+            }
+        };
+        List<Float> results =
+            _repo.from(TestRecord.class).select(ageAwesome, TestRecord.AGE, TestRecord.AWESOMENESS);
+        assertEquals(CREATE_RECORDS, results.size());
+        for (float result : results) {
+            assertTrue("Age goes from [0,99) and awesomeness goes from [0.0,1.0), so their " +
+            		"product should be [0.0,100), not " + result, result >= 0 && result < 100);
         }
 
         assertEquals(CREATE_RECORDS, _repo.findAll(TestRecord.class).size());
