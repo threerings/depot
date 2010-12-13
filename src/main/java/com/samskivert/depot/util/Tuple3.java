@@ -46,6 +46,16 @@ public class Tuple3<A,B,C> implements Serializable
         return new Tuple3<A, B, C>(a, b, c);
     }
 
+    /** Creates a builder for 3-tuples. */
+    public static <A, B, C> Builder3<Tuple3<A, B, C>, A, B, C> builder ()
+    {
+        return new Builder3<Tuple3<A, B, C>, A, B, C>() {
+            public Tuple3<A, B, C> build (A a, B b, C c) {
+                return create(a, b, c);
+            }
+        };
+    }
+
     /** Constructs an initialized tuple. */
     public Tuple3 (A a, B b, C c)
     {

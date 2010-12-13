@@ -428,8 +428,8 @@ public class Query<T extends PersistentRecord>
      */
     public <V1, V2> List<Tuple2<V1,V2>> select (SQLExpression<V1> exp1, SQLExpression<V2> exp2)
     {
-        return _ctx.invoke(new FindAllQuery.Projection<T,Tuple2<V1,V2>>(
-                               _ctx, Projector.create(_pclass, exp1, exp2), getClauses()));
+        Builder2<Tuple2<V1,V2>,V1,V2> builder = Tuple2.builder();
+        return select(builder, exp1, exp2);
     }
 
     /**
@@ -438,8 +438,8 @@ public class Query<T extends PersistentRecord>
     public <V1, V2, V3> List<Tuple3<V1,V2,V3>> select (
         SQLExpression<V1> exp1, SQLExpression<V2> exp2, SQLExpression<V3> exp3)
     {
-        return _ctx.invoke(new FindAllQuery.Projection<T,Tuple3<V1,V2,V3>>(
-                               _ctx, Projector.create(_pclass, exp1, exp2, exp3), getClauses()));
+        Builder3<Tuple3<V1,V2,V3>,V1,V2,V3> builder = Tuple3.builder();
+        return select(builder, exp1, exp2, exp3);
     }
 
     /**
@@ -449,9 +449,8 @@ public class Query<T extends PersistentRecord>
         SQLExpression<V1> exp1, SQLExpression<V2> exp2,
         SQLExpression<V3> exp3, SQLExpression<V4> exp4)
     {
-        return _ctx.invoke(new FindAllQuery.Projection<T,Tuple4<V1,V2,V3,V4>>(
-                               _ctx, Projector.create(_pclass, exp1, exp2, exp3, exp4),
-                               getClauses()));
+        Builder4<Tuple4<V1,V2,V3,V4>,V1,V2,V3,V4> builder = Tuple4.builder();
+        return select(builder, exp1, exp2, exp3, exp4);
     }
 
     /**
@@ -461,18 +460,67 @@ public class Query<T extends PersistentRecord>
         SQLExpression<V1> exp1, SQLExpression<V2> exp2, SQLExpression<V3> exp3,
         SQLExpression<V4> exp4, SQLExpression<V5> exp5)
     {
-        return _ctx.invoke(new FindAllQuery.Projection<T,Tuple5<V1,V2,V3,V4,V5>>(
-                               _ctx, Projector.create(_pclass, exp1, exp2, exp3, exp4, exp5),
-                               getClauses()));
+        Builder5<Tuple5<V1,V2,V3,V4,V5>,V1,V2,V3,V4,V5> builder = Tuple5.builder();
+        return select(builder, exp1, exp2, exp3, exp4, exp5);
     }
 
     /**
-     * Returns just the supplied expression from the rows matching the query.
+     * Selects the supplied expressions and writes their values into the supplied result class. The
+     * result expressions will be matched to the fields of the result class in declaration order.
+     * The fields of the result class must match the types of the selected expressions modulo the
+     * automatic conversions applied by reflective assignment (unboxing and widening).
      */
     public <V> List<V> selectInto (Class<V> resultClass, SQLExpression<?>... selexps)
     {
         Projector<T,V> proj = Projector.create(_pclass, resultClass, selexps);
         return _ctx.invoke(new FindAllQuery.Projection<T,V>(_ctx, proj, getClauses()));
+    }
+
+    /**
+     * Selects the supplied expressions and constructs a result record using their values using the
+     * supplied record builder.
+     */
+    public <R,V1,V2> List<R> select (
+        Builder2<R,V1,V2> builder, SQLExpression<V1> exp1, SQLExpression<V2> exp2)
+    {
+        Projector<T, R> proj = Projector.create(_pclass, builder, exp1, exp2);
+        return _ctx.invoke(new FindAllQuery.Projection<T,R>(_ctx, proj, getClauses()));
+    }
+
+    /**
+     * Selects the supplied expressions and constructs a result record using their values using the
+     * supplied record builder.
+     */
+    public <R, V1, V2, V3> List<R> select (
+        Builder3<R,V1,V2,V3> builder, SQLExpression<V1> exp1, SQLExpression<V2> exp2,
+        SQLExpression<V3> exp3)
+    {
+        Projector<T, R> proj = Projector.create(_pclass, builder, exp1, exp2, exp3);
+        return _ctx.invoke(new FindAllQuery.Projection<T,R>(_ctx, proj, getClauses()));
+    }
+
+    /**
+     * Selects the supplied expressions and constructs a result record using their values using the
+     * supplied record builder.
+     */
+    public <R, V1, V2, V3, V4> List<R> select (
+        Builder4<R,V1,V2,V3,V4> builder, SQLExpression<V1> exp1, SQLExpression<V2> exp2,
+        SQLExpression<V3> exp3, SQLExpression<V4> exp4)
+    {
+        Projector<T, R> proj = Projector.create(_pclass, builder, exp1, exp2, exp3, exp4);
+        return _ctx.invoke(new FindAllQuery.Projection<T,R>(_ctx, proj, getClauses()));
+    }
+
+    /**
+     * Selects the supplied expressions and constructs a result record using their values using the
+     * supplied record builder.
+     */
+    public <R, V1, V2, V3, V4, V5> List<R> select (
+        Builder5<R,V1,V2,V3,V4,V5> builder, SQLExpression<V1> exp1, SQLExpression<V2> exp2,
+        SQLExpression<V3> exp3, SQLExpression<V4> exp4, SQLExpression<V5> exp5)
+    {
+        Projector<T, R> proj = Projector.create(_pclass, builder, exp1, exp2, exp3, exp4, exp5);
+        return _ctx.invoke(new FindAllQuery.Projection<T,R>(_ctx, proj, getClauses()));
     }
 
     /**

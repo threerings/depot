@@ -52,6 +52,16 @@ public class Tuple5<A,B,C,D,E> implements Serializable
         return new Tuple5<A, B, C, D, E>(a, b, c, d, e);
     }
 
+    /** Creates a builder for 5-tuples. */
+    public static <A, B, C, D, E> Builder5<Tuple5<A, B, C, D, E>, A, B, C, D, E> builder ()
+    {
+        return new Builder5<Tuple5<A, B, C, D, E>, A, B, C, D, E>() {
+            public Tuple5<A, B, C, D, E> build (A a, B b, C c, D d, E e) {
+                return create(a, b, c, d, e);
+            }
+        };
+    }
+
     /** Constructs an initialized tuple. */
     public Tuple5 (A a, B b, C c, D d, E e)
     {

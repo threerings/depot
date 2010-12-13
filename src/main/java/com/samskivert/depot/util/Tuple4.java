@@ -49,6 +49,16 @@ public class Tuple4<A,B,C,D> implements Serializable
         return new Tuple4<A, B, C, D>(a, b, c, d);
     }
 
+    /** Creates a builder for 4-tuples. */
+    public static <A, B, C, D> Builder4<Tuple4<A, B, C, D>, A, B, C, D> builder ()
+    {
+        return new Builder4<Tuple4<A, B, C, D>, A, B, C, D>() {
+            public Tuple4<A, B, C, D> build (A a, B b, C c, D d) {
+                return create(a, b, c, d);
+            }
+        };
+    }
+
     /** Constructs an initialized tuple. */
     public Tuple4 (A a, B b, C c, D d)
     {

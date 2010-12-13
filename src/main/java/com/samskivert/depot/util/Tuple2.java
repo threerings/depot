@@ -43,6 +43,16 @@ public class Tuple2<A,B> implements Serializable
         return new Tuple2<A, B>(a, b);
     }
 
+    /** Creates a builder for 2-tuples. */
+    public static <A, B> Builder2<Tuple2<A, B>, A, B> builder ()
+    {
+        return new Builder2<Tuple2<A, B>, A, B>() {
+            public Tuple2<A, B> build (A a, B b) {
+                return create(a, b);
+            }
+        };
+    }
+
     /** Constructs an initialized two tuple. */
     public Tuple2 (A a, B b)
     {

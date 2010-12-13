@@ -45,63 +45,63 @@ public abstract class Projector<T extends PersistentRecord,R>
         };
     }
 
-    public static <T extends PersistentRecord, V1, V2> Projector<T,Tuple2<V1,V2>> create (
-        Class<T> ptype, SQLExpression<V1> col1, SQLExpression<V2> col2)
+    public static <T extends PersistentRecord, R, V1, V2> Projector<T,R> create (
+        Class<T> ptype, final Builder2<R, V1, V2> builder,
+        SQLExpression<V1> col1, SQLExpression<V2> col2)
     {
-        return new Projector<T, Tuple2<V1,V2>>(ptype, new SQLExpression<?>[] { col1, col2 }) {
-            @Override public Tuple2<V1,V2> createObject (Object[] results) {
+        return new Projector<T, R>(ptype, new SQLExpression<?>[] { col1, col2 }) {
+            @Override public R createObject (Object[] results) {
                 @SuppressWarnings("unchecked") V1 r1 = (V1)results[0];
                 @SuppressWarnings("unchecked") V2 r2 = (V2)results[1];
-                return new Tuple2<V1,V2>(r1, r2);
+                return builder.build(r1, r2);
             }
         };
     }
 
-    public static <T extends PersistentRecord, V1, V2, V3> Projector<T,Tuple3<V1,V2,V3>> create (
-        Class<T> ptype, SQLExpression<V1> col1, SQLExpression<V2> col2, SQLExpression<V3> col3)
+    public static <T extends PersistentRecord, R, V1, V2, V3> Projector<T,R> create (
+        Class<T> ptype, final Builder3<R, V1, V2, V3> builder,
+        SQLExpression<V1> col1, SQLExpression<V2> col2, SQLExpression<V3> col3)
     {
-        return new Projector<T, Tuple3<V1,V2,V3>>(
+        return new Projector<T, R>(
             ptype, new SQLExpression<?>[] { col1, col2, col3 }) {
-            @Override public Tuple3<V1,V2,V3> createObject (Object[] results) {
+            @Override public R createObject (Object[] results) {
                 @SuppressWarnings("unchecked") V1 r1 = (V1)results[0];
                 @SuppressWarnings("unchecked") V2 r2 = (V2)results[1];
                 @SuppressWarnings("unchecked") V3 r3 = (V3)results[2];
-                return new Tuple3<V1,V2,V3>(r1, r2, r3);
+                return builder.build(r1, r2, r3);
             }
         };
     }
 
-    public static <T extends PersistentRecord, V1, V2, V3, V4>
-        Projector<T,Tuple4<V1,V2,V3,V4>> create (
-            Class<T> ptype, SQLExpression<V1> col1, SQLExpression<V2> col2, SQLExpression<V3> col3,
-            SQLExpression<V4> col4)
+    public static <T extends PersistentRecord, R, V1, V2, V3, V4> Projector<T,R> create (
+        Class<T> ptype, final Builder4<R, V1, V2, V3, V4> builder,
+        SQLExpression<V1> col1, SQLExpression<V2> col2, SQLExpression<V3> col3,
+        SQLExpression<V4> col4)
     {
-        return new Projector<T, Tuple4<V1,V2,V3,V4>>(
-            ptype, new SQLExpression<?>[] { col1, col2, col3, col4 }) {
-            @Override public Tuple4<V1,V2,V3,V4> createObject (Object[] results) {
+        return new Projector<T, R>(ptype, new SQLExpression<?>[] { col1, col2, col3, col4 }) {
+            @Override public R createObject (Object[] results) {
                 @SuppressWarnings("unchecked") V1 r1 = (V1)results[0];
                 @SuppressWarnings("unchecked") V2 r2 = (V2)results[1];
                 @SuppressWarnings("unchecked") V3 r3 = (V3)results[2];
                 @SuppressWarnings("unchecked") V4 r4 = (V4)results[3];
-                return new Tuple4<V1,V2,V3,V4>(r1, r2, r3, r4);
+                return builder.build(r1, r2, r3, r4);
             }
         };
     }
 
-    public static <T extends PersistentRecord, V1, V2, V3, V4, V5>
-        Projector<T,Tuple5<V1,V2,V3,V4,V5>> create (
-            Class<T> ptype, SQLExpression<V1> col1, SQLExpression<V2> col2, SQLExpression<V3> col3,
-            SQLExpression<V4> col4, SQLExpression<V5> col5)
+    public static <T extends PersistentRecord, R, V1, V2, V3, V4, V5> Projector<T,R> create (
+        Class<T> ptype, final Builder5<R, V1, V2, V3, V4, V5> builder,
+        SQLExpression<V1> col1, SQLExpression<V2> col2, SQLExpression<V3> col3,
+        SQLExpression<V4> col4, SQLExpression<V5> col5)
     {
-        return new Projector<T, Tuple5<V1,V2,V3,V4,V5>>(
-            ptype, new SQLExpression<?>[] { col1, col2, col3, col4, col5 }) {
-            @Override public Tuple5<V1,V2,V3,V4,V5> createObject (Object[] results) {
+        return new Projector<T, R>(ptype, new SQLExpression<?>[] { col1, col2, col3, col4, col5 }) {
+            @Override public R createObject (Object[] results) {
                 @SuppressWarnings("unchecked") V1 r1 = (V1)results[0];
                 @SuppressWarnings("unchecked") V2 r2 = (V2)results[1];
                 @SuppressWarnings("unchecked") V3 r3 = (V3)results[2];
                 @SuppressWarnings("unchecked") V4 r4 = (V4)results[3];
                 @SuppressWarnings("unchecked") V5 r5 = (V5)results[4];
-                return new Tuple5<V1,V2,V3,V4,V5>(r1, r2, r3, r4, r5);
+                return builder.build(r1, r2, r3, r4, r5);
             }
         };
     }
