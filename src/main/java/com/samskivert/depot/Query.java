@@ -481,7 +481,7 @@ public class Query<T extends PersistentRecord>
      * supplied record builder.
      */
     public <R,V1,V2> List<R> select (
-        Builder2<R,V1,V2> builder, SQLExpression<V1> exp1, SQLExpression<V2> exp2)
+        Builder2<R,? super V1,? super V2> builder, SQLExpression<V1> exp1, SQLExpression<V2> exp2)
     {
         Projector<T, R> proj = Projector.create(_pclass, builder, exp1, exp2);
         return _ctx.invoke(new FindAllQuery.Projection<T,R>(_ctx, proj, getClauses()));
@@ -492,8 +492,8 @@ public class Query<T extends PersistentRecord>
      * supplied record builder.
      */
     public <R, V1, V2, V3> List<R> select (
-        Builder3<R,V1,V2,V3> builder, SQLExpression<V1> exp1, SQLExpression<V2> exp2,
-        SQLExpression<V3> exp3)
+        Builder3<R,? super V1,? super V2,? super V3> builder,
+        SQLExpression<V1> exp1, SQLExpression<V2> exp2, SQLExpression<V3> exp3)
     {
         Projector<T, R> proj = Projector.create(_pclass, builder, exp1, exp2, exp3);
         return _ctx.invoke(new FindAllQuery.Projection<T,R>(_ctx, proj, getClauses()));
@@ -504,7 +504,8 @@ public class Query<T extends PersistentRecord>
      * supplied record builder.
      */
     public <R, V1, V2, V3, V4> List<R> select (
-        Builder4<R,V1,V2,V3,V4> builder, SQLExpression<V1> exp1, SQLExpression<V2> exp2,
+        Builder4<R,? super V1,? super V2,? super V3,? super V4> builder,
+        SQLExpression<V1> exp1, SQLExpression<V2> exp2,
         SQLExpression<V3> exp3, SQLExpression<V4> exp4)
     {
         Projector<T, R> proj = Projector.create(_pclass, builder, exp1, exp2, exp3, exp4);
@@ -516,7 +517,8 @@ public class Query<T extends PersistentRecord>
      * supplied record builder.
      */
     public <R, V1, V2, V3, V4, V5> List<R> select (
-        Builder5<R,V1,V2,V3,V4,V5> builder, SQLExpression<V1> exp1, SQLExpression<V2> exp2,
+        Builder5<R,? super V1,? super V2,? super V3,? super V4,? super V5> builder,
+        SQLExpression<V1> exp1, SQLExpression<V2> exp2,
         SQLExpression<V3> exp3, SQLExpression<V4> exp4, SQLExpression<V5> exp5)
     {
         Projector<T, R> proj = Projector.create(_pclass, builder, exp1, exp2, exp3, exp4, exp5);

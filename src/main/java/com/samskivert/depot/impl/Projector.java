@@ -46,7 +46,7 @@ public abstract class Projector<T extends PersistentRecord,R>
     }
 
     public static <T extends PersistentRecord, R, V1, V2> Projector<T,R> create (
-        Class<T> ptype, final Builder2<R, V1, V2> builder,
+        Class<T> ptype, final Builder2<R, ? super V1, ? super V2> builder,
         SQLExpression<V1> col1, SQLExpression<V2> col2)
     {
         return new Projector<T, R>(ptype, new SQLExpression<?>[] { col1, col2 }) {
@@ -59,7 +59,7 @@ public abstract class Projector<T extends PersistentRecord,R>
     }
 
     public static <T extends PersistentRecord, R, V1, V2, V3> Projector<T,R> create (
-        Class<T> ptype, final Builder3<R, V1, V2, V3> builder,
+        Class<T> ptype, final Builder3<R, ? super V1, ? super V2, ? super V3> builder,
         SQLExpression<V1> col1, SQLExpression<V2> col2, SQLExpression<V3> col3)
     {
         return new Projector<T, R>(
@@ -74,7 +74,7 @@ public abstract class Projector<T extends PersistentRecord,R>
     }
 
     public static <T extends PersistentRecord, R, V1, V2, V3, V4> Projector<T,R> create (
-        Class<T> ptype, final Builder4<R, V1, V2, V3, V4> builder,
+        Class<T> ptype, final Builder4<R, ? super V1, ? super V2, ? super V3, ? super V4> builder,
         SQLExpression<V1> col1, SQLExpression<V2> col2, SQLExpression<V3> col3,
         SQLExpression<V4> col4)
     {
@@ -90,7 +90,8 @@ public abstract class Projector<T extends PersistentRecord,R>
     }
 
     public static <T extends PersistentRecord, R, V1, V2, V3, V4, V5> Projector<T,R> create (
-        Class<T> ptype, final Builder5<R, V1, V2, V3, V4, V5> builder,
+        Class<T> ptype,
+        final Builder5<R, ? super V1, ? super V2, ? super V3, ? super V4, ? super V5> builder,
         SQLExpression<V1> col1, SQLExpression<V2> col2, SQLExpression<V3> col3,
         SQLExpression<V4> col4, SQLExpression<V5> col5)
     {
