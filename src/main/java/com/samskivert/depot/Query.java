@@ -466,9 +466,9 @@ public class Query<T extends PersistentRecord>
 
     /**
      * Selects the supplied expressions and writes their values into the supplied result class. The
-     * result expressions will be matched to the fields of the result class in declaration order.
-     * The fields of the result class must match the types of the selected expressions modulo the
-     * automatic conversions applied by reflective assignment (unboxing and widening).
+     * result class must have exactly one constructor which takes arguments that are convertible
+     * from the types of the selected expressions. Reflection will be used to find and invoke the
+     * constructor; unboxing and widening will be performed by the reflective call.
      */
     public <V> List<V> selectInto (Class<V> resultClass, SQLExpression<?>... selexps)
     {
