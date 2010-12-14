@@ -71,7 +71,7 @@ public abstract class SQLBuilder
      * that were defined in the generated SQL.
      *
      * This method throws {@link SQLException} and is thus meant to be called from within
-     * {@link Query#invoke} and {@link Modifier#invoke}.
+     * {@link Fetcher#invoke} and {@link Modifier#invoke}.
      */
     public PreparedStatement prepare (Connection conn)
         throws SQLException

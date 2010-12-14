@@ -29,7 +29,7 @@ import com.samskivert.depot.Stats;
 import com.samskivert.jdbc.DatabaseLiaison;
 
 /**
- * An abstraction that encompasses both {@link Query} and {@link Modifier} operations.
+ * An abstraction that encompasses both {@link Fetcher} and {@link Modifier} operations.
  */
 public interface Operation<T>
 {

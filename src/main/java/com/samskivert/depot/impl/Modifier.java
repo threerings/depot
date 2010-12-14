@@ -36,7 +36,8 @@ import com.samskivert.jdbc.DatabaseLiaison;
 /**
  * Encapsulates a modification of persistent objects.
  */
-public abstract class Modifier implements Operation<Integer>
+public abstract class Modifier
+    implements Operation<Integer>
 {
     /**
      * A simple modifier that executes a single SQL statement. No cache flushing is done as a
