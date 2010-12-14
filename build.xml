@@ -92,10 +92,12 @@
   <target name="javadoc" depends="-prepare" description="Generates javadoc documentation.">
     <mkdir dir="${javadoc.dir}"/>
     <tstamp><format property="year" pattern="yyyy" /></tstamp>
-    <javadoc windowtitle="${lib.name} API" doctitle="${lib.name} API"
+    <javadoc windowtitle="${lib.name} API" doctitle="${lib.name} API" access="public"
              overview="src/main/javadoc/overview.html" destdir="${javadoc.dir}"
              additionalparam="-breakiterator">
-      <packageset dir="${src.dir}"/>
+      <packageset dir="${src.dir}">
+        <exclude name="**/impl/**"/>
+      </packageset>
       <bottom>Copyright &#169; 2006-${year} Michael Bayne, et al. All Rights Reserved.</bottom>
       <classpath refid="classpath"/>
       <link href="http://download.oracle.com/javase/1.5.0/docs/api/"/>
