@@ -201,6 +201,10 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             // check whether this field is indexed
             Index index = field.getAnnotation(Index.class);
             if (index != null) {
+                Column column = field.getAnnotation(Column.class);
+                checkArgument(column == null || !column.unique(),
+                    "Unique columns are implicitly indexed and should not be @Index'd.");
+
                 String name = index.name().equals("") ? field.getName() + "Index" : index.name();
                 Tuple<SQLExpression<?>, Order> entry =
                     new Tuple<SQLExpression<?>, Order>(fieldColumn, Order.ASC);
@@ -213,12 +217,6 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
                                   "All @Index for a particular name must be unique or non-unique");
                     namedFieldIndices.put(name, entry);
                 }
-            }
-
-            // if this column is marked as unique, that also means we create an index
-            Column column = field.getAnnotation(Column.class);
-            if (column != null && column.unique()) {
-                _indexes.add(buildIndex(field.getName() + "Index", true, fieldColumn));
             }
         }
 
