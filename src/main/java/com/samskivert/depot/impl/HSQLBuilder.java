@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.Lists;
@@ -223,9 +224,16 @@ public class HSQLBuilder
     }
 
     @Override
-    public boolean isPrivateColumn (String column)
+    public boolean isPrivateColumn (String column, Map<String, FullTextIndex> fullTextIndexes)
     {
         // The HSQLDB builder does not yet have any private columns.
+        return false;
+    }
+
+    @Override
+    public boolean isPrivateIndex (String index, Map<String, FullTextIndex> fullTextIndexes)
+    {
+        // The HSQLDB builder does not yet have any private indexes;
         return false;
     }
 

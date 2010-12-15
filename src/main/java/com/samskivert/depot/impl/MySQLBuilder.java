@@ -22,6 +22,8 @@ package com.samskivert.depot.impl;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+
+import java.util.Map;
 import java.util.Set;
 
 import com.samskivert.depot.PersistentRecord;
@@ -208,9 +210,16 @@ public class MySQLBuilder
     }
 
     @Override
-    public boolean isPrivateColumn (String column)
+    public boolean isPrivateColumn (String column, Map<String, FullTextIndex> fullTextIndexes)
     {
         // The MySQL builder does not yet have any private columns.
+        return false;
+    }
+
+    @Override
+    public boolean isPrivateIndex (String index, Map<String, FullTextIndex> fullTextIndexes)
+    {
+        // The MySQL builder does not yet have any private indexes.
         return false;
     }
 

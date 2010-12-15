@@ -21,6 +21,8 @@
 package com.samskivert.depot.impl;
 
 import java.lang.reflect.Field;
+
+import java.util.Map;
 import java.util.Set;
 
 import java.sql.Connection;
@@ -203,7 +205,16 @@ public abstract class SQLBuilder
      * e.g. PostgreSQL's full text search data is stored in a table column that should otherwise
      * not be visible to Depot; this method helps mask it.
      */
-    public abstract boolean isPrivateColumn (String column);
+    public abstract boolean isPrivateColumn (
+        String column, Map<String, FullTextIndex> fullTextIndexes);
+
+    /**
+     * Return true if the supplied index is an internal consideration of this {@link SQLBuilder},
+     * e.g. PostgreSQL automatically creates indexes that end in _key for unique columns, and its
+     * primary keys have indices ending in _pkey.
+     */
+    public abstract boolean isPrivateIndex (
+        String index, Map<String, FullTextIndex> fullTextIndexes);
 
     /**
      * Figure out what full text search indexes already exist on this table and add the names of

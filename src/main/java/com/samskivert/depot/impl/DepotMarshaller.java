@@ -133,7 +133,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
                 try {
                     _schemaVersion = (Integer)field.get(null);
                 } catch (Exception e) {
-                    log.warning("Failed to read schema version [class=" + _pClass + "].", e);
+                    log.warning("Failed to read schema version", "class", pClass, e);
                 }
             }
 
@@ -545,9 +545,10 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
         // now check whether we need to migrate our database schema
         while (true) {
             if (currentVersion >= _schemaVersion) {
-                // TODO: we used to check for staleness here, but that's slow; currently we do it
-                // only after migration, we should reinstate a check maybe the first time a table
-                // is read or something so that developers are more likely to get the warning
+                // no migrations to do, but maybe we should do an explicit staleness check
+                if (Boolean.getBoolean("com.samskivert.depot.verifyschema")) {
+                    checkForStaleness(TableMetaData.load(ctx, getTableName()), ctx, builder);
+                }
                 return;
             }
 
@@ -1003,11 +1004,22 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             meta.tableColumns.remove(fmarsh.getColumnName());
         }
         for (String column : meta.tableColumns) {
-            if (builder.isPrivateColumn(column)) {
+            if (builder.isPrivateColumn(column, _fullTextIndexes)) {
                 continue;
             }
-            log.warning(getTableName() + " contains stale column '" + column + "'.");
+            log.warning("Stale column", "table", getTableName(), "column", column);
         }
+
+        for (CreateIndexClause clause : _indexes) {
+            meta.indexColumns.remove(clause.getName());
+        }
+        for (String index : meta.indexColumns.keySet()) {
+            if (builder.isPrivateIndex(index, _fullTextIndexes)) {
+                continue;
+            }
+            log.warning("Stale index", "table", getTableName(), "index", index);
+        }
+
     }
 
     protected void checkHasPrimaryKey ()

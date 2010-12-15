@@ -23,6 +23,8 @@ package com.samskivert.depot.impl;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import java.util.Map;
 import java.util.Set;
 
 import com.samskivert.jdbc.DatabaseLiaison;
@@ -243,10 +245,32 @@ public class PostgreSQLBuilder
     }
 
     @Override
-    public boolean isPrivateColumn (String column)
+    public boolean isPrivateColumn (String column, Map<String, FullTextIndex> fullTextIndexes)
     {
         // filter out any column that we created as part of FTS support
-        return column.startsWith("ftsCol_");
+        for (FullTextIndex fti : fullTextIndexes.values()) {
+            if (("ftsCol_" + fti.name()).equals(column)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isPrivateIndex (String index, Map<String, FullTextIndex> fullTextIndexes)
+    {
+        // filter out any index that looks like PostgreSQL created it
+        if (index.endsWith("_key") || index.endsWith("_pkey")) {
+            return true;
+        }
+
+        // filter out any index that we created as part of FTS support
+        for (FullTextIndex fti : fullTextIndexes.values()) {
+            if (index.endsWith("_ftsIx_" + fti.name())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
