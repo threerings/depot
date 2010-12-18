@@ -51,8 +51,10 @@ import static com.google.common.base.Preconditions.checkState;
  * constructed and reused without interfering with one another:
  * <pre>{@code
  * Query<FooRecord> query = from(FooRecord.class).where(FooRecord.NAME.eq("foo")).limit(10);
- * List<Tuple2<Integer,String>> top = query.ascending().select(FooRecord.ID, FooRecord.NAME);
- * List<Tuple2<Integer,String>> bot = query.descending().select(FooRecord.ID, FooRecord.NAME);
+ * List<Tuple2<Integer,String>> top =
+ *     query.ascending(FooRecord.NAME).select(FooRecord.ID, FooRecord.NAME);
+ * List<Tuple2<Integer,String>> bot =
+ *     query.descending(FooRecord.NAME).select(FooRecord.ID, FooRecord.NAME);
  * }</pre>
  */
 public class Query<T extends PersistentRecord>
