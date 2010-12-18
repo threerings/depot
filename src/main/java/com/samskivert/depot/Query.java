@@ -38,52 +38,61 @@ import static com.google.common.base.Preconditions.checkState;
 
 /**
  * The root of a fluent mechanism for constructing queries. Obtain an instance via {@link
- * DepotRepository#from}.
+ * DepotRepository#from}. For example:
+ * <pre>{@code
+ * List<Tuple2<Integer,String>> results = _repo.from(FooRecord.class).
+ *     where(FooRecord.NAME.like("%foo%")).
+ *     descending(FooRecord.NAME).
+ *     limit(25).
+ *     select(FooRecord.ID, FooRecord.NAME);
+ * }</pre>
+ *
+ * <p> Note that each builder method returns a new builder instance so that partial queries can be
+ * constructed and reused without interfering with one another:
+ * <pre>{@code
+ * Query<FooRecord> query = from(FooRecord.class).where(FooRecord.NAME.eq("foo")).limit(10);
+ * List<Tuple2<Integer,String>> top = query.ascending().select(FooRecord.ID, FooRecord.NAME);
+ * List<Tuple2<Integer,String>> bot = query.descending().select(FooRecord.ID, FooRecord.NAME);
+ * }</pre>
  */
 public class Query<T extends PersistentRecord>
     implements Cloneable
 {
-    public Query (PersistenceContext ctx, DepotRepository repo, Class<T> pclass)
-    {
-        _ctx = ctx;
-        _repo = repo;
-        _pclass = pclass;
-    }
-
     /** Disables the use of the cache for this query. */
     public Query<T> noCache () {
         return cache(DepotRepository.CacheStrategy.BEST);
     }
 
-    /** Configures the use of {@link CacheStrategy#BEST} for this query. */
+    /** Configures the use of {@link DepotRepository.CacheStrategy#BEST} for this query. */
     public Query<T> cacheBest () {
         return cache(DepotRepository.CacheStrategy.BEST);
     }
 
-    /** Configures the use of {@link CacheStrategy#RECORDS} for this query. */
+    /** Configures the use of {@link DepotRepository.CacheStrategy#RECORDS} for this query. */
     public Query<T> cacheRecords () {
         return cache(DepotRepository.CacheStrategy.RECORDS);
     }
 
-    /** Configures the use of {@link CacheStrategy#SHORT_KEYS} for this query. */
+    /** Configures the use of {@link DepotRepository.CacheStrategy#SHORT_KEYS} for this query. */
     public Query<T> cacheShortKeys () {
         return cache(DepotRepository.CacheStrategy.SHORT_KEYS);
     }
 
-    /** Configures the use of {@link CacheStrategy#LONG_KEYS} for this query. */
+    /** Configures the use of {@link DepotRepository.CacheStrategy#LONG_KEYS} for this query. */
     public Query<T> cacheLongKeys () {
         return cache(DepotRepository.CacheStrategy.LONG_KEYS);
     }
 
-    /** Configures the use of {@link CacheStrategy#CONTENTS} for this query. */
+    /** Configures the use of {@link DepotRepository.CacheStrategy#CONTENTS} for this query. */
     public Query<T> cacheContents () {
         return cache(DepotRepository.CacheStrategy.CONTENTS);
     }
 
     /** Configures the specified caching policy this query. */
     public Query<T> cache (DepotRepository.CacheStrategy cache) {
-        _cache = cache;
-        return this;
+        Query<T> query = clone();
+        query._cache = cache;
+        return query;
     }
 
     /**
@@ -141,8 +150,9 @@ public class Query<T extends PersistentRecord>
     public Query<T> where (WhereClause where)
     {
         checkState(_where == null, "Where clause is already configured.");
-        _where = where;
-        return this;
+        Query<T> query = clone();
+        query._where = where;
+        return query;
     }
 
     /**
@@ -177,11 +187,9 @@ public class Query<T extends PersistentRecord>
      */
     public Query<T> join (Join join)
     {
-        if (_joins == null) {
-            _joins = Lists.newArrayList();
-        }
-        _joins.add(join);
-        return this;
+        Query<T> query = clone();
+        query._joins = cons(join, query._joins);
+        return query;
     }
 
     /**
@@ -190,8 +198,9 @@ public class Query<T extends PersistentRecord>
     public Query<T> groupBy (SQLExpression<?>... exprs)
     {
         checkState(_groupBy == null, "GroupBy clause is already configured.");
-        _groupBy = new GroupBy(exprs);
-        return this;
+        Query<T> query = clone();
+        query._groupBy = new GroupBy(exprs);
+        return query;
     }
 
     /**
@@ -224,8 +233,9 @@ public class Query<T extends PersistentRecord>
     public Query<T> orderBy (OrderBy orderBy)
     {
         checkState(_orderBy == null, "OrderBy clause is already configured.");
-        _orderBy = orderBy;
-        return this;
+        Query<T> query = clone();
+        query._orderBy = orderBy;
+        return query;
     }
 
     /**
@@ -234,8 +244,9 @@ public class Query<T extends PersistentRecord>
     public Query<T> limit (int count)
     {
         checkState(_limit == null, "Limit clause is already configured.");
-        _limit = new Limit(0, count);
-        return this;
+        Query<T> query = clone();
+        query._limit = new Limit(0, count);
+        return query;
     }
 
     /**
@@ -244,8 +255,9 @@ public class Query<T extends PersistentRecord>
     public Query<T> limit (int offset, int count)
     {
         checkState(_limit == null, "Limit clause is already configured.");
-        _limit = new Limit(offset, count);
-        return this;
+        Query<T> query = clone();
+        query._limit = new Limit(offset, count);
+        return query;
     }
 
     /**
@@ -271,8 +283,9 @@ public class Query<T extends PersistentRecord>
     public Query<T> override (FromOverride fromOverride)
     {
         checkState(_fromOverride == null, "FromOverride clause is already configured.");
-        _fromOverride = fromOverride;
-        return this;
+        Query<T> query = clone();
+        query._fromOverride = fromOverride;
+        return query;
     }
 
     /**
@@ -304,11 +317,9 @@ public class Query<T extends PersistentRecord>
      */
     public Query<T> fieldDef (FieldDefinition fieldDef)
     {
-        if (_fieldDefs == null) {
-            _fieldDefs = Lists.newArrayList();
-        }
-        _fieldDefs.add(fieldDef);
-        return this;
+        Query<T> query = clone();
+        query._fieldDefs = cons(fieldDef, query._fieldDefs);
+        return query;
     }
 
     /**
@@ -317,8 +328,9 @@ public class Query<T extends PersistentRecord>
     public Query<T> forUpdate ()
     {
         checkState(_forUpdate == null, "ForUpdate clause is already configured.");
-        _forUpdate = new ForUpdate();
-        return this;
+        Query<T> query = clone();
+        query._forUpdate = new ForUpdate();
+        return query;
     }
 
     /**
@@ -554,21 +566,17 @@ public class Query<T extends PersistentRecord>
         return _repo.deleteAll(_pclass, _where, invalidator);
     }
 
-    /**
-     * Returns a clone of this query builder, including all partially configured state. Useful for
-     * constructing partially configured queries and then executing variants.
-     */
-    public Query<T> clone ()
+    protected Query (PersistenceContext ctx, DepotRepository repo, Class<T> pclass)
+    {
+        _ctx = ctx;
+        _repo = repo;
+        _pclass = pclass;
+    }
+
+    protected Query<T> clone ()
     {
         try {
             @SuppressWarnings("unchecked") Query<T> qb = (Query<T>)super.clone();
-            // deep copy the list fields, if we have any
-            if (qb._joins != null) {
-                qb._joins = Lists.newArrayList(qb._joins);
-            }
-            if (qb._fieldDefs != null) {
-                qb._fieldDefs = Lists.newArrayList(qb._fieldDefs);
-            }
             return qb;
         } catch (Throwable t) {
             throw new AssertionError(t);
@@ -579,16 +587,12 @@ public class Query<T extends PersistentRecord>
     {
         List<QueryClause> clauses = Lists.newArrayList();
         addIfNotNull(clauses, _where);
-        if (_joins != null) {
-            clauses.addAll(_joins);
-        }
+        addAll(clauses, _joins);
         addIfNotNull(clauses, _orderBy);
         addIfNotNull(clauses, _groupBy);
         addIfNotNull(clauses, _limit);
         addIfNotNull(clauses, _fromOverride);
-        if (_fieldDefs != null) {
-            clauses.addAll(_fieldDefs);
-        }
+        addAll(clauses, _fieldDefs);
         addIfNotNull(clauses, _forUpdate);
         return clauses;
     }
@@ -623,6 +627,29 @@ public class Query<T extends PersistentRecord>
         return selections.isEmpty() ? null : selections.get(0);
     }
 
+    protected static final class Cons<T>
+    {
+        public T head;
+        public Cons<T> tail;
+        public Cons (T head, Cons<T> tail) {
+            this.head = head;
+            this.tail = tail;
+        }
+    }
+
+    protected static <T> Cons<T> cons (T head, Cons<T> tail)
+    {
+        return new Cons<T>(head, tail);
+    }
+
+    protected static void addAll (List<QueryClause> toList, Cons<? extends QueryClause> cons)
+    {
+        if (cons != null) {
+            toList.add(cons.head);
+            addAll(toList, cons.tail);
+        }
+    }
+
     protected final PersistenceContext _ctx;
     protected final DepotRepository _repo;
     protected final Class<T> _pclass;
@@ -635,7 +662,6 @@ public class Query<T extends PersistentRecord>
     protected Limit _limit;
     protected FromOverride _fromOverride;
     protected ForUpdate _forUpdate;
-
-    protected List<Join> _joins;
-    protected List<FieldDefinition> _fieldDefs;
+    protected Cons<Join> _joins;
+    protected Cons<FieldDefinition> _fieldDefs;
 }
