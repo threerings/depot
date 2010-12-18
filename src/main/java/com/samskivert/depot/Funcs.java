@@ -54,6 +54,15 @@ public class Funcs
     }
 
     /**
+     * Creates an aggregate expression that counts the number of rows that match the other clauses
+     * in this query.
+     */
+    public static FluentExp<Integer> countStar ()
+    {
+        return new Count(Exps.literal("*"));
+    }
+
+    /**
      * Creates an aggregate expression that counts the number of rows from the supplied
      * expression. This would usually be used in a FieldOverride and supplied with a ColumnExp.
      */
