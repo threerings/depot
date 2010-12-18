@@ -371,7 +371,7 @@ public class Query<T extends PersistentRecord>
      */
     public int selectCount ()
     {
-        checkState(_groupBy == null, "You surely mean to select(Funcs.count(Exps.literal(\"*\"))).");
+        checkState(_groupBy == null, "Do you mean to select(Funcs.count(Exps.literal(\"*\")))?");
         _fromOverride = new FromOverride(_pclass);
         return _repo.load(CountRecord.class, _cache, getClauseArray()).count;
     }
