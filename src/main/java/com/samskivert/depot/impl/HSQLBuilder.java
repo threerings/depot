@@ -233,8 +233,8 @@ public class HSQLBuilder
     @Override
     public boolean isPrivateIndex (String index, Map<String, FullTextIndex> fullTextIndexes)
     {
-        // The HSQLDB builder does not yet have any private indexes;
-        return false;
+        // HSQLDB system indices start with SYS_IDX
+        return index.startsWith("SYS_IDX");
     }
 
     @Override
