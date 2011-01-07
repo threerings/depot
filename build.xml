@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <project name="depot" default="compile" basedir="." xmlns:artifact="urn:maven-artifact-ant">
   <!-- project metadata -->
-  <property name="lib.name"     value="depot"/>
   <property name="src.dir"      value="src/main/java"/>
   <property name="test.dir"     value="src/test/java"/>
   <property name="deploy.dir"   value="dist"/>
@@ -92,8 +91,8 @@
   <target name="javadoc" depends="-prepare" description="Generates javadoc documentation.">
     <mkdir dir="${javadoc.dir}"/>
     <tstamp><format property="year" pattern="yyyy" /></tstamp>
-    <javadoc windowtitle="${lib.name} API" doctitle="${lib.name} API" access="public"
-             overview="src/main/javadoc/overview.html" destdir="${javadoc.dir}"
+    <javadoc windowtitle="${ant.project.name} API" doctitle="${ant.project.name} API"
+             access="public" overview="src/main/javadoc/overview.html" destdir="${javadoc.dir}"
              additionalparam="-breakiterator">
       <packageset dir="${src.dir}">
         <exclude name="**/impl/**"/>
@@ -126,13 +125,13 @@
   </target>
 
   <target name="dist" depends="compile" description="Compiles code and builds jar file.">
-    <jar destfile="${deploy.dir}/${lib.name}.jar" basedir="${classes.dir}"/>
+    <jar destfile="${deploy.dir}/${ant.project.name}.jar" basedir="${classes.dir}"/>
   </target>
 
   <property name="maven.deploy.repo" value="file://${user.home}/.m2/repository"/>
   <target name="maven-deploy" depends="dist,tests" 
           description="Deploys our build artifacts to a Maven repository.">
-    <artifact:deploy file="${deploy.dir}/${lib.name}.jar" uniqueVersion="false">
+    <artifact:deploy file="${deploy.dir}/${ant.project.name}.jar" uniqueVersion="false">
       <remoteRepository url="${maven.deploy.repo}"/>
       <pom refid="pom"/>
     </artifact:deploy>
