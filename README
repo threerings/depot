@@ -24,9 +24,9 @@ automatically fetched by Ivy (which will itself be downloaded if needed).
 
 To compile the code and generate a jar file, invoke:
 
-  % ant -f build-ivy.xml dist
+  % ant dist
 
-Invoke 'ant -f build-ivy.xml -p' to see information on other build targets.
+Invoke 'ant -p' to see information on other build targets.
 
 Depot also provides .classpath and .project files for Eclipse users which
 require that you set an EXT_LIBS_DIR variable indicating the location of the
