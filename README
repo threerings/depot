@@ -15,12 +15,9 @@ See the Depot website for documentation and other info:
 Building
 --------
 
-The library is built using ant. It can be found here:
+The library is built using Ant. It can be found here:
 
   http://jakarta.apache.org/ant/
-
-If you use build-ivy.xml to build, the necessary dependencies will be
-automatically fetched by Ivy (which will itself be downloaded if needed).
 
 To compile the code and generate a jar file, invoke:
 
