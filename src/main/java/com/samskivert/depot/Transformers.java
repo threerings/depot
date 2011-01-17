@@ -26,14 +26,17 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Interner;
 import com.google.common.collect.Interners;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
@@ -42,6 +45,8 @@ import com.samskivert.util.ByteEnumUtil;
 
 import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.Transform;
+
+import static com.samskivert.depot.Log.log;
 
 /**
  * Contains various generally useful {@link Transformer} implementations. To use a transformer, you
@@ -97,11 +102,11 @@ public class Transformers
             return Arrays.asList(value);
         }
 
-        @Override protected Builder<String[]> createBuilder (String encoded)
+        @Override protected Builder<String, String[]> createBuilder (String encoded)
         {
             // jog through and count the elements so that we can populate the array directly
             final String[] result = new String[countElements(encoded)];
-            return new Builder<String[]>() {
+            return new Builder<String, String[]>() {
                 public void add (String s) {
                     result[idx++] = s;
                 }
@@ -126,53 +131,138 @@ public class Transformers
             return value;
         }
 
-        @Override protected Builder<Iterable<String>> createBuilder (String encoded)
+        @Override protected Builder<String, Iterable<String>> createBuilder (String encoded)
         {
-            Collection<String> adder;
-            Collection<String> retval = null;
-            Type clazz = (_ftype instanceof ParameterizedType) ?
-                ((ParameterizedType)_ftype).getRawType() : _ftype;
-            // TODO: fill out the collection types
-            if (clazz == HashSet.class || clazz == Set.class) {
-                Set<String> set = Sets.newHashSet();
-                adder = set;
-                if (_immutable && (clazz == Set.class)) {
-                    retval = Collections.unmodifiableSet(set);
-                }
-
-            } else if (clazz == LinkedList.class) {
-                adder = Lists.newLinkedList();
-
-            } else {
-                List<String> list = Lists.newArrayList();
-                adder = list;
-                if (_immutable &&
-                        ((clazz == List.class) ||
-                         (clazz == Iterable.class) ||
-                         (clazz == Collection.class))) {
-                    retval = Collections.unmodifiableList(list);
-                }
-            }
-            return createBuilder(adder, (retval == null) ? adder : retval);
-        }
-
-        protected Builder<Iterable<String>> createBuilder (
-            final Collection<String> adder, final Collection<String> retval)
-        {
-            Preconditions.checkNotNull(adder);
-            return new Builder<Iterable<String>>() {
-                public void add (String s) {
-                    adder.add(s);
-                }
-                public Iterable<String> build () {
-                    return (_immutable && _intern && (adder != retval))
-                        ? INTERNER.intern(retval)
-                        : retval;
-                }
-            };
+            return createCollectionBuilder(_ftype, String.class, _immutable, _intern);
         }
     }
 
+    /**
+     * A Transformer for anything that is an Iterable<Enum>.
+     * Often used for Enum sets.
+     */
+    public static class EnumIterable<E extends Enum<E>> extends StringBase<Iterable<E>>
+    {
+        @Override @SuppressWarnings("unchecked")
+        public void init (Type fieldType, Transform annotation)
+        {
+            super.init(fieldType, annotation);
+            _eclass = (Class<E>) ((ParameterizedType) fieldType).getActualTypeArguments()[0];
+            _internStrings = false; // don't waste time interning strings
+        }
+
+        @Override protected Iterable<String> asIterable (Iterable<E> value)
+        {
+            return Iterables.transform(value, new Function<E, String>() {
+                public String apply (E val) {
+                    return (val == null) ? null : val.name();
+                }
+            });
+        }
+
+        @Override protected Builder<String, Iterable<E>> createBuilder (String encoded)
+        {
+            // create a Builder for our field type
+            final Builder<E, Iterable<E>> ebuilder = createCollectionBuilder(
+                _ftype, _eclass, _immutable, _intern);
+            // wrap that builder in one that accepts String elements
+            return new Builder<String, Iterable<E>>() {
+                public void add (String s) {
+                    if (s == null) { 
+                        ebuilder.add(null);
+                        return;
+                    }
+                    E value;
+                    try {
+                        value = Enum.valueOf(_eclass, s);
+                    } catch (IllegalArgumentException iae) {
+                        log.warning("Invalid enum cannot be unpersisted", "e", s, iae);
+                        return;
+                    }
+                    ebuilder.add(value);
+                }
+                public Iterable<E> build ()  {
+                    return ebuilder.build();
+                }
+            };
+        }
+
+        protected Class<E> _eclass;
+    }
+
+    /**
+     * An interface used by some of these transformers to build their result.
+     */
+    protected interface Builder<E, B>
+    {
+        void add (E element);
+
+        B build ();
+    }
+
+    /**
+     * Create a builder that populates a collection.
+     */
+    protected static <E> Builder<E, Iterable<E>> createCollectionBuilder (
+        Type fieldType, Class<E> elementType, boolean immutable, boolean intern)
+    {
+        Collection<E> adder;
+        Collection<E> retval = null;
+        Type clazz = (fieldType instanceof ParameterizedType) ?
+            ((ParameterizedType)fieldType).getRawType() : fieldType;
+        // TODO: fill out the collection types
+        if (clazz == HashSet.class || clazz == Set.class || clazz == EnumSet.class) {
+            Set<E> set;
+            if (clazz == HashSet.class || !elementType.isEnum()) {
+                set = Sets.newHashSet();
+            } else {
+                @SuppressWarnings("unchecked")
+                Class<Enum> eclazz = (Class<Enum>)elementType;
+                @SuppressWarnings("unchecked")
+                Set<E> eSet = (Set<E>)EnumSet.noneOf(eclazz);
+                set = eSet;
+            }
+            adder = set;
+            if (immutable && (clazz == Set.class)) {
+                retval = Collections.unmodifiableSet(set);
+            }
+
+        } else if (clazz == LinkedList.class) {
+            adder = Lists.newLinkedList();
+
+        } else {
+            List<E> list = Lists.newArrayList();
+            adder = list;
+            if (immutable &&
+                    ((clazz == List.class) ||
+                     (clazz == Iterable.class) ||
+                     (clazz == Collection.class))) {
+                retval = Collections.unmodifiableList(list);
+            }
+        }
+
+        // ok, now we're ready
+        final Collection<E> fadder = adder;
+        final Collection<E> fretval = (retval == null) ? adder : retval;
+        final boolean fintern = (retval != null) && immutable && intern;
+        return new Builder<E, Iterable<E>>() {
+            public void add (E element) {
+                fadder.add(element);
+            }
+            public Iterable<E> build () {
+                if (fintern) {
+                    @SuppressWarnings("unchecked")
+                    Iterable<E> built = (Iterable<E>) INTERNER.intern(fretval);
+                    return built;
+                }
+                return fretval;
+            }
+        };
+    }
+
+    /**
+     * Building-block used to create other Transformers.
+     */
     protected abstract static class StringBase<F> extends Transformer<F, String>
     {
         @Override
@@ -180,7 +270,7 @@ public class Transformers
         {
             _ftype = fieldType;
             _immutable = annotation.immutable();
-            _intern = annotation.intern();
+            _internStrings = _intern = annotation.intern();
         }
 
         @Override
@@ -210,14 +300,14 @@ public class Transformers
                 return null;
             }
 
-            Builder<F> builder = createBuilder(encoded);
+            Builder<String, F> builder = createBuilder(encoded);
             StringBuilder buf = new StringBuilder(encoded.length());
             for (int ii = 0, nn = encoded.length(); ii < nn; ii++) {
                 char c = encoded.charAt(ii);
                 switch (c) {
                 case '\n':
                     String s = buf.toString();
-                    builder.add(_intern ? s.intern() : s);
+                    builder.add(_internStrings ? s.intern() : s);
                     buf.setLength(0);
                     break;
 
@@ -250,7 +340,7 @@ public class Transformers
 
         protected abstract Iterable<String> asIterable (F value);
 
-        protected abstract Builder<F> createBuilder (String encoded);
+        protected abstract Builder<String, F> createBuilder (String encoded);
 
         /**
          * Utility tount the number of elements in the encoded non-null string.
@@ -262,13 +352,6 @@ public class Transformers
             return count;
         }
 
-        protected interface Builder<F>
-        {
-            void add (String s);
-
-            F build ();
-        }
-
         protected Type _ftype;
 
         /** Immutable hint. */
@@ -277,7 +360,10 @@ public class Transformers
         /** Interning hint.*/
         protected boolean _intern;
 
-        /** The interner we use for <em>immutable</em> values. */
-        protected static final Interner<Iterable<String>> INTERNER = Interners.newWeakInterner();
+        /** Do we intern the actual strings? */
+        protected boolean _internStrings;
     }
+
+    /** The interner we use for <em>immutable</em> values. */
+    protected static final Interner<Object> INTERNER = Interners.newWeakInterner();
 }
