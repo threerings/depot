@@ -164,20 +164,21 @@ public class Transformers
         {
             // create a Builder for our field type
             final Builder<E, Iterable<E>> ebuilder = createCollectionBuilder(
-                _ftype, _eclass, _immutable, _intern);
+                _ftype, hasNullElement(encoded) ? null : _eclass, _immutable, _intern);
             // wrap that builder in one that accepts String elements
             return new Builder<String, Iterable<E>>() {
                 public void add (String s) {
-                    if (s == null) { 
-                        ebuilder.add(null);
-                        return;
-                    }
                     E value;
-                    try {
-                        value = Enum.valueOf(_eclass, s);
-                    } catch (IllegalArgumentException iae) {
-                        log.warning("Invalid enum cannot be unpersisted", "e", s, iae);
-                        return;
+                    if (s == null) {
+                        value = null;
+
+                    } else {
+                        try {
+                            value = Enum.valueOf(_eclass, s);
+                        } catch (IllegalArgumentException iae) {
+                            log.warning("Invalid enum cannot be unpersisted", "e", s, iae);
+                            return;
+                        }
                     }
                     ebuilder.add(value);
                 }
@@ -187,6 +188,7 @@ public class Transformers
             };
         }
 
+        /** The enum class. */
         protected Class<E> _eclass;
     }
 
@@ -202,6 +204,8 @@ public class Transformers
 
     /**
      * Create a builder that populates a collection.
+     *
+     * @param elementType if non-null and an enum, will be used to possibly create an EnumSet.
      */
     protected static <E> Builder<E, Iterable<E>> createCollectionBuilder (
         Type fieldType, Class<E> elementType, boolean immutable, boolean intern)
@@ -213,7 +217,9 @@ public class Transformers
         // TODO: fill out the collection types
         if (clazz == HashSet.class || clazz == Set.class || clazz == EnumSet.class) {
             Set<E> set;
-            if (clazz == HashSet.class || !elementType.isEnum()) {
+            if (clazz == HashSet.class || (elementType == null) || !elementType.isEnum()) {
+                Preconditions.checkArgument(clazz != EnumSet.class,
+                    "Cannot proceed: EnumSet field is to be populated with a null element.");
                 set = Sets.newHashSet();
             } else {
                 @SuppressWarnings("unchecked")
@@ -343,13 +349,27 @@ public class Transformers
         protected abstract Builder<String, F> createBuilder (String encoded);
 
         /**
-         * Utility tount the number of elements in the encoded non-null string.
+         * Utility to count the number of elements in the encoded non-null string.
          */
         protected static int countElements (String encoded)
         {
             int count = 0;
             for (int pos = 0; 0 != (pos = 1 + encoded.indexOf('\n', pos)); count++) {}
             return count;
+        }
+
+        /**
+         * Utility to see if there are any nulls in the encoded string.
+         */
+        protected static boolean hasNullElement (String encoded)
+        {
+            for (int pos = 0; -1 != (pos = encoded.indexOf("\\\n")); pos += 2) {
+                // make sure there isn't another slash before this token
+                if ((pos == 0) || ('\\' != encoded.charAt(pos - 1))) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         protected Type _ftype;
