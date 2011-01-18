@@ -363,7 +363,7 @@ public class Transformers
          */
         protected static boolean hasNullElement (String encoded)
         {
-            for (int pos = 0; -1 != (pos = encoded.indexOf("\\\n")); pos += 2) {
+            for (int pos = 0; -1 != (pos = encoded.indexOf("\\\n", pos)); pos += 2) {
                 // make sure there isn't another slash before this token
                 if ((pos == 0) || ('\\' != encoded.charAt(pos - 1))) {
                     return true;
