@@ -21,6 +21,8 @@
 package com.samskivert.depot.util;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.google.common.base.Objects;
 
@@ -51,6 +53,35 @@ public class Tuple2<A,B> implements Serializable
                 return create(a, b);
             }
         };
+    }
+
+    /**
+     * Converts the supplied list of tuples {@code [(a, b), ...]} into a map {@code [a -> b]}.
+     * Useful in situations like so:
+     * <pre>{@code
+     * Map<Integer, String> results =
+     *   Tuple2.toMap(from(table).select(FooRecord.INT_KEY, FooRecord.STRING_VALUE))
+     * }</pre>
+     */
+    public static <A, B> Map<A, B> toMap (Iterable<Tuple2<A, B>> tuples)
+    {
+        return toMap(tuples, new HashMap<A, B>());
+    }
+
+    /**
+     * Converts the supplied list of tuples {@code [(a, b), ...]} into a map {@code [a -> b]},
+     * inserting the tuples into the supplied target map. Useful in situations like so:
+     * <pre>{@code
+     * Map<Integer, String> results =
+     *   Tuple2.toMap(from(table).select(FooRecord.INT_KEY, FooRecord.STRING_VALUE))
+     * }</pre>
+     */
+    public static <A, B> Map<A, B> toMap (Iterable<Tuple2<A, B>> tuples, Map<A, B> target)
+    {
+        for (Tuple2<A, B> tuple : tuples) {
+            target.put(tuple.a, tuple.b);
+        }
+        return target;
     }
 
     /** Constructs an initialized two tuple. */
