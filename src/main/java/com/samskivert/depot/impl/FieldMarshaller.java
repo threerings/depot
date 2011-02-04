@@ -113,7 +113,7 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static <F,T> FieldMarshaller<F> createTransformingMarshaller (
-        final Transformer<F,T> xformer, final Field field, Transform annotation)
+        final Transformer<F,T> xformer, Field field, Transform annotation)
     {
         Class<?> pojoType = getTransformerType(xformer, "from");
         checkArgument(pojoType.isAssignableFrom(field.getType()),
