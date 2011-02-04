@@ -1,5 +1,5 @@
 //
-// $Id$
+// $Id: TransformTest.java 760 2010-12-09 00:08:58Z samskivert $
 //
 // Depot library - a Java relational persistence library
 // Copyright (C) 2006-2010 Michael Bayne and Pär Winzell
@@ -230,7 +230,16 @@ public class TransformTest extends TestBase
         testCreateReadDelete(new String[] { "", "\n", "", "\n\n" });
     }
 
-    protected void testCreateReadDelete (String[] strings)
+    @Test public void testProject ()
+    {
+        TransformRecord in = createAndInsert(new String[] { "one", "two", "three" });
+        Set<ExtraOrdinal> bobs = _repo.from(TransformRecord.class)
+            .where(TransformRecord.RECORD_ID.eq(in.recordId))
+            .load(TransformRecord.BOBS);
+        assertEquals(in.bobs, bobs);
+    }
+
+    protected TransformRecord createAndInsert (String[] strings)
     {
         TransformRecord in = new TransformRecord();
         in.recordId = 1;
@@ -241,6 +250,17 @@ public class TransformTest extends TestBase
         in.ordinal = Ordinal.THREE;
         in.bobs = EnumSet.of(ExtraOrdinal.TWO);
         _repo.insert(in);
+        return in;
+    }
+
+    protected void delete (TransformRecord in)
+    {
+        _repo.delete(TransformRecord.getKey(in.recordId));
+    }
+
+    protected void testCreateReadDelete (String[] strings)
+    {
+        TransformRecord in = createAndInsert(strings);
 
         TransformRecord out = _repo.loadNoCache(in.recordId);
         assertNotNull(out != null); // we got a result
@@ -256,7 +276,7 @@ public class TransformTest extends TestBase
         assertEquals(in.bobs, out.bobs);
 
         // finally clean up after ourselves
-        _repo.delete(TransformRecord.getKey(in.recordId));
+        delete(in);
         assertNull(_repo.loadNoCache(in.recordId));
     }
 

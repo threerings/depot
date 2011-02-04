@@ -112,8 +112,8 @@ public abstract class FieldMarshaller<T>
         }
     }
 
-    protected static <F,T> FieldMarshaller<T> createTransformingMarshaller (
-        final Transformer<F,T> xformer, Field field, Transform annotation)
+    protected static <F,T> FieldMarshaller<F> createTransformingMarshaller (
+        final Transformer<F,T> xformer, final Field field, Transform annotation)
     {
         Class<?> pojoType = getTransformerType(xformer, "from");
         checkArgument(pojoType.isAssignableFrom(field.getType()),
@@ -125,28 +125,28 @@ public abstract class FieldMarshaller<T>
             (FieldMarshaller<T>)createMarshaller(getTransformerType(xformer, "to"));
         delegate.create(field);
 
-        FieldMarshaller<T> xmarsh = new FieldMarshaller<T>() {
+        FieldMarshaller<F> xmarsh = new FieldMarshaller<F>() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return delegate.getColumnType(typer, length);
             }
-            @Override public T getFromObject (Object po)
+            @Override public F getFromObject (Object po)
                 throws IllegalArgumentException, IllegalAccessException {
                 @SuppressWarnings("unchecked") F value = (F)_field.get(po);
-                return xformer.toPersistent(value);
+                return value;
             }
-            @Override public T getFromSet (ResultSet rs) throws SQLException {
-                return delegate.getFromSet(rs);
+            @Override public F getFromSet (ResultSet rs) throws SQLException {
+                return xformer.fromPersistent(delegate.getFromSet(rs));
             }
-            @Override public T getFromSet (ResultSet rs, int index) throws SQLException {
-                return delegate.getFromSet(rs, index);
+            @Override public F getFromSet (ResultSet rs, int index) throws SQLException {
+                return xformer.fromPersistent(delegate.getFromSet(rs, index));
             }
-            @Override public void writeToObject (Object po, T value)
+            @Override public void writeToObject (Object po, F value)
                 throws IllegalArgumentException, IllegalAccessException {
-                _field.set(po, xformer.fromPersistent(value));
+                _field.set(po, value);
             }
-            @Override public void writeToStatement (PreparedStatement ps, int column, T value)
+            @Override public void writeToStatement (PreparedStatement ps, int column, F value)
                 throws SQLException {
-                delegate.writeToStatement(ps, column, value);
+                delegate.writeToStatement(ps, column, xformer.toPersistent(value));
             }
         };
         xmarsh.create(field);
