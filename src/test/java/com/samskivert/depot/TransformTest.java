@@ -237,6 +237,7 @@ public class TransformTest extends TestBase
             .where(TransformRecord.RECORD_ID.eq(in.recordId))
             .load(TransformRecord.BOBS);
         assertEquals(in.bobs, bobs);
+        delete(in);
     }
 
     protected TransformRecord createAndInsert (String[] strings)
