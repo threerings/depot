@@ -467,7 +467,8 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
             _builder.append(" = ");
             if (pojo != null) {
                 bindField(pClass, fields[ii], pojo);
-
+            } else if (values[ii] instanceof ValueExp<?>) {
+                bindFieldValue(pClass, fields[ii], (ValueExp<?>)values[ii]);
             } else {
                 values[ii].accept(this);
             }
@@ -747,18 +748,61 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         return null;
     }
 
-    protected Void bindValue (Object object)
+    protected Void bindValue (final Object value)
     {
-        _bindables.add(newBindable(object));
+        _bindables.add(new Bindable() {
+            public void doBind (Connection conn, PreparedStatement stmt, int argIx)
+                throws Exception {
+                // TODO: how can we abstract this fieldless marshalling
+                if (value instanceof ByteEnum) {
+                    // byte enums require special conversion
+                    stmt.setByte(argIx, ((ByteEnum)value).toByte());
+                } else if (value instanceof Enum<?>) {
+                    // enums are converted to strings
+                    stmt.setString(argIx, ((Enum<?>)value).name());
+                } else if (value instanceof int[]) {
+                    // int arrays require conversion to byte arrays
+                    int[] data = (int[])value;
+                    ByteBuffer bbuf = ByteBuffer.allocate(data.length * 4);
+                    bbuf.asIntBuffer().put(data);
+                    stmt.setObject(argIx, bbuf.array());
+                } else {
+                    stmt.setObject(argIx, value);
+                }
+            }
+        });
         _builder.append("?");
         return null;
     }
 
     protected Void bindField (
-        Class<? extends PersistentRecord> pClass, ColumnExp<?> field, Object pojo)
+        Class<? extends PersistentRecord> pClass, ColumnExp<?> field, final Object pojo)
     {
-        final DepotMarshaller<?> marshaller = _types.getMarshaller(pClass);
-        _bindables.add(newBindable(marshaller, field, pojo));
+        final FieldMarshaller<?> fmarsh =
+            _types.getMarshaller(pClass).getFieldMarshaller(field.name);
+        _bindables.add(new Bindable() {
+            public void doBind (Connection conn, PreparedStatement stmt, int argIx)
+                throws Exception {
+                fmarsh.getAndWriteToStatement(stmt, argIx, pojo);
+            }
+        });
+        _builder.append("?");
+        return null;
+    }
+
+    protected <T> Void bindFieldValue (
+        Class<? extends PersistentRecord> pClass, ColumnExp<?> field, final ValueExp<T> value)
+    {
+        // we know that the Ts match in FieldMarshaller<T> and ValueExp<T>, but it's hard
+        // to convince the type system of that
+        final @SuppressWarnings("unchecked") FieldMarshaller<T> fmarsh =
+            (FieldMarshaller<T>)_types.getMarshaller(pClass).getFieldMarshaller(field.name);
+        _bindables.add(new Bindable() {
+            public void doBind (Connection conn, PreparedStatement stmt, int argIx)
+                throws Exception {
+                fmarsh.writeToStatement(stmt, argIx, value.getValue());
+            }
+        });
         _builder.append("?");
         return null;
     }
@@ -934,42 +978,6 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     protected static interface Bindable
     {
         void doBind (Connection conn, PreparedStatement stmt, int argIx) throws Exception;
-    }
-
-    protected static Bindable newBindable (
-        final DepotMarshaller<?> marshaller, final ColumnExp<?> field, final Object pojo)
-    {
-        return new Bindable() {
-            public void doBind (Connection conn, PreparedStatement stmt, int argIx)
-                throws Exception {
-                marshaller.getFieldMarshaller(field.name).getAndWriteToStatement(stmt, argIx, pojo);
-            }
-        };
-    }
-
-    protected static Bindable newBindable (final Object value)
-    {
-        return new Bindable() {
-            public void doBind (Connection conn, PreparedStatement stmt, int argIx)
-                throws Exception {
-                // TODO: how can we abstract this fieldless marshalling
-                if (value instanceof ByteEnum) {
-                    // byte enums require special conversion
-                    stmt.setByte(argIx, ((ByteEnum)value).toByte());
-                } else if (value instanceof Enum<?>) {
-                    // enums are converted to strings
-                    stmt.setString(argIx, ((Enum<?>)value).name());
-                } else if (value instanceof int[]) {
-                    // int arrays require conversion to byte arrays
-                    int[] data = (int[])value;
-                    ByteBuffer bbuf = ByteBuffer.allocate(data.length * 4);
-                    bbuf.asIntBuffer().put(data);
-                    stmt.setObject(argIx, bbuf.array());
-                } else {
-                    stmt.setObject(argIx, value);
-                }
-            }
-        };
     }
 
     protected DepotTypes _types;

@@ -240,6 +240,19 @@ public class TransformTest extends TestBase
         delete(in);
     }
 
+    @Test public void testUpdatePartial ()
+    {
+        TransformRecord in = createAndInsert(new String[] { "one", "two", "three" });
+
+        EnumSet<ExtraOrdinal> nbobs = EnumSet.of(ExtraOrdinal.ONE, ExtraOrdinal.THREE);
+        _repo.updatePartial(TransformRecord.getKey(in.recordId), TransformRecord.BOBS, nbobs);
+
+        TransformRecord in2 = _repo.load(TransformRecord.getKey(in.recordId));
+        assertEquals(nbobs, in2.bobs);
+
+        delete(in);
+    }
+
     protected TransformRecord createAndInsert (String[] strings)
     {
         TransformRecord in = new TransformRecord();
