@@ -151,9 +151,6 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
 
             // check to see if this is our primary key
             if (field.getAnnotation(Id.class) != null) {
-                if (_pkColumns == null) {
-                    _pkColumns = Lists.newArrayList();
-                }
                 _pkColumns.add(fm);
             }
 
