@@ -342,7 +342,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
      */
     public boolean hasPrimaryKey ()
     {
-        return (_pkColumns != null);
+        return !_pkColumns.isEmpty();
     }
 
     /**
@@ -695,7 +695,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
                 // create the table
                 String[] primaryKeyColumns = null;
-                if (_pkColumns != null) {
+                if (hasPrimaryKey()) {
                     primaryKeyColumns = new String[_pkColumns.size()];
                     for (int ii = 0; ii < primaryKeyColumns.length; ii ++) {
                         primaryKeyColumns[ii] = _pkColumns.get(ii).getColumnName();
@@ -1030,7 +1030,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
 
     protected void checkHasNonCompositePrimaryKey ()
     {
-        if (_pkColumns == null || _pkColumns.size() != 1) {
+        if (_pkColumns.size() != 1) {
             throw new UnsupportedOperationException(
                 getClass().getName() + " does not define a single column primary key");
         }
@@ -1125,7 +1125,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
 
     /** The field marshallers for our persistent object's primary key columns or null if it did not
      * define a primary key. */
-    protected List<FieldMarshaller<?>> _pkColumns;
+    protected List<FieldMarshaller<?>> _pkColumns = Lists.newArrayList();
 
     /** The persisent fields of our object, in definition order. */
     protected ColumnExp<?>[] _allFields;
