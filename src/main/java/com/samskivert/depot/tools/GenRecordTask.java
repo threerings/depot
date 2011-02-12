@@ -402,6 +402,7 @@ public class GenRecordTask extends Task
         try {
             String text = StreamUtil.toString(
                 getClass().getClassLoader().getResourceAsStream(tmpl), "UTF-8");
+            text = text.replace("\n", System.getProperty("line.separator"));
             for (Map.Entry<String, String> entry : subs.entrySet()) {
                 text = text.replaceAll("@"+entry.getKey()+"@", entry.getValue());
             }
