@@ -87,8 +87,8 @@ public class PostgreSQLBuilder
 
         @Override public Void visit (DatePart exp)
         {
-            return appendFunctionCall(
-                "date_part", Exps.value(translateDatePart(exp.getPart())), exp.getArg());
+            String datePart = "'" + translateDatePart(exp.getPart()) + "'";
+            return appendFunctionCall("date_part", Exps.literal(datePart), exp.getArg());
         }
 
         @Override
