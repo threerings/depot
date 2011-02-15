@@ -30,7 +30,7 @@ import com.samskivert.depot.impl.expression.Function.OneArgFun;
 
 public abstract class DateFun
 {
-    public static class DatePart extends OneArgFun<Integer> {
+    public static class DatePart extends OneArgFun<Number> {
         public enum Part {
             DAY_OF_MONTH, DAY_OF_WEEK, DAY_OF_YEAR, HOUR, MINUTE, MONTH,
             SECOND, WEEK, YEAR, EPOCH

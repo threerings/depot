@@ -43,7 +43,15 @@ public class DateFuncs
     /**
      * Creates an expression to extract the day-of-week from the the supplied timestamp expression.
      */
-    public static <T extends Date> FluentExp<Integer> dayOfWeek (SQLExpression<T> exp)
+    public static FluentExp<Number> dayOfWeek (SQLExpression<Timestamp> exp)
+    {
+        return new DatePart(exp, DatePart.Part.DAY_OF_WEEK);
+    }
+
+    /**
+     * Creates an expression to extract the day-of-week from the the supplied date expression.
+     */
+    public static FluentExp<Number> dayOfWeekFromDate (SQLExpression<Date> exp)
     {
         return new DatePart(exp, DatePart.Part.DAY_OF_WEEK);
     }
@@ -51,7 +59,15 @@ public class DateFuncs
     /**
      * Creates an expression to extract the day-of-month from the the supplied timestamp expression.
      */
-    public static <T extends Date> FluentExp<Integer> dayOfMonth (SQLExpression<T> exp)
+    public static FluentExp<Number> dayOfMonth (SQLExpression<Timestamp> exp)
+    {
+        return new DatePart(exp, DatePart.Part.DAY_OF_MONTH);
+    }
+
+    /**
+     * Creates an expression to extract the day-of-month from the the supplied date expression.
+     */
+    public static FluentExp<Number> dayOfMonthFromDate (SQLExpression<Date> exp)
     {
         return new DatePart(exp, DatePart.Part.DAY_OF_MONTH);
     }
@@ -59,7 +75,15 @@ public class DateFuncs
     /**
      * Creates an expression to extract the day-of-year from the the supplied timestamp expression.
      */
-    public static <T extends Date> FluentExp<Integer> dayOfYear (SQLExpression<T> exp)
+    public static FluentExp<Number> dayOfYear (SQLExpression<Timestamp> exp)
+    {
+        return new DatePart(exp, DatePart.Part.DAY_OF_YEAR);
+    }
+
+    /**
+     * Creates an expression to extract the day-of-year from the the supplied data expression.
+     */
+    public static FluentExp<Number> dayOfYearFromDate (SQLExpression<Date> exp)
     {
         return new DatePart(exp, DatePart.Part.DAY_OF_YEAR);
     }
@@ -67,7 +91,7 @@ public class DateFuncs
     /**
      * Creates an expression to extract the hour of the the supplied timestamp expression.
      */
-    public static FluentExp<Integer> hour (SQLExpression<Timestamp> exp)
+    public static FluentExp<Number> hour (SQLExpression<Timestamp> exp)
     {
         return new DatePart(exp, DatePart.Part.HOUR);
     }
@@ -75,7 +99,7 @@ public class DateFuncs
     /**
      * Creates an expression to extract the minute of the the supplied timestamp expression.
      */
-    public static FluentExp<Integer> minute (SQLExpression<Timestamp> exp)
+    public static FluentExp<Number> minute (SQLExpression<Timestamp> exp)
     {
         return new DatePart(exp, DatePart.Part.MINUTE);
     }
@@ -83,7 +107,7 @@ public class DateFuncs
     /**
      * Creates an expression to extract the second of the the supplied timestamp expression.
      */
-    public static FluentExp<Integer> second (SQLExpression<Timestamp> exp)
+    public static FluentExp<Number> second (SQLExpression<Timestamp> exp)
     {
         return new DatePart(exp, DatePart.Part.SECOND);
     }
@@ -94,7 +118,7 @@ public class DateFuncs
     /**
      * Creates an expression to extract the week of the the supplied timestamp expression.
      */
-    public static FluentExp<Integer> week (SQLExpression<? extends java.util.Date> exp)
+    public static FluentExp<Number> week (SQLExpression<? extends java.util.Date> exp)
     {
         return new DatePart(exp, DatePart.Part.WEEK);
     }
@@ -102,7 +126,7 @@ public class DateFuncs
     /**
      * Creates an expression to extract the month of the the supplied timestamp expression.
      */
-    public static FluentExp<Integer> month (SQLExpression<? extends java.util.Date> exp)
+    public static FluentExp<Number> month (SQLExpression<? extends java.util.Date> exp)
     {
         return new DatePart(exp, DatePart.Part.MONTH);
     }
@@ -110,7 +134,7 @@ public class DateFuncs
     /**
      * Creates an expression to extract the year of the the supplied timestamp expression.
      */
-    public static FluentExp<Integer> year (SQLExpression<? extends java.util.Date> exp)
+    public static FluentExp<Number> year (SQLExpression<? extends java.util.Date> exp)
     {
         return new DatePart(exp, DatePart.Part.YEAR);
     }
@@ -119,7 +143,7 @@ public class DateFuncs
      * Creates an expression to extract the epoch (aka unix timestamp, aka seconds passed since
      * 1970-01-01) of the the supplied timestamp expression.
      */
-    public static FluentExp<Integer> epoch (SQLExpression<? extends java.util.Date> exp)
+    public static FluentExp<Number> epoch (SQLExpression<? extends java.util.Date> exp)
     {
         return new DatePart(exp, DatePart.Part.EPOCH);
     }
