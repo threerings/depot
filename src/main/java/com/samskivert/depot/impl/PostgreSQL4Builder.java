@@ -74,6 +74,8 @@ public class PostgreSQL4Builder extends PostgreSQLBuilder
                         }
                         values = bytes;
                         type = "smallint"; // tinyint is in the spec, but PG doesn't recognize?
+                    } else if (testValue instanceof Enum<?>) {
+                        type = "varchar";
                     } else if (testValue instanceof Timestamp) {
                         type = "timestamp";
                     } else if (testValue instanceof Date) {
