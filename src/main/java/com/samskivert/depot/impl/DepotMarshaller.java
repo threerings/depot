@@ -795,30 +795,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             }
         }
 
-        // if the primary key has changed size or signature, we have to drop and readd it
-        boolean keyMatch;
-        if (metaData.pkColumns.size() == _pkColumns.size()) {
-            keyMatch = true;
-            for (FieldMarshaller<?> column : _pkColumns) {
-                keyMatch &= metaData.pkColumns.contains(column.getColumnName());
-            }
-        } else {
-            keyMatch = false;
-        }
-
-        if (!keyMatch) {
-            log.info("Primary key has changed: dropping.");
-            ctx.invoke(new Modifier() {
-                @Override protected int invoke (Connection conn, DatabaseLiaison liaison)
-                    throws SQLException {
-                    // TODO
-                    return 0;
-                }
-            });
-
-        }
-
-        // add or remove the primary key as needed
+        // add, remove or change the primary key as needed
         if (hasPrimaryKey() && metaData.pkName == null) {
             log.info("Adding primary key.");
             ctx.invoke(new Modifier() {
@@ -831,12 +808,25 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             });
 
         } else if (!hasPrimaryKey() && metaData.pkName != null) {
-            final String pkName = metaData.pkName;
             log.info("Dropping primary key: " + pkName);
+            final String pkName = metaData.pkName;
             ctx.invoke(new Modifier() {
                 @Override protected int invoke (Connection conn, DatabaseLiaison liaison)
                     throws SQLException {
                     liaison.dropPrimaryKey(conn, getTableName(), pkName);
+                    return 0;
+                }
+            });
+
+        } else if (!metaData.pkMatches(_pkColumns)) {
+            log.info("Primary key has changed: dropping and readding.");
+            final String pkName = metaData.pkName;
+            ctx.invoke(new Modifier() {
+                @Override protected int invoke (Connection conn, DatabaseLiaison liaison)
+                    throws SQLException {
+                    liaison.dropPrimaryKey(conn, getTableName(), pkName);
+                    liaison.addPrimaryKey(
+                        conn, getTableName(), fieldsToColumns(getPrimaryKeyFields()));
                     return 0;
                 }
             });
@@ -1093,6 +1083,19 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
                 pkName = rs.getString("PK_NAME");
                 pkColumns.add(rs.getString("COLUMN_NAME"));
             }
+        }
+
+        public boolean pkMatches (List<FieldMarshaller<?>> declaredPkColumns)
+        {
+            if (pkColumns.size() != declaredPkColumns.size()) {
+                return false;
+            }
+            for (FieldMarshaller<?> column : declaredPkColumns) {
+                if (!pkColumns.contains(column.getColumnName())) {
+                    return false;
+                }
+            }
+            return true;
         }
 
         @Override
