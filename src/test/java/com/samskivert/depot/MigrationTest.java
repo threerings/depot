@@ -47,7 +47,6 @@ public class MigrationTest extends TestBase
     public void testPKMigration ()
     {
         PersistenceContext pctx = createPersistenceContext("pkmig", PK_DUMP);
-        executeSQL(pctx, PK_INIT); // now that the schema is created, we can populate
         DepotRepository repo = createRepository(pctx, PKMigrationRecord.class);
         // trigger the execution of the migrations
         pctx.initializeRepositories(true);
@@ -101,13 +100,12 @@ public class MigrationTest extends TestBase
         "\"stringId\" VARCHAR(255) NOT NULL," +
         "PRIMARY KEY(\"id\",\"stringId\"))",
 
-        "INSERT INTO \"DepotSchemaVersion\" VALUES('MigrationTest$PKMigrationRecord',1,0)"
-    };
+        "INSERT INTO \"DepotSchemaVersion\" VALUES('MigrationTest$PKMigrationRecord',1,0)",
 
-    protected static final String PK_INIT =
         "INSERT INTO \"MigrationTest$PKMigrationRecord\" VALUES(1,'1')\n" +
         "INSERT INTO \"MigrationTest$PKMigrationRecord\" VALUES(2,'2')\n" +
         "INSERT INTO \"MigrationTest$PKMigrationRecord\" VALUES(3,'3')\n" +
         "INSERT INTO \"MigrationTest$PKMigrationRecord\" VALUES(4,'4')\n" +
-        "INSERT INTO \"MigrationTest$PKMigrationRecord\" VALUES(5,'5')\n";
+        "INSERT INTO \"MigrationTest$PKMigrationRecord\" VALUES(5,'5')\n"
+    };
 }
