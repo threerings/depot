@@ -808,8 +808,8 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             });
 
         } else if (!hasPrimaryKey() && metaData.pkName != null) {
-            log.info("Dropping primary key: " + pkName);
             final String pkName = metaData.pkName;
+            log.info("Dropping primary key: " + pkName);
             ctx.invoke(new Modifier() {
                 @Override protected int invoke (Connection conn, DatabaseLiaison liaison)
                     throws SQLException {
@@ -819,8 +819,8 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             });
 
         } else if (!metaData.pkMatches(_pkColumns)) {
-            log.info("Primary key has changed: dropping and readding.");
             final String pkName = metaData.pkName;
+            log.info("Primary key has changed: dropping and readding: " + pkName);
             ctx.invoke(new Modifier() {
                 @Override protected int invoke (Connection conn, DatabaseLiaison liaison)
                     throws SQLException {
