@@ -35,6 +35,11 @@ public abstract class Fetcher<T>
         public T getCachedResult (PersistenceContext ctx) {
             return null;
         }
+
+        @Override // from Fetcher
+        public void updateStats (Stats stats) {
+            // nothing doing
+        }
     }
 
     /**

@@ -1039,9 +1039,6 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
                                              DatabaseLiaison dl) throws SQLException {
                     return new TableMetaData(conn.getMetaData(), tableName);
                 }
-                public void updateStats (Stats stats) {
-                    // nothing doing
-                }
             });
         }
 
