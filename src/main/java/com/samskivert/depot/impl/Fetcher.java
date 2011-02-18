@@ -21,6 +21,7 @@
 package com.samskivert.depot.impl;
 
 import com.samskivert.depot.PersistenceContext;
+import com.samskivert.depot.Stats;
 
 /**
  * The base of all read-only queries.
