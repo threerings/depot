@@ -20,11 +20,13 @@
 
 package com.samskivert.depot;
 
+import java.sql.Connection;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Properties;
 
+import com.samskivert.jdbc.ConnectionProvider;
 import com.samskivert.jdbc.StaticConnectionProvider;
 import com.samskivert.util.Calendars;
 
@@ -42,14 +44,49 @@ public abstract class TestBase
      */
     protected static PersistenceContext createPersistenceContext ()
     {
+        return createPersistenceContext("test");
+    }
+
+    /**
+     * Creates a persistence context configured to run against an (empty) in-memory HSQLDB.
+     * <b>Note:</b> all in-memory HSQL databases with the same {@code dbname} are shared for the
+     * duration of the VM, so tests have to clean up after themselves or use unique dbnames.
+     */
+    protected static PersistenceContext createPersistenceContext (String dbname)
+    {
+        return createPersistenceContext(dbname, null);
+    }
+
+    /**
+     * Creates a persistence context configured to run against an (empty) in-memory HSQLDB.
+     * <b>Note:</b> all in-memory HSQL databases with the same {@code dbname} are shared for the
+     * duration of the VM, so tests have to clean up after themselves or use unique dbnames.
+     *
+     * @param initSQL initialization SQL used to populate the database before the persistence
+     * context is initialized.
+     */
+    protected static PersistenceContext createPersistenceContext (String dbname, String[] initSQL)
+    {
         Properties props = new Properties();
         props.put("default.driver", "org.hsqldb.jdbcDriver");
-        props.put("default.url", "jdbc:hsqldb:mem:test");
+        props.put("default.url", "jdbc:hsqldb:mem:" + dbname);
         props.put("default.username", "sa");
         props.put("default.password", "");
 
         PersistenceContext perCtx = new PersistenceContext();
-        perCtx.init("test", new StaticConnectionProvider(props), new TestCacheAdapter());
+        ConnectionProvider conprov = new StaticConnectionProvider(props);
+        if (initSQL != null) {
+            try {
+                Connection conn = conprov.getConnection(dbname, false);
+                for (String sql : initSQL) {
+                    conn.createStatement().executeUpdate(sql);
+                }
+                conprov.releaseConnection(dbname, false, conn);
+            } catch (Exception e) {
+                throw new DatabaseException(e);
+            }
+        }
+        perCtx.init(dbname, conprov, new TestCacheAdapter());
         return perCtx;
     }
 
