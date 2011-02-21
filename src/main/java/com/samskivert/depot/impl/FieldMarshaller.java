@@ -751,10 +751,12 @@ public abstract class FieldMarshaller<T>
             return (ByteEnum) _field.get(po);
         }
         @Override public ByteEnum getFromSet (ResultSet rs) throws SQLException {
-            return ByteEnumUtil.fromByte(_eclass, rs.getByte(getColumnName()));
+            Number value = (Number)rs.getObject(getColumnName());
+            return (value == null) ? null : ByteEnumUtil.fromByte(_eclass, value.byteValue());
         }
         @Override public ByteEnum getFromSet (ResultSet rs, int index) throws SQLException {
-            return ByteEnumUtil.fromByte(_eclass, rs.getByte(index));
+            Number value = (Number)rs.getObject(index);
+            return (value == null) ? null : ByteEnumUtil.fromByte(_eclass, value.byteValue());
         }
         @Override public void writeToObject (Object po, ByteEnum value)
             throws IllegalArgumentException, IllegalAccessException {
@@ -762,7 +764,7 @@ public abstract class FieldMarshaller<T>
         }
         @Override public void writeToStatement (PreparedStatement ps, int column, ByteEnum value)
             throws SQLException {
-            ps.setByte(column, value.toByte());
+            ps.setObject(column, value == null ? null : value.toByte());
         }
 
         protected Class<E> _eclass;
