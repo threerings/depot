@@ -57,7 +57,7 @@ public class Funcs
      * Creates an aggregate expression that counts the number of rows that match the other clauses
      * in this query.
      */
-    public static FluentExp<Integer> countStar ()
+    public static FluentExp<Number> countStar ()
     {
         return new Count(Exps.literal("*"));
     }
@@ -66,7 +66,7 @@ public class Funcs
      * Creates an aggregate expression that counts the number of rows from the supplied
      * expression. This would usually be used in a FieldOverride and supplied with a ColumnExp.
      */
-    public static FluentExp<Integer> count (SQLExpression<?> expr)
+    public static FluentExp<Number> count (SQLExpression<?> expr)
     {
         return new Count(expr);
     }
@@ -76,7 +76,7 @@ public class Funcs
      * supplied expression. This would usually be used in a FieldOverride and supplied with a
      * ColumnExp.
      */
-    public static FluentExp<Integer> countDistinct (SQLExpression<?> expr)
+    public static FluentExp<Number> countDistinct (SQLExpression<?> expr)
     {
         return new Count(expr, true);
     }

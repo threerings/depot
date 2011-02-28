@@ -41,7 +41,7 @@ public abstract class AggregateFun<T> extends OneArgFun<T>
         }
     }
 
-    public static class Count extends AggregateFun<Integer> {
+    public static class Count extends AggregateFun<Number> {
         public Count (SQLExpression<?> argument) {
             this(argument, false);
         }
