@@ -34,6 +34,7 @@ import com.samskivert.depot.impl.operator.LessThan;
 import com.samskivert.depot.impl.operator.LessThanEquals;
 import com.samskivert.depot.impl.operator.Like;
 import com.samskivert.depot.impl.operator.Mul;
+import com.samskivert.depot.impl.operator.Not;
 import com.samskivert.depot.impl.operator.NotEquals;
 import com.samskivert.depot.impl.operator.Sub;
 
@@ -65,6 +66,12 @@ public abstract class FluentExp<T>
     public FluentExp<Boolean> notEq (SQLExpression<?> expr)
     {
         return new NotEquals(this, expr);
+    }
+
+    /** Returns a {@link Not} {@link IsNull} with this expression as its target. */
+    public SQLExpression<Boolean> notNull ()
+    {
+        return new Not(new IsNull(this));
     }
 
     /** Returns an {@link IsNull} with this expression as its target. */
