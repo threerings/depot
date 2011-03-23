@@ -57,7 +57,7 @@ public class AllTypesRecord extends PersistentRecord
     public static final ColumnExp<Date> DATE = colexp(_R, "date");
     public static final ColumnExp<Time> TIME = colexp(_R, "time");
     public static final ColumnExp<Timestamp> TIMESTAMP = colexp(_R, "timestamp");
-    public static final ColumnExp<TestEnum> TEST_ENUM = colexp(_R, "testEnum");
+    public static final ColumnExp<AllTypesRecord.TestEnum> TEST_ENUM = colexp(_R, "testEnum");
     public static final ColumnExp<Boolean> NULL_BOXED_BOOLEAN = colexp(_R, "nullBoxedBoolean");
     public static final ColumnExp<Byte> NULL_BOXED_BYTE = colexp(_R, "nullBoxedByte");
     public static final ColumnExp<Short> NULL_BOXED_SHORT = colexp(_R, "nullBoxedShort");
@@ -71,7 +71,7 @@ public class AllTypesRecord extends PersistentRecord
     public static final ColumnExp<Date> NULL_DATE = colexp(_R, "nullDate");
     public static final ColumnExp<Time> NULL_TIME = colexp(_R, "nullTime");
     public static final ColumnExp<Timestamp> NULL_TIMESTAMP = colexp(_R, "nullTimestamp");
-    public static final ColumnExp<TestEnum> NULL_TEST_ENUM = colexp(_R, "nullTestEnum");
+    public static final ColumnExp<AllTypesRecord.TestEnum> NULL_TEST_ENUM = colexp(_R, "nullTestEnum");
     // AUTO-GENERATED: FIELDS END
 
     public static final int SCHEMA_VERSION = 1;

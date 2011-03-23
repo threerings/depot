@@ -30,7 +30,7 @@ public class EnumKeyRecord extends PersistentRecord
 {
     // AUTO-GENERATED: FIELDS START
     public static final Class<EnumKeyRecord> _R = EnumKeyRecord.class;
-    public static final ColumnExp<Type> TYPE = colexp(_R, "type");
+    public static final ColumnExp<EnumKeyRecord.Type> TYPE = colexp(_R, "type");
     public static final ColumnExp<String> NAME = colexp(_R, "name");
     // AUTO-GENERATED: FIELDS END
 
