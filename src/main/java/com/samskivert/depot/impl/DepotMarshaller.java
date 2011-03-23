@@ -20,18 +20,20 @@
 
 package com.samskivert.depot.impl;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.samskivert.depot.Log.log;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ArrayListMultimap;
@@ -40,19 +42,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import com.samskivert.util.ArrayUtil;
-import com.samskivert.util.StringUtil;
-import com.samskivert.util.Tuple;
-
-import com.samskivert.jdbc.ColumnDefinition;
-import com.samskivert.jdbc.DatabaseLiaison;
-
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.SchemaMigration;
-import com.samskivert.depot.Stats;
 import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.annotation.Entity;
@@ -63,14 +57,17 @@ import com.samskivert.depot.annotation.Index;
 import com.samskivert.depot.annotation.TableGenerator;
 import com.samskivert.depot.annotation.Transient;
 import com.samskivert.depot.annotation.UniqueConstraint;
-import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.OrderBy.Order;
+import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.clause.CreateIndexClause;
+import com.samskivert.util.ArrayUtil;
+import com.samskivert.util.StringUtil;
+import com.samskivert.util.Tuple;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.samskivert.depot.Log.log;
+import com.samskivert.jdbc.ColumnDefinition;
+import com.samskivert.jdbc.DatabaseLiaison;
 
 /**
  * Handles the marshalling and unmarshalling of persistent instances to JDBC primitives ({@link

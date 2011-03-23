@@ -37,7 +37,7 @@ public abstract class Fetcher<T>
             return null;
         }
 
-        @Override // from Fetcher
+        // from Operation
         public void updateStats (Stats stats) {
             // nothing doing
         }
