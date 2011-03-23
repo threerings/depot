@@ -28,10 +28,12 @@
     <taskdef name="grecord" classname="com.samskivert.depot.tools.GenRecordTask"
              classpathref="built.path"/>
     <!-- make sure the record class files are all compiled -->
-    <ooojavac destdir="${classes.dir}" classpathref="pom.xml.path" srcdir="${src.dir}">
+    <ooojavac destdir="${classes.dir}" classpathref="pom.xml.path" srcdir="${src.dir}"
+        version="1.5">
       <include name="**/*Record.java"/>
     </ooojavac>
-    <ooojavac destdir="${tclasses.dir}" classpathref="pom.xml.path" srcdir="${test.dir}">
+    <ooojavac destdir="${tclasses.dir}" classpathref="pom.xml.path" srcdir="${test.dir}"
+        version="1.5">
       <include name="**/*Record.java"/>
     </ooojavac>
     <!-- now update the source files -->
@@ -57,10 +59,12 @@
     <copy todir="${classes.dir}">
       <fileset dir="src/main/resources" includes="**/*.tmpl"/>
     </copy>
-    <ooojavac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="pom.xml.path"/>
+    <ooojavac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="pom.xml.path"
+        version="1.5"/>
 
     <mkdir dir="${tclasses.dir}"/>
-    <ooojavac srcdir="${test.dir}" destdir="${tclasses.dir}" classpathref="built.path"/>
+    <ooojavac srcdir="${test.dir}" destdir="${tclasses.dir}" classpathref="built.path"
+        version="1.5"/>
   </target>
 
   <target name="javadoc" depends="-prepare" description="Generates javadoc documentation.">
