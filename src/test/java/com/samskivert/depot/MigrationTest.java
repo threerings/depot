@@ -23,13 +23,11 @@ package com.samskivert.depot;
 import java.util.Set;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
-
-import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.util.RandomUtil;
 
 import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.impl.Modifier;
+
+import com.samskivert.jdbc.DatabaseLiaison;
 
 /**
  * Tests various migrations.
@@ -47,7 +45,7 @@ public class MigrationTest extends TestBase
     public void testPKMigration ()
     {
         PersistenceContext pctx = createPersistenceContext("pkmig", PK_DUMP);
-        DepotRepository repo = createRepository(pctx, PKMigrationRecord.class);
+        createRepository(pctx, PKMigrationRecord.class);
         // trigger the execution of the migrations
         pctx.initializeRepositories(true);
     }
