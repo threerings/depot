@@ -69,7 +69,7 @@ public class MigrationTest extends TestBase
     protected void executeSQL (PersistenceContext ctx, final String sql)
     {
         ctx.invoke(new Modifier.Simple() {
-            protected String createQuery (DatabaseLiaison liaison) {
+            @Override protected String createQuery (DatabaseLiaison liaison) {
                 return sql;
             }
         });

@@ -111,7 +111,7 @@ public abstract class Projector<T extends PersistentRecord,R>
         Class<T> ptype, final Class<V> resultType, SQLExpression<?>... selexps)
     {
         return new Projector<T, V>(ptype, selexps) {
-            public V createObject (Object[] results) {
+            @Override public V createObject (Object[] results) {
                 try {
                     return _ctor.newInstance(results);
                 } catch (InstantiationException e) {

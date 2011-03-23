@@ -575,6 +575,7 @@ public class Query<T extends PersistentRecord>
         _pclass = pclass;
     }
 
+    @Override
     protected Query<T> clone ()
     {
         try {

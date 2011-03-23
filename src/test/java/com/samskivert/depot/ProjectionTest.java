@@ -216,7 +216,7 @@ public class ProjectionTest extends TestBase
             this.id = id;
             this.name = name;
         }
-        public String toString() {
+        @Override public String toString() {
             return id + " " + name;
         }
     }
