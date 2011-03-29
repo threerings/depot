@@ -20,6 +20,8 @@
 
 package com.samskivert.depot.impl;
 
+import java.lang.reflect.Field;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -283,6 +285,12 @@ public class PostgreSQLBuilder
     protected <T> String getColumnType (FieldMarshaller<?> fm, int length)
     {
         return fm.getColumnType(TYPER, length);
+    }
+
+    @Override
+    protected String getSerialType (Field field)
+    {
+        return field.getType().equals(Long.TYPE) ? "BIGSERIAL" : "SERIAL";
     }
 
     protected static String massageFTQuery (FullText match)

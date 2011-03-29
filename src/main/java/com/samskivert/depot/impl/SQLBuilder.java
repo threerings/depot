@@ -127,7 +127,7 @@ public abstract class SQLBuilder
 
         GeneratedValue genValue = fm.getGeneratedValue();
         if (genValue != null) {
-            maybeMutateForGeneratedValue(genValue, coldef);
+            maybeMutateForGeneratedValue(field, genValue, coldef);
 
         } else if (coldef.defaultValue == null) {
             maybeMutateForPrimitive(field, coldef);
@@ -163,12 +163,13 @@ public abstract class SQLBuilder
         }
     }
 
-    protected void maybeMutateForGeneratedValue (GeneratedValue genValue, ColumnDefinition coldef)
+    protected void maybeMutateForGeneratedValue (
+            Field field, GeneratedValue genValue, ColumnDefinition coldef)
     {
         switch (genValue.strategy()) {
         case AUTO:
         case IDENTITY:
-            coldef.type = "SERIAL";
+            coldef.type = getSerialType(field);
             coldef.unique = true;
             break;
 
@@ -179,6 +180,14 @@ public abstract class SQLBuilder
             // nothing to do here, it'll be handled later
             break;
         }
+    }
+
+    /**
+     * The serial type for the field.
+     */
+    protected String getSerialType (Field field)
+    {
+        return "SERIAL";
     }
 
     /**
