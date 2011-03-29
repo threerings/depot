@@ -394,6 +394,9 @@ public abstract class FieldMarshaller<T>
         } else if (ftype.equals(int[].class)) {
             return new IntArrayMarshaller();
 
+        } else if (ftype.equals(long[].class)) {
+            return new LongArrayMarshaller();
+
         // SQL types
         } else if (ftype.equals(Date.class)) {
             return new ObjectMarshaller() {
@@ -725,6 +728,50 @@ public abstract class FieldMarshaller<T>
             } else {
                 value = new int[raw.length/4];
                 ByteBuffer.wrap(raw).asIntBuffer().get(value);
+            }
+            return value;
+        }
+    }
+
+    protected static class LongArrayMarshaller extends FieldMarshaller<long[]> {
+        @Override public String getColumnType (ColumnTyper typer, int length) {
+            return typer.getBlobType(length*8);
+        }
+        @Override public long[] getFromObject (Object po)
+            throws IllegalArgumentException, IllegalAccessException {
+            return (long[]) _field.get(po);
+        }
+        @Override public long[] getFromSet (ResultSet rs) throws SQLException {
+            // TODO: why not use getBytes()?
+            return fromBytes((byte[]) rs.getObject(getColumnName()));
+        }
+        @Override public long[] getFromSet (ResultSet rs, int index) throws SQLException {
+            // TODO: why not use getBytes()?
+            return fromBytes((byte[]) rs.getObject(index));
+        }
+        @Override public void writeToObject (Object po, long[] value)
+            throws IllegalArgumentException, IllegalAccessException {
+            _field.set(po, value);
+        }
+        @Override public void writeToStatement (PreparedStatement ps, int column, long[] value)
+            throws SQLException {
+            byte[] raw;
+            if (value == null) {
+                raw = null;
+            } else {
+                ByteBuffer bbuf = ByteBuffer.allocate(value.length*8);
+                bbuf.asLongBuffer().put(value);
+                raw = bbuf.array();
+            }
+            ps.setObject(column, raw);
+        }
+        protected final long[] fromBytes (byte[] raw) {
+            long[] value;
+            if (raw == null) {
+                value = null;
+            } else {
+                value = new long[raw.length/8];
+                ByteBuffer.wrap(raw).asLongBuffer().get(value);
             }
             return value;
         }
