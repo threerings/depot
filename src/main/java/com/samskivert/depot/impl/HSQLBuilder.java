@@ -20,29 +20,25 @@
 
 package com.samskivert.depot.impl;
 
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.Lists;
 
-import com.samskivert.jdbc.ColumnDefinition;
-import com.samskivert.util.ArrayUtil;
-
 import com.samskivert.depot.Exps;
 import com.samskivert.depot.Ops;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.annotation.GeneratedValue;
-import com.samskivert.depot.expression.*;
-import com.samskivert.depot.operator.FullText;
-
+import com.samskivert.depot.expression.ColumnExp;
+import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.expression.AggregateFun;
-import com.samskivert.depot.impl.expression.DateFun.DatePart.Part;
 import com.samskivert.depot.impl.expression.DateFun.DatePart;
+import com.samskivert.depot.impl.expression.DateFun.DatePart.Part;
 import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
 import com.samskivert.depot.impl.expression.LiteralExp;
 import com.samskivert.depot.impl.expression.NumericalFun;
@@ -52,6 +48,10 @@ import com.samskivert.depot.impl.operator.BitAnd;
 import com.samskivert.depot.impl.operator.BitOr;
 import com.samskivert.depot.impl.operator.Like;
 import com.samskivert.depot.impl.operator.MultiOperator;
+import com.samskivert.depot.operator.FullText;
+import com.samskivert.util.ArrayUtil;
+
+import com.samskivert.jdbc.ColumnDefinition;
 
 public class HSQLBuilder
     extends SQLBuilder
@@ -250,7 +250,8 @@ public class HSQLBuilder
     }
 
     @Override
-    protected void maybeMutateForGeneratedValue (GeneratedValue genValue, ColumnDefinition column)
+    protected void maybeMutateForGeneratedValue (
+        Field field, GeneratedValue genValue, ColumnDefinition column)
     {
         // HSQL's IDENTITY() implementation does not take the form of a type, as MySQL's
         // and PostgreSQL's conveniently shared SERIAL alias, nor as MySQL's original
@@ -263,7 +264,7 @@ public class HSQLBuilder
             break;
 
         default:
-            super.maybeMutateForGeneratedValue(genValue, column);
+            super.maybeMutateForGeneratedValue(field, genValue, column);
         }
     }
 
