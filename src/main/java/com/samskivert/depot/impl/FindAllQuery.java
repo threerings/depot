@@ -348,7 +348,7 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
     // from Fetcher
     public void updateStats (Stats stats)
     {
-        stats.noteQuery(_cachedQueries, _uncachedQueries, _explicitQueries,
+        stats.noteQuery(_type, _cachedQueries, _uncachedQueries, _explicitQueries,
                         _cachedRecords, _uncachedRecords);
     }
 

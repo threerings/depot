@@ -88,7 +88,7 @@ public class FindAllKeysQuery<T extends PersistentRecord> extends Fetcher<List<K
     // from Fetcher
     public void updateStats (Stats stats)
     {
-        stats.noteQuery(0, 1, 0, 0, 0); // one uncached query
+        stats.noteQuery(_marsh.getPersistentClass(), 0, 1, 0, 0, 0); // one uncached query
     }
 
     protected boolean _forUpdate;

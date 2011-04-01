@@ -112,7 +112,7 @@ public class FindOneQuery<T extends PersistentRecord> extends Fetcher<T>
     // from Operation
     public void updateStats (Stats stats)
     {
-        stats.noteQuery(0, 0, 0, _cachedRecords, 1-_cachedRecords);
+        stats.noteQuery(_marsh.getPersistentClass(), 0, 0, 0, _cachedRecords, 1-_cachedRecords);
     }
 
     protected CacheKey getCacheKey ()

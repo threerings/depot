@@ -144,7 +144,7 @@ public abstract class Modifier
     // from interface Operation
     public void updateStats (Stats stats)
     {
-        // nothing to update for modifiers
+        // nothing to update by default
     }
 
     /**

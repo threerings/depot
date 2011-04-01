@@ -388,6 +388,10 @@ public abstract class DepotRepository
                 }
                 return mods;
             }
+            @Override
+            public void updateStats (Stats stats) {
+                stats.noteModification(pClass);
+            }
         });
     }
 
@@ -639,6 +643,10 @@ public abstract class DepotRepository
                 created[0] = true;
                 return mods;
             }
+            @Override
+            public void updateStats (Stats stats) {
+                stats.noteModification(pClass);
+            }
         });
         return created[0];
     }
@@ -706,7 +714,7 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     public <T extends PersistentRecord> int deleteAll (
-        Class<T> type, final WhereClause where, CacheInvalidator invalidator)
+        final Class<T> type, final WhereClause where, CacheInvalidator invalidator)
         throws DatabaseException
     {
         if (invalidator instanceof ValidatingCacheInvalidator) {
@@ -722,6 +730,10 @@ public abstract class DepotRepository
             @Override
             protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
                 return builder.prepare(conn).executeUpdate();
+            }
+            @Override
+            public void updateStats (Stats stats) {
+                stats.noteModification(type);
             }
         });
     }
@@ -827,7 +839,7 @@ public abstract class DepotRepository
     /**
      * A helper method for the various partial update methods.
      */
-    protected int doUpdate (CacheInvalidator invalidator, UpdateClause update)
+    protected int doUpdate (CacheInvalidator invalidator, final UpdateClause update)
     {
         final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, update));
         builder.newQuery(update);
@@ -835,6 +847,10 @@ public abstract class DepotRepository
             @Override
             protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
                 return builder.prepare(conn).executeUpdate();
+            }
+            @Override
+            public void updateStats (Stats stats) {
+                stats.noteModification(update.getPersistentClass());
             }
         });
     }

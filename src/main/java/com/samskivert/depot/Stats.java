@@ -120,14 +120,20 @@ public class Stats
         }
     }
 
-    public synchronized void noteQuery (int cachedQueries, int uncachedQueries, int explicitQueries,
-                                        int cachedRecords, int uncachedRecords)
+    public synchronized void noteQuery (
+        Class<? extends PersistentRecord> type, int cachedQueries, int uncachedQueries,
+        int explicitQueries, int cachedRecords, int uncachedRecords)
     {
         _cachedQueries += cachedQueries;
         _uncachedQueries += uncachedQueries;
         _explicitQueries += explicitQueries;
         _cachedRecords += cachedRecords;
         _uncachedRecords += uncachedRecords;
+    }
+
+    public synchronized void noteModification (Class<? extends PersistentRecord> type)
+    {
+        // nothing by default
     }
 
     protected int _totalOps;
