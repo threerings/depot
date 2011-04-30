@@ -62,7 +62,7 @@ public class Query<T extends PersistentRecord>
 {
     /** Disables the use of the cache for this query. */
     public Query<T> noCache () {
-        return cache(DepotRepository.CacheStrategy.BEST);
+        return cache(DepotRepository.CacheStrategy.NONE);
     }
 
     /** Configures the use of {@link DepotRepository.CacheStrategy#BEST} for this query. */
