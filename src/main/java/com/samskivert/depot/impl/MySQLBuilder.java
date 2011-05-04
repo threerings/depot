@@ -149,7 +149,7 @@ public class MySQLBuilder
 
         @Override protected void appendIdentifier (String field)
         {
-            _builder.append(field);
+            _builder.append("`").append(field).append("`");
         }
 
         protected void renderMatch (FullText fullText)
