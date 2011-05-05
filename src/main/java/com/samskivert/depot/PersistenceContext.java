@@ -316,7 +316,7 @@ public class PersistenceContext
             log.warning("Cache key must not be null [entry=" + entry + "]", new Exception());
             return;
         }
-        log.debug("storing [key=" + key + ", value=" + entry + "]");
+        log.debug("storing", "key", key, "value", entry);
 
         CacheAdapter.CachedValue<T> element = _cache.lookup(key.getCacheId(), key.getCacheKey());
         T oldEntry = (element != null ? element.getValue() : null);
@@ -328,7 +328,7 @@ public class PersistenceContext
         Set<CacheListener<?>> listeners = _listenerSets.get(key.getCacheId());
         if (listeners != null && listeners.size() > 0) {
             for (CacheListener<?> listener : listeners) {
-                log.debug("cascading [listener=" + listener + "]");
+                log.debug("cascading", "listener", listener);
                 @SuppressWarnings("unchecked")
                     CacheListener<T> casted = (CacheListener<T>)listener;
                 casted.entryCached(entry, oldEntry);
@@ -384,7 +384,7 @@ public class PersistenceContext
                 Set<CacheListener<?>> listeners = _listenerSets.get(cacheId);
                 if (listeners != null && listeners.size() > 0) {
                     for (CacheListener<?> listener : listeners) {
-                        log.debug("cascading [listener=" + listener + "]");
+                        log.debug("cascading", "listener", listener);
                         @SuppressWarnings("unchecked") CacheListener<T> casted =
                             (CacheListener<T>)listener;
                         casted.entryInvalidated(oldEntry);
