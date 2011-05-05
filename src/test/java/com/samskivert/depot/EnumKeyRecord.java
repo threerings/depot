@@ -20,7 +20,14 @@ public class EnumKeyRecord extends PersistentRecord
 
     public static final int SCHEMA_VERSION = 1;
 
-    public enum Type { A, B, C, D };
+    public enum Type {
+        A, B, C, D;
+
+        // override toString to be sure that we don't rely on it in our internals
+        public String toString () {
+            return "Type:" + name();
+        }
+    };
 
     /** The type is key. */
     @Id public Type type;
