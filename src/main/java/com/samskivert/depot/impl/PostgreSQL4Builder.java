@@ -60,6 +60,11 @@ public class PostgreSQL4Builder extends PostgreSQLBuilder
                         type = "smallint"; // tinyint is in the spec, but PG doesn't recognize?
                     } else if (testValue instanceof Enum<?>) {
                         type = "varchar";
+                        // we need to replace the enum values with their name() because otherwise
+                        // the Postgres JDBC driver will call toString() on them which is incorrect
+                        for (int ii = 0; ii < values.length; ii++) {
+                            values[ii] = ((Enum<?>)values[ii]).name();
+                        }
                     } else if (testValue instanceof Timestamp) {
                         type = "timestamp";
                     } else if (testValue instanceof Date) {
