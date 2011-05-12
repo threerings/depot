@@ -157,15 +157,15 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
 
     public Void visit (MultiOperator<?> multiOperator)
     {
+        _builder.append('(');
         SQLExpression<?>[] conditions = multiOperator.getArgs();
         for (int ii = 0; ii < conditions.length; ii++) {
             if (ii > 0) {
                 _builder.append(" ").append(multiOperator.operator()).append(" ");
             }
-            _builder.append("(");
             conditions[ii].accept(this);
-            _builder.append(")");
         }
+        _builder.append(")");
         return null;
     }
 
