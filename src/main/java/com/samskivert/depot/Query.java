@@ -358,8 +358,7 @@ public class Query<T extends PersistentRecord>
     public int selectCount ()
     {
         checkState(_groupBy == null, "Do you mean to select(Funcs.countStar())?");
-        _fromOverride = new FromOverride(_pclass);
-        return _repo.load(CountRecord.class, _cache, getClauseArray()).count;
+        return _repo.load(CountRecord.class, _cache, override(_pclass).getClauseArray()).count;
     }
 
     /**
