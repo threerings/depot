@@ -52,6 +52,9 @@ public class MySQLBuilder
             _types.setUseTableAbbreviations(false);
             try {
                 deleteClause.getWhereClause().accept(this);
+                if (deleteClause.getLimit() != null) {
+                    deleteClause.getLimit().accept(this);
+                }
             } finally {
                 _types.setUseTableAbbreviations(savedFlag);
             }

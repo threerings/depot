@@ -523,8 +523,8 @@ public class Query<T extends PersistentRecord>
     }
 
     /**
-     * Deletes the records that match the configured query clauses. Note that only the where
-     * clauses are used to evaluate a deletion. Attempts to use other clauses will result in
+     * Deletes the records that match the configured query clauses. Note that only the where and
+     * limit clauses are used to evaluate a deletion. Attempts to use other clauses will result in
      * failure.
      *
      * @return the number of rows deleted by this action.
@@ -534,12 +534,16 @@ public class Query<T extends PersistentRecord>
     public int delete ()
     {
         assertValidDelete();
-        return _repo.deleteAll(_pclass, _where);
+        return _repo.deleteAll(_pclass, _where, _limit);
     }
 
     /**
-     * Deletes the records that match the configured query clauses. The supplied cache invalidator
-     * is used to remove deleted records from the cache.
+     * Deletes the records that match the configured query clauses. Note that only the where and
+     * limit clauses are used to evaluate a deletion. Attempts to use other clauses will result in
+     * failure.
+     *
+     * @param invalidator if non-null, used to remove deleted records from the cache; if null, no
+     * cache deletion will be performed.
      *
      * @return the number of rows deleted by this action.
      *
@@ -548,7 +552,7 @@ public class Query<T extends PersistentRecord>
     public int delete (CacheInvalidator invalidator)
     {
         assertValidDelete();
-        return _repo.deleteAll(_pclass, _where, invalidator);
+        return _repo.deleteAll(_pclass, _where, _limit, invalidator);
     }
 
     protected Query (PersistenceContext ctx, DepotRepository repo, Class<T> pclass)
@@ -602,7 +606,6 @@ public class Query<T extends PersistentRecord>
         checkState(_joins == null, "Join clauses not supported by delete.");
         checkState(_orderBy == null, "OrderBy clause not applicable for delete.");
         checkState(_groupBy == null, "GroupBy clause not applicable for delete.");
-        checkState(_limit == null, "Limit clause not supported by delete.");
         checkState(_fromOverride == null, "FromOverride clause not applicable for delete.");
         checkState(_fieldDefs == null, "FieldDefinition clauses not applicable for delete.");
         checkState(_forUpdate == null, "ForUpdate clause not supported by delete.");

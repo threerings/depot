@@ -24,6 +24,7 @@ import com.samskivert.util.ArrayUtil;
 
 import com.samskivert.depot.clause.FieldOverride;
 import com.samskivert.depot.clause.InsertClause;
+import com.samskivert.depot.clause.Limit;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.ColumnExp;
@@ -673,20 +674,34 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    public <T extends PersistentRecord> int deleteAll (Class<T> type, final WhereClause where)
+    public <T extends PersistentRecord> int deleteAll (Class<T> type, WhereClause where)
+        throws DatabaseException
+    {
+        return deleteAll(type, where, null, null);
+    }
+
+    /**
+     * Deletes all persistent objects from the database that match the supplied where clause, up to
+     * the specified limit.
+     *
+     * @return the number of rows deleted by this action.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
+     */
+    public <T extends PersistentRecord> int deleteAll (Class<T> type, WhereClause where, Limit lim)
         throws DatabaseException
     {
         if (where instanceof CacheInvalidator) {
             // our where clause knows how to do its own deletion, yay!
-            return deleteAll(type, where, (CacheInvalidator)where);
+            return deleteAll(type, where, lim, (CacheInvalidator)where);
         } else if (_ctx.getMarshaller(type).hasPrimaryKey()) {
             // look up the primary keys for all matching rows matching and delete using those
-            KeySet<T> pwhere = KeySet.newKeySet(type, findAllKeys(type, true, where));
+            KeySet<T> pwhere = KeySet.newKeySet(type, findAllKeys(type, true, where, lim));
             return deleteAll(type, pwhere, pwhere);
         } else {
             // otherwise just do the delete directly as we can't have cached a record that has no
             // primary key in the first place
-            return deleteAll(type, where, null);
+            return deleteAll(type, where, lim, null);
         }
     }
 
@@ -698,7 +713,22 @@ public abstract class DepotRepository
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
     public <T extends PersistentRecord> int deleteAll (
-        final Class<T> type, final WhereClause where, CacheInvalidator invalidator)
+        Class<T> type, WhereClause where, CacheInvalidator invalidator)
+        throws DatabaseException
+    {
+        return deleteAll(type, where, null, invalidator);
+    }
+
+    /**
+     * Deletes all persistent objects from the database that match the supplied key, up to the
+     * supplied limit.
+     *
+     * @return the number of rows deleted by this action.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
+     */
+    public <T extends PersistentRecord> int deleteAll (
+        final Class<T> type, WhereClause where, Limit limit, CacheInvalidator invalidator)
         throws DatabaseException
     {
         if (invalidator instanceof ValidatingCacheInvalidator) {
@@ -706,7 +736,7 @@ public abstract class DepotRepository
         }
         where.validateQueryType(type); // and another
 
-        DeleteClause delete = new DeleteClause(type, where);
+        DeleteClause delete = new DeleteClause(type, where, limit);
         final SQLBuilder builder = _ctx.getSQLBuilder(DepotTypes.getDepotTypes(_ctx, delete));
         builder.newQuery(delete);
 

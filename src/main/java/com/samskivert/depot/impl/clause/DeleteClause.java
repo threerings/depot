@@ -7,6 +7,7 @@ package com.samskivert.depot.impl.clause;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.clause.Limit;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.WhereClause;
 
@@ -18,10 +19,11 @@ import com.samskivert.depot.impl.FragmentVisitor;
 public class DeleteClause
     implements QueryClause
 {
-    public DeleteClause (Class<? extends PersistentRecord> pClass, WhereClause where)
+    public DeleteClause (Class<? extends PersistentRecord> pClass, WhereClause where, Limit limit)
     {
         _pClass = pClass;
         _where = where;
+        _limit = limit;
     }
 
     public Class<? extends PersistentRecord> getPersistentClass ()
@@ -32,6 +34,11 @@ public class DeleteClause
     public WhereClause getWhereClause ()
     {
         return _where;
+    }
+
+    public Limit getLimit ()
+    {
+        return _limit;
     }
 
     // from SQLFragment
@@ -51,4 +58,7 @@ public class DeleteClause
 
     /** The where clause. */
     protected WhereClause _where;
+
+    /** An optional limit clause. */
+    protected Limit _limit;
 }

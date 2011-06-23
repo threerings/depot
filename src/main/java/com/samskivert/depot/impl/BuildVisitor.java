@@ -469,6 +469,9 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         appendTableAbbreviation(deleteClause.getPersistentClass());
         _builder.append(" ");
         deleteClause.getWhereClause().accept(this);
+        if (deleteClause.getLimit() != null) {
+            deleteClause.getLimit().accept(this);
+        }
         return null;
     }
 

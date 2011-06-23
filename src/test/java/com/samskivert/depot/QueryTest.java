@@ -94,6 +94,24 @@ public class QueryTest extends TestBase
 //         _repo.deleteAll(TestRecord.class, KeySet.newSimpleKeySet(TestRecord.class, ids));
     }
 
+    @Test public void testLimitedDelete ()
+    {
+        for (int ii = 1; ii <= CREATE_RECORDS; ii++) {
+            TestRecord record = createTestRecord(ii);
+            record.name = "Spam! " + ii;
+            record.age = RandomUtil.getInt(100);
+            record.awesomeness = RandomUtil.getFloat(1.0F);
+            record.homeTown = "Over there";
+            _repo.insert(record);
+        }
+
+        _repo.from(TestRecord.class).whereTrue().limit(50).delete();
+        assertEquals(CREATE_RECORDS-50, _repo.findAll(TestRecord.class).size());
+
+        _repo.from(TestRecord.class).whereTrue().delete();
+        assertEquals(0, _repo.findAll(TestRecord.class).size());
+    }
+
     // the HSQL in-memory database persists for the lifetime of the VM, which means we have to
     // clean up after ourselves in every test; thus we go ahead and share a repository
     protected TestRepository _repo = createTestRepository();
