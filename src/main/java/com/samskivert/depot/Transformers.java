@@ -23,6 +23,7 @@ import com.google.common.collect.Interners;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.google.common.primitives.Ints;
 
 import com.samskivert.util.ByteEnum;
 import com.samskivert.util.ByteEnumUtil;
@@ -103,10 +104,10 @@ public class Transformers
     }
 
     /**
-     * Combines the contents of an Iterable<String> column into a single String, terminating each
-     * String element with a newline. A backslash ('\') in Strings will be prefixed by another
-     * backslash, newlines will be encoded as "\n", and null elements will be encoded as "\0" (but
-     * not terminated by a newline).
+     * Combines the contents of a List/Set/Collection/Iterable<String> column into a single String,
+     * terminating each String element with a newline. Null-tolerant.
+     * A backslash ('\') in Strings will be prefixed by another backslash, newlines will be
+     * encoded as "\n", and null elements will be encoded as "\0" (but not terminated by a newline).
      */
     public static class StringIterable extends StringBase<Iterable<String>>
     {
@@ -117,7 +118,7 @@ public class Transformers
 
         @Override protected Builder<String, Iterable<String>> createBuilder (String encoded)
         {
-            return createCollectionBuilder(_ftype, String.class, _immutable, _intern);
+            return createCollectionBuilder(_ftype, String.class, _immutable, _intern, -1);
         }
     }
 
@@ -148,7 +149,7 @@ public class Transformers
         {
             // create a Builder for our field type
             final Builder<E, Iterable<E>> ebuilder = createCollectionBuilder(
-                _ftype, hasNullElement(encoded) ? null : _eclass, _immutable, _intern);
+                _ftype, hasNullElement(encoded) ? null : _eclass, _immutable, _intern, -1);
             // wrap that builder in one that accepts String elements
             return new Builder<String, Iterable<E>>() {
                 public void add (String s) {
@@ -177,6 +178,56 @@ public class Transformers
     }
 
     /**
+     * Can transform a List/Set/Collection/Iterable to an int[] for storage in the db.
+     * Null-tolerant.
+     */
+    public static class IntegerIterable extends Transformer<Iterable<Integer>, int[]>
+    {
+        @Override
+        public void init (Type fieldType, Transform annotation)
+        {
+            _ftype = fieldType;
+            _immutable = annotation.immutable();
+            _intern = annotation.intern();
+        }
+
+        @Override
+        public int[] toPersistent (Iterable<Integer> itr)
+        {
+            if (itr == null) {
+                return null;
+            }
+            Collection<Integer> coll = (itr instanceof Collection<?>)
+                ? (Collection<Integer>)itr
+                : Lists.newArrayList(itr);
+            return Ints.toArray(coll);
+        }
+
+        @Override
+        public Iterable<Integer> fromPersistent (int[] value)
+        {
+            if (value == null) {
+                return null;
+            }
+            Builder<Integer, Iterable<Integer>> builder =
+                createCollectionBuilder(_ftype, Integer.class, _immutable, _intern, value.length);
+            for (int v : value) {
+                builder.add(v);
+            }
+            return builder.build();
+        }
+
+        /** The type of the field. */
+        protected Type _ftype;
+
+        /** Immutable hint. */
+        protected boolean _immutable;
+
+        /** Intern hint. */
+        protected boolean _intern;
+    }
+
+    /**
      * An interface used by some of these transformers to build their result.
      */
     protected interface Builder<E, B>
@@ -190,21 +241,27 @@ public class Transformers
      * Create a builder that populates a collection.
      *
      * @param elementType if non-null and an enum, will be used to possibly create an EnumSet.
+     * @param sizeHint -1 or an *exact size* hint.
      */
     protected static <E> Builder<E, Iterable<E>> createCollectionBuilder (
-        Type fieldType, Class<E> elementType, boolean immutable, boolean intern)
+        Type fieldType, Class<E> elementType, boolean immutable, boolean intern, int sizeHint)
     {
         Collection<E> adder;
         Collection<E> retval = null;
         Type clazz = (fieldType instanceof ParameterizedType) ?
             ((ParameterizedType)fieldType).getRawType() : fieldType;
         // TODO: fill out the collection types
+        // TODO: also, it might be nice to build into an ImmutableCollection if making
+        // immutable (instead of wrapping in a unmodifiableCollection), but that results in
+        // an extra copy... Perhaps we can add another flag that opts-in to that? Aiya.
         if (clazz == HashSet.class || clazz == Set.class || clazz == EnumSet.class) {
             Set<E> set;
             if (clazz == HashSet.class || (elementType == null) || !elementType.isEnum()) {
                 Preconditions.checkArgument(clazz != EnumSet.class,
                     "Cannot proceed: EnumSet field is to be populated with a null element.");
-                set = Sets.newHashSet();
+                set = (sizeHint < 0)
+                    ? Sets.<E>newHashSet()
+                    : Sets.<E>newHashSetWithExpectedSize(sizeHint);
             } else {
                 @SuppressWarnings({ "unchecked", "rawtypes" })
                 Class<Enum> eclazz = (Class<Enum>)elementType;
@@ -221,7 +278,9 @@ public class Transformers
             adder = Lists.newLinkedList();
 
         } else {
-            List<E> list = Lists.newArrayList();
+            List<E> list = (sizeHint < 0)
+                ? Lists.<E>newArrayList()
+                : Lists.<E>newArrayListWithCapacity(sizeHint);
             adder = list;
             if (immutable &&
                     ((clazz == List.class) ||
