@@ -155,6 +155,11 @@ public class MySQLBuilder
             bindValue(fullText.getQuery());
             _builder.append(" in boolean mode)");
         }
+
+        @Override protected void appendEmptyInsertValues ()
+        {
+            _builder.append("() values ()");
+        }
     }
 
     public MySQLBuilder (DepotTypes types)

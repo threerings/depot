@@ -919,6 +919,12 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         }
     }
 
+    // output the column name and value portion of an insert when all values are defaulted
+    protected void appendEmptyInsertValues ()
+    {
+        _builder.append("default values");
+    }
+
     // output the column names and values for an insert
     protected void appendInsertColumns (InsertClause insertClause)
     {
@@ -927,6 +933,18 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         DepotMarshaller<?> marsh = _types.getMarshaller(pClass);
         Set<String> idFields = insertClause.getIdentityFields();
         ColumnExp<?>[] fields = marsh.getColumnFieldNames();
+
+        boolean insertingSomething = false;
+        for (ColumnExp<?> field : fields) {
+            if (!idFields.contains(field.name)) {
+                insertingSomething = true;
+                break;
+            }
+        }
+        if (!insertingSomething) {
+            appendEmptyInsertValues();
+            return;
+        }
 
         _builder.append("(");
         boolean comma = false;
