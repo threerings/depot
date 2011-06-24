@@ -206,10 +206,10 @@ public class Transformers
                     "Cannot proceed: EnumSet field is to be populated with a null element.");
                 set = Sets.newHashSet();
             } else {
-                @SuppressWarnings("unchecked")
+                @SuppressWarnings({ "unchecked", "rawtypes" })
                 Class<Enum> eclazz = (Class<Enum>)elementType;
                 @SuppressWarnings("unchecked")
-                Set<E> eSet = (Set<E>)EnumSet.noneOf(eclazz);
+                Set<E> eSet = EnumSet.noneOf(eclazz);
                 set = eSet;
             }
             adder = set;

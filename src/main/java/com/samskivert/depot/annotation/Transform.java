@@ -50,6 +50,7 @@ public @interface Transform
     /**
      * Specifies a transformer to be used when persisting the target of this annotation.
      */
+    @SuppressWarnings("rawtypes")
     Class<? extends Transformer> value ();
 
     /**
