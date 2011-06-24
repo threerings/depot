@@ -35,7 +35,7 @@ public class TransformersTest
         set.add(xform.toPersistent(null));
         set.add(xform.toPersistent(new String[] {}));
         set.add(xform.toPersistent(new String[] {""}));
-        assertTrue(set.size() == 3);
+        assertEquals(3, set.size());
     }
 
     @Test public void testByteEnumSets ()
@@ -47,13 +47,13 @@ public class TransformersTest
         set.add(xform.toPersistent(EnumSet.of(LilEnum.ONE)));
         set.add(xform.toPersistent(EnumSet.of(LilEnum.TWO, LilEnum.THREE)));
         set.add(xform.toPersistent(EnumSet.allOf(LilEnum.class)));
-        assertTrue(set.size() == 5);
+        assertEquals(5, set.size());
 
         set.clear();
         for (Set<LilEnum> subset : Sets.powerSet(EnumSet.allOf(LilEnum.class))) {
             set.add(xform.toPersistent(subset));
         }
-        assertTrue(set.size() == 8);
+        assertEquals(8, set.size());
 
     }
 
