@@ -47,24 +47,66 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
     extends Fetcher<List<R>>
 {
     /**
-     * A base class for queries that fetch a full record at a time.
+     * A base class for cached queries that fetch a full record at a time.
      */
-    public static abstract class FullRecordQuery<T extends PersistentRecord>
-        extends FindAllQuery<T, T>
+    public static abstract class CachedFullRecordQuery<T extends PersistentRecord>
+        extends FullRecordQuery<T>
     {
-        protected FullRecordQuery (PersistenceContext ctx, Class<T> type) {
-            super(type, ctx.getMarshaller(type), new CloningCloner<T>());
-            _dmarsh = ctx.getMarshaller(type);
+        protected CachedFullRecordQuery (PersistenceContext ctx, Class<T> type) {
+            super(ctx, type);
         }
 
-        protected DepotMarshaller<T> _dmarsh;
+        /**
+         * Returns the id of the cache in which this query's results will be stored, or null if the
+         * query is not configured to use a cache.
+         */
+        public String getCacheId () {
+            return (_qkey == null) ? null : _qkey.getCacheId();
+        }
+
+        protected SimpleCacheKey _qkey;
     }
 
     /**
      * The two-pass collection query implementation. See {@link DepotRepository#findAll} for
      * details.
      */
-    public static class WithCache<T extends PersistentRecord> extends FullRecordQuery<T>
+    public static class WithKeys<T extends PersistentRecord> extends FullRecordQuery<T>
+    {
+        public WithKeys (PersistenceContext ctx, Iterable<Key<T>> keys)
+            throws DatabaseException
+        {
+            super(ctx, keys.iterator().next().getPersistentClass());
+            _keys = keys;
+        }
+
+        @Override // from Fetcher
+        public List<T> getCachedResult (PersistenceContext ctx)
+        {
+            // look up what we can from the cache
+            _fetchKeys = loadFromCache(ctx, _keys, _entities);
+
+            // if we found everything, we can just return our result straight away, yay!
+            return _fetchKeys.isEmpty() ? resolve(_keys, _entities) : null;
+        }
+
+        // from Fetcher
+        public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
+            throws SQLException
+        {
+            return loadAndResolve(ctx, conn, _keys, _fetchKeys, _entities, null);
+        }
+
+        protected Iterable<Key<T>> _keys;
+        protected Set<Key<T>> _fetchKeys;
+        protected Map<Key<T>, T> _entities = Maps.newHashMap();
+    }
+
+    /**
+     * The two-pass collection query implementation. See {@link DepotRepository#findAll} for
+     * details.
+     */
+    public static class WithCache<T extends PersistentRecord> extends CachedFullRecordQuery<T>
     {
         public WithCache (PersistenceContext ctx, Class<T> type,
             Iterable<? extends QueryClause> clauses, CacheStrategy strategy)
@@ -94,7 +136,6 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
             default:
                 throw new IllegalArgumentException("Unexpected cache strategy: " + strategy);
             }
-
         }
 
         @Override // from Fetcher
@@ -148,7 +189,6 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
             return loadAndResolve(ctx, conn, _keys, _fetchKeys, _entities, stmtString);
         }
 
-        protected SimpleCacheKey _qkey;
         protected CacheCategory _category;
         protected SelectClause _select;
         protected KeySet<T> _keys;
@@ -157,59 +197,19 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
     }
 
     /**
-     * The two-pass collection query implementation. See {@link DepotRepository#findAll} for
-     * details.
-     */
-    public static class WithKeys<T extends PersistentRecord> extends FullRecordQuery<T>
-    {
-        public WithKeys (PersistenceContext ctx, Iterable<Key<T>> keys)
-            throws DatabaseException
-        {
-            super(ctx, keys.iterator().next().getPersistentClass());
-            _keys = keys;
-        }
-
-        @Override // from Fetcher
-        public List<T> getCachedResult (PersistenceContext ctx)
-        {
-            // look up what we can from the cache
-            _fetchKeys = loadFromCache(ctx, _keys, _entities);
-
-            // if we found everything, we can just return our result straight away, yay!
-            return _fetchKeys.isEmpty() ? resolve(_keys, _entities) : null;
-        }
-
-        // from Fetcher
-        public List<T> invoke (PersistenceContext ctx, Connection conn, DatabaseLiaison liaison)
-            throws SQLException
-        {
-            return loadAndResolve(ctx, conn, _keys, _fetchKeys, _entities, null);
-        }
-
-        protected Iterable<Key<T>> _keys;
-        protected Set<Key<T>> _fetchKeys;
-        protected Map<Key<T>, T> _entities = Maps.newHashMap();
-    }
-
-    /**
      * The single-pass collection query implementation. See {@link DepotRepository#findAll} for
      * details.
      */
-    public static class Explicitly<T extends PersistentRecord> extends FullRecordQuery<T>
+    public static class Explicitly<T extends PersistentRecord> extends CachedFullRecordQuery<T>
     {
         public Explicitly (PersistenceContext ctx, Class<T> type,
                            Iterable<? extends QueryClause> clauses, boolean cachedContents)
             throws DatabaseException
         {
             super(ctx, type);
-
             _select = new SelectClause(type, _dmarsh.getSelections(), clauses);
-
-            if (cachedContents) {
-                _qkey = new SimpleCacheKey(_dmarsh.getTableName() + "Contents", _select.toString());
-            } else {
-                _qkey = null;
-            }
+            _qkey = !cachedContents ? null :
+                new SimpleCacheKey(_dmarsh.getTableName() + "Contents", _select.toString());
         }
 
         @Override // from Fetcher
@@ -246,7 +246,6 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
         }
 
         protected SelectClause _select;
-        protected SimpleCacheKey _qkey;
     }
 
     public static class Projection<T extends PersistentRecord,R>
@@ -286,47 +285,51 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
         protected DepotTypes _types;
     }
 
-    protected static class ProjectionQueryMarshaller<T extends PersistentRecord,R>
-        implements QueryMarshaller<T,R>
+    public static <T extends PersistentRecord> CachedFullRecordQuery<T> newCachedFullRecordQuery (
+        PersistenceContext ctx, Class<T> type, CacheStrategy strategy,
+        Iterable<? extends QueryClause> clauses)
     {
-        public ProjectionQueryMarshaller (Projector<T,R> cset, DepotTypes types) {
-            _cset = cset;
-            _types = types;
-        }
+        DepotMarshaller<T> marsh = ctx.getMarshaller(type);
 
-        public String getTableName () {
-            return _types.getTableName(_cset.ptype);
-        }
+        switch (strategy) {
+        case LONG_KEYS: case SHORT_KEYS: case BEST: case RECORDS:
+            String reason = null;
+            if (marsh.getTableName() == null) {
+                reason = type + " is computed";
 
-        public SQLExpression<?>[] getSelections () {
-            return _cset.selexps;
-        }
+            } else if (!marsh.hasPrimaryKey()) {
+                reason = type + " has no primary key";
 
-        public Key<T> getPrimaryKey (Object object) {
-            return _types.getMarshaller(_cset.ptype).getPrimaryKey(object);
-        }
-
-        public R createObject (ResultSet rs) throws SQLException {
-            Object[] data = new Object[_cset.selexps.length];
-            for (int ii = 0; ii < data.length; ii++) {
-                SQLExpression<?> exp = _cset.selexps[ii];
-                if (exp instanceof ColumnExp<?>) {
-                    ColumnExp<?> col = (ColumnExp<?>)exp;
-                    data[ii] = _types.getMarshaller(col.getPersistentClass()).
-                        getFieldMarshaller(col.name).getFromSet(rs, ii+1);
-                } else {
-                    // TEMP: in the case of selecting computed expressions, we rely on the types to
-                    // be correct by construction; TODO: this will probably bite us when JDBC
-                    // drivers choose Long instead of Integer or whatnot, so we'll need to set up
-                    // more complex machinery
-                    data[ii] = rs.getObject(ii+1);
+            } else {
+                for (QueryClause clause : clauses) {
+                    if (clause instanceof FieldOverride) {
+                        reason = "query uses a FieldOverride clause";
+                        break;
+                    }
                 }
             }
-            return _cset.createObject(data);
+            if (strategy == CacheStrategy.BEST) {
+                strategy = (reason != null) ? CacheStrategy.NONE : CacheStrategy.SHORT_KEYS;
+            } else if (reason != null) {
+                // if user explicitly asked for a strategy we can't do, protest
+                throw new IllegalArgumentException(
+                    "Cannot use " + strategy + " strategy because " + reason);
+            }
+            break;
+
+        case NONE: case CONTENTS:
+            break; // NONE and CONTENTS can always be used.
         }
 
-        protected Projector<T,R> _cset;
-        protected DepotTypes _types;
+        // if we're not using a cache, then skip all of the above
+        strategy = ctx.isUsingCache() ? strategy : CacheStrategy.NONE;
+
+        switch (strategy) {
+        case SHORT_KEYS: case LONG_KEYS: case RECORDS:
+            return new WithCache<T>(ctx, type, clauses, strategy);
+        default:
+            return new Explicitly<T>(ctx, type, clauses, strategy == CacheStrategy.CONTENTS);
+        }
     }
 
     // from Fetcher
@@ -455,6 +458,62 @@ public abstract class FindAllQuery<T extends PersistentRecord,R>
             key.toShortString(builder);
         }
         return builder.append(")").toString();
+    }
+
+    /** A base class for queries that fetch a full record at a time. */
+    protected static abstract class FullRecordQuery<T extends PersistentRecord>
+        extends FindAllQuery<T, T>
+    {
+        protected FullRecordQuery (PersistenceContext ctx, Class<T> type) {
+            super(type, ctx.getMarshaller(type), new CloningCloner<T>());
+            _dmarsh = ctx.getMarshaller(type);
+        }
+
+        protected DepotMarshaller<T> _dmarsh;
+    }
+
+    /** Helper for {@link Projection}. */
+    protected static class ProjectionQueryMarshaller<T extends PersistentRecord,R>
+        implements QueryMarshaller<T,R>
+    {
+        public ProjectionQueryMarshaller (Projector<T,R> cset, DepotTypes types) {
+            _cset = cset;
+            _types = types;
+        }
+
+        public String getTableName () {
+            return _types.getTableName(_cset.ptype);
+        }
+
+        public SQLExpression<?>[] getSelections () {
+            return _cset.selexps;
+        }
+
+        public Key<T> getPrimaryKey (Object object) {
+            return _types.getMarshaller(_cset.ptype).getPrimaryKey(object);
+        }
+
+        public R createObject (ResultSet rs) throws SQLException {
+            Object[] data = new Object[_cset.selexps.length];
+            for (int ii = 0; ii < data.length; ii++) {
+                SQLExpression<?> exp = _cset.selexps[ii];
+                if (exp instanceof ColumnExp<?>) {
+                    ColumnExp<?> col = (ColumnExp<?>)exp;
+                    data[ii] = _types.getMarshaller(col.getPersistentClass()).
+                        getFieldMarshaller(col.name).getFromSet(rs, ii+1);
+                } else {
+                    // TEMP: in the case of selecting computed expressions, we rely on the types to
+                    // be correct by construction; TODO: this will probably bite us when JDBC
+                    // drivers choose Long instead of Integer or whatnot, so we'll need to set up
+                    // more complex machinery
+                    data[ii] = rs.getObject(ii+1);
+                }
+            }
+            return _cset.createObject(data);
+        }
+
+        protected Projector<T,R> _cset;
+        protected DepotTypes _types;
     }
 
     // we have to factor out cloning data for cache storage so that we can support storing

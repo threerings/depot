@@ -426,6 +426,33 @@ public class PersistenceContext
     }
 
     /**
+     * Requests that the cache for the specified persistent record be cleared. Note that this
+     * clears only the <em>by-primary-key</em> cache for the index in question. It does not clear
+     * the <em>keyset</em> or <em>contents</em> query caches. Use {@link Query#clearCache} to clear
+     * these caches.
+     *
+     * @param localOnly if true, only the cache in this JVM will be cleared, no broadcast message
+     * will be sent to instruct all distributed nodes to also clear this cache.
+     */
+    public void cacheClear (Class<? extends PersistentRecord> pClass, boolean localOnly)
+    {
+        cacheClear(pClass.getName(), localOnly);
+    }
+
+    /**
+     * Requests that the cache with the specified id be cleared.
+     *
+     * @param localOnly if true, only the cache in this JVM will be cleared, no broadcast message
+     * will be sent to instruct all distributed nodes to also clear this cache.
+     */
+    public void cacheClear (String cacheId, boolean localOnly)
+    {
+        if (_cache != null) {
+            _cache.clear(cacheId, localOnly);
+        }
+    }
+
+    /**
      * Registers a new cache listener with the cache associated with the given class.
      */
     public <T extends Serializable> void addCacheListener (

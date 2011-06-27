@@ -174,6 +174,15 @@ public class EHCacheAdapter
     }
 
     // from CacheAdapter
+    public void clear (String cacheId, boolean localOnly)
+    {
+        EHCacheBin<?> bin = _bins.get(cacheId);
+        if (bin != null) {
+            bin.getCache().removeAll(localOnly);
+        }
+    }
+
+    // from CacheAdapter
     public void shutdown ()
     {
         log.debug("EHCacheAdapter shutting down", "lookups", _lookups,

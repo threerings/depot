@@ -59,6 +59,14 @@ public interface CacheAdapter
     public <T> Iterable<Serializable> enumerate (String cacheId);
 
     /**
+     * Clears the cache with the specified name.
+     *
+     * @param localOnly if true, only clear the cache on the local node, do not broadcast
+     * instructions for all distributed nodes to clear this cache as well.
+     */
+    public void clear (String cacheId, boolean localOnly);
+
+    /**
      * Shut down all operations, e.g. persisting memory contents to disk.
      */
     public void shutdown ();

@@ -240,50 +240,7 @@ public abstract class DepotRepository
         Class<T> type, CacheStrategy cache, Iterable<? extends QueryClause> clauses)
         throws DatabaseException
     {
-        DepotMarshaller<T> marsh = _ctx.getMarshaller(type);
-
-        switch (cache) {
-        case LONG_KEYS: case SHORT_KEYS: case BEST: case RECORDS:
-            String reason = null;
-            if (marsh.getTableName() == null) {
-                reason = type + " is computed";
-
-            } else if (!marsh.hasPrimaryKey()) {
-                reason = type + " has no primary key";
-
-            } else {
-                for (QueryClause clause : clauses) {
-                    if (clause instanceof FieldOverride) {
-                        reason = "query uses a FieldOverride clause";
-                        break;
-                    }
-                }
-            }
-            if (cache == CacheStrategy.BEST) {
-                cache = (reason != null) ? CacheStrategy.NONE : CacheStrategy.SHORT_KEYS;
-            } else if (reason != null) {
-                // if user explicitly asked for a strategy we can't do, protest
-                throw new IllegalArgumentException(
-                    "Cannot use " + cache + " strategy because " + reason);
-            }
-            break;
-
-        case NONE: case CONTENTS:
-            break; // NONE and CONTENTS can always be used.
-        }
-
-        if (!_ctx.isUsingCache()) {
-            cache = CacheStrategy.NONE;
-        }
-
-        switch (cache) {
-        case SHORT_KEYS: case LONG_KEYS: case RECORDS:
-            return _ctx.invoke(new FindAllQuery.WithCache<T>(_ctx, type, clauses, cache));
-
-        default:
-            return _ctx.invoke(new FindAllQuery.Explicitly<T>(
-                                   _ctx, type, clauses, cache == CacheStrategy.CONTENTS));
-        }
+        return _ctx.invoke(FindAllQuery.newCachedFullRecordQuery(_ctx, type, cache, clauses));
     }
 
     /**

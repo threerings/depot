@@ -6,6 +6,7 @@ package com.samskivert.depot;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,57 @@ import com.samskivert.util.Tuple;
 public class TestCacheAdapter implements CacheAdapter
 {
     // from interface CacheAdapter
+    public <T> CacheAdapter.CachedValue<T> lookup (String cacheId, Serializable key)
+    {
+        // System.err.println("GET " + key + ": " + _cache.containsKey(key));
+        @SuppressWarnings("unchecked")
+        CachedValue<T> value = (CachedValue<T>) _cache.get(
+            new Tuple<String, Serializable>(cacheId, key));
+        return value;
+    }
+
+    // from interface CacheAdapter
+    public <T> void store (CacheCategory category, String cacheId, Serializable key, T value)
+    {
+        // System.err.println("STORE " + key);
+        _cache.put(new Tuple<String, Serializable>(cacheId, key), new TestCachedValue<T>(value));
+    }
+
+    // from interface CacheAdapter
+    public void remove (String cacheId, Serializable key)
+    {
+        // System.err.println("REMOVE " + key);
+        _cache.remove(new Tuple<String, Serializable>(cacheId, key));
+    }
+
+    // from interface CacheAdapter
+    public <T> Iterable<Serializable> enumerate (String cacheId)
+    {
+        // in a real implementation this would be a lazily constructed iterable
+        List<Serializable> result = Lists.newArrayList();
+        for (Map.Entry<Tuple<String, Serializable>, CachedValue<?>> entry: _cache.entrySet()) {
+            if (entry.getKey().left.equals(cacheId)) {
+                result.add(entry.getKey().right);
+            }
+        }
+        return result;
+    }
+
+    // from interface CacheAdapter
+    public void clear (String cacheId, boolean localOnly)
+    {
+        synchronized (_cache) {
+            for (Iterator<Tuple<String, Serializable>> iter = _cache.keySet().iterator();
+                 iter.hasNext(); ) {
+                Tuple<String, Serializable> key = iter.next();
+                if (key.left.equals(cacheId)) {
+                    iter.remove();
+                }
+            }
+        }
+    }
+
+    // from interface CacheAdapter
     public void shutdown ()
     {
         // nothing doing!
@@ -35,33 +87,6 @@ public class TestCacheAdapter implements CacheAdapter
             return _value;
         }
         protected final T _value;
-    }
-
-    public <T> CacheAdapter.CachedValue<T> lookup (String cacheId, Serializable key) {
-        // System.err.println("GET " + key + ": " + _cache.containsKey(key));
-        @SuppressWarnings("unchecked")
-        CachedValue<T> value = (CachedValue<T>) _cache.get(
-            new Tuple<String, Serializable>(cacheId, key));
-        return value;
-    }
-    public <T> void store (CacheCategory category, String cacheId, Serializable key, T value) {
-        // System.err.println("STORE " + key);
-        _cache.put(new Tuple<String, Serializable>(cacheId, key), new TestCachedValue<T>(value));
-    }
-    public void remove (String cacheId, Serializable key) {
-        // System.err.println("REMOVE " + key);
-        _cache.remove(new Tuple<String, Serializable>(cacheId, key));
-    }
-    public <T> Iterable<Serializable> enumerate (String cacheId)
-    {
-        // in a real implementation this would be a lazily constructed iterable
-        List<Serializable> result = Lists.newArrayList();
-        for (Map.Entry<Tuple<String, Serializable>, CachedValue<?>> entry: _cache.entrySet()) {
-            if (entry.getKey().left.equals(cacheId)) {
-                result.add(entry.getKey().right);
-            }
-        }
-        return result;
     }
 
     protected Map<Tuple<String, Serializable>, CachedValue<?>> _cache =

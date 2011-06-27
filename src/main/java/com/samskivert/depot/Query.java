@@ -555,6 +555,37 @@ public class Query<T extends PersistentRecord>
         return _repo.deleteAll(_pclass, _where, _limit, invalidator);
     }
 
+    /**
+     * Clears the cache for the query configured by this instance. If the query would not result in
+     * cache usage for whatever reason, this will NOOP.
+     *
+     * <p> Note: Depot uses numerous caches, so it is important to know what you are doing. If the
+     * records fetched by this query have a primary key, Depot performs a two-phase query where the
+     * primary keys for the records that satisify this query are first fetched and stored in a
+     * <em>keyset</em> cache, then the actual records needed to satisfy the query are fetched using
+     * the <em>by-primary-key</em> cache. This method will only clear the <em>keyset</em> cache.
+     * That may be sufficient for your purposes, or you may need to call {@link
+     * PersistenceContext#cacheClear(Class,boolean)} to clear the <em>by-primary-key</em> cache as
+     * well. If the record in question does not define a primary key, Depot will use a
+     * <em>contents</em> cache to store the entire records fetched as a result of executing this
+     * query. In that case, calling this method is sufficient to ensure that no cached data will be
+     * used to fulfill subsequent similarly configured queries. </p>
+     *
+     * <p> Finally, note that query configuration other than {@link #cache} (i.e. {@link #limit},
+     * {@link #groupBy}, {@link #join}, etc.) will have no influence on this operation. </p>
+     *
+     * @param localOnly if true, only the cache in this JVM will be cleared, no broadcast message
+     * will be sent to instruct all distributed nodes to also clear this cache.
+     */
+    public void clearCache (boolean localOnly)
+    {
+        String cacheId = FindAllQuery.newCachedFullRecordQuery(
+            _ctx, _pclass, _cache, getClauses()).getCacheId();
+        if (cacheId != null) {
+            _ctx.cacheClear(cacheId, localOnly);
+        }
+    }
+
     protected Query (PersistenceContext ctx, DepotRepository repo, Class<T> pclass)
     {
         _ctx = ctx;
