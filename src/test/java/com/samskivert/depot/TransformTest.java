@@ -109,7 +109,7 @@ public class TransformTest extends TestBase
         private enum Dummy implements ShortEnum {
             DUMMY;
             public short toShort () { return 0; }
-        };
+        }
 
         protected Class<Dummy> _eclass;
     }
