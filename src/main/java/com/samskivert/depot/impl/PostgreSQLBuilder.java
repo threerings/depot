@@ -15,7 +15,6 @@ import java.util.Set;
 
 import com.samskivert.jdbc.DatabaseLiaison;
 import com.samskivert.jdbc.LiaisonRegistry;
-import com.samskivert.util.ArrayUtil;
 import com.samskivert.util.StringUtil;
 
 import com.samskivert.depot.Exps;
@@ -259,18 +258,17 @@ public class PostgreSQLBuilder
         return field.getType().equals(Long.TYPE) ? "BIGSERIAL" : "SERIAL";
     }
 
-    protected static String massageFTQuery (FullText match)
+    protected static String massageFTQuery (FullText fullText)
     {
         // The tsearch2 engine takes queries on the form
         //   (foo&bar)|goop
-        // so in this first simple implementation, we just take the user query, chop it into
-        // words by space/punctuation and 'or' those together like so:
-        //   'ho! who goes there?' -> 'ho|who|goes|there'
-        String[] searchTerms = match.getQuery().toLowerCase().split("\\W+");
-        if (searchTerms.length > 0 && searchTerms[0].length() == 0) {
-            searchTerms = ArrayUtil.splice(searchTerms, 0, 1);
-        }
-        return StringUtil.join(searchTerms, "|");
+        // so in this implementation, we take the user query, chop it into words by and combine
+        // those together depending on the value of isMatchAll(), like so:
+        //   'ho! who goes there?' -> 'ho|who|goes|there' OR 'ho&who&goes&there'
+        //
+        String[] searchTerms = fullText.getQuery().toLowerCase().trim().split("\\W+");
+        String operator = fullText.isMatchAll() ? "&" : "|";
+        return StringUtil.join(searchTerms, operator);
     }
 
     // Translate the mildly abstracted full-text parser/dictionary configuration support

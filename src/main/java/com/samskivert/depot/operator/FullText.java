@@ -7,6 +7,7 @@ package com.samskivert.depot.operator;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.impl.FragmentVisitor;
 
@@ -66,11 +67,29 @@ public class FullText
         }
     }
 
-    public FullText (Class<? extends PersistentRecord> pClass, String name, String query)
+    /**
+     * @param pClass The persistent record the full-text query is defined on.
+     * @param name The name of the corresponding {@link FullTextIndex}.
+     * @param query What to actually search for; this can be unprocessed natural language
+     * @param matchAll If true, all words in the query must be present in matches.
+     */
+    public FullText (
+        Class<? extends PersistentRecord> pClass, String name, String query, boolean matchAll)
     {
         _pClass = pClass;
         _name = name;
         _query = query;
+        _matchAll = matchAll;
+    }
+
+    /**
+     * @param pClass The persistent record the full-text query is defined on.
+     * @param name The name of the corresponding {@link FullTextIndex}.
+     * @param query What to actually search for; this can be unprocessed natural language
+     */
+    public FullText (Class<? extends PersistentRecord> pClass, String name, String query)
+    {
+        this(pClass, name, query, false);
     }
 
     public Match match ()
@@ -98,12 +117,18 @@ public class FullText
         return _query;
     }
 
+    public boolean isMatchAll ()
+    {
+        return _matchAll;
+    }
+
     protected String toString (String subType)
     {
-        return "FullText." + subType + "(" + _name + "=" + _query + ")";
+        return "FullText." + subType + "(" + _name + "=" + _query + ", " + _matchAll + ")";
     }
 
     protected Class<? extends PersistentRecord> _pClass;
     protected String _name;
     protected String _query;
+    protected boolean _matchAll;
 }

@@ -10,6 +10,8 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
 
+import com.samskivert.util.StringUtil;
+
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.expression.ColumnExp;
@@ -152,13 +154,26 @@ public class MySQLBuilder
                 new ColumnExp<Object>(pClass, fields[ii]).accept(this);
             }
             _builder.append(") against (");
-            bindValue(fullText.getQuery());
+            bindValue(massageFTQuery(fullText));
             _builder.append(" in boolean mode)");
         }
 
         @Override protected void appendEmptyInsertValues ()
         {
             _builder.append("() values ()");
+        }
+    }
+
+    protected static String massageFTQuery (FullText fullText)
+    {
+        // Split the query into words and remove punctuation
+        String[] searchTerms = fullText.getQuery().toLowerCase().trim().split("\\W+");
+        if (fullText.isMatchAll()) {
+            // Prepend every search term with a plus for ANDing
+            return '+' + StringUtil.join(searchTerms, " +");
+        } else {
+            // Use the default OR matching
+            return StringUtil.join(searchTerms, " ");
         }
     }
 
