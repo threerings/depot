@@ -50,7 +50,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>r07</version>
+      <version>10.0</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
@@ -125,7 +125,7 @@
           <excludePackageNames>com.samskivert.depot.impl</excludePackageNames>
           <links>
             <link>http://samskivert.googlecode.com/svn/apidocs/</link>
-            <link>http://guava-libraries.googlecode.com/svn/trunk/javadoc/</link>
+            <link>http://docs.guava-libraries.googlecode.com/git/javadoc/</link>
             <link>http://ehcache.org/apidocs/</link>
           </links>
         </configuration>
