@@ -44,13 +44,6 @@
   </target>
 
   <target name="clean" description="Cleans out build results.">
-    <delete dir="${classes.dir}"/>
-    <delete dir="${tclasses.dir}"/>
-    <delete dir="${javadoc.dir}"/>
-    <delete failonerror="false"><fileset dir="${deploy.dir}" includes="*.jar"/></delete>
-  </target>
-
-  <target name="distclean" description="Completely removes build result directory.">
     <delete dir="${deploy.dir}"/>
   </target>
 
@@ -83,9 +76,6 @@
     </javadoc>
   </target>
 
-  <target name="all" depends="clean,compile,javadoc,dist"
-          description="Cleans and rebuilds everything including documentation."/>
-
   <target name="tests" depends="compile" description="Runs the unit tests.">
     <!-- allows passing -Dtest=NamePrefix to restrict to subset of tests -->
     <property name="test" value=""/>
@@ -103,7 +93,7 @@
     </unit>
   </target>
 
-  <target name="dist" depends="compile" description="Compiles code and builds jar file.">
+  <target name="package" depends="compile" description="Compiles code and builds jar file.">
     <jar destfile="${deploy.dir}/${ant.project.name}.jar" basedir="${classes.dir}"/>
   </target>
 
