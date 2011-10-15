@@ -8,7 +8,7 @@
   <property name="tclasses.dir" value="${deploy.dir}/test-classes"/>
   <property name="javadoc.dir"  value="${deploy.dir}/docs"/>
 
-  <property name="ooo-build.vers" value="2.5"/>
+  <property name="ooo-build.vers" value="2.9"/>
   <ant antfile="bootstrap.xml"/>
   <import file="${user.home}/.m2/ooo-build/${ooo-build.vers}/ooo-build.xml"/>
 
@@ -107,8 +107,12 @@
     <jar destfile="${deploy.dir}/${ant.project.name}.jar" basedir="${classes.dir}"/>
   </target>
 
-  <target name="maven-deploy" depends="dist"
-          description="Deploys our build artifacts to a Maven repository.">
-    <mavendeploy file="${deploy.dir}/${ant.project.name}.jar" pom="pom.xml" srcdir="${src.dir}"/>
+  <target name="install" depends="package" description="Installs to local Maven repo.">
+    <maveninstall file="${deploy.dir}/${ant.project.name}.jar" pom="pom.xml"/>
+  </target>
+
+  <target name="deploy" depends="package,tests,javadoc" description="Deploys to remote Maven repo.">
+    <mavendeploy file="${deploy.dir}/${ant.project.name}.jar" pom="pom.xml"
+                 srcdir="${src.dir}" docdir="${deploy.dir}/docs"/>
   </target>
 </project>
