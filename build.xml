@@ -113,6 +113,6 @@
 
   <target name="deploy" depends="package,tests,javadoc" description="Deploys to remote Maven repo.">
     <mavendeploy file="${deploy.dir}/${ant.project.name}.jar" pom="pom.xml"
-                 srcdir="${src.dir}" docdir="${deploy.dir}/docs"/>
+                 srcdir="${src.dir}" docdir="${javador.dir}"/>
   </target>
 </project>
