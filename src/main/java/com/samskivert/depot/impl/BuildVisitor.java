@@ -490,7 +490,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         if (!_allowComplexIndices) {
             for (Tuple<SQLExpression<?>, Order> field : createIndexClause.getFields()) {
                 if (!(field.left instanceof ColumnExp<?>)) {
-                    log.warning("This database can't handle complex indexes. Aborting creation.",
+                    log.warning("This database can't handle complex indexes. Not creating.",
                         "ixName", createIndexClause.getName());
                     return null;
                 }
