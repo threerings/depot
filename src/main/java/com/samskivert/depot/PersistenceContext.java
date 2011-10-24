@@ -148,9 +148,15 @@ public class PersistenceContext
      */
     public void init (String ident, ConnectionProvider conprov, CacheAdapter adapter)
     {
+        // if we have no URL for the ident, freak out now; lest confusing failure happen later
+        String url = conprov.getURL(ident);
+        if (url == null) {
+            throw new IllegalArgumentException("No database URL found for ident '" + ident + "'.");
+        }
+
         _ident = ident;
         _conprov = conprov;
-        _liaison = LiaisonRegistry.getLiaison(conprov.getURL(ident));
+        _liaison = LiaisonRegistry.getLiaison(url);
         _cache = adapter;
 
         // set up some basic meta-meta-data
