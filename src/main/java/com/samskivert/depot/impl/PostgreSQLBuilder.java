@@ -21,6 +21,7 @@ import com.samskivert.depot.Exps;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex.Configuration;
 import com.samskivert.depot.annotation.FullTextIndex;
+import com.samskivert.depot.clause.OrderBy;
 import com.samskivert.depot.impl.expression.IntervalExp;
 import com.samskivert.depot.impl.expression.DateFun.DatePart;
 import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
@@ -116,6 +117,10 @@ public class PostgreSQLBuilder
 
         @Override protected void appendIdentifier (String field) {
             _builder.append("\"").append(field).append("\"");
+        }
+
+        @Override protected OrderBy.Order validateOrder (OrderBy.Order order) {
+            return order;
         }
 
         protected PGBuildVisitor (DepotTypes types)

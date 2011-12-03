@@ -18,7 +18,26 @@ import com.samskivert.depot.impl.expression.LiteralExp;
 public class OrderBy implements QueryClause
 {
     /** Indicates the order of the clause. */
-    public enum Order { ASC, DESC }
+    public enum Order
+    {
+        /** Ascending (nulls last). */
+        ASC,
+
+        /** Descending (nulls first). */
+        DESC,
+
+        /** Ascending; nulls first (postgres only). */
+        ASC_NULLS_FIRST,
+
+        /** Descending; nulls last (postgres only). */
+        DESC_NULLS_LAST;
+
+        @Override
+        public String toString ()
+        {
+            return name().replace('_', ' ');
+        }
+    }
 
     /**
      * Creates and returns a random order by clause.

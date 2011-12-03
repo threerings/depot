@@ -272,7 +272,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
                 _builder.append(", ");
             }
             values[ii].accept(this);
-            _builder.append(" ").append(orders[ii]);
+            _builder.append(" ").append(validateOrder(orders[ii]));
         }
         return null;
     }
@@ -972,6 +972,22 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
             bindField(pClass, field, pojo);
         }
         _builder.append(")");
+    }
+
+    /**
+     * Validate/massage the Order value as supported by the underlying database.
+     */
+    protected OrderBy.Order validateOrder (OrderBy.Order order)
+    {
+        if ((order == OrderBy.Order.ASC_NULLS_FIRST) || (order == OrderBy.Order.DESC_NULLS_LAST)) {
+            if (false /*Boolean.getBoolean("com.samskivert.depot.massageOrderByNulls")*/) {
+                order = (order == OrderBy.Order.ASC_NULLS_FIRST)
+                    ? OrderBy.Order.ASC : OrderBy.Order.DESC;
+            } else {
+                throw new RuntimeException(order + " is not supported on your database.");
+            }
+        }
+        return order;
     }
 
     protected BuildVisitor (DepotTypes types, boolean allowComplexIndices)
