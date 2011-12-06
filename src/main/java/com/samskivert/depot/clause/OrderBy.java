@@ -20,6 +20,10 @@ public class OrderBy implements QueryClause
     /** Indicates the order of the clause. */
     public enum Order
     {
+        /** Ordering by null can be used to suppress sorting in the database when using
+         * a GROUP BY in your query (postgres and mysql only). */
+        NULL,
+
         /** Ascending (nulls last). */
         ASC,
 

@@ -84,6 +84,7 @@ import com.samskivert.depot.impl.operator.MultiOperator;
 import com.samskivert.depot.impl.operator.Not;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.samskivert.Log.log;
 
 /**
@@ -979,16 +980,26 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
      */
     protected OrderBy.Order validateOrder (OrderBy.Order order)
     {
-        if ((order == OrderBy.Order.ASC_NULLS_FIRST) || (order == OrderBy.Order.DESC_NULLS_LAST)) {
-            if (false /*Boolean.getBoolean("com.samskivert.depot.massageOrderByNulls")*/) {
-                order = (order == OrderBy.Order.ASC_NULLS_FIRST)
-                    ? OrderBy.Order.ASC : OrderBy.Order.DESC;
-            } else {
-                throw new RuntimeException(order + " is not supported on your database.");
-            }
+        checkNotNull(order);
+        if (orderSupported(order)) {
+            return order;
         }
-        return order;
+        // Note: the following code was never "live". If needed it can be made so.
+        // The property name is up for debate.
+//        if (Boolean.getBoolean("com.samskivert.depot.massageNullOrders")) {
+//            switch (order) {
+//            case ASC_NULLS_FIRST: return OrderBy.Order.ASC;
+//            case DESC_NULLS_LAST: return OrderBy.Order.DESC;
+//            }
+//        }
+        throw new IllegalArgumentException(
+            "Order '" + order.name() + "' is not supported by your database.");
     }
+
+    /**
+     * Is the specified order supported by this database?
+     */
+    protected abstract boolean orderSupported (OrderBy.Order order);
 
     protected BuildVisitor (DepotTypes types, boolean allowComplexIndices)
     {

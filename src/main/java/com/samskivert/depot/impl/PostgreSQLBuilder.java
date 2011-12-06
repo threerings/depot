@@ -119,8 +119,13 @@ public class PostgreSQLBuilder
             _builder.append("\"").append(field).append("\"");
         }
 
-        @Override protected OrderBy.Order validateOrder (OrderBy.Order order) {
-            return order;
+        @Override protected boolean orderSupported (OrderBy.Order order)
+        {
+            switch (order) {
+            case NULL: case ASC: case DESC: case ASC_NULLS_FIRST: case DESC_NULLS_LAST:
+                return true;
+            }
+            return false;
         }
 
         protected PGBuildVisitor (DepotTypes types)

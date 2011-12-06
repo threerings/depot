@@ -18,6 +18,7 @@ import com.samskivert.depot.Ops;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.annotation.GeneratedValue;
+import com.samskivert.depot.clause.OrderBy;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.expression.AggregateFun;
@@ -182,6 +183,15 @@ public class HSQLBuilder
 
         @Override protected void appendIdentifier (String field) {
             _builder.append("\"").append(field).append("\"");
+        }
+
+        @Override protected boolean orderSupported (OrderBy.Order order)
+        {
+            switch (order) {
+            case ASC: case DESC:
+                return true;
+            }
+            return false;
         }
     }
 

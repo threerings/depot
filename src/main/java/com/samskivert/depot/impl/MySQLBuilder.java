@@ -14,6 +14,7 @@ import com.samskivert.util.StringUtil;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
+import com.samskivert.depot.clause.OrderBy;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.operator.FullText;
 
@@ -161,6 +162,15 @@ public class MySQLBuilder
         @Override protected void appendEmptyInsertValues ()
         {
             _builder.append("() values ()");
+        }
+
+        @Override protected boolean orderSupported (OrderBy.Order order)
+        {
+            switch (order) {
+            case NULL: case ASC: case DESC:
+                return true;
+            }
+            return false;
         }
     }
 
