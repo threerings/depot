@@ -6,11 +6,11 @@ package com.samskivert.depot.impl;
 
 import java.lang.reflect.Field;
 import java.util.List;
-import java.util.concurrent.ConcurrentMap;
 
-import com.google.common.base.Function;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Lists;
-import com.google.common.collect.MapMaker;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.Id;
@@ -27,7 +27,7 @@ public class DepotUtil
      */
     public static ColumnExp<?>[] getKeyFields (Class<? extends PersistentRecord> pClass)
     {
-        return _keyFields.get(pClass);
+        return _keyFields.getUnchecked(pClass);
     }
 
     /**
@@ -40,7 +40,7 @@ public class DepotUtil
     {
         // TODO: Checks? For example: Validate all exps from same class?
         // Make a defensive copy of the array? Hide this method from public consumption?
-        _keyFields.putIfAbsent(fields[0].getPersistentClass(), fields);
+        _keyFields.asMap().putIfAbsent(fields[0].getPersistentClass(), fields);
     }
 
     /**
@@ -53,13 +53,13 @@ public class DepotUtil
 
     /** A (never expiring) cache of primary key field names for all persistent classes (of which
      * there are merely dozens, so we don't need to worry about expiring). */
-    protected static ConcurrentMap<Class<? extends PersistentRecord>, ColumnExp<?>[]> _keyFields =
-        new MapMaker()
+    protected static LoadingCache<Class<? extends PersistentRecord>, ColumnExp<?>[]> _keyFields =
+        CacheBuilder.newBuilder()
         // newly generated PersistentRecord classes will register their key fields via
         // registerKeyFields, which will return an ordering determined at genrecord time.
         // We fall back to computing the fields at runtime for older PersistentRecord classes.
-        .makeComputingMap(new Function<Class<? extends PersistentRecord>, ColumnExp<?>[]>() {
-            public ColumnExp<?>[] apply (Class<? extends PersistentRecord> pClass) {
+        .build(new CacheLoader<Class<? extends PersistentRecord>, ColumnExp<?>[]>() {
+            public ColumnExp<?>[] load (Class<? extends PersistentRecord> pClass) {
                 List<ColumnExp<?>> kflist = Lists.newArrayList();
                 for (Field field : pClass.getFields()) {
                     // look for @Id fields
