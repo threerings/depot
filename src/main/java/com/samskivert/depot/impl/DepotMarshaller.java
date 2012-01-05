@@ -530,7 +530,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
 
             // try to update migratingVersion to the new version to indicate to other processes
             // that we are handling the migration and that they should wait
-            if (_meta.updateMigratingVersion(getTableName(), _schemaVersion, 0)) {
+            if (_meta.updateMigratingVersion(getTableName(), currentVersion, _schemaVersion, 0)) {
                 break; // we got the lock, let's go
             }
 
@@ -549,6 +549,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
         // fetch all relevant information regarding our table from the database
         TableMetaData metaData = TableMetaData.load(ctx, getTableName());
 
+        int expectedDbVersion = currentVersion;
         try {
             if (!metaData.tableExists) {
                 // if the table does not exist, create it
@@ -564,11 +565,13 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
 
             // and update our version in the schema version table
             _meta.updateVersion(getTableName(), _schemaVersion);
+            expectedDbVersion = _schemaVersion;
 
         } finally {
             // set our migrating version back to zero
             try {
-                if (!_meta.updateMigratingVersion(getTableName(), 0, _schemaVersion)) {
+                if (!_meta.updateMigratingVersion(
+                        getTableName(), expectedDbVersion, 0, _schemaVersion)) {
                     log.warning("Failed to restore migrating version to zero!", "record", _pClass);
                 }
             } catch (Exception e) {

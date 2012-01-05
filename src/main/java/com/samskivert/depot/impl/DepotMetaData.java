@@ -126,7 +126,8 @@ public class DepotMetaData
      * if some other process acquired the lock.
      */
     public boolean updateMigratingVersion (
-        final String pClass, final int newMigratingVersion, final int guardVersion)
+        final String pClass, final int currentVersion,
+        final int newMigratingVersion, final int guardVersion)
     {
         return _ctx.invoke(new SimpleModifier() {
             @Override
@@ -135,6 +136,7 @@ public class DepotMetaData
                     "update " + liaison.tableSQL(SCHEMA_VERSION_TABLE) +
                     "   set " + liaison.columnSQL(MV_COLUMN) + " = " + newMigratingVersion +
                     " where " + liaison.columnSQL(P_COLUMN) + " = '" + pClass + "'" +
+                    " and " + liaison.columnSQL(V_COLUMN) + " = " + currentVersion +
                     " and " + liaison.columnSQL(MV_COLUMN) + " = " + guardVersion);
             }
         }) > 0;
