@@ -516,6 +516,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             log.info("Creating initial version record for " + _pClass.getName() + ".");
             // if not, create a version entry with version zero
             _meta.initializeVersion(getTableName());
+            currentVersion = 0;
         }
 
         // now check whether we need to migrate our database schema
