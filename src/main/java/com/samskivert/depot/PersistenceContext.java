@@ -555,7 +555,8 @@ public class PersistenceContext
         try {
             conn = _conprov.getConnection(_ident, isReadOnly);
         } catch (PersistenceException pe) {
-            throw new DatabaseException(pe.getMessage(), pe.getCause());
+            throw new DatabaseException("Failed get connection [ident=" + _ident +
+                                        ", isRO=" + isReadOnly + "]", pe.getCause());
         }
 
         // wrap the connection in a proxy that will collect all opened statements
