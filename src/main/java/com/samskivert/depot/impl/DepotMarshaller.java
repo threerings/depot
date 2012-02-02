@@ -529,6 +529,20 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
                 return;
             }
 
+            // check whether migrations are allowed by our context
+            switch (ctx.canMigrate()) {
+            case WARN:
+                log.warning(_pClass.getName() + " requires migration, which is disallowed. " +
+                            "Failures may be encountered later.");
+                return;
+            case FAIL:
+                throw new DatabaseException(
+                    _pClass.getName() + " requires migration, which is disallowed.");
+            case ALLOWED:
+                // great, fall through and do our migrations
+                break;
+            }
+
             // try to update migratingVersion to the new version to indicate to other processes
             // that we are handling the migration and that they should wait
             if (_meta.updateMigratingVersion(getTableName(), currentVersion, _schemaVersion, 0)) {

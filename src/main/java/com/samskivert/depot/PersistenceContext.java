@@ -54,6 +54,18 @@ public class PersistenceContext
     /** Map {@link TableGenerator} instances by name. */
     public Map<String, TableGenerator> tableGenerators = Maps.newHashMap();
 
+    /** Used by {@link #setCanMigrate}. */
+    public static enum CanMigrate {
+        /** Schema migrations are allowed (the default). */
+        ALLOWED,
+        /** Schema migrations are disallowed and warnings are issued if it is discovered at runtime
+         * that they are needed, but cannot be peformed. */
+        WARN,
+        /** Schema migrations are disallowed and a runtime exception will be thrown if a record
+         * that requires migrations is used at runtime. */
+        FAIL
+    };
+
     /**
      * A cache listener is notified when cache entries change. Its purpose is typically to do
      * further invalidation of dependent entries in other caches.
@@ -115,6 +127,36 @@ public class PersistenceContext
     }
 
     /**
+     * Creates an uninitialized persistence context. {@link #init} must later be called on this
+     * context to prepare it for operation.
+     */
+    public PersistenceContext ()
+    {
+        this(CanMigrate.ALLOWED);
+    }
+
+    /**
+     * Creates an uninitialized persistence context. {@link #init} must later be called on this
+     * context to prepare it for operation.
+     *
+     * @param canMigrate configures whether schema migrations are allowed for this persistence
+     * context. See {@link CanMigrate} for details.
+     */
+    public PersistenceContext (CanMigrate canMigrate)
+    {
+        _canMigrate = canMigrate;
+    }
+
+    /**
+     * Creates and initializes a persistence context. See {@link #init}.
+     */
+    public PersistenceContext (String ident, ConnectionProvider conprov, CacheAdapter adapter)
+    {
+        this(CanMigrate.ALLOWED);
+        init(ident, conprov, adapter);
+    }
+
+    /**
      * Returns the cache adapter used by this context or null if caching is disabled.
      */
     public CacheAdapter getCacheAdapter ()
@@ -123,19 +165,11 @@ public class PersistenceContext
     }
 
     /**
-     * Creates an uninitialized persistence context. {@link #init} must later be called on this
-     * context to prepare it for operation.
+     * Returns whether schema migrations are allowed in this context.
      */
-    public PersistenceContext ()
+    public CanMigrate canMigrate ()
     {
-    }
-
-    /**
-     * Creates and initializes a persistence context. See {@link #init}.
-     */
-    public PersistenceContext (String ident, ConnectionProvider conprov, CacheAdapter adapter)
-    {
-        init(ident, conprov, adapter);
+        return _canMigrate;
     }
 
     /**
@@ -636,6 +670,7 @@ public class PersistenceContext
         }
     }
 
+    protected final CanMigrate _canMigrate;
     protected String _ident;
     protected ConnectionProvider _conprov;
     protected DatabaseLiaison _liaison;
