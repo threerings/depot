@@ -54,7 +54,7 @@ public class PersistenceContext
     /** Map {@link TableGenerator} instances by name. */
     public Map<String, TableGenerator> tableGenerators = Maps.newHashMap();
 
-    /** Used by {@link #setCanMigrate}. */
+    /** Used by {@link PersistenceContext#PersistenceContext(CanMigrate)}. */
     public static enum CanMigrate {
         /** Schema migrations are allowed (the default). */
         ALLOWED,
