@@ -136,7 +136,7 @@ public class HSQLBuilder
         public Void visit (Distinct distinct)
         {
             if (distinct.getDistinctOn() != null) {
-                throw new IllegalArgumentException("MySQL does not support DISTINCT ON");
+                throw new IllegalArgumentException("HSQL does not support DISTINCT ON");
             }
             return super.visit(distinct);
         }

@@ -65,7 +65,7 @@ public class SelectClause
                 _disMap.put(((FieldDefinition) clause).getField(), ((FieldDefinition) clause));
 
             } else if (clause instanceof Distinct) {
-                checkArgument(_orderBy == null, "Query can't contain multiple Distinct clauses.");
+                checkArgument(_distinct == null, "Query can't contain multiple Distinct clauses.");
                 _distinct = (Distinct) clause;
 
             } else if (clause instanceof OrderBy) {
