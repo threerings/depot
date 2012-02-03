@@ -64,6 +64,10 @@ public class SelectClause
             } else if (clause instanceof FieldDefinition) {
                 _disMap.put(((FieldDefinition) clause).getField(), ((FieldDefinition) clause));
 
+            } else if (clause instanceof Distinct) {
+                checkArgument(_orderBy == null, "Query can't contain multiple Distinct clauses.");
+                _distinct = (Distinct) clause;
+
             } else if (clause instanceof OrderBy) {
                 checkArgument(_orderBy == null, "Query can't contain multiple OrderBy clauses.");
                 _orderBy = (OrderBy) clause;
@@ -128,6 +132,11 @@ public class SelectClause
         return _orderBy;
     }
 
+    public Distinct getDistinct ()
+    {
+        return _distinct;
+    }
+
     public GroupBy getGroupBy ()
     {
         return _groupBy;
@@ -182,6 +191,9 @@ public class SelectClause
         if (_orderBy != null) {
             builder.append(", orderBy=").append(_orderBy);
         }
+        if (_distinct != null) {
+            builder.append(", distinct=").append(_distinct);
+        }
         if (_groupBy != null) {
             builder.append(", groupBy=").append(_groupBy);
         }
@@ -214,6 +226,9 @@ public class SelectClause
 
     /** The order by clause, if any. */
     protected OrderBy _orderBy;
+
+    /** The distinct clause, if any. */
+    protected Distinct _distinct;
 
     /** The group by clause, if any. */
     protected GroupBy _groupBy;

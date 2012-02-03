@@ -14,6 +14,7 @@ import java.util.Set;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
+import com.samskivert.depot.clause.Distinct;
 import com.samskivert.util.ByteEnum;
 import com.samskivert.util.Tuple;
 
@@ -278,6 +279,17 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         return null;
     }
 
+    public Void visit (Distinct distinct)
+    {
+        _builder.append("distinct ");
+        if (distinct.getDistinctOn() != null) {
+            _builder.append("on ");
+            distinct.getDistinctOn().accept(this);
+            _builder.append(" ");
+        }
+        return null;
+    }
+
     public Void visit (Join join)
     {
         switch (join.getType()) {
@@ -344,6 +356,10 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
 
         checkArgument(!_definitions.containsKey(pClass),
                       "Can not yet nest SELECTs on the same persistent record.");
+
+        if (selectClause.getDistinct() != null) {
+            selectClause.getDistinct().accept(this);
+        }
 
         Map<String, FieldDefinition> definitionMap = Maps.newHashMap();
         for (FieldDefinition definition : selectClause.getFieldDefinitions()) {

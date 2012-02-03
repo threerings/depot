@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
 
+import com.samskivert.depot.clause.Distinct;
 import com.samskivert.util.StringUtil;
 
 import com.samskivert.depot.PersistentRecord;
@@ -67,6 +68,14 @@ public class MySQLBuilder
         @Override public Void visit (Trunc<?> exp)
         {
             return appendFunctionCall("truncate", exp.getArg());
+        }
+
+        public Void visit (Distinct distinct)
+        {
+            if (distinct.getDistinctOn() != null) {
+                throw new IllegalArgumentException("MySQL does not support DISTINCT ON");
+            }
+            return super.visit(distinct);
         }
 
         @Override public Void visit (DatePart exp) {

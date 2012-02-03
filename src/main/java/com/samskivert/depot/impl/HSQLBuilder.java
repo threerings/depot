@@ -18,6 +18,7 @@ import com.samskivert.depot.Ops;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.annotation.GeneratedValue;
+import com.samskivert.depot.clause.Distinct;
 import com.samskivert.depot.clause.OrderBy;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
@@ -130,6 +131,14 @@ public class HSQLBuilder
                 return appendFunctionCall("bitor", operator.getArgs());
             }
             return super.visit(operator);
+        }
+
+        public Void visit (Distinct distinct)
+        {
+            if (distinct.getDistinctOn() != null) {
+                throw new IllegalArgumentException("MySQL does not support DISTINCT ON");
+            }
+            return super.visit(distinct);
         }
 
         @Override public Void visit (DatePart exp) {

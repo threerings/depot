@@ -9,6 +9,7 @@ import java.lang.reflect.Field;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistentRecord;
 
+import com.samskivert.depot.clause.Distinct;
 import com.samskivert.depot.clause.FieldDefinition;
 import com.samskivert.depot.clause.ForUpdate;
 import com.samskivert.depot.clause.FromOverride;
@@ -250,6 +251,11 @@ public class ExpressionEvaluator
     public Object visit (Exists exists)
     {
         throw new IllegalArgumentException("Can't evaluate expression: " + exists);
+    }
+
+    public Object visit (Distinct distinct)
+    {
+        throw new IllegalArgumentException("Can't evaluate expression: " + distinct);
     }
 
     public Object visit (GroupBy groupBy)

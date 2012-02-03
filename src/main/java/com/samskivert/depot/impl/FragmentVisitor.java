@@ -6,6 +6,7 @@ package com.samskivert.depot.impl;
 
 import com.samskivert.depot.Key;
 
+import com.samskivert.depot.clause.Distinct;
 import com.samskivert.depot.clause.FieldDefinition;
 import com.samskivert.depot.clause.ForUpdate;
 import com.samskivert.depot.clause.FromOverride;
@@ -81,6 +82,7 @@ public interface FragmentVisitor<T>
     public T visit (FullText.Rank match);
     public T visit (ColumnExp<?> columnExp);
     public T visit (Not not);
+    public T visit (Distinct distinct);
     public T visit (GroupBy groupBy);
     public T visit (ForUpdate forUpdate);
     public T visit (OrderBy orderBy);

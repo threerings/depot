@@ -179,6 +179,25 @@ public class Query<T extends PersistentRecord>
     }
 
     /**
+     * Configures the query to return only distinct rows.
+     */
+    public Query<T> distinct ()
+    {
+        return distinct(null);
+    }
+
+    /**
+     * Configures the query to return rows for which the given expression evaluates distinctly.
+     */
+    public Query<T> distinct (SQLExpression<?> distinctOn)
+    {
+        checkState(_distinct == null, "Distinct clause is already configured.");
+        Query<T> query = clone();
+        query._distinct = new Distinct(distinctOn);
+        return query;
+    }
+
+    /**
      * Configures a {@link GroupBy} clause on the supplied group expressions.
      */
     public Query<T> groupBy (SQLExpression<?>... exprs)
@@ -610,6 +629,7 @@ public class Query<T extends PersistentRecord>
         addIfNotNull(clauses, _where);
         addAll(clauses, _joins);
         addIfNotNull(clauses, _orderBy);
+        addIfNotNull(clauses, _distinct);
         addIfNotNull(clauses, _groupBy);
         addIfNotNull(clauses, _limit);
         addIfNotNull(clauses, _fromOverride);
@@ -636,6 +656,7 @@ public class Query<T extends PersistentRecord>
         checkState(_where != null, "Where clause must be specified for delete.");
         checkState(_joins == null, "Join clauses not supported by delete.");
         checkState(_orderBy == null, "OrderBy clause not applicable for delete.");
+        checkState(_distinct == null, "Distinct clause not applicable for delete.");
         checkState(_groupBy == null, "GroupBy clause not applicable for delete.");
         checkState(_fromOverride == null, "FromOverride clause not applicable for delete.");
         checkState(_fieldDefs == null, "FieldDefinition clauses not applicable for delete.");
@@ -678,6 +699,7 @@ public class Query<T extends PersistentRecord>
 
     protected WhereClause _where;
     protected OrderBy _orderBy;
+    protected Distinct _distinct;
     protected GroupBy _groupBy;
     protected Limit _limit;
     protected FromOverride _fromOverride;
