@@ -710,6 +710,27 @@ public abstract class DepotRepository
     }
 
     /**
+     * Registers a data migration for this repository. This migration will only be run once and its
+     * unique identifier will be stored persistently to ensure that it is never run again on the
+     * same database. Nonetheless, migrations should strive to be idempotent because someone might
+     * come along and create a brand new system installation and all registered migrations will be
+     * run once on the freshly created database. As with all database migrations, understand
+     * clearly how the process works and think about edge cases when creating a migration.
+     *
+     * <p> See {@link PersistenceContext#registerMigration} for details on how schema migrations
+     * operate and how they might interact with data migrations.
+     */
+    public void registerMigration (DataMigration migration)
+    {
+        if (_dataMigs == null) {
+            // we've already been initialized, so we have to run this migration immediately
+            runMigration(migration);
+        } else {
+            _dataMigs.add(migration);
+        }
+    }
+
+    /**
      * Creates a repository with the supplied persistence context. Any schema migrations needed by
      * this repository should be registered in its constructor. A repository should <em>not</em>
      * perform any actual database operations in its constructor, only register schema
@@ -765,27 +786,6 @@ public abstract class DepotRepository
             runMigration(migration);
         }
         _dataMigs = null; // note that we've been initialized
-    }
-
-    /**
-     * Registers a data migration for this repository. This migration will only be run once and its
-     * unique identifier will be stored persistently to ensure that it is never run again on the
-     * same database. Nonetheless, migrations should strive to be idempotent because someone might
-     * come along and create a brand new system installation and all registered migrations will be
-     * run once on the freshly created database. As with all database migrations, understand
-     * clearly how the process works and think about edge cases when creating a migration.
-     *
-     * <p> See {@link PersistenceContext#registerMigration} for details on how schema migrations
-     * operate and how they might interact with data migrations.
-     */
-    protected void registerMigration (DataMigration migration)
-    {
-        if (_dataMigs == null) {
-            // we've already been initialized, so we have to run this migration immediately
-            runMigration(migration);
-        } else {
-            _dataMigs.add(migration);
-        }
     }
 
     /**
