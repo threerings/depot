@@ -30,11 +30,12 @@ import com.samskivert.depot.CacheAdapter.CachedValue;
 import com.samskivert.depot.annotation.TableGenerator;
 import com.samskivert.depot.impl.DepotMarshaller;
 import com.samskivert.depot.impl.DepotMetaData;
+import com.samskivert.depot.impl.DepotMigrationHistoryRecord;
 import com.samskivert.depot.impl.DepotTypes;
+import com.samskivert.depot.impl.Fetcher;
 import com.samskivert.depot.impl.KeyCacheKey;
 import com.samskivert.depot.impl.Modifier;
 import com.samskivert.depot.impl.Operation;
-import com.samskivert.depot.impl.Fetcher;
 import com.samskivert.depot.impl.SQLBuilder;
 
 import static com.samskivert.depot.Log.log;
@@ -530,6 +531,8 @@ public class PersistenceContext
     public void initializeRepositories (boolean warnOnLazyInit)
         throws DatabaseException
     {
+        // resolve our internal tracking table
+        getMarshaller(DepotMigrationHistoryRecord.class);
         // resolve all persistent records and trigger all schema migrations
         for (DepotRepository repo : _repositories) {
             repo.resolveRecords();
