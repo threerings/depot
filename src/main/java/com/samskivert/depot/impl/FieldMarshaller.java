@@ -19,6 +19,9 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 
+import com.google.common.collect.ImmutableMap;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.Transformer;
@@ -32,8 +35,6 @@ import com.samskivert.util.ByteEnum;
 import com.samskivert.util.ByteEnumUtil;
 import com.samskivert.util.Logger;
 import com.samskivert.util.StringUtil;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 /**
  * Handles the marshalling and unmarshalling of a particular field of a persistent object.
@@ -739,24 +740,22 @@ public abstract class FieldMarshaller<T>
     protected GeneratedValue _generatedValue;
 
     protected static Map<Class<?>,FieldMarshaller<?>> STOCK_MARSH =
-        new HashMap<Class<?>,FieldMarshaller<?>>();
-    static {
-        // primitive types
-        STOCK_MARSH.put(Boolean.TYPE, new BooleanMarshaller());
-        STOCK_MARSH.put(Byte.TYPE, new ByteMarshaller());
-        STOCK_MARSH.put(Short.TYPE, new ShortMarshaller());
-        STOCK_MARSH.put(Integer.TYPE, new IntMarshaller());
-        STOCK_MARSH.put(Long.TYPE, new LongMarshaller());
-        STOCK_MARSH.put(Float.TYPE, new FloatMarshaller());
-        STOCK_MARSH.put(Double.TYPE, new DoubleMarshaller());
+        ImmutableMap.<Class<?>,FieldMarshaller<?>>builder().
+        put(Boolean.TYPE, new BooleanMarshaller()).
+        put(Byte.TYPE, new ByteMarshaller()).
+        put(Short.TYPE, new ShortMarshaller()).
+        put(Integer.TYPE, new IntMarshaller()).
+        put(Long.TYPE, new LongMarshaller()).
+        put(Float.TYPE, new FloatMarshaller()).
+        put(Double.TYPE, new DoubleMarshaller()).
 
         // boxed primitive types
-        STOCK_MARSH.put(Boolean.class, new ObjectMarshaller() {
+        put(Boolean.class, new ObjectMarshaller() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return typer.getBooleanType(length);
             }
-        });
-        STOCK_MARSH.put(Byte.class, new ObjectMarshaller() {
+        }).
+        put(Byte.class, new ObjectMarshaller() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return typer.getByteType(length);
             }
@@ -768,8 +767,8 @@ public abstract class FieldMarshaller<T>
             protected Object massageResult (Object value) {
                 return (value == null) ? null : ((Number)value).byteValue();
             }
-        });
-        STOCK_MARSH.put(Short.class, new ObjectMarshaller() {
+        }).
+        put(Short.class, new ObjectMarshaller() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return typer.getShortType(length);
             }
@@ -781,18 +780,18 @@ public abstract class FieldMarshaller<T>
             protected Object massageResult (Object value) {
                 return (value == null) ? null : ((Number)value).shortValue();
             }
-        });
-        STOCK_MARSH.put(Integer.class, new ObjectMarshaller() {
+        }).
+        put(Integer.class, new ObjectMarshaller() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return typer.getIntType(length);
             }
-        });
-        STOCK_MARSH.put(Long.class, new ObjectMarshaller() {
+        }).
+        put(Long.class, new ObjectMarshaller() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return typer.getLongType(length);
             }
-        });
-        STOCK_MARSH.put(Float.class, new ObjectMarshaller() {
+        }).
+        put(Float.class, new ObjectMarshaller() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return typer.getFloatType(length);
             }
@@ -804,48 +803,48 @@ public abstract class FieldMarshaller<T>
             protected Object massageResult (Object value) {
                 return (value == null) ? null : ((Number)value).floatValue();
             }
-        });
-        STOCK_MARSH.put(Double.class, new ObjectMarshaller() {
+        }).
+        put(Double.class, new ObjectMarshaller() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return typer.getDoubleType(length);
             }
-        });
-        STOCK_MARSH.put(String.class, new ObjectMarshaller() {
+        }).
+        put(String.class, new ObjectMarshaller() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return typer.getStringType(length);
             }
-        });
+        }).
 
         // some primitive array types
-        STOCK_MARSH.put(byte[].class, new ByteArrayMarshaller());
-        STOCK_MARSH.put(int[].class, new IntArrayMarshaller());
-        STOCK_MARSH.put(long[].class, new LongArrayMarshaller());
+        put(byte[].class, new ByteArrayMarshaller()).
+        put(int[].class, new IntArrayMarshaller()).
+        put(long[].class, new LongArrayMarshaller()).
 
         // SQL types
-        STOCK_MARSH.put(Date.class, new ObjectMarshaller() {
+        put(Date.class, new ObjectMarshaller() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return typer.getDateType(length);
             }
-        });
-        STOCK_MARSH.put(Time.class, new ObjectMarshaller() {
+        }).
+        put(Time.class, new ObjectMarshaller() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return typer.getTimeType(length);
             }
-        });
-        STOCK_MARSH.put(Timestamp.class, new ObjectMarshaller() {
+        }).
+        put(Timestamp.class, new ObjectMarshaller() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return typer.getTimestampType(length);
             }
-        });
-        STOCK_MARSH.put(Blob.class, new ObjectMarshaller() {
+        }).
+        put(Blob.class, new ObjectMarshaller() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return typer.getBlobType(length);
             }
-        });
-        STOCK_MARSH.put(Clob.class, new ObjectMarshaller() {
+        }).
+        put(Clob.class, new ObjectMarshaller() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return typer.getClobType(length);
             }
-        });
-    }
+        }).
+        build();
 }
