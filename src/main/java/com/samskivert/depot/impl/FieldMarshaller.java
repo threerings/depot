@@ -7,7 +7,6 @@ package com.samskivert.depot.impl;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.Map;
 
 import java.sql.Blob;
