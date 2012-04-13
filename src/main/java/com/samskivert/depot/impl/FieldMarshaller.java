@@ -68,32 +68,41 @@ public abstract class FieldMarshaller<T>
         // first, look for a @Transform annotation on the field (cheap)
         Transform xform = field.getAnnotation(Transform.class);
         if (xform == null) {
-            // next look for a marshaller for the basic type (cheapish)
-            FieldMarshaller<?> marshaller = createMarshaller(field.getType());
-            if (marshaller != null) {
-                marshaller.create(field);
-                return marshaller;
+            // next look for an @Transform annotation on the field type; we only do this if it's a
+            // non-primitive/non-string type because this search is somewhat expensive
+            Class<?> ftype = field.getType();
+            if (!ftype.isPrimitive() && !ftype.equals(String.class)) {
+                xform = findTransformAnnotation(field.getType());
             }
-
-            // finally look for an @Transform annotation on the field type (expensive)
-            xform = findTransformAnnotation(field.getType());
-            checkArgument(xform != null, "Cannot marshall " + field + ".");
         }
 
-        try {
-            // weirdly if we inline the xformer creation into the createTransformingMarshaller
-            // call, we get a type error; must be some subtlety of wildcard capture...
-            Transformer<?, ?> xformer = xform.value().newInstance();
-            return createTransformingMarshaller(xformer, field, xform);
-        } catch (InstantiationException e) {
-            throw new IllegalArgumentException(
-                Logger.format("Unable to create Transformer", "xclass", xform.value(),
-                              "field", field), e);
-        } catch (IllegalAccessException e) {
-            throw new IllegalArgumentException(
-                Logger.format("Unable to create Transformer", "xclass", xform.value(),
-                              "field", field), e);
+        // if we found a transform annotation, create a transforming marshaller
+        if (xform != null) {
+            try {
+                // weirdly if we inline the xformer creation into the createTransformingMarshaller
+                // call, we get a type error; must be some subtlety of wildcard capture...
+                Transformer<?, ?> xformer = xform.value().newInstance();
+                return createTransformingMarshaller(xformer, field, xform);
+            } catch (InstantiationException e) {
+                throw new IllegalArgumentException(
+                    Logger.format("Unable to create Transformer", "xclass", xform.value(),
+                                  "field", field), e);
+            } catch (IllegalAccessException e) {
+                throw new IllegalArgumentException(
+                    Logger.format("Unable to create Transformer", "xclass", xform.value(),
+                                  "field", field), e);
+            }
         }
+
+        // last look for a marshaller for the basic type (cheapish)
+        FieldMarshaller<?> marshaller = createMarshaller(field.getType());
+        if (marshaller != null) {
+            marshaller.create(field);
+            return marshaller;
+        }
+
+        // at this point we must throw up our hands
+        throw new IllegalArgumentException("Cannot marshall " + field + ".");
     }
 
     protected static <F,T> FieldMarshaller<F> createTransformingMarshaller (
