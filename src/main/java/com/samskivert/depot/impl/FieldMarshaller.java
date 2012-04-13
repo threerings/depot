@@ -7,6 +7,8 @@ package com.samskivert.depot.impl;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import java.sql.Blob;
 import java.sql.Clob;
@@ -39,6 +41,7 @@ import static com.google.common.base.Preconditions.checkArgument;
  * @see DepotMarshaller
  */
 public abstract class FieldMarshaller<T>
+    implements Cloneable
 {
     /** Used by the {@link SQLBuilder} implementations. We factor this into an interface to avoid a
      * bunch of instanceof casts and to ensure that if a new supported type is added, all of the
@@ -69,9 +72,9 @@ public abstract class FieldMarshaller<T>
         Transform xform = field.getAnnotation(Transform.class);
         if (xform == null) {
             // next look for an @Transform annotation on the field type; we only do this if it's a
-            // non-primitive/non-string type because this search is somewhat expensive
+            // non-standard type because this search is somewhat expensive
             Class<?> ftype = field.getType();
-            if (!ftype.isPrimitive() && !ftype.equals(String.class)) {
+            if (!STOCK_MARSH.containsKey(ftype)) {
                 xform = findTransformAnnotation(field.getType());
             }
         }
@@ -290,141 +293,19 @@ public abstract class FieldMarshaller<T>
 
     protected static FieldMarshaller<?> createMarshaller (Class<?> ftype)
     {
-        // primitive types
-        if (ftype.equals(Boolean.TYPE)) {
-            return new BooleanMarshaller();
-        } else if (ftype.equals(Byte.TYPE)) {
-            return new ByteMarshaller();
-        } else if (ftype.equals(Short.TYPE)) {
-            return new ShortMarshaller();
-        } else if (ftype.equals(Integer.TYPE)) {
-            return new IntMarshaller();
-        } else if (ftype.equals(Long.TYPE)) {
-            return new LongMarshaller();
-        } else if (ftype.equals(Float.TYPE)) {
-            return new FloatMarshaller();
-        } else if (ftype.equals(Double.TYPE)) {
-            return new DoubleMarshaller();
-
-        // boxed primitive types
-        } else if (ftype.equals(Boolean.class)) {
-            return new ObjectMarshaller() {
-                @Override public String getColumnType (ColumnTyper typer, int length) {
-                    return typer.getBooleanType(length);
-                }
-            };
-        } else if (ftype.equals(Byte.class)) {
-            return new ObjectMarshaller() {
-                @Override public String getColumnType (ColumnTyper typer, int length) {
-                    return typer.getByteType(length);
-                }
-                @Override public Object getFromSet (ResultSet rs) throws SQLException {
-                    return massageResult(super.getFromSet(rs));
-                }
-                // works around the fact that HSQLDB (at least) returns Integer rather than Byte
-                // for TINYINT columns
-                protected Object massageResult (Object value) {
-                    return (value == null) ? null : ((Number)value).byteValue();
-                }
-            };
-        } else if (ftype.equals(Short.class)) {
-            return new ObjectMarshaller() {
-                @Override public String getColumnType (ColumnTyper typer, int length) {
-                    return typer.getShortType(length);
-                }
-                @Override public Object getFromSet (ResultSet rs) throws SQLException {
-                    return massageResult(super.getFromSet(rs));
-                }
-                // works around the fact that HSQLDB (at least) returns Integer rather than Short
-                // for SMALLINT columns
-                protected Object massageResult (Object value) {
-                    return (value == null) ? null : ((Number)value).shortValue();
-                }
-            };
-        } else if (ftype.equals(Integer.class)) {
-            return new ObjectMarshaller() {
-                @Override public String getColumnType (ColumnTyper typer, int length) {
-                    return typer.getIntType(length);
-                }
-            };
-        } else if (ftype.equals(Long.class)) {
-            return new ObjectMarshaller() {
-                @Override public String getColumnType (ColumnTyper typer, int length) {
-                    return typer.getLongType(length);
-                }
-            };
-        } else if (ftype.equals(Float.class)) {
-            return new ObjectMarshaller() {
-                @Override public String getColumnType (ColumnTyper typer, int length) {
-                    return typer.getFloatType(length);
-                }
-                @Override public Object getFromSet (ResultSet rs) throws SQLException {
-                    return massageResult(super.getFromSet(rs));
-                }
-                // works around the fact that HSQLDB (at least) returns Double rather than Float
-                // for REAL columns
-                protected Object massageResult (Object value) {
-                    return (value == null) ? null : ((Number)value).floatValue();
-                }
-            };
-        } else if (ftype.equals(Double.class)) {
-            return new ObjectMarshaller() {
-                @Override public String getColumnType (ColumnTyper typer, int length) {
-                    return typer.getDoubleType(length);
-                }
-            };
-        } else if (ftype.equals(String.class)) {
-            return new ObjectMarshaller() {
-                @Override public String getColumnType (ColumnTyper typer, int length) {
-                    return typer.getStringType(length);
-                }
-            };
-
-        // some primitive array types
-        } else if (ftype.equals(byte[].class)) {
-            return new ByteArrayMarshaller();
-
-        } else if (ftype.equals(int[].class)) {
-            return new IntArrayMarshaller();
-
-        } else if (ftype.equals(long[].class)) {
-            return new LongArrayMarshaller();
-
-        // SQL types
-        } else if (ftype.equals(Date.class)) {
-            return new ObjectMarshaller() {
-                @Override public String getColumnType (ColumnTyper typer, int length) {
-                    return typer.getDateType(length);
-                }
-            };
-        } else if (ftype.equals(Time.class)) {
-            return new ObjectMarshaller() {
-                @Override public String getColumnType (ColumnTyper typer, int length) {
-                    return typer.getTimeType(length);
-                }
-            };
-        } else if (ftype.equals(Timestamp.class)) {
-            return new ObjectMarshaller() {
-                @Override public String getColumnType (ColumnTyper typer, int length) {
-                    return typer.getTimestampType(length);
-                }
-            };
-        } else if (ftype.equals(Blob.class)) {
-            return new ObjectMarshaller() {
-                @Override public String getColumnType (ColumnTyper typer, int length) {
-                    return typer.getBlobType(length);
-                }
-            };
-        } else if (ftype.equals(Clob.class)) {
-            return new ObjectMarshaller() {
-                @Override public String getColumnType (ColumnTyper typer, int length) {
-                    return typer.getClobType(length);
-                }
-            };
+        // check whether this is one of our standard types (primitives, string, Date, etc.)
+        FieldMarshaller<?> marsh = STOCK_MARSH.get(ftype);
+        if (marsh != null) {
+            try {
+                return (FieldMarshaller<?>)marsh.clone();
+            } catch (CloneNotSupportedException cnse) {
+                throw new AssertionError(cnse);
+            }
+        }
 
         // special Enum type hackery (it would be nice to handle this with @Transform, but that
         // introduces some undesirable samskivert-Depot dependencies)
-        } else if (ByteEnum.class.isAssignableFrom(ftype)) {
+        if (ByteEnum.class.isAssignableFrom(ftype)) {
             @SuppressWarnings("unchecked") Class<Dummy> dtype = (Class<Dummy>)ftype;
             return new ByteEnumMarshaller<Dummy>(dtype);
 
@@ -856,4 +737,115 @@ public abstract class FieldMarshaller<T>
     protected ColumnDefinition _columnDefinition;
     protected Computed _computed;
     protected GeneratedValue _generatedValue;
+
+    protected static Map<Class<?>,FieldMarshaller<?>> STOCK_MARSH =
+        new HashMap<Class<?>,FieldMarshaller<?>>();
+    static {
+        // primitive types
+        STOCK_MARSH.put(Boolean.TYPE, new BooleanMarshaller());
+        STOCK_MARSH.put(Byte.TYPE, new ByteMarshaller());
+        STOCK_MARSH.put(Short.TYPE, new ShortMarshaller());
+        STOCK_MARSH.put(Integer.TYPE, new IntMarshaller());
+        STOCK_MARSH.put(Long.TYPE, new LongMarshaller());
+        STOCK_MARSH.put(Float.TYPE, new FloatMarshaller());
+        STOCK_MARSH.put(Double.TYPE, new DoubleMarshaller());
+
+        // boxed primitive types
+        STOCK_MARSH.put(Boolean.class, new ObjectMarshaller() {
+            @Override public String getColumnType (ColumnTyper typer, int length) {
+                return typer.getBooleanType(length);
+            }
+        });
+        STOCK_MARSH.put(Byte.class, new ObjectMarshaller() {
+            @Override public String getColumnType (ColumnTyper typer, int length) {
+                return typer.getByteType(length);
+            }
+            @Override public Object getFromSet (ResultSet rs) throws SQLException {
+                return massageResult(super.getFromSet(rs));
+            }
+            // works around the fact that HSQLDB (at least) returns Integer rather than Byte
+            // for TINYINT columns
+            protected Object massageResult (Object value) {
+                return (value == null) ? null : ((Number)value).byteValue();
+            }
+        });
+        STOCK_MARSH.put(Short.class, new ObjectMarshaller() {
+            @Override public String getColumnType (ColumnTyper typer, int length) {
+                return typer.getShortType(length);
+            }
+            @Override public Object getFromSet (ResultSet rs) throws SQLException {
+                return massageResult(super.getFromSet(rs));
+            }
+            // works around the fact that HSQLDB (at least) returns Integer rather than Short
+            // for SMALLINT columns
+            protected Object massageResult (Object value) {
+                return (value == null) ? null : ((Number)value).shortValue();
+            }
+        });
+        STOCK_MARSH.put(Integer.class, new ObjectMarshaller() {
+            @Override public String getColumnType (ColumnTyper typer, int length) {
+                return typer.getIntType(length);
+            }
+        });
+        STOCK_MARSH.put(Long.class, new ObjectMarshaller() {
+            @Override public String getColumnType (ColumnTyper typer, int length) {
+                return typer.getLongType(length);
+            }
+        });
+        STOCK_MARSH.put(Float.class, new ObjectMarshaller() {
+            @Override public String getColumnType (ColumnTyper typer, int length) {
+                return typer.getFloatType(length);
+            }
+            @Override public Object getFromSet (ResultSet rs) throws SQLException {
+                return massageResult(super.getFromSet(rs));
+            }
+            // works around the fact that HSQLDB (at least) returns Double rather than Float
+            // for REAL columns
+            protected Object massageResult (Object value) {
+                return (value == null) ? null : ((Number)value).floatValue();
+            }
+        });
+        STOCK_MARSH.put(Double.class, new ObjectMarshaller() {
+            @Override public String getColumnType (ColumnTyper typer, int length) {
+                return typer.getDoubleType(length);
+            }
+        });
+        STOCK_MARSH.put(String.class, new ObjectMarshaller() {
+            @Override public String getColumnType (ColumnTyper typer, int length) {
+                return typer.getStringType(length);
+            }
+        });
+
+        // some primitive array types
+        STOCK_MARSH.put(byte[].class, new ByteArrayMarshaller());
+        STOCK_MARSH.put(int[].class, new IntArrayMarshaller());
+        STOCK_MARSH.put(long[].class, new LongArrayMarshaller());
+
+        // SQL types
+        STOCK_MARSH.put(Date.class, new ObjectMarshaller() {
+            @Override public String getColumnType (ColumnTyper typer, int length) {
+                return typer.getDateType(length);
+            }
+        });
+        STOCK_MARSH.put(Time.class, new ObjectMarshaller() {
+            @Override public String getColumnType (ColumnTyper typer, int length) {
+                return typer.getTimeType(length);
+            }
+        });
+        STOCK_MARSH.put(Timestamp.class, new ObjectMarshaller() {
+            @Override public String getColumnType (ColumnTyper typer, int length) {
+                return typer.getTimestampType(length);
+            }
+        });
+        STOCK_MARSH.put(Blob.class, new ObjectMarshaller() {
+            @Override public String getColumnType (ColumnTyper typer, int length) {
+                return typer.getBlobType(length);
+            }
+        });
+        STOCK_MARSH.put(Clob.class, new ObjectMarshaller() {
+            @Override public String getColumnType (ColumnTyper typer, int length) {
+                return typer.getClobType(length);
+            }
+        });
+    }
 }
