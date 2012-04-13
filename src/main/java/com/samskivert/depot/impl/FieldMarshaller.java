@@ -75,7 +75,7 @@ public abstract class FieldMarshaller<T>
             // non-standard type because this search is somewhat expensive
             Class<?> ftype = field.getType();
             if (!STOCK_MARSH.containsKey(ftype)) {
-                xform = findTransformAnnotation(field.getType());
+                xform = findTransformAnnotation(ftype);
             }
         }
 
