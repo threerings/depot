@@ -343,13 +343,13 @@ public class GenRecordTask extends Task
 
     /**
      * Returns true if the supplied field is part of a persistent record (is a public, non-static,
-     * non-transient field).
+     * non-@Transient field).
      */
     protected boolean isPersistentField (Field field)
     {
         int mods = field.getModifiers();
         return Modifier.isPublic(mods) && !Modifier.isStatic(mods) &&
-            !Modifier.isTransient(mods) && !hasAnnotation(field, Transient.class);
+            !hasAnnotation(field, Transient.class);
     }
 
     /**

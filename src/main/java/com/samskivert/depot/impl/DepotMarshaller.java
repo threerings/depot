@@ -118,7 +118,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
                 }
             }
 
-            // the field must be public, non-static and non-transient
+            // the field must be public, non-static and non-@Transient
             if (!java.lang.reflect.Modifier.isPublic(mods) ||
                 java.lang.reflect.Modifier.isStatic(mods) ||
                 field.getAnnotation(Transient.class) != null) {
