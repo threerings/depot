@@ -616,7 +616,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             Set<String> fields = Sets.newHashSet();
             ResultSetMetaData metadata = rs.getMetaData();
             for (int ii = 1; ii <= metadata.getColumnCount(); ii ++) {
-               fields.add(metadata.getColumnName(ii));
+               fields.add(metadata.getColumnLabel(ii));
             }
 
             // then create and populate the persistent object
