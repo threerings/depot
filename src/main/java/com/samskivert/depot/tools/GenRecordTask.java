@@ -12,7 +12,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,6 +30,8 @@ import org.apache.tools.ant.types.FileSet;
 import org.apache.tools.ant.types.Reference;
 import org.apache.tools.ant.util.ClasspathUtils;
 
+import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -259,7 +264,7 @@ public class GenRecordTask extends Task
 
             // create our substitution mappings
             Map<String, String> fsubs = Maps.newHashMap(subs);
-            fsubs.put("type", getTypeName(f.getType()));
+            fsubs.put("type", getTypeName(f.getGenericType()));
             fsubs.put("field", fname);
             fsubs.put("capfield", StringUtil.unStudlyName(fname).toUpperCase());
 
@@ -444,19 +449,37 @@ public class GenRecordTask extends Task
         return name;
     }
 
-    protected static String getTypeName (Class<?> clazz)
+    protected static String getTypeName (Type type)
     {
-        if (clazz.isArray()) {
-            Class<?> cclass = clazz.getComponentType();
-            return (cclass.isPrimitive() ? cclass.getSimpleName() : getTypeName(cclass)) + "[]";
-        } else {
-            Class<?> nclass = clazz.isPrimitive() ? BOXES.get(clazz) : clazz;
-            Class<?> eclass = nclass.getEnclosingClass();
-            if (eclass != null) {
-                return getTypeName(eclass) + "." + nclass.getSimpleName();
+        if (type instanceof Class) {
+            Class<?> clazz = (Class<?>)type;
+            if (clazz.isArray()) {
+                Class<?> cclass = clazz.getComponentType();
+                return (cclass.isPrimitive() ? cclass.getSimpleName() : getTypeName(cclass)) + "[]";
             } else {
-                return nclass.getSimpleName();
+                Class<?> nclass = clazz.isPrimitive() ? BOXES.get(clazz) : clazz;
+                Class<?> eclass = nclass.getEnclosingClass();
+                return (eclass == null) ? nclass.getSimpleName() :
+                    getTypeName(eclass) + "." + nclass.getSimpleName();
             }
+
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType paramType = (ParameterizedType)type;
+            Type[] typeArgs = paramType.getActualTypeArguments();
+            String tparams = (typeArgs == null || typeArgs.length == 0) ? "" :
+                "<" + Joiner.on(", ").join(
+                    Lists.transform(Lists.newArrayList(typeArgs), new Function<Type, String>() {
+                        @Override public String apply (Type input) {
+                            return getTypeName(input);
+                        }
+                    })) + ">";
+            return getTypeName(paramType.getRawType()) + tparams;
+
+        } else if (type instanceof GenericArrayType) {
+            return getTypeName(((GenericArrayType)type).getGenericComponentType()) + "[]";
+
+        } else {
+            throw new IllegalArgumentException("Unknown kind of type '" + type + "'");
         }
     }
 

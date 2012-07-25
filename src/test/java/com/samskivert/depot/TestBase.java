@@ -10,6 +10,8 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Properties;
 
+import com.google.common.collect.Lists;
+
 import com.samskivert.jdbc.ConnectionProvider;
 import com.samskivert.jdbc.StaticConnectionProvider;
 import com.samskivert.util.Calendars;
@@ -100,6 +102,7 @@ public abstract class TestBase
         rec.type = EnumKeyRecord.Type.A;
         rec.lastModified = tnow;
         rec.numbers = new int[] { 9, 0, 2, 1, 0 };
+        rec.strList = Lists.newArrayList("foo", "bar", "Hello", "World");
         return rec;
     }
 
@@ -117,5 +120,6 @@ public abstract class TestBase
         assertEquals(expect.type, got.type);
         assertEquals(expect.lastModified, got.lastModified);
         assertTrue(Arrays.equals(expect.numbers, got.numbers));
+        assertEquals(expect.strList, got.strList);
     }
 }

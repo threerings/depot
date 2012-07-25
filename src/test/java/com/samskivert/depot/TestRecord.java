@@ -4,14 +4,18 @@
 
 package com.samskivert.depot;
 
+import java.util.List;
+
 import java.sql.Date;
 import java.sql.Timestamp;
 
 import com.samskivert.util.StringUtil;
 
+import com.samskivert.depot.Transformers;
 import com.samskivert.depot.annotation.Entity;
 import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.annotation.Index;
+import com.samskivert.depot.annotation.Transform;
 import com.samskivert.depot.expression.ColumnExp;
 
 /**
@@ -31,6 +35,7 @@ public class TestRecord extends PersistentRecord
     public static final ColumnExp<Date> CREATED = colexp(_R, "created");
     public static final ColumnExp<Timestamp> LAST_MODIFIED = colexp(_R, "lastModified");
     public static final ColumnExp<int[]> NUMBERS = colexp(_R, "numbers");
+    public static final ColumnExp<List<String>> STR_LIST = colexp(_R, "strList");
     // AUTO-GENERATED: FIELDS END
 
     public static final int SCHEMA_VERSION = 3;
@@ -54,6 +59,9 @@ public class TestRecord extends PersistentRecord
     public Timestamp lastModified;
 
     public int[] numbers;
+
+    @Transform(Transformers.StringIterable.class)
+    public List<String> strList;
 
     @Override
     public String toString ()
