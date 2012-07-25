@@ -28,11 +28,11 @@
     <taskdef name="grecord" classname="com.samskivert.depot.tools.GenRecordTask"
              classpathref="built.path"/>
     <!-- make sure the record class files are all compiled -->
-    <ooojavac destdir="${classes.dir}" classpathref="pom.xml.path" srcdir="${src.dir}"
+    <ooojavac destdir="${classes.dir}" classpathref="built.path" srcdir="${src.dir}"
         version="1.5">
       <include name="**/*Record.java"/>
     </ooojavac>
-    <ooojavac destdir="${tclasses.dir}" classpathref="pom.xml.path" srcdir="${test.dir}"
+    <ooojavac destdir="${tclasses.dir}" classpathref="built.path" srcdir="${test.dir}"
         version="1.5">
       <include name="**/*Record.java"/>
     </ooojavac>
