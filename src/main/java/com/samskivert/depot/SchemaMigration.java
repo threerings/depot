@@ -105,9 +105,7 @@ public abstract class SchemaMigration extends Modifier
     }
 
     /**
-     * A convenient migration for changing the type of an existing field. NOTE: This object is
-     * instantiated with the name of a persistent field, not the name of a database column. These
-     * can be very different things for classes that use @Column annotations.
+     * A convenient migration for changing the type of an existing field.
      */
     public static class Retype extends SchemaMigration
     {
