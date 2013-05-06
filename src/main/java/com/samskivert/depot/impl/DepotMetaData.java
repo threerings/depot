@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
@@ -37,14 +38,11 @@ public class DepotMetaData
                 // create our schema version table if needed
                 liaison.createTableIfMissing(
                     stmt.getConnection(), SCHEMA_VERSION_TABLE,
-                    new String[] { P_COLUMN, V_COLUMN, MV_COLUMN },
-                    new ColumnDefinition[] {
-                        new ColumnDefinition("VARCHAR(255)", false, true, null),
-                        new ColumnDefinition("INTEGER", false, false, null),
-                        new ColumnDefinition("INTEGER", false, false, null)
-                    },
-                    null,
-                    new String[] { P_COLUMN });
+                    Arrays.asList(P_COLUMN, V_COLUMN, MV_COLUMN),
+                    Arrays.asList(new ColumnDefinition("VARCHAR(255)", false, true, null),
+                                  new ColumnDefinition("INTEGER", false, false, null),
+                                  new ColumnDefinition("INTEGER", false, false, null)),
+                    Arrays.asList(P_COLUMN));
 
                 // slurp in the current versions of all records
                 readVersions(liaison, stmt);

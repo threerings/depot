@@ -494,21 +494,18 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
 
         // figure out the list of fields that correspond to actual table columns and generate the
         // SQL used to create and migrate our table (unless we're a computed entity)
-        _columnFields = new ColumnExp<?>[_allFields.length];
-        ColumnDefinition[] declarations = new ColumnDefinition[_allFields.length];
-        int jj = 0;
+        List<ColumnExp<?>> columnFields = Lists.newArrayList();
+        List<ColumnDefinition> declarations = Lists.newArrayList();
         for (ColumnExp<?> field : _allFields) {
             FieldMarshaller<?> fm = _fields.get(field.name);
             // include all persistent non-computed fields
             ColumnDefinition colDef = fm.getColumnDefinition();
             if (colDef != null) {
-                _columnFields[jj] = field;
-                declarations[jj] = colDef;
-                jj ++;
+                columnFields.add(field);
+                declarations.add(colDef);
             }
         }
-        _columnFields = ArrayUtil.splice(_columnFields, jj);
-        declarations = ArrayUtil.splice(declarations, jj);
+        _columnFields = columnFields.toArray(new ColumnExp<?>[columnFields.size()]);
 
         // determine whether or not this record has ever been seen
         int currentVersion = _meta.getVersion(getTableName(), false);
@@ -681,7 +678,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
     }
 
     protected void createTable (PersistenceContext ctx, final SQLBuilder builder,
-                                final ColumnDefinition[] declarations)
+                                final List<ColumnDefinition> declarations)
         throws DatabaseException
     {
         log.info("Creating initial table '" + getTableName() + "'.");
@@ -690,15 +687,14 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             @Override
             protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
                 // create the table
-                String[] primaryKeyColumns = null;
+                List<String> pkColumns = Lists.newArrayList();
                 if (hasPrimaryKey()) {
-                    primaryKeyColumns = new String[_pkColumns.size()];
-                    for (int ii = 0; ii < primaryKeyColumns.length; ii ++) {
-                        primaryKeyColumns[ii] = _pkColumns.get(ii).getColumnName();
+                    for (int ii = 0; ii < _pkColumns.size(); ii ++) {
+                        pkColumns.add(_pkColumns.get(ii).getColumnName());
                     }
                 }
                 liaison.createTableIfMissing(conn, getTableName(), fieldsToColumns(_columnFields),
-                                             declarations, null, primaryKeyColumns);
+                                             declarations, pkColumns);
 
                 // add its indexen
                 for (CreateIndexClause iclause : _indexes) {
@@ -964,14 +960,14 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
     }
 
     // translate an array of field names to an array of column names
-    protected String[] fieldsToColumns (ColumnExp<?>[] fields)
+    protected List<String> fieldsToColumns (ColumnExp<?>[] fields)
     {
-        String[] columns = new String[fields.length];
-        for (int ii = 0; ii < columns.length; ii ++) {
+        List<String> columns = Lists.newArrayListWithExpectedSize(fields.length);
+        for (int ii = 0; ii < fields.length; ii ++) {
             FieldMarshaller<?> fm = _fields.get(fields[ii].name);
             checkArgument(fm != null, "Unknown field on record [field=%s, class=%s]",
                           fields[ii], _pClass);
-            columns[ii] = fm.getColumnName();
+            columns.add(fm.getColumnName());
         }
         return columns;
     }

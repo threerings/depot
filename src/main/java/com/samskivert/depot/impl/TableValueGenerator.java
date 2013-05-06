@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 import com.samskivert.depot.annotation.GeneratedValue;
 import com.samskivert.depot.annotation.TableGenerator;
@@ -43,13 +44,10 @@ public class TableValueGenerator extends ValueGenerator
         // make sure our table exists
         liaison.createTableIfMissing(
             conn, _valueTable,
-            new String[] { _pkColumnName, _valueColumnName },
-            new ColumnDefinition[] {
-                new ColumnDefinition("VARCHAR(255)", true, false, null),
-                new ColumnDefinition("INTEGER")
-            },
-            null,
-            new String[] { _pkColumnName });
+            Arrays.asList(_pkColumnName, _valueColumnName),
+            Arrays.asList(new ColumnDefinition("VARCHAR(255)", true, false, null),
+                          new ColumnDefinition("INTEGER")),
+            Arrays.asList(_pkColumnName));
 
         // and also that there's a row in it for us
         PreparedStatement stmt = conn.prepareStatement(
