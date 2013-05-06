@@ -74,8 +74,7 @@ public class MigrationTest extends TestBase
         "CREATE MEMORY TABLE PUBLIC.\"DepotSchemaVersion\"(" +
         "\"persistentClass\" VARCHAR(255) NOT NULL PRIMARY KEY," +
         "\"version\" INTEGER NOT NULL," +
-        "\"migratingVersion\" INTEGER NOT NULL," +
-        "UNIQUE(\"persistentClass\"))",
+        "\"migratingVersion\" INTEGER NOT NULL)",
 
         "CREATE MEMORY TABLE PUBLIC.\"MigrationTest$PKMigrationRecord\"(" +
         "\"id\" INTEGER DEFAULT 0 NOT NULL," +
