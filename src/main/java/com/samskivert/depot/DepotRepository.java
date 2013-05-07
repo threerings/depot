@@ -553,43 +553,67 @@ public abstract class DepotRepository
         }
 
         final boolean[] created = new boolean[1];
-        _ctx.invoke(new CachingModifier<T>(record, key, key) {
-            @Override
-            protected int invoke (Connection conn, DatabaseLiaison liaison) throws SQLException {
-                if (_key != null) {
-                    // run the update
-                    int mods = builder.prepare(conn).executeUpdate();
-                    if (mods > 0) {
-                        // if it succeeded, we're done
-                        return mods;
+        try {
+            _ctx.invoke(new CachingModifier<T>(record, key, key) {
+                @Override
+                protected int invoke (Connection conn, DatabaseLiaison liaison)
+                    throws SQLException
+                {
+                    if (_key != null) {
+                        // run the update
+                        int mods = builder.prepare(conn).executeUpdate();
+                        if (mods > 0) {
+                            // if it succeeded, we're done
+                            return mods;
+                        }
                     }
-                }
 
-                // if the update modified zero rows or the primary key was unset, insert
-                Set<String> identityFields = Collections.emptySet();
-                if (_key == null) {
-                    // first, set any auto-generated column values
-                    identityFields = marsh.generateFieldValues(conn, liaison, _result, false);
-                    // update our modifier's key so that it can cache our results
-                    updateKey(marsh.getPrimaryKey(_result, false));
-                }
-                builder.newQuery(new InsertClause(pClass, _result, identityFields));
+                    // if the update modified zero rows or the primary key was unset, insert
+                    Set<String> identityFields = Collections.emptySet();
+                    if (_key == null) {
+                        // first, set any auto-generated column values
+                        identityFields = marsh.generateFieldValues(conn, liaison, _result, false);
+                        // update our modifier's key so that it can cache our results
+                        updateKey(marsh.getPrimaryKey(_result, false));
+                    }
+                    builder.newQuery(new InsertClause(pClass, _result, identityFields));
 
-                int mods = builder.prepare(conn).executeUpdate();
+                    int mods = builder.prepare(conn).executeUpdate();
 
-                // run any post-factum value generators and potentially generate our key
-                if (_key == null) {
-                    marsh.generateFieldValues(conn, liaison, _result, true);
-                    updateKey(marsh.getPrimaryKey(_result, false));
+                    // run any post-factum value generators and potentially generate our key
+                    if (_key == null) {
+                        marsh.generateFieldValues(conn, liaison, _result, true);
+                        updateKey(marsh.getPrimaryKey(_result, false));
+                    }
+                    created[0] = true;
+                    return mods;
                 }
-                created[0] = true;
-                return mods;
+                @Override
+                public void updateStats (Stats stats) {
+                    stats.noteModification(pClass);
+                }
+            });
+
+        } catch (DuplicateKeyException dke) {
+            if (key == null) {
+                throw dke; // how would this even happen?
             }
-            @Override
-            public void updateStats (Stats stats) {
-                stats.noteModification(pClass);
-            }
-        });
+            // this should be very rare: the insert failed. Retry one more update.
+            _ctx.invoke(new CachingModifier<T>(record, key, key) {
+                @Override
+                protected int invoke (Connection conn, DatabaseLiaison liaison)
+                    throws SQLException
+                {
+                    builder.newQuery(update);
+                    return builder.prepare(conn).executeUpdate();
+                }
+                @Override
+                public void updateStats (Stats stats) {
+                    stats.noteModification(pClass);
+                }
+            });
+        }
+
         return created[0];
     }
 
