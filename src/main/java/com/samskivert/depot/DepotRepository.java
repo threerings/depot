@@ -595,10 +595,20 @@ public abstract class DepotRepository
             });
 
         } catch (DuplicateKeyException dke) {
+            // If we got this then the insert failed.
+            // Another node must have done the insert already.
+            // A simple solution here would be to just ignore the DKE and return, because by
+            // definition we're in a race condition and we can just pretend we got in first
+            // but that the other caller did an update afterwards.
+            // But: what if non-symmetrical code is being run on the nodes? What if the other node
+            // specifically called insert()? In that case, the other node is expecting
+            // a possible DKE, but this node isn't, and if the other node always calls insert()
+            // then this node would expect its store() to always work and never be overwritten
+            // by the other node. We need to attempt to complete the operation.
             if (key == null) {
                 throw dke; // how would this even happen?
             }
-            // this should be very rare: the insert failed. Retry one more update.
+            // Retry one more update.
             _ctx.invoke(new CachingModifier<T>(record, key, key) {
                 @Override
                 protected int invoke (Connection conn, DatabaseLiaison liaison)
