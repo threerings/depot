@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 
 import com.samskivert.depot.annotation.GeneratedValue;
@@ -86,7 +87,7 @@ public class TableValueGenerator extends ValueGenerator
     }
 
     @Override // from ValueGenerator
-    public int nextGeneratedValue (Connection conn, DatabaseLiaison liaison)
+    public int nextGeneratedValue (Connection conn, DatabaseLiaison liaison, Statement stmt)
         throws SQLException
     {
         // TODO: Make this lockless!

@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -653,21 +654,22 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
      * eventual SQL).
      */
     public Set<String> generateFieldValues (
-        Connection conn, DatabaseLiaison liaison, Object po, boolean postFactum)
+        Connection conn, DatabaseLiaison liaison, Statement stmt, Object po, boolean postFactum)
     {
         Set<String> idFields = Sets.newHashSet();
 
         for (ValueGenerator vg : _valueGenerators.values()) {
+            Field field = vg.getFieldMarshaller().getField();
             if (!postFactum && vg instanceof IdentityValueGenerator) {
-                idFields.add(vg.getFieldMarshaller().getField().getName());
+                idFields.add(field.getName());
             }
             if (vg.isPostFactum() != postFactum) {
                 continue;
             }
 
             try {
-                int nextValue = vg.nextGeneratedValue(conn, liaison);
-                vg.getFieldMarshaller().getField().set(po, nextValue);
+                int nextValue = vg.nextGeneratedValue(conn, liaison, stmt);
+                field.set(po, nextValue);
 
             } catch (Exception e) {
                 throw new IllegalStateException(

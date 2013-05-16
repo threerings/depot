@@ -46,8 +46,11 @@ public abstract class ValueGenerator
 
     /**
      * Fetch/generate the next primary key value.
+     *
+     * @param stmt if post-factum, the statement that was used to perform the insert which resulted
+     * in the auto-generation of a value, otherwise null.
      */
-    public abstract int nextGeneratedValue (Connection conn, DatabaseLiaison liaison)
+    public abstract int nextGeneratedValue (Connection conn, DatabaseLiaison liaison, Statement stmt)
         throws SQLException;
 
     /**

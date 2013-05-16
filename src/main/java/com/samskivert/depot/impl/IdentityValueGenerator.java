@@ -5,7 +5,9 @@
 package com.samskivert.depot.impl;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import com.samskivert.jdbc.DatabaseLiaison;
 import com.samskivert.depot.annotation.GeneratedValue;
@@ -34,10 +36,18 @@ public class IdentityValueGenerator extends ValueGenerator
     }
 
     @Override // from ValueGenerator
-    public int nextGeneratedValue (Connection conn, DatabaseLiaison liaison)
+    public int nextGeneratedValue (Connection conn, DatabaseLiaison liaison, Statement stmt)
         throws SQLException
     {
-        return liaison.lastInsertedId(conn, _dm.getTableName(), _fm.getColumnName());
+        String column = _fm.getColumnName();
+        // if this JDBC driver supports getGeneratedKeys, use it!
+        if (stmt != null && conn.getMetaData().supportsGetGeneratedKeys()) {
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(column);
+            }
+        }
+        return liaison.lastInsertedId(conn, _dm.getTableName(), column);
     }
 
     @Override // from ValueGenerator

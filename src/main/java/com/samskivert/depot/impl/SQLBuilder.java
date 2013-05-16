@@ -64,7 +64,8 @@ public abstract class SQLBuilder
     {
         checkState(_buildVisitor != null, "Cannot prepare query until it's been built.");
 
-        PreparedStatement stmt = conn.prepareStatement(_buildVisitor.getQuery());
+        PreparedStatement stmt = conn.prepareStatement(
+            _buildVisitor.getQuery(), PreparedStatement.RETURN_GENERATED_KEYS);
 
         int argIx = 1;
         for (BuildVisitor.Bindable bindable : _buildVisitor.getBindables()) {

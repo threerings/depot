@@ -5,6 +5,7 @@
 package com.samskivert.depot;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
@@ -317,15 +318,16 @@ public abstract class DepotRepository
                 Set<String> identityFields = Collections.emptySet();
                 if (_key == null) {
                     // set any auto-generated column values
-                    identityFields = marsh.generateFieldValues(conn, liaison, _result, false);
+                    identityFields = marsh.generateFieldValues(conn, liaison, null, _result, false);
                     updateKey(marsh.getPrimaryKey(_result, false));
                 }
                 builder.newQuery(new InsertClause(pClass, _result, identityFields));
 
-                int mods = builder.prepare(conn).executeUpdate();
+                PreparedStatement stmt = builder.prepare(conn);
+                int mods = stmt.executeUpdate();
                 // run any post-factum value generators and potentially generate our key
                 if (_key == null) {
-                    marsh.generateFieldValues(conn, liaison, _result, true);
+                    marsh.generateFieldValues(conn, liaison, stmt, _result, true);
                     updateKey(marsh.getPrimaryKey(_result, false));
                 }
                 return mods;
@@ -572,17 +574,19 @@ public abstract class DepotRepository
                     Set<String> identityFields = Collections.emptySet();
                     if (_key == null) {
                         // first, set any auto-generated column values
-                        identityFields = marsh.generateFieldValues(conn, liaison, _result, false);
+                        identityFields = marsh.generateFieldValues(
+                            conn, liaison, null, _result, false);
                         // update our modifier's key so that it can cache our results
                         updateKey(marsh.getPrimaryKey(_result, false));
                     }
                     builder.newQuery(new InsertClause(pClass, _result, identityFields));
 
-                    int mods = builder.prepare(conn).executeUpdate();
+                    PreparedStatement stmt = builder.prepare(conn);
+                    int mods = stmt.executeUpdate();
 
                     // run any post-factum value generators and potentially generate our key
                     if (_key == null) {
-                        marsh.generateFieldValues(conn, liaison, _result, true);
+                        marsh.generateFieldValues(conn, liaison, stmt, _result, true);
                         updateKey(marsh.getPrimaryKey(_result, false));
                     }
                     created[0] = true;
@@ -595,16 +599,16 @@ public abstract class DepotRepository
             });
 
         } catch (DuplicateKeyException dke) {
-            // If we got this then the insert failed.
-            // Another node must have done the insert already.
-            // A simple solution here would be to just ignore the DKE and return, because by
-            // definition we're in a race condition and we can just pretend we got in first
-            // but that the other caller did an update afterwards.
+            // If we got this then the insert failed. Another node must have done the insert
+            // already. A simple solution here would be to just ignore the DKE and return, because
+            // by definition we're in a race condition and we can just pretend we got in first but
+            // that the other caller did an update afterwards.
+
             // But: what if non-symmetrical code is being run on the nodes? What if the other node
-            // specifically called insert()? In that case, the other node is expecting
-            // a possible DKE, but this node isn't, and if the other node always calls insert()
-            // then this node would expect its store() to always work and never be overwritten
-            // by the other node. We need to attempt to complete the operation.
+            // specifically called insert()? In that case, the other node is expecting a possible
+            // DKE, but this node isn't, and if the other node always calls insert() then this node
+            // would expect its store() to always work and never be overwritten by the other node.
+            // We need to attempt to complete the operation.
             if (key == null) {
                 throw dke; // how would this even happen?
             }
