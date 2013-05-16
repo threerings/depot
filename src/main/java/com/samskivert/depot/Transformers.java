@@ -300,8 +300,8 @@ public class Transformers
             }
             public Iterable<E> build () {
                 if (fintern) {
-                    @SuppressWarnings("unchecked")
-                    Iterable<E> built = (Iterable<E>) INTERNER.intern(fretval);
+                    Object interned = INTERNER.intern(fretval);
+                    @SuppressWarnings("unchecked") Iterable<E> built = (Iterable<E>)interned;
                     return built;
                 }
                 return fretval;
