@@ -77,7 +77,7 @@ public class Where extends WhereClause
 
     protected static SQLExpression<?> toCondition (ColumnExp<?>[] columns, Comparable<?>[] values)
     {
-        SQLExpression<?>[] comparisons = new SQLExpression[columns.length];
+        SQLExpression<?>[] comparisons = new SQLExpression<?>[columns.length];
         for (int ii = 0; ii < columns.length; ii ++) {
             comparisons[ii] = (values[ii] == null) ? new IsNull(columns[ii]) :
                 new Equals(columns[ii], values[ii]);
