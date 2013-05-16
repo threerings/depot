@@ -96,9 +96,14 @@ public class ProjectionTest extends TestBase
         ewant.add(Tuple2.create("Abraham", 1));
         ewant.add(Tuple2.create("Elvis", 2));
         ewant.add(Tuple2.create("Moses", 1));
-        assertEquals(ewant, _repo.from(EnumKeyRecord.class).
-                     groupBy(EnumKeyRecord.NAME).ascending(EnumKeyRecord.NAME).
-                     select(EnumKeyRecord.NAME, Funcs.count(EnumKeyRecord.TYPE)));
+        List<Tuple2<String, Number>> egot = _repo.from(EnumKeyRecord.class).
+            groupBy(EnumKeyRecord.NAME).ascending(EnumKeyRecord.NAME).
+            select(EnumKeyRecord.NAME, Funcs.count(EnumKeyRecord.TYPE));
+        assertEquals(ewant.size(), egot.size());
+        for (int ii = 0; ii < ewant.size(); ii++) {
+            assertEquals(ewant.get(ii).a, egot.get(ii).a);
+            assertEquals(ewant.get(ii).b.intValue(), egot.get(ii).b.intValue());
+        }
     }
 
     @Test public void testFuncs ()
