@@ -511,7 +511,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
         // determine whether or not this record has ever been seen
         int currentVersion = _meta.getVersion(getTableName(), false);
         if (currentVersion == -1) {
-            log.info("Creating initial version record for " + _pClass.getName() + ".");
+            log.debug("Creating initial version record for " + _pClass.getName() + ".");
             // if not, create a version entry with version zero
             _meta.initializeVersion(getTableName());
             currentVersion = 0;
