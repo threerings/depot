@@ -26,7 +26,7 @@ import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
 import com.samskivert.depot.impl.expression.DateFun.DatePart.Part;
 import com.samskivert.depot.impl.expression.NumericalFun.Trunc;
 
-import static com.samskivert.Log.log;
+import static com.samskivert.depot.Log.log;
 
 public class MySQLBuilder
     extends SQLBuilder
@@ -176,10 +176,9 @@ public class MySQLBuilder
         @Override protected boolean orderSupported (OrderBy.Order order)
         {
             switch (order) {
-            case NULL: case ASC: case DESC:
-                return true;
+            case NULL: case ASC: case DESC: return true;
+            default: return false;
             }
-            return false;
         }
     }
 

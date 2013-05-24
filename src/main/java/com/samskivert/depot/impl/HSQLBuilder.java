@@ -197,10 +197,9 @@ public class HSQLBuilder
         @Override protected boolean orderSupported (OrderBy.Order order)
         {
             switch (order) {
-            case ASC: case DESC:
-                return true;
+            case ASC: case DESC: return true;
+            default: return false;
             }
-            return false;
         }
     }
 

@@ -4,9 +4,6 @@
 
 package com.samskivert.depot.impl;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.samskivert.depot.Log.log;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.sql.Connection;
@@ -26,6 +23,12 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.samskivert.jdbc.ColumnDefinition;
+import com.samskivert.jdbc.DatabaseLiaison;
+import com.samskivert.util.StringUtil;
+import com.samskivert.util.Tuple;
 
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.Key;
@@ -47,12 +50,7 @@ import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.clause.CreateIndexClause;
-import com.samskivert.util.ArrayUtil;
-import com.samskivert.util.StringUtil;
-import com.samskivert.util.Tuple;
-
-import com.samskivert.jdbc.ColumnDefinition;
-import com.samskivert.jdbc.DatabaseLiaison;
+import static com.samskivert.depot.Log.log;
 
 /**
  * Handles the marshalling and unmarshalling of persistent instances to JDBC primitives ({@link
