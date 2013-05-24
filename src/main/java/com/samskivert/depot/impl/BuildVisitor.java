@@ -13,6 +13,8 @@ import java.util.Set;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.samskivert.depot.clause.Distinct;
 import com.samskivert.util.ByteEnum;
@@ -37,6 +39,7 @@ import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.*;
 import com.samskivert.depot.operator.Case;
 import com.samskivert.depot.operator.FullText;
+import static com.samskivert.depot.Log.log;
 
 import com.samskivert.depot.impl.clause.CreateIndexClause;
 import com.samskivert.depot.impl.clause.DeleteClause;
@@ -83,10 +86,6 @@ import com.samskivert.depot.impl.operator.In;
 import com.samskivert.depot.impl.operator.IsNull;
 import com.samskivert.depot.impl.operator.MultiOperator;
 import com.samskivert.depot.impl.operator.Not;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.samskivert.Log.log;
 
 /**
  * Implements the base functionality of the SQL-building pass of {@link SQLBuilder}. Dialectal

@@ -22,13 +22,13 @@ import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex.Configuration;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.clause.OrderBy;
-import com.samskivert.depot.impl.expression.IntervalExp;
+import com.samskivert.depot.operator.FullText;
+import static com.samskivert.depot.Log.log;
+
+import com.samskivert.depot.impl.expression.DateFun.DatePart.Part;
 import com.samskivert.depot.impl.expression.DateFun.DatePart;
 import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
-import com.samskivert.depot.impl.expression.DateFun.DatePart.Part;
-import com.samskivert.depot.operator.FullText;
-
-import static com.samskivert.Log.log;
+import com.samskivert.depot.impl.expression.IntervalExp;
 
 public class PostgreSQLBuilder
     extends SQLBuilder
