@@ -5,17 +5,18 @@
 package com.samskivert.depot.tools;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +29,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.io.Files;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.GeneratedValue;
@@ -120,17 +122,13 @@ public abstract class GenRecord
             }
         }
 
-        // slurp our source file into newline separated strings
+        // read the source file and break it into lines
+        Charset charset = Charset.defaultCharset(); // TODO?
+        String sourceText;
         String[] lines = null;
         try {
-            BufferedReader bin = new BufferedReader(new FileReader(source));
-            List<String> llist = Lists.newArrayList();
-            String line = null;
-            while ((line = bin.readLine()) != null) {
-                llist.add(line);
-            }
-            lines = llist.toArray(new String[llist.size()]);
-            bin.close();
+            sourceText = Files.toString(source, charset);
+            lines = Files.readLines(source, charset).toArray(new String[0]);
         } catch (IOException ioe) {
             logWarn("Error reading '" + source + "'", ioe);
             return;
@@ -258,49 +256,53 @@ public abstract class GenRecord
         }
 
         // now bolt everything back together into a class declaration
-        try {
-            BufferedWriter bout = new BufferedWriter(new FileWriter(source));
-            for (int ii = 0; ii < nstart; ii++) {
-                writeln(bout, lines[ii]);
-            }
-
-            if (fsection.length() > 0) {
-                String prev = get(lines, nstart-1);
-                if (!StringUtil.isBlank(prev) && !prev.equals("{")) {
-                    bout.newLine();
-                }
-                writeln(bout, "    " + FIELDS_START);
-                bout.write(fsection.toString());
-                writeln(bout, "    " + FIELDS_END);
-                if (!StringUtil.isBlank(get(lines, nend))) {
-                    bout.newLine();
-                }
-            }
-            for (int ii = nend; ii < mstart; ii++) {
-                writeln(bout, lines[ii]);
-            }
-
-            if (msection.length() > 0) {
-                if (!StringUtil.isBlank(get(lines, mstart-1))) {
-                    bout.newLine();
-                }
-                writeln(bout, "    " + METHODS_START);
-                bout.write(msection.toString());
-                writeln(bout, "    " + METHODS_END);
-                String next = get(lines, mend);
-                if (!StringUtil.isBlank(next) && !next.equals("}")) {
-                    bout.newLine();
-                }
-            }
-            for (int ii = mend; ii < lines.length; ii++) {
-                writeln(bout, lines[ii]);
-            }
-
-            bout.close();
-        } catch (IOException ioe) {
-            logWarn("Error writing to '" + source + "'", ioe);
+        StringWriter out = new StringWriter();
+        PrintWriter pout = new PrintWriter(out);
+        for (int ii = 0; ii < nstart; ii++) {
+            pout.println(lines[ii]);
         }
-        logInfo("Processed '" + source + "'");
+
+        if (fsection.length() > 0) {
+            String prev = get(lines, nstart-1);
+            if (!StringUtil.isBlank(prev) && !prev.equals("{")) {
+                pout.println();
+            }
+            pout.println("    " + FIELDS_START);
+            pout.write(fsection.toString());
+            pout.println("    " + FIELDS_END);
+            if (!StringUtil.isBlank(get(lines, nend))) {
+                pout.println();
+            }
+        }
+        for (int ii = nend; ii < mstart; ii++) {
+            pout.println(lines[ii]);
+        }
+
+        if (msection.length() > 0) {
+            if (!StringUtil.isBlank(get(lines, mstart-1))) {
+                pout.println();
+            }
+            pout.println("    " + METHODS_START);
+            pout.write(msection.toString());
+            pout.println("    " + METHODS_END);
+            String next = get(lines, mend);
+            if (!StringUtil.isBlank(next) && !next.equals("}")) {
+                pout.println();
+            }
+        }
+        for (int ii = mend; ii < lines.length; ii++) {
+            pout.println(lines[ii]);
+        }
+
+        String newSourceText = out.toString();
+        if (!sourceText.equals(newSourceText)) {
+            try {
+                Files.write(newSourceText, source, charset);
+                logInfo("Regenerated '" + source + "'");
+            } catch (IOException ioe) {
+                logWarn("Error writing to '" + source + "'", ioe);
+            }
+        }
     }
 
     /**
@@ -332,14 +334,6 @@ public abstract class GenRecord
             return true;
         }
         return false;
-    }
-
-    /** Helper function for writing a string and a newline to a writer. */
-    protected void writeln (BufferedWriter bout, String line)
-        throws IOException
-    {
-        bout.write(line);
-        bout.newLine();
     }
 
     /** Helper function for generating our boilerplate code. */
