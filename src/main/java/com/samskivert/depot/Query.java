@@ -683,11 +683,13 @@ public class Query<T extends PersistentRecord>
         return new Cons<T>(head, tail);
     }
 
+    // note that because new elements are prepended to the cons list, we turn them into a Java list
+    // in reverse order, which matches the original order in which they were "appended"
     protected static void addAll (List<QueryClause> toList, Cons<? extends QueryClause> cons)
     {
         if (cons != null) {
-            toList.add(cons.head);
             addAll(toList, cons.tail);
+            toList.add(cons.head);
         }
     }
 
