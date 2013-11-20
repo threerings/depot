@@ -321,7 +321,7 @@ public abstract class DepotRepository
                 }
                 builder.newQuery(new InsertClause(pClass, _result, identityFields));
 
-                PreparedStatement stmt = builder.prepare(conn);
+                PreparedStatement stmt = builder.prepareInsert(conn);
                 int mods = stmt.executeUpdate();
                 // run any post-factum value generators and potentially generate our key
                 if (_key == null) {
@@ -579,7 +579,7 @@ public abstract class DepotRepository
                     }
                     builder.newQuery(new InsertClause(pClass, _result, identityFields));
 
-                    PreparedStatement stmt = builder.prepare(conn);
+                    PreparedStatement stmt = builder.prepareInsert(conn);
                     int mods = stmt.executeUpdate();
 
                     // run any post-factum value generators and potentially generate our key

@@ -62,30 +62,19 @@ public abstract class SQLBuilder
     public PreparedStatement prepare (Connection conn)
         throws SQLException
     {
-        checkState(_buildVisitor != null, "Cannot prepare query until it's been built.");
-
-        PreparedStatement stmt = conn.prepareStatement(
-            _buildVisitor.getQuery(), PreparedStatement.RETURN_GENERATED_KEYS);
-
-        int argIx = 1;
-        for (BuildVisitor.Bindable bindable : _buildVisitor.getBindables()) {
-            try {
-                bindable.doBind(conn, stmt, argIx);
-            } catch (Exception e) {
-                log.warning("Failed to bind statement argument", "argIx", argIx, e);
-            }
-            argIx ++;
-        }
-
-        if (PersistenceContext.DEBUG) {
-            log.info("SQL: " + stmt.toString());
-        }
-
-        return stmt;
+        return prepare(conn, conn.prepareStatement(buildQuery()));
     }
 
-    protected String nullify (String str) {
-        return (str != null && str.length() > 0) ? str : null;
+    /**
+     * A variant of {@link #prepare} that must be used for INSERTs. Due to a Postgres JDBC driver
+     * bug, we need to restrict the use of RETURN_GENERATED_KEYS to insert queries only, which
+     * means we need to know when we're doing an insert.
+     */
+    public PreparedStatement prepareInsert (Connection conn)
+        throws SQLException
+    {
+        return prepare(
+            conn, conn.prepareStatement(buildQuery(), PreparedStatement.RETURN_GENERATED_KEYS));
     }
 
     /**
@@ -127,6 +116,69 @@ public abstract class SQLBuilder
                       "Primitive Java type cannot be nullable [field=" + field.getName() + "]");
 
         return coldef;
+    }
+
+    /**
+     * Add full-text search capabilities, as defined by the provided {@link FullTextIndex}, on
+     * the table associated with the given {@link DepotMarshaller}. This is a highly database
+     * specific operation and must thus be implemented by each dialect subclass.
+     *
+     * @see FullTextIndex
+     */
+    public abstract <T extends PersistentRecord> boolean addFullTextSearch (
+        Connection conn, DepotMarshaller<T> marshaller, FullTextIndex fts)
+        throws SQLException;
+
+    /**
+     * Return true if the supplied column is an internal consideration of this {@link SQLBuilder},
+     * e.g. PostgreSQL's full text search data is stored in a table column that should otherwise
+     * not be visible to Depot; this method helps mask it.
+     */
+    public abstract boolean isPrivateColumn (
+        String column, Map<String, FullTextIndex> fullTextIndexes);
+
+    /**
+     * Return true if the supplied index is an internal consideration of this {@link SQLBuilder},
+     * e.g. PostgreSQL automatically creates indexes that end in _key for unique columns, and its
+     * primary keys have indices ending in _pkey.
+     */
+    public abstract boolean isPrivateIndex (
+        String index, Map<String, FullTextIndex> fullTextIndexes);
+
+    /**
+     * Figure out what full text search indexes already exist on this table and add the names of
+     * those indexes to the supplied target set.
+     */
+    public abstract void getFtsIndexes (
+        Iterable<String> columns, Iterable<String> indexes, Set<String> target);
+
+    protected String buildQuery () {
+        checkState(_buildVisitor != null, "Cannot prepare query until it's been built.");
+        return _buildVisitor.getQuery();
+    }
+
+    protected PreparedStatement prepare (Connection conn, PreparedStatement stmt)
+        throws SQLException
+    {
+        int argIx = 1;
+        for (BuildVisitor.Bindable bindable : _buildVisitor.getBindables()) {
+            try {
+                bindable.doBind(conn, stmt, argIx);
+            } catch (Exception e) {
+                log.warning("Failed to bind statement argument", "argIx", argIx, e);
+            }
+            argIx ++;
+        }
+
+        if (PersistenceContext.DEBUG) {
+            log.info("SQL: " + stmt.toString());
+        }
+
+        return stmt;
+    }
+
+    protected String nullify (String str) {
+        return (str != null && str.length() > 0) ? str : null;
     }
 
     protected void maybeMutateForPrimitive (Field field, ColumnDefinition coldef)
@@ -182,40 +234,6 @@ public abstract class SQLBuilder
     {
         return "false";
     }
-
-    /**
-     * Add full-text search capabilities, as defined by the provided {@link FullTextIndex}, on
-     * the table associated with the given {@link DepotMarshaller}. This is a highly database
-     * specific operation and must thus be implemented by each dialect subclass.
-     *
-     * @see FullTextIndex
-     */
-    public abstract <T extends PersistentRecord> boolean addFullTextSearch (
-        Connection conn, DepotMarshaller<T> marshaller, FullTextIndex fts)
-        throws SQLException;
-
-    /**
-     * Return true if the supplied column is an internal consideration of this {@link SQLBuilder},
-     * e.g. PostgreSQL's full text search data is stored in a table column that should otherwise
-     * not be visible to Depot; this method helps mask it.
-     */
-    public abstract boolean isPrivateColumn (
-        String column, Map<String, FullTextIndex> fullTextIndexes);
-
-    /**
-     * Return true if the supplied index is an internal consideration of this {@link SQLBuilder},
-     * e.g. PostgreSQL automatically creates indexes that end in _key for unique columns, and its
-     * primary keys have indices ending in _pkey.
-     */
-    public abstract boolean isPrivateIndex (
-        String index, Map<String, FullTextIndex> fullTextIndexes);
-
-    /**
-     * Figure out what full text search indexes already exist on this table and add the names of
-     * those indexes to the supplied target set.
-     */
-    public abstract void getFtsIndexes (
-        Iterable<String> columns, Iterable<String> indexes, Set<String> target);
 
     /**
      * Overridden by subclasses to create a dialect-specific {@link BuildVisitor}.
