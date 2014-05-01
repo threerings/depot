@@ -12,6 +12,8 @@ import java.sql.Statement;
 import com.samskivert.jdbc.DatabaseLiaison;
 import com.samskivert.depot.annotation.GeneratedValue;
 
+import static com.samskivert.depot.Log.log;
+
 /**
  * Generates primary keys using an identity column.
  */
@@ -44,7 +46,11 @@ public class IdentityValueGenerator extends ValueGenerator
         if (stmt != null && conn.getMetaData().supportsGetGeneratedKeys()) {
             ResultSet rs = stmt.getGeneratedKeys();
             if (rs.next()) {
-                return rs.getInt(column);
+                try {
+                    return rs.getInt(column);
+                } catch (SQLException e) {
+                    log.info("Unable to get generated key, falling back", "errmsg", e.getMessage());
+                }
             }
         }
         return liaison.lastInsertedId(conn, _dm.getTableName(), column);
