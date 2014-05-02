@@ -42,15 +42,7 @@ public class IdentityValueGenerator extends ValueGenerator
     public int nextGeneratedValue (Connection conn, DatabaseLiaison liaison, Statement stmt)
         throws SQLException
     {
-        String column = _fm.getColumnName();
-        // if this JDBC driver supports getGeneratedKeys, use it!
-        if (stmt != null && conn.getMetaData().supportsGetGeneratedKeys()) {
-            ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                return rs.getInt((liaison instanceof MySQLLiaison) ? "GENERATED_KEY" : column);
-            }
-        }
-        return liaison.lastInsertedId(conn, _dm.getTableName(), column);
+        return liaison.lastInsertedId(conn, stmt, _dm.getTableName(), _fm.getColumnName());
     }
 
     @Override // from ValueGenerator
