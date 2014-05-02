@@ -6,6 +6,7 @@ package com.samskivert.depot.impl;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -45,11 +46,13 @@ public class IdentityValueGenerator extends ValueGenerator
         // if this JDBC driver supports getGeneratedKeys, use it!
         if (stmt != null && conn.getMetaData().supportsGetGeneratedKeys()) {
             ResultSet rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                try {
-                    return rs.getInt(column);
-                } catch (SQLException e) {
-                    log.info("Unable to get generated key, falling back", "errmsg", e.getMessage());
+            while (rs.next()) {
+                ResultSetMetaData rsMetaData = rs.getMetaData();
+                int columnCount = rsMetaData.getColumnCount();
+                for (int ii = 1; ii <= columnCount; ii++) {
+                    if (column.equals(rsMetaData.getColumnName(ii))) {
+                        return rs.getInt(ii);
+                    }
                 }
             }
         }
