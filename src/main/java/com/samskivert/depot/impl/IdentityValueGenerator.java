@@ -5,15 +5,11 @@
 package com.samskivert.depot.impl;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.jdbc.MySQLLiaison;
 import com.samskivert.depot.annotation.GeneratedValue;
-
-import static com.samskivert.depot.Log.log;
 
 /**
  * Generates primary keys using an identity column.
