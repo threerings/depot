@@ -6,11 +6,11 @@ package com.samskivert.depot.impl;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 import com.samskivert.jdbc.DatabaseLiaison;
+import com.samskivert.jdbc.MySQLLiaison;
 import com.samskivert.depot.annotation.GeneratedValue;
 
 import static com.samskivert.depot.Log.log;
@@ -46,14 +46,8 @@ public class IdentityValueGenerator extends ValueGenerator
         // if this JDBC driver supports getGeneratedKeys, use it!
         if (stmt != null && conn.getMetaData().supportsGetGeneratedKeys()) {
             ResultSet rs = stmt.getGeneratedKeys();
-            while (rs.next()) {
-                ResultSetMetaData rsMetaData = rs.getMetaData();
-                int columnCount = rsMetaData.getColumnCount();
-                for (int ii = 1; ii <= columnCount; ii++) {
-                    if (column.equals(rsMetaData.getColumnName(ii))) {
-                        return rs.getInt(ii);
-                    }
-                }
+            if (rs.next()) {
+                return rs.getInt((liaison instanceof MySQLLiaison) ? "GENERATED_KEY" : column);
             }
         }
         return liaison.lastInsertedId(conn, _dm.getTableName(), column);
