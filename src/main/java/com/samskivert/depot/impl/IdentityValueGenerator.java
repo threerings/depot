@@ -38,7 +38,11 @@ public class IdentityValueGenerator extends ValueGenerator
     public int nextGeneratedValue (Connection conn, DatabaseLiaison liaison, Statement stmt)
         throws SQLException
     {
-        return liaison.lastInsertedId(conn, stmt, _dm.getTableName(), _fm.getColumnName());
+        Integer id = liaison.lastInsertedId(conn, stmt, _dm.getTableName(), _fm.getColumnName());
+        if (id == null) throw new SQLException(
+            "Unable to obtain last inserted id [table=" + _dm.getTableName() +
+            ", column=" + _fm.getColumnName() + "]");
+        return id;
     }
 
     @Override // from ValueGenerator
