@@ -1,3 +1,7 @@
+//
+// Depot library - a Java relational persistence library
+// https://github.com/threerings/depot/blob/master/LICENSE
+
 package com.samskivert.depot;
 
 import com.samskivert.depot.annotation.GeneratedValue;

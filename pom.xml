@@ -14,15 +14,16 @@
 
   <name>Depot</name>
   <description>A library for relational-database-based persistence in Java.</description>
-  <url>http://code.google.com/p/depot/</url>
+
+  <url>https://github.com/threerings/depot</url>
   <issueManagement>
-    <url>http://code.google.com/p/depot/issues/list</url>
+    <url>https://github.com/threerings/depot/issues</url>
   </issueManagement>
 
   <licenses>
     <license>
-      <name>GNU Lesser General Public License (LGPL), Version 2.1</name>
-      <url>http://www.fsf.org/licensing/licenses/lgpl.txt</url>
+      <name>The (New) BSD License</name>
+      <url>http://www.opensource.org/licenses/bsd-license.php</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -36,9 +37,9 @@
   </developers>
 
   <scm>
-    <connection>scm:svn:http://depot.googlecode.com/svn/trunk/</connection>
-    <developerConnection>scm:svn:https://depot.googlecode.com/svn/trunk/</developerConnection>
-    <url>http://depot.googlecode.com/svn/trunk/</url>
+    <connection>scm:git:git://github.com/threerings/depot.git</connection>
+    <developerConnection>scm:git:git@github.com:threerings/depot.git</developerConnection>
+    <url>https://github.com/threerings/depot/</url>
   </scm>
 
   <dependencies>
