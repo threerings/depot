@@ -150,4 +150,4 @@ public class PersonRepository extends DepotRepository
 }
 ```
 
-See the [example queries](ExampleQueries) page for examples of other kinds of queries.
+See the [example queries](ExampleQueries.md) page for examples of other kinds of queries.

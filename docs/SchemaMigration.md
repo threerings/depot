@@ -23,11 +23,11 @@ public DecorRepository (PersistenceContext ctx)
 {
     super(ctx);
 
-    ctx.registerMigration(DecorRecord.class, 
+    ctx.registerMigration(DecorRecord.class,
                           new SchemaMigration.Rename(17004, "scale", DecorRecord.ACTOR_SCALE));
     ctx.registerMigration(DecorRecord.class, new SchemaMigration.Drop(17004, "offsetX"));
     ctx.registerMigration(DecorRecord.class, new SchemaMigration.Drop(17004, "offsetY"));
-    ctx.registerMigration(DecorRecord.class, 
+    ctx.registerMigration(DecorRecord.class,
                           new SchemaMigration.Retype(17004, DecorRecord.FURNI_SCALE));
 }
 ```
