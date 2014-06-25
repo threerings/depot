@@ -31,16 +31,18 @@ way as much and surprise you as little as possible.
 
 Here's are some example to give you a taste of what code using Depot looks like.
 
-  * A [SimpleCodeExample simple code example]
-  * Various [ExampleQueries example queries]
+  * A [simple code example](wiki/SimpleCodeExample)
+  * Various [example queries](wiki/ExampleQueries)
+
+[API docs](http://threerings.github.io/depot/apidocs/) are also available.
 
 ## Features
 
 Depot supports a number of very useful features. Here are a few of the main features for which time
 has permitted documentation:
 
-  * [SchemaMigration Schema and Data migration]
-  * [Caching]
+  * [Schema and Data migration](wiki/SchemaMigration)
+  * [Caching](wiki/Caching)
 
 ## Getting Started
 
@@ -48,12 +50,12 @@ If you want to use Depot on your project, check the following page for informati
 and dependencies via Maven or manually, as well as what sort of configuration Depot requires to
 start talking to your database.
 
-  * [Configuration Configuring and integrating] Depot with your project
+  * [Configuring and integrating](wiki/Configuration) Depot with your project
 
 ## Discussion
 
-Feel free to pop over to the [http://groups.google.com/group/ooo-libs OOO Libs] Google Group to ask
-questions and get (and give) answers.
+Feel free to pop over to the [OOO Libs](http://groups.google.com/group/ooo-libs) Google Group to
+ask questions and get (and give) answers.
 
 ## History
 
