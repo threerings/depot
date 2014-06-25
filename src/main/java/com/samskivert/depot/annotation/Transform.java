@@ -19,7 +19,7 @@ import com.samskivert.depot.Transformer;
  * saving to the database and after loading from the database.
  *
  * <p> For example, one may choose to transform a particular persistent record field into a type
- * supported directly by Depot:
+ * supported directly by Depot:</p>
  *
  * <pre>
  * public class MyRecord extends PersistentRecord {
@@ -28,17 +28,18 @@ import com.samskivert.depot.Transformer;
  * }
  * </pre>
  *
- * or one may opt to specify a transformation for all fields that contain a value of a particular
- * type:
+ * <p>or one may opt to specify a transformation for all fields that contain a value of a particular
+ * type:</p>
  *
  * <pre>
  * &#064;Transform(ByteEnumTransformer.class)
  * public interface ByteEnum { ... }
  * </pre>
  *
- * Note that because Depot honors @Transform annotations on any interface implemented by a type, or
- * on a type's superclass, it is possible that conflicting transformations may be specified. In
- * this case, Depot will fail with a runtime error during initialization, to indicate the problem.
+ * <p>Note that because Depot honors @Transform annotations on any interface implemented by a type,
+ * or on a type's superclass, it is possible that conflicting transformations may be specified. In
+ * this case, Depot will fail with a runtime error during initialization, to indicate the
+ * problem.</p>
  *
  * @see Transformer
  */

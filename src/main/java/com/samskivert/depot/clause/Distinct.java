@@ -11,9 +11,8 @@ import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FragmentVisitor;
 
 /**
- *  Represents a DISTINCT [ON <exp>] clause.
- *
- *  Note: You almost certainly only ever want to use this in a SELECT statement.
+ * Represents a {@code DISTINCT [ON <exp>]} clause. Note: You almost certainly only ever want to use
+ * this in a SELECT statement.
  */
 public class Distinct implements QueryClause
 {

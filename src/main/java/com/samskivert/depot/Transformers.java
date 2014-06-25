@@ -104,10 +104,10 @@ public class Transformers
     }
 
     /**
-     * Combines the contents of a List/Set/Collection/Iterable<String> column into a single String,
-     * terminating each String element with a newline. Null-tolerant.
-     * A backslash ('\') in Strings will be prefixed by another backslash, newlines will be
-     * encoded as "\n", and null elements will be encoded as "\0" (but not terminated by a newline).
+     * Combines the contents of a {@code List/Set/Collection/Iterable<String>} column into a single
+     * String, terminating each String element with a newline. Null-tolerant. A backslash ('\') in
+     * Strings will be prefixed by another backslash, newlines will be encoded as "\n", and null
+     * elements will be encoded as "\0" (but not terminated by a newline).
      */
     public static class StringIterable extends StringBase<Iterable<String>>
     {
@@ -123,8 +123,7 @@ public class Transformers
     }
 
     /**
-     * A Transformer for anything that is an Iterable<Enum>.
-     * Often used for Enum sets.
+     * A Transformer for anything that is an {@code Iterable<Enum>}. Often used for Enum sets.
      */
     public static class EnumIterable<E extends Enum<E>> extends StringBase<Iterable<E>>
     {
