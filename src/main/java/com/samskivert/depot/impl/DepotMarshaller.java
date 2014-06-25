@@ -456,27 +456,22 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
     }
 
     /**
-     * Returns true if this marshaller has been initialized ({@link #init} has been called), its
-     * migrations run and it is ready for operation. False otherwise.
+     * Throws {@link IllegalStateException} with {@code msg} if this marshaller is not initialized.
      */
-    public boolean isInitialized ()
-    {
-        return _meta != null;
+    public synchronized void requireInitialized (String msg) {
+        if (_meta == null) throw new IllegalStateException(msg);
     }
 
     /**
-     * Initializes the table used by this marshaller. This is called automatically by the {@link
-     * PersistenceContext} the first time an entity is used. If the table does not exist, it will
-     * be created. If the schema version specified by the persistent object is newer than the
-     * database schema, it will be migrated.
+     * Initializes the table used by this marshaller if it has not yet been done. If the table does
+     * not exist, it will be created. If the schema version specified by the persistent object is
+     * newer than the database schema, it will be migrated.
+     * @return true if initialization was performed, false if it has already been performed.
      */
-    public void init (PersistenceContext ctx, DepotMetaData meta)
+    public synchronized boolean init (PersistenceContext ctx, DepotMetaData meta)
         throws DatabaseException
     {
-        if (_meta != null) { // sanity check
-            throw new IllegalStateException(
-                "Cannot re-initialize marshaller [type=" + _pClass + "].");
-        }
+        if (_meta != null) return false;
         _meta = meta;
 
         final SQLBuilder builder = ctx.getSQLBuilder(new DepotTypes(ctx, _pClass));
@@ -488,7 +483,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
 
         // if we have no table (i.e. we're a computed entity), we have nothing to create
         if (getTableName() == null) {
-            return;
+            return true;
         }
 
         // figure out the list of fields that correspond to actual table columns and generate the
@@ -522,7 +517,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
                 if (Boolean.getBoolean("com.samskivert.depot.verifyschema")) {
                     checkForStaleness(TableMetaData.load(ctx, getTableName()), ctx, builder);
                 }
-                return;
+                return true;
             }
 
             // check whether migrations are allowed by our context
@@ -530,7 +525,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             case WARN:
                 log.warning(_pClass.getName() + " requires migration, which is disallowed. " +
                             "Failures may be encountered later.");
-                return;
+                return true;
             case FAIL:
                 throw new DatabaseException(
                     _pClass.getName() + " requires migration, which is disallowed.");
@@ -577,6 +572,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             // and update our version in the schema version table
             _meta.updateVersion(getTableName(), _schemaVersion);
             expectedDbVersion = _schemaVersion;
+            return true;
 
         } finally {
             // set our migrating version back to zero

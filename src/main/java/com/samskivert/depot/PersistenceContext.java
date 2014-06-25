@@ -181,7 +181,7 @@ public class PersistenceContext
      * @param conprov provides JDBC {@link Connection} instances.
      * @param adapter an optional adapter to a cache management system.
      */
-    public void init (String ident, ConnectionProvider conprov, CacheAdapter adapter)
+    public synchronized void init (String ident, ConnectionProvider conprov, CacheAdapter adapter)
     {
         // if we have no URL for the ident, freak out now; lest confusing failure happen later
         String url = conprov.getURL(ident);
@@ -267,10 +267,8 @@ public class PersistenceContext
         Class<T> type, SchemaMigration migration)
     {
         DepotMarshaller<T> marshaller = getRawMarshaller(type);
-        if (marshaller.isInitialized()) {
-            throw new IllegalStateException(
-                "Migrations must be registered before initializeRepositories() is called.");
-        }
+        marshaller.requireInitialized(
+            "Migrations must be registered before initializeRepositories() is called.");
         marshaller.registerMigration(migration);
     }
 
@@ -284,10 +282,9 @@ public class PersistenceContext
         checkAreInitialized(); // le check du sanity
         DepotMarshaller<T> marshaller = getRawMarshaller(type);
         try {
-            if (!marshaller.isInitialized()) {
-                // initialize the marshaller which may create or migrate the table for its
-                // underlying persistent object
-                marshaller.init(this, _meta);
+            // initialize the marshaller which may create or migrate the table for its underlying
+            // persistent object
+            if (marshaller.init(this, _meta)) {
                 if (marshaller.getTableName() != null && _warnOnLazyInit) {
                     log.warning("Record initialized lazily", "type", type.getName(),
                                 new Exception());
@@ -568,10 +565,11 @@ public class PersistenceContext
     /**
      * Looks up and creates, but does not initialize, the marshaller for the specified Entity type.
      */
-    protected <T extends PersistentRecord> DepotMarshaller<T> getRawMarshaller (Class<T> type)
+    protected synchronized <T extends PersistentRecord> DepotMarshaller<T> getRawMarshaller (
+        Class<T> type)
     {
-        @SuppressWarnings("unchecked") DepotMarshaller<T> marshaller =
-            (DepotMarshaller<T>)_marshallers.get(type);
+        @SuppressWarnings("unchecked") DepotMarshaller<T> marshaller = (DepotMarshaller<T>)
+            _marshallers.get(type);
         if (marshaller == null) {
             _marshallers.put(type, marshaller = new DepotMarshaller<T>(type, this));
         }
@@ -664,7 +662,7 @@ public class PersistenceContext
         return invoke(op, false);
     }
 
-    protected void checkAreInitialized ()
+    protected synchronized void checkAreInitialized ()
     {
         if (_conprov == null) {
             throw new IllegalStateException(
