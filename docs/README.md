@@ -2,12 +2,12 @@ _Overview of the Depot documentation._
 
 ## Docs
 
-- [Simple code example](wiki/SimpleCodeExample)
-- [Configuring and integrating Depot](wiki/Configuration)
-- [Example queries](wiki/ExampleQueries)
-- [Caching](wiki/Caching)
-- [Computed records](wiki/ComputedRecords)
-- [Schema migration](wiki/SchemaMigration)
+- [Simple code example](SimpleCodeExample.md)
+- [Configuring and integrating Depot](Configuration.md)
+- [Example queries](ExampleQueries.md)
+- [Caching](Caching.md)
+- [Computed records](ComputedRecords.md)
+- [Schema migration](SchemaMigration.md)
 
 ## Google Group
 
