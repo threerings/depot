@@ -10,7 +10,7 @@
   <groupId>com.samskivert</groupId>
   <artifactId>depot</artifactId>
   <packaging>jar</packaging>
-  <version>1.6.5</version>
+  <version>1.7-SNAPSHOT</version>
 
   <name>Depot</name>
   <description>A library for relational-database-based persistence in Java.</description>
