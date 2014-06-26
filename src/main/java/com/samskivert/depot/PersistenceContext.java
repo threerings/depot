@@ -267,7 +267,7 @@ public class PersistenceContext
         Class<T> type, SchemaMigration migration)
     {
         DepotMarshaller<T> marshaller = getRawMarshaller(type);
-        marshaller.requireInitialized(
+        marshaller.requireNotInitialized(
             "Migrations must be registered before initializeRepositories() is called.");
         marshaller.registerMigration(migration);
     }

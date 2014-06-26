@@ -456,10 +456,11 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
     }
 
     /**
-     * Throws {@link IllegalStateException} with {@code msg} if this marshaller is not initialized.
+     * Throws {@link IllegalStateException} with {@code msg} if this marshaller is already
+     * initialized.
      */
-    public synchronized void requireInitialized (String msg) {
-        if (_meta == null) throw new IllegalStateException(msg);
+    public synchronized void requireNotInitialized (String msg) {
+        if (_meta != null) throw new IllegalStateException(msg);
     }
 
     /**
