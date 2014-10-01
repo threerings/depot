@@ -4,6 +4,7 @@
 
 package com.samskivert.depot;
 
+import com.samskivert.depot.clause.Where;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -345,7 +346,21 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    public int update (PersistentRecord record)
+    public int update (PersistentRecord record) throws DatabaseException
+    {
+        // avoid empty varargs array creation for this very common call
+        return update(record, EMPTY_CONDS);
+    }
+
+    /**
+     * Updates all fields of the supplied persistent object, using its primary key along with the
+     * supplied extra {@code conditions} to identify the row to be updated.
+     *
+     * @return the number of rows modified by this action.
+     *
+     * @throws DatabaseException if any problem is encountered communicating with the database.
+     */
+    public int update (PersistentRecord record, SQLExpression<?>... conditions)
         throws DatabaseException
     {
         Class<? extends PersistentRecord> pClass = record.getClass();
@@ -353,7 +368,10 @@ public abstract class DepotRepository
         DepotMarshaller<? extends PersistentRecord> marsh = _ctx.getMarshaller(pClass);
         Key<? extends PersistentRecord> key = marsh.getPrimaryKey(record);
         checkArgument(key != null, "Can't update record with null primary key.");
-        return doUpdate(key, new UpdateClause(pClass, key, marsh.getColumnFieldNames(), record));
+        WhereClause where = (conditions.length == 0)
+            ? key
+            : new Where(Ops.and(Lists.asList(key.getWhereExpression(), conditions)));
+        return doUpdate(key, new UpdateClause(pClass, where, marsh.getColumnFieldNames(), record));
     }
 
     /**
@@ -366,7 +384,7 @@ public abstract class DepotRepository
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
      */
-    public <T extends PersistentRecord> int update (T record, final ColumnExp<?>... modifiedFields)
+    public <T extends PersistentRecord> int update (T record, ColumnExp<?>... modifiedFields)
         throws DatabaseException
     {
         @SuppressWarnings("unchecked") Class<T> pClass = (Class<T>) record.getClass();
@@ -944,4 +962,6 @@ public abstract class DepotRepository
 
     protected PersistenceContext _ctx;
     protected List<DataMigration> _dataMigs = Lists.newArrayList();
+
+    protected static SQLExpression<?>[] EMPTY_CONDS = new SQLExpression<?>[0];
 }
