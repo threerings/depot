@@ -585,8 +585,16 @@ public class PersistenceContext
         checkAreInitialized(); // le check du sanity
 
         boolean isReadOnly = op.isReadOnly();
+        ConnOp connop;
         Transaction tx = Transaction.get();
-        ConnOp connop = (tx == null) ? new NonTxOp(isReadOnly) : new TxOp(tx);
+        if (tx != null) {
+            if (tx.ctx != this) throw new IllegalStateException(
+                "Cannot perform database ops on multiple persistence contexts in a transaction " +
+                "[txCtx=" + tx.ctx._ident + ", thisCtx=" + _ident + "].");
+            connop = new TxOp(tx);
+        } else {
+            connop = new NonTxOp(isReadOnly);
+        }
 
         long preConnect = System.nanoTime();
         Connection conn;

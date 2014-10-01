@@ -92,20 +92,26 @@ public class Transaction {
         }
     }
 
+    /** The persistence context in which this transaction is operating. */
+    public final PersistenceContext ctx;
+
     /**
      * Commits this transaction.
      */
     public void commit ()
     {
-        if (_conn != null) {
-            checkActive("commit");
-            try {
+        checkActive("commit");
+        try {
+            if (_conn != null) {
                 _conn.commit();
-            } catch (SQLException sqe) {
-                throw new DatabaseException("Transaction commit failure", sqe);
-            } finally {
-                release();
+                ctx._conprov.releaseTxConnection(ctx._ident, _conn);
             }
+        } catch (SQLException sqe) {
+            throw new DatabaseException("Transaction commit failure", sqe);
+            connectionFailed(sqe);
+        } finally {
+            _conn = null;
+            _activeTx.set(null);
         }
     }
 
@@ -114,23 +120,22 @@ public class Transaction {
      */
     public void rollback ()
     {
-        if (_conn != null) {
-            checkActive("rollback");
-            try {
+        try {
+            if (_conn != null) {
+                checkActive("rollback");
                 _conn.rollback();
-            } catch (SQLException sqe) {
-                throw new DatabaseException("Transaction rollback failure", sqe);
-            } finally {
-                release();
+                ctx._conprov.releaseTxConnection(ctx._ident, _conn);
             }
+        } catch (SQLException sqe) {
+            throw new DatabaseException("Transaction rollback failure", sqe);
+            connectionFailed(sqe);
+        } finally {
+            _conn = null;
+            _activeTx.set(null);
         }
     }
 
-    /** The persistence context in which this transaction is operating. */
-    public final PersistenceContext ctx;
-
-    Connection getConnection ()
-        throws PersistenceException
+    Connection getConnection () throws PersistenceException
     {
         if (_conn == null) _conn = ctx._conprov.getTxConnection(ctx._ident);
         return _conn;
@@ -149,12 +154,6 @@ public class Transaction {
     protected void checkActive (String action) {
         if (_activeTx.get() != this) throw new IllegalStateException(
             "Attempted to " + action + " non-active transaction");
-    }
-
-    protected void release () {
-        ctx._conprov.releaseTxConnection(ctx._ident, _conn);
-        _conn = null;
-        _activeTx.set(null);
     }
 
     protected static final ThreadLocal<Transaction> _activeTx = new ThreadLocal<Transaction>();
