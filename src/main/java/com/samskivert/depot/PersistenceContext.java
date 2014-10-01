@@ -585,10 +585,13 @@ public class PersistenceContext
         checkAreInitialized(); // le check du sanity
 
         boolean isReadOnly = op.isReadOnly();
-        Connection conn;
+        Transaction tx = Transaction.get();
+        ConnOp connop = (tx == null) ? new NonTxOp(isReadOnly) : new TxOp(tx);
+
         long preConnect = System.nanoTime();
+        Connection conn;
         try {
-            conn = _conprov.getConnection(_ident, isReadOnly);
+            conn = connop.get();
         } catch (PersistenceException pe) {
             throw new DatabaseException("Failed get connection [ident=" + _ident +
                                         ", isRO=" + isReadOnly + "]", pe);
@@ -616,12 +619,8 @@ public class PersistenceContext
                         stmt.close();
                     }
                 }
-                // Always commit if auto-commit is off.  If the read-only operation managed to
-                // acquire some locks, this will release them.  Also, we've seen a MySQL bug where
-                // not committing after a select causes later selects to see stale results.
-                if (!conn.getAutoCommit()) {
-                    conn.commit();
-                }
+                // let our connop do auto-commit, if appropriate
+                connop.done(conn);
                 // note the time it took to invoke this operation
                 _stats.noteOp(isReadOnly, preConnect, preInvoke, System.nanoTime());
                 // have the operation update any appropriate runtime statistics as well
@@ -637,10 +636,11 @@ public class PersistenceContext
                 }
 
                 // let the provider know that the connection failed
-                _conprov.connectionFailed(_ident, isReadOnly, conn, sqe);
+                boolean opAllowsRetry = connop.fail(conn, sqe);
                 conn = null;
 
-                if (retryOnTransientFailure && _liaison.isTransientException(sqe)) {
+                if (retryOnTransientFailure && opAllowsRetry &&
+                    _liaison.isTransientException(sqe)) {
                     // the MySQL JDBC driver has the annoying habit of including the embedded
                     // exception stack trace in the message of their outer exception; if I want a
                     // fucking stack trace, I'll call printStackTrace() thanksverymuch
@@ -653,7 +653,7 @@ public class PersistenceContext
 
             } finally {
                 if (conn != null) {
-                    _conprov.releaseConnection(_ident, isReadOnly, conn);
+                    connop.release(conn);
                 }
             }
         }
@@ -668,6 +668,58 @@ public class PersistenceContext
             throw new IllegalStateException(
                 "This persistence context has not yet been initialized. You are probably " +
                 "doing something too early, like in a repository's constructor. Don't do that.");
+        }
+    }
+
+    interface ConnOp {
+        Connection get () throws PersistenceException;
+        void done (Connection conn) throws SQLException;
+        boolean fail (Connection conn, SQLException sqe);
+        void release (Connection conn);
+    }
+
+    protected class NonTxOp implements ConnOp {
+        public final boolean readOnly;
+        public NonTxOp (boolean readOnly) {
+            this.readOnly = readOnly;
+        }
+        public Connection get () throws PersistenceException {
+            return _conprov.getConnection(_ident, readOnly);
+        }
+        public void done (Connection conn) throws SQLException {
+            // Always commit if auto-commit is off. If the read-only operation managed to acquire
+            // some locks, this will release them. Also, we've seen a MySQL bug where not
+            // committing after a select causes later selects to see stale results.
+            if (!conn.getAutoCommit()) {
+                conn.commit();
+            }
+        }
+        public boolean fail (Connection conn, SQLException sqe) {
+            _conprov.connectionFailed(_ident, readOnly, conn, sqe);
+            return true;
+        }
+        public void release (Connection conn) {
+            _conprov.releaseConnection(_ident, readOnly, conn);
+        }
+    };
+
+    protected class TxOp implements ConnOp {
+        public final Transaction tx;
+        public TxOp (Transaction tx) {
+            this.tx = tx;
+        }
+        public Connection get () throws PersistenceException {
+            return tx.getConnection();
+        }
+        public void done (Connection conn) throws SQLException {
+            // nothing to do here, we commit (or not) when the whole tx is done
+        }
+        public boolean fail (Connection conn, SQLException sqe) {
+            tx.connectionFailed(sqe);
+            return false;
+        }
+        public void release (Connection conn) {
+            // nothing to do here, we release the conn when the whole tx is done
         }
     }
 
