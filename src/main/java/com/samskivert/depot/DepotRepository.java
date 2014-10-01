@@ -4,7 +4,6 @@
 
 package com.samskivert.depot;
 
-import com.samskivert.depot.clause.Where;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -30,6 +29,7 @@ import com.samskivert.util.ArrayUtil;
 import com.samskivert.depot.clause.InsertClause;
 import com.samskivert.depot.clause.Limit;
 import com.samskivert.depot.clause.QueryClause;
+import com.samskivert.depot.clause.Where;
 import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
@@ -963,5 +963,5 @@ public abstract class DepotRepository
     protected PersistenceContext _ctx;
     protected List<DataMigration> _dataMigs = Lists.newArrayList();
 
-    protected static SQLExpression<?>[] EMPTY_CONDS = new SQLExpression<?>[0];
+    protected static final SQLExpression<?>[] EMPTY_CONDS = new SQLExpression<?>[0];
 }
