@@ -107,8 +107,8 @@ public class Transaction {
                 ctx._conprov.releaseTxConnection(ctx._ident, _conn);
             }
         } catch (SQLException sqe) {
-            throw new DatabaseException("Transaction commit failure", sqe);
             connectionFailed(sqe);
+            throw new DatabaseException("Transaction commit failure", sqe);
         } finally {
             _conn = null;
             _activeTx.set(null);
@@ -127,8 +127,8 @@ public class Transaction {
                 ctx._conprov.releaseTxConnection(ctx._ident, _conn);
             }
         } catch (SQLException sqe) {
-            throw new DatabaseException("Transaction rollback failure", sqe);
             connectionFailed(sqe);
+            throw new DatabaseException("Transaction rollback failure", sqe);
         } finally {
             _conn = null;
             _activeTx.set(null);
