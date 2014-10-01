@@ -12,7 +12,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * Tests simple create/read/update/delete behaviors. 
+ * Tests simple create/read/update/delete behaviors.
  */
 public class CrudTest extends TestBase
 {

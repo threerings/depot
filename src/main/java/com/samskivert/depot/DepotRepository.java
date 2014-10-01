@@ -116,6 +116,14 @@ public abstract class DepotRepository
     }
 
     /**
+     * Returns the persistence context used by this repository.
+     */
+    public PersistenceContext ctx ()
+    {
+        return _ctx;
+    }
+
+    /**
      * Loads the persistent object that matches the specified primary key.
      *
      * @throws DatabaseException if any problem is encountered communicating with the database.
