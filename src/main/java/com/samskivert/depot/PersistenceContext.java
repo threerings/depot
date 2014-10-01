@@ -217,6 +217,21 @@ public class PersistenceContext
     }
 
     /**
+     * Starts a transaction bound to this persistence context. You <em>must</em> eventually call
+     * {@link Transaction#commit} or {@link Transaction#rollback} on the returned transaction. Also
+     * no other database operations may be performed on other persitence contexts, on the calling
+     * thread, until this transaction is complete.
+     */
+    public Transaction startTx ()
+    {
+        Transaction tx = Transaction.get();
+        if (tx != null) throw new DatabaseException("Nested transactions not supported.");
+        tx = new Transaction(this);
+        Transaction._activeTx.set(tx);
+        return tx;
+    }
+
+    /**
      * Returns a snapshot of our current runtime statistics.
      */
     public Stats.Snapshot getStats ()

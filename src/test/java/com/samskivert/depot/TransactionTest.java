@@ -10,7 +10,7 @@ import static org.junit.Assert.*;
 public class TransactionTest extends TestBase
 {
     @Test public void testSuccessfulCommit () {
-        Transaction tx = Transaction.start(_repo.ctx());
+        Transaction tx = _repo.ctx().startTx();
         TestRecord in = createTestRecord(1);
         _repo.insert(in);
         tx.commit();
@@ -28,7 +28,7 @@ public class TransactionTest extends TestBase
     }
 
     @Test public void testRollback () {
-        Transaction tx = Transaction.start(_repo.ctx());
+        Transaction tx = _repo.ctx().startTx();
         TestRecord in1 = createTestRecord(1);
         _repo.insert(in1);
         TestRecord in2 = createTestRecord(2);

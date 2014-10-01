@@ -48,19 +48,6 @@ import java.sql.SQLException;
 public class Transaction {
 
     /**
-     * Starts a transaction using the supplied persistence context. You <em>must</em> eventually
-     * call {@link #commit} or {@link #rollback} on the returned transaction.
-     */
-    public static Transaction start (PersistenceContext ctx)
-    {
-        Transaction tx = get();
-        if (tx != null) throw new DatabaseException("Nested transactions not supported.");
-        tx = new Transaction(ctx);
-        _activeTx.set(tx);
-        return tx;
-    }
-
-    /**
      * Returns the currently active transaction (on the caller's thread), or null.
      */
     public static Transaction get ()
@@ -82,7 +69,7 @@ public class Transaction {
      */
     public static void perform (PersistenceContext ctx, Runnable op)
     {
-        Transaction tx = start(ctx);
+        Transaction tx = ctx.startTx();
         try {
             op.run();
             tx.commit();
