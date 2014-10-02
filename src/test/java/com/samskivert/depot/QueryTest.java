@@ -4,18 +4,19 @@
 
 package com.samskivert.depot;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.Sets;
 
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.impl.operator.In;
 import com.samskivert.depot.util.Builder2;
 import com.samskivert.util.RandomUtil;
 
@@ -76,7 +77,7 @@ public class QueryTest extends TestBase
         assertEquals(CREATE_RECORDS, results.size());
         for (float result : results) {
             assertTrue("Age goes from [0,99) and awesomeness goes from [0.0,1.0), so their " +
-            		"product should be [0.0,100), not " + result, result >= 0 && result < 100);
+                       "product should be [0.0,100), not " + result, result >= 0 && result < 100);
         }
 
         assertEquals(CREATE_RECORDS, _repo.findAll(TestRecord.class).size());
@@ -85,13 +86,23 @@ public class QueryTest extends TestBase
 
         _repo.from(TestRecord.class).whereTrue().delete();
         assertEquals(0, _repo.findAll(TestRecord.class).size());
+    }
 
-//         // TODO: try to break our In() clause
-//         Set<Integer> ids = Sets.newHashSet();
-//         for (int ii = 1; ii <= In.MAX_KEYS*2+3; ii++) {
-//             ids.add(ii);
-//         }
-//         _repo.deleteAll(TestRecord.class, KeySet.newSimpleKeySet(TestRecord.class, ids));
+    @Test public void testMaxKeys () {
+        Set<Integer> ids = Sets.newHashSet();
+        int count = In.MAX_KEYS+3;
+        for (int ii = 1; ii <= count; ii++) {
+            TestRecord record = createTestRecord(ii);
+            record.name = "Spam! " + ii;
+            record.age = RandomUtil.getInt(100);
+            record.awesomeness = RandomUtil.getFloat(1.0F);
+            record.homeTown = "Over there";
+            _repo.insert(record);
+            ids.add(ii);
+        }
+        assertEquals(count, _repo.from(TestRecord.class).selectCount());
+        _repo.deleteAll(TestRecord.class, KeySet.newSimpleKeySet(TestRecord.class, ids));
+        assertEquals(0, _repo.from(TestRecord.class).selectCount());
     }
 
     @Test public void testLimitedDelete ()

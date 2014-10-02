@@ -129,7 +129,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
                 return true;
             }
             return (obj instanceof EmptyKeySet<?>) &&
-            	_pClass.equals(((EmptyKeySet<?>)obj)._pClass);
+                _pClass.equals(((EmptyKeySet<?>)obj)._pClass);
         }
 
         @Override public int hashCode () {
@@ -145,11 +145,6 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
     {
         public SingleKeySet (Class<T> pClass, Comparable<?>[] keys) {
             super(pClass);
-            // TODO: remove when we update to 1.6 and change Postgres In handling
-            if (keys.length > In.MAX_KEYS) {
-                throw new IllegalArgumentException(
-                    "Cannot create where clause for more than " + In.MAX_KEYS + " keys at a time.");
-            }
             _keys = keys;
         }
 
