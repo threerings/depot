@@ -33,6 +33,7 @@ import com.samskivert.depot.impl.clause.DropIndexClause;
 import com.samskivert.depot.impl.clause.UpdateClause;
 import com.samskivert.depot.impl.expression.IntervalExp;
 import com.samskivert.depot.impl.expression.LiteralExp;
+import com.samskivert.depot.impl.expression.RandomExp;
 import com.samskivert.depot.impl.expression.ValueExp;
 import com.samskivert.depot.impl.expression.AggregateFun.Average;
 import com.samskivert.depot.impl.expression.AggregateFun.Count;
@@ -197,6 +198,11 @@ public class ExpressionEvaluator
     public Object visit (LiteralExp<?> literalExp)
     {
         return new NoValue("Cannot evaluate LiteralExp: " + literalExp);
+    }
+
+    public Object visit (RandomExp randomExp)
+    {
+        return new NoValue("Cannot evaluate RandomExp");
     }
 
     public Object visit (ValueExp<?> valueExp)

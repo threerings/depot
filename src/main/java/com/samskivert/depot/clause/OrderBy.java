@@ -11,6 +11,7 @@ import com.samskivert.util.ArrayUtil;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FragmentVisitor;
 import com.samskivert.depot.impl.expression.LiteralExp;
+import com.samskivert.depot.impl.expression.RandomExp;
 
 /**
  *  Represents an ORDER BY clause.
@@ -48,7 +49,7 @@ public class OrderBy implements QueryClause
      */
     public static OrderBy random ()
     {
-        return ascending(new LiteralExp<Object>("rand()"));
+        return ascending(RandomExp.INSTANCE);
     }
 
     /**

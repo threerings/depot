@@ -29,6 +29,7 @@ import com.samskivert.depot.impl.expression.DateFun.DatePart.Part;
 import com.samskivert.depot.impl.expression.DateFun.DatePart;
 import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
 import com.samskivert.depot.impl.expression.IntervalExp;
+import com.samskivert.depot.impl.expression.RandomExp;
 
 public class PostgreSQLBuilder
     extends SQLBuilder
@@ -39,6 +40,11 @@ public class PostgreSQLBuilder
 
     public class PGBuildVisitor extends BuildVisitor
     {
+        @Override public Void visit (RandomExp randomExp) {
+            _builder.append("random()");
+            return null;
+        }
+
         @Override public Void visit (IntervalExp interval) {
             _builder.append("interval '").append(interval.amount);
             _builder.append(" ").append(interval.unit).append("'");

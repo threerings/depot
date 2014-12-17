@@ -48,6 +48,7 @@ import com.samskivert.depot.impl.clause.UpdateClause;
 import com.samskivert.depot.impl.expression.AggregateFun;
 import com.samskivert.depot.impl.expression.IntervalExp;
 import com.samskivert.depot.impl.expression.LiteralExp;
+import com.samskivert.depot.impl.expression.RandomExp;
 import com.samskivert.depot.impl.expression.ValueExp;
 import com.samskivert.depot.impl.expression.AggregateFun.Average;
 import com.samskivert.depot.impl.expression.AggregateFun.Count;
@@ -320,6 +321,12 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     public Void visit (LiteralExp<?> literalExp)
     {
         _builder.append(literalExp.getText());
+        return null;
+    }
+
+    public Void visit (RandomExp randomExp)
+    {
+        _builder.append("rand()");
         return null;
     }
 

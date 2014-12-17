@@ -28,6 +28,7 @@ import com.samskivert.depot.impl.clause.DropIndexClause;
 import com.samskivert.depot.impl.clause.UpdateClause;
 import com.samskivert.depot.impl.expression.IntervalExp;
 import com.samskivert.depot.impl.expression.LiteralExp;
+import com.samskivert.depot.impl.expression.RandomExp;
 import com.samskivert.depot.impl.expression.ValueExp;
 import com.samskivert.depot.impl.expression.AggregateFun.Average;
 import com.samskivert.depot.impl.expression.AggregateFun.Count;
@@ -89,6 +90,7 @@ public interface FragmentVisitor<T>
     public T visit (Join join);
     public T visit (Limit limit);
     public T visit (LiteralExp<?> literal);
+    public T visit (RandomExp random);
     public T visit (ValueExp<?> value);
     public T visit (IntervalExp interval);
     public T visit (WhereClause where);
