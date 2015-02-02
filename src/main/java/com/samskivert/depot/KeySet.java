@@ -52,7 +52,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             Comparable<?>[] keyArray;
             if (first instanceof Integer) {
                 keyArray = new Integer[keys.size()];
-            } else if (first instanceof Integer) {
+            } else if (first instanceof String) {
                 keyArray = new String[keys.size()];
             } else {
                 keyArray = new Comparable<?>[keys.size()];
@@ -96,7 +96,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
             Comparable<?>[] keyArray;
             if (first instanceof Integer) {
                 keyArray = new Integer[keys.size()];
-            } else if (first instanceof Integer) {
+            } else if (first instanceof String) {
                 keyArray = new String[keys.size()];
             } else {
                 keyArray = new Comparable<?>[keys.size()];
