@@ -48,15 +48,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
 
         ColumnExp<?>[] keyFields = DepotUtil.getKeyFields(pClass);
         if (keyFields.length == 1) {
-            Comparable<?> first = keys.iterator().next().getValues()[0];
-            Comparable<?>[] keyArray;
-            if (first instanceof Integer) {
-                keyArray = new Integer[keys.size()];
-            } else if (first instanceof String) {
-                keyArray = new String[keys.size()];
-            } else {
-                keyArray = new Comparable<?>[keys.size()];
-            }
+            Comparable<?>[] keyArray = new Comparable<?>[keys.size()];
             int ii = 0;
             for (Key<T> key : keys) {
                 keyArray[ii++] = key.getValues()[0];
@@ -92,15 +84,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
         if (keys.size() == 0) {
             return new EmptyKeySet<T>(pClass);
         } else {
-            Comparable<?> first = keys.iterator().next();
-            Comparable<?>[] keyArray;
-            if (first instanceof Integer) {
-                keyArray = new Integer[keys.size()];
-            } else if (first instanceof String) {
-                keyArray = new String[keys.size()];
-            } else {
-                keyArray = new Comparable<?>[keys.size()];
-            }
+            Comparable<?>[] keyArray = new Comparable<?>[keys.size()];
             return new SingleKeySet<T>(pClass, keys.toArray(keyArray));
         }
     }
