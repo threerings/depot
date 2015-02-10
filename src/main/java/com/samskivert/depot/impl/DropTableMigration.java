@@ -15,6 +15,12 @@ import com.samskivert.jdbc.DatabaseLiaison;
 
 /**
  * Migration to drop a table.
+ *
+ * Note that this is a DataMigration and must have an identifier. Do not use this migration
+ * to "clear" a table and repopulate it, as this migration happens outside of the normal
+ * schema tracking. If you keep this migration in your code and then re-add the table in the
+ * future, things may seem good for you, but a new developer will run all the migrations
+ * and this will run after the schema migrations, causing them to lose the table.
  */
 public class DropTableMigration extends DataMigration
 {
