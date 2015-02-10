@@ -27,6 +27,7 @@ import com.google.common.collect.Sets;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.samskivert.depot.DatabaseException;
+import com.samskivert.depot.IndexDesc;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
@@ -48,7 +49,6 @@ import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.clause.CreateIndexClause;
 import com.samskivert.depot.impl.jdbc.ColumnDefinition;
 import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
-import com.samskivert.depot.util.Tuple2;
 import static com.samskivert.depot.Log.log;
 
 /**
@@ -99,10 +99,8 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
 
         // introspect on the class and create marshallers and indices for persistent fields
         List<ColumnExp<?>> fields = Lists.newArrayList();
-        ListMultimap<String, Tuple2<SQLExpression<?>, Order>> namedFieldIndices =
-            ArrayListMultimap.create();
-        ListMultimap<String, Tuple2<SQLExpression<?>, Order>> uniqueNamedFieldIndices =
-            ArrayListMultimap.create();
+        ListMultimap<String, IndexDesc> namedFieldIndices = ArrayListMultimap.create();
+        ListMultimap<String, IndexDesc> uniqueNamedFieldIndices = ArrayListMultimap.create();
         for (Field field : _pClass.getFields()) {
             int mods = field.getModifiers();
 
@@ -182,8 +180,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
                     "Unique columns are implicitly indexed and should not be @Index'd.");
 
                 String name = index.name().equals("") ? field.getName() + "Index" : index.name();
-                Tuple2<SQLExpression<?>, Order> entry =
-                    new Tuple2<SQLExpression<?>, Order>(fieldColumn, Order.ASC);
+                IndexDesc entry = new IndexDesc(fieldColumn, Order.ASC);
                 if (index.unique()) {
                     checkArgument(!namedFieldIndices.containsKey(index.name()),
                                   "All @Index for a particular name must be unique or non-unique");
@@ -930,27 +927,24 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
 
     protected CreateIndexClause buildIndex (String name, boolean unique, Object config)
     {
-        List<Tuple2<SQLExpression<?>, Order>> definition = Lists.newArrayList();
+        List<IndexDesc> definition = Lists.newArrayList();
         if (config instanceof ColumnExp<?>) {
-            definition.add(new Tuple2<SQLExpression<?>, Order>((ColumnExp<?>)config, Order.ASC));
+            definition.add(new IndexDesc((ColumnExp<?>)config, Order.ASC));
         } else if (config instanceof ColumnExp<?>[]) {
             for (ColumnExp<?> column : (ColumnExp<?>[])config) {
-                definition.add(new Tuple2<SQLExpression<?>, Order>(column, Order.ASC));
+                definition.add(new IndexDesc(column, Order.ASC));
             }
         } else if (config instanceof SQLExpression) {
-            definition.add(new Tuple2<SQLExpression<?>, Order>((SQLExpression<?>)config, Order.ASC));
-        } else if (config instanceof Tuple2<?,?>) {
-            @SuppressWarnings("unchecked") Tuple2<SQLExpression<?>, Order> tuple =
-                (Tuple2<SQLExpression<?>, Order>)config;
-            definition.add(tuple);
+            definition.add(new IndexDesc((SQLExpression<?>)config, Order.ASC));
+        } else if (config instanceof IndexDesc) {
+            definition.add((IndexDesc)config);
         } else if (config instanceof List<?>) {
-            @SuppressWarnings("unchecked") List<Tuple2<SQLExpression<?>, Order>> defs =
-                (List<Tuple2<SQLExpression<?>, Order>>)config;
+            @SuppressWarnings("unchecked") List<IndexDesc> defs = (List<IndexDesc>)config;
             definition.addAll(defs);
         } else {
             throw new IllegalArgumentException(
                 "Method '" + name + "' must return ColumnExp[], SQLExpression or " +
-                "List<Tuple2<SQLExpression, Order>>");
+                "List<IndexDesc>");
         }
         return new CreateIndexClause(_pClass, getTableName() + "_" + name, unique, definition);
     }

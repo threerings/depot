@@ -17,9 +17,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.samskivert.depot.Exps;
+import com.samskivert.depot.IndexDesc;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.Computed;
+import com.samskivert.depot.clause.Distinct;
 import com.samskivert.depot.clause.FieldDefinition;
 import com.samskivert.depot.clause.FieldOverride;
 import com.samskivert.depot.clause.ForUpdate;
@@ -39,53 +41,14 @@ import com.samskivert.depot.util.ByteEnum;
 import com.samskivert.depot.util.Tuple2;
 import static com.samskivert.depot.Log.log;
 
-import com.samskivert.depot.clause.Distinct;
-import com.samskivert.depot.impl.clause.CreateIndexClause;
-import com.samskivert.depot.impl.clause.DeleteClause;
-import com.samskivert.depot.impl.clause.DropIndexClause;
-import com.samskivert.depot.impl.clause.UpdateClause;
-import com.samskivert.depot.impl.expression.AggregateFun.Average;
-import com.samskivert.depot.impl.expression.AggregateFun.Count;
-import com.samskivert.depot.impl.expression.AggregateFun.Every;
-import com.samskivert.depot.impl.expression.AggregateFun.Max;
-import com.samskivert.depot.impl.expression.AggregateFun.Min;
-import com.samskivert.depot.impl.expression.AggregateFun.Sum;
-import com.samskivert.depot.impl.expression.AggregateFun;
-import com.samskivert.depot.impl.expression.ConditionalFun.Coalesce;
-import com.samskivert.depot.impl.expression.ConditionalFun.Greatest;
-import com.samskivert.depot.impl.expression.ConditionalFun.Least;
-import com.samskivert.depot.impl.expression.DateFun.DatePart;
-import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
-import com.samskivert.depot.impl.expression.DateFun.Now;
-import com.samskivert.depot.impl.expression.IntervalExp;
-import com.samskivert.depot.impl.expression.LiteralExp;
-import com.samskivert.depot.impl.expression.NumericalFun.Abs;
-import com.samskivert.depot.impl.expression.NumericalFun.Ceil;
-import com.samskivert.depot.impl.expression.NumericalFun.Exp;
-import com.samskivert.depot.impl.expression.NumericalFun.Floor;
-import com.samskivert.depot.impl.expression.NumericalFun.Ln;
-import com.samskivert.depot.impl.expression.NumericalFun.Log10;
-import com.samskivert.depot.impl.expression.NumericalFun.Pi;
-import com.samskivert.depot.impl.expression.NumericalFun.Power;
-import com.samskivert.depot.impl.expression.NumericalFun.Random;
-import com.samskivert.depot.impl.expression.NumericalFun.Round;
-import com.samskivert.depot.impl.expression.NumericalFun.Sign;
-import com.samskivert.depot.impl.expression.NumericalFun.Sqrt;
-import com.samskivert.depot.impl.expression.NumericalFun.Trunc;
-import com.samskivert.depot.impl.expression.RandomExp;
-import com.samskivert.depot.impl.expression.StringFun.Length;
-import com.samskivert.depot.impl.expression.StringFun.Lower;
-import com.samskivert.depot.impl.expression.StringFun.Position;
-import com.samskivert.depot.impl.expression.StringFun.Substring;
-import com.samskivert.depot.impl.expression.StringFun.Trim;
-import com.samskivert.depot.impl.expression.StringFun.Upper;
-import com.samskivert.depot.impl.expression.ValueExp;
-import com.samskivert.depot.impl.operator.BinaryOperator;
-import com.samskivert.depot.impl.operator.Exists;
-import com.samskivert.depot.impl.operator.In;
-import com.samskivert.depot.impl.operator.IsNull;
-import com.samskivert.depot.impl.operator.MultiOperator;
-import com.samskivert.depot.impl.operator.Not;
+import com.samskivert.depot.impl.clause.*;
+import com.samskivert.depot.impl.expression.*;
+import com.samskivert.depot.impl.expression.AggregateFun.*;
+import com.samskivert.depot.impl.expression.ConditionalFun.*;
+import com.samskivert.depot.impl.expression.DateFun.*;
+import com.samskivert.depot.impl.expression.NumericalFun.*;
+import com.samskivert.depot.impl.expression.StringFun.*;
+import com.samskivert.depot.impl.operator.*;
 
 /**
  * Implements the base functionality of the SQL-building pass of {@link SQLBuilder}. Dialectal
@@ -510,8 +473,8 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     public Void visit (CreateIndexClause createIndexClause)
     {
         if (!_allowComplexIndices) {
-            for (Tuple2<SQLExpression<?>, Order> field : createIndexClause.getFields()) {
-                if (!(field.a instanceof ColumnExp<?>)) {
+            for (IndexDesc desc : createIndexClause.getDescs()) {
+                if (!(desc.expr instanceof ColumnExp<?>)) {
                     log.warning("This database can't handle complex indexes. Not creating.",
                         "ixName", createIndexClause.getName());
                     return null;
@@ -531,7 +494,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         // turn off table abbreviations here
         _defaultType = createIndexClause.getPersistentClass();
         boolean comma = false;
-        for (Tuple2<SQLExpression<?>, Order> field : createIndexClause.getFields()) {
+        for (IndexDesc desc : createIndexClause.getDescs()) {
             if (comma) {
                 _builder.append(", ");
             }
@@ -543,11 +506,11 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
             if (_allowComplexIndices) {
                 _builder.append("(");
             }
-            field.a.accept(this);
+            desc.expr.accept(this);
             if (_allowComplexIndices) {
                 _builder.append(")");
             }
-            if (field.b == Order.DESC) {
+            if (desc.order == Order.DESC) {
                 // ascending is default, print nothing unless explicitly descending
                 _builder.append(" desc");
             }
