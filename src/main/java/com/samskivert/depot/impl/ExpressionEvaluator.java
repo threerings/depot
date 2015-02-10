@@ -5,9 +5,11 @@
 package com.samskivert.depot.impl;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.util.Tuple2;
 
 import com.samskivert.depot.clause.Distinct;
 import com.samskivert.depot.clause.FieldDefinition;
@@ -72,8 +74,6 @@ import com.samskivert.depot.impl.operator.In;
 import com.samskivert.depot.impl.operator.IsNull;
 import com.samskivert.depot.impl.operator.MultiOperator;
 import com.samskivert.depot.impl.operator.Not;
-import com.samskivert.util.ArrayUtil;
-import com.samskivert.util.Tuple;
 
 import static com.samskivert.depot.Log.log;
 
@@ -130,7 +130,7 @@ public class ExpressionEvaluator
     {
         Object operand = in.getExpression().accept(this);
         return (operand instanceof NoValue) ? operand :
-            -1 != ArrayUtil.indexOf(in.getValues(), operand);
+            Arrays.asList(in.getValues()).contains(operand);
     }
 
     public Object visit (FullText.Match match)
@@ -145,13 +145,13 @@ public class ExpressionEvaluator
 
     public Object visit (Case<?> caseExp)
     {
-        for (Tuple<SQLExpression<?>, SQLExpression<?>> exp : caseExp.getWhenExps()) {
-            Object result = exp.left.accept(this);
+        for (Tuple2<SQLExpression<?>, SQLExpression<?>> exp : caseExp.getWhenExps()) {
+            Object result = exp.a.accept(this);
             if (result instanceof NoValue || !(result instanceof Boolean)) {
-                return new NoValue("Failed to evaluate case: " + exp.left + " -> " + result);
+                return new NoValue("Failed to evaluate case: " + exp.a + " -> " + result);
             }
             if (((Boolean) result).booleanValue()) {
-                return exp.right.accept(this);
+                return exp.b.accept(this);
             }
         }
         SQLExpression<?> elseExp = caseExp.getElseExp();

@@ -22,18 +22,15 @@ import com.google.common.collect.ImmutableMap;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.samskivert.depot.DatabaseException;
+import com.samskivert.depot.Log;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.Transformer;
 import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.Computed;
 import com.samskivert.depot.annotation.GeneratedValue;
 import com.samskivert.depot.annotation.Transform;
-import com.samskivert.jdbc.ColumnDefinition;
-
-import com.samskivert.util.ByteEnum;
-import com.samskivert.util.ByteEnumUtil;
-import com.samskivert.util.Logger;
-import com.samskivert.util.StringUtil;
+import com.samskivert.depot.impl.jdbc.ColumnDefinition;
+import com.samskivert.depot.util.ByteEnum;
 
 /**
  * Handles the marshalling and unmarshalling of a particular field of a persistent object.
@@ -88,12 +85,12 @@ public abstract class FieldMarshaller<T>
                 return createTransformingMarshaller(xformer, field, xform);
             } catch (InstantiationException e) {
                 throw new IllegalArgumentException(
-                    Logger.format("Unable to create Transformer", "xclass", xform.value(),
-                                  "field", field), e);
+                    Log.format("Unable to create Transformer", "xclass", xform.value(),
+                               "field", field), e);
             } catch (IllegalAccessException e) {
                 throw new IllegalArgumentException(
-                    Logger.format("Unable to create Transformer", "xclass", xform.value(),
-                                  "field", field), e);
+                    Log.format("Unable to create Transformer", "xclass", xform.value(),
+                               "field", field), e);
             }
         }
 
@@ -277,10 +274,8 @@ public abstract class FieldMarshaller<T>
                 }
             }
         }
-        if (column != null) {
-            if (!StringUtil.isBlank(column.name())) {
-                _columnName = column.name();
-            }
+        if (column != null && !column.name().isEmpty()) {
+            _columnName = column.name();
         }
 
         if (_computed != null) {
@@ -673,11 +668,11 @@ public abstract class FieldMarshaller<T>
         }
         @Override public ByteEnum getFromSet (ResultSet rs) throws SQLException {
             Number value = (Number)rs.getObject(getColumnName());
-            return (value == null) ? null : ByteEnumUtil.fromByte(_eclass, value.byteValue());
+            return (value == null) ? null : ByteEnum.Util.fromByte(_eclass, value.byteValue());
         }
         @Override public ByteEnum getFromSet (ResultSet rs, int index) throws SQLException {
             Number value = (Number)rs.getObject(index);
-            return (value == null) ? null : ByteEnumUtil.fromByte(_eclass, value.byteValue());
+            return (value == null) ? null : ByteEnum.Util.fromByte(_eclass, value.byteValue());
         }
         @Override public void writeToObject (Object po, ByteEnum value)
             throws IllegalArgumentException, IllegalAccessException {

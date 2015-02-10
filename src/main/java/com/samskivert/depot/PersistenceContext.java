@@ -17,14 +17,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import com.samskivert.io.PersistenceException;
-import com.samskivert.util.StringUtil;
-
-import com.samskivert.jdbc.ConnectionProvider;
-import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.jdbc.JDBCUtil;
-import com.samskivert.jdbc.LiaisonRegistry;
-
 import com.samskivert.depot.CacheAdapter.CacheCategory;
 import com.samskivert.depot.CacheAdapter.CachedValue;
 import com.samskivert.depot.annotation.TableGenerator;
@@ -37,6 +29,9 @@ import com.samskivert.depot.impl.KeyCacheKey;
 import com.samskivert.depot.impl.Modifier;
 import com.samskivert.depot.impl.Operation;
 import com.samskivert.depot.impl.SQLBuilder;
+import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
+import com.samskivert.depot.impl.jdbc.JDBCUtil;
+import com.samskivert.depot.impl.jdbc.LiaisonRegistry;
 
 import static com.samskivert.depot.Log.log;
 
@@ -163,6 +158,15 @@ public class PersistenceContext
     public CacheAdapter getCacheAdapter ()
     {
         return _cache;
+    }
+
+    /**
+     * Returns an object that handles metadata management for Depot. This is not usually needed for
+     * normal operation.
+     */
+    public DepotMetaData getMetaData ()
+    {
+        return _meta;
     }
 
     /**
@@ -612,13 +616,7 @@ public class PersistenceContext
         }
 
         long preConnect = System.nanoTime();
-        Connection conn;
-        try {
-            conn = connop.get();
-        } catch (PersistenceException pe) {
-            throw new DatabaseException("Failed get connection [ident=" + _ident +
-                                        ", isRO=" + isReadOnly + "]", pe);
-        }
+        Connection conn = connop.get();
 
         // wrap the connection in a proxy that will collect all opened statements
         List<Statement> stmts = Lists.newArrayListWithCapacity(1);
@@ -667,7 +665,7 @@ public class PersistenceContext
                     // the MySQL JDBC driver has the annoying habit of including the embedded
                     // exception stack trace in the message of their outer exception; if I want a
                     // fucking stack trace, I'll call printStackTrace() thanksverymuch
-                    String msg = StringUtil.split(String.valueOf(sqe), "\n")[0];
+                    String msg = String.valueOf(sqe).split("\n")[0];
                     log.info("Transient failure executing op, retrying [error=" + msg + "].");
 
                 } else {
@@ -695,7 +693,7 @@ public class PersistenceContext
     }
 
     interface ConnOp {
-        Connection get () throws PersistenceException;
+        Connection get ();
         void done (Connection conn) throws SQLException;
         boolean fail (Connection conn, SQLException sqe);
         void release (Connection conn);
@@ -706,7 +704,7 @@ public class PersistenceContext
         public NonTxOp (boolean readOnly) {
             this.readOnly = readOnly;
         }
-        public Connection get () throws PersistenceException {
+        public Connection get () {
             return _conprov.getConnection(_ident, readOnly);
         }
         public void done (Connection conn) throws SQLException {
@@ -731,7 +729,7 @@ public class PersistenceContext
         public TxOp (Transaction tx) {
             this.tx = tx;
         }
-        public Connection get () throws PersistenceException {
+        public Connection get () {
             return tx.getConnection();
         }
         public void done (Connection conn) throws SQLException {

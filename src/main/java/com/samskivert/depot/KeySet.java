@@ -14,9 +14,6 @@ import java.util.Iterator;
 import com.google.common.collect.Iterators;
 import com.google.common.base.Function;
 
-import com.samskivert.util.Logger;
-import com.samskivert.util.StringUtil;
-
 import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
@@ -167,7 +164,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
         }
 
         @Override public String toString () {
-            return DepotUtil.justClassName(_pClass) + StringUtil.toString(_keys);
+            return DepotUtil.justClassName(_pClass) + Arrays.toString(_keys);
         }
 
         protected Comparable<?>[] _keys;
@@ -216,7 +213,7 @@ public abstract class KeySet<T extends PersistentRecord> extends WhereClause
     public void validateFlushType (Class<?> pClass)
     {
         if (!pClass.equals(_pClass)) {
-            throw new IllegalArgumentException(Logger.format(
+            throw new IllegalArgumentException(Log.format(
                 "Class mismatch between persistent record and cache invalidator",
                 "record", pClass.getSimpleName(), "invtype", _pClass.getSimpleName()));
         }

@@ -6,8 +6,9 @@ package com.samskivert.depot.clause;
 
 import java.util.Collection;
 
+import com.google.common.collect.ObjectArrays;
+
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.util.ArrayUtil;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FragmentVisitor;
 import com.samskivert.depot.impl.expression.LiteralExp;
@@ -89,8 +90,8 @@ public class OrderBy implements QueryClause
      */
     public OrderBy thenAscending (SQLExpression<?> value)
     {
-        return new OrderBy(ArrayUtil.append(_values, value),
-                           ArrayUtil.append(_orders, Order.ASC));
+        return new OrderBy(ObjectArrays.concat(_values, value),
+                           ObjectArrays.concat(_orders, Order.ASC));
     }
 
     /**
@@ -98,8 +99,8 @@ public class OrderBy implements QueryClause
      */
     public OrderBy thenDescending (SQLExpression<?> value)
     {
-        return new OrderBy(ArrayUtil.append(_values, value),
-                           ArrayUtil.append(_orders, Order.DESC));
+        return new OrderBy(ObjectArrays.concat(_values, value),
+                           ObjectArrays.concat(_orders, Order.DESC));
     }
 
     // from SQLExpression

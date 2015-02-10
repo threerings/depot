@@ -5,17 +5,13 @@
 package com.samskivert.depot.impl;
 
 import java.lang.reflect.Field;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-
 import java.util.Map;
 import java.util.Set;
 
-import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.jdbc.LiaisonRegistry;
-import com.samskivert.util.StringUtil;
+import com.google.common.base.Joiner;
 
 import com.samskivert.depot.Exps;
 import com.samskivert.depot.PersistentRecord;
@@ -30,6 +26,8 @@ import com.samskivert.depot.impl.expression.DateFun.DatePart;
 import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
 import com.samskivert.depot.impl.expression.IntervalExp;
 import com.samskivert.depot.impl.expression.RandomExp;
+import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
+import com.samskivert.depot.impl.jdbc.LiaisonRegistry;
 
 public class PostgreSQLBuilder
     extends SQLBuilder
@@ -284,7 +282,7 @@ public class PostgreSQLBuilder
         //
         String[] searchTerms = fullText.getQuery().toLowerCase().trim().split("\\W+");
         String operator = fullText.isMatchAll() ? "&" : "|";
-        return StringUtil.join(searchTerms, operator);
+        return Joiner.on(operator).join(searchTerms);
     }
 
     // Translate the mildly abstracted full-text parser/dictionary configuration support

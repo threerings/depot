@@ -13,13 +13,12 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 
-import com.samskivert.jdbc.ColumnDefinition;
-import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.jdbc.HsqldbLiaison;
-import com.samskivert.jdbc.MySQLLiaison;
-import com.samskivert.jdbc.PostgreSQLLiaison;
-
 import com.samskivert.depot.PersistenceContext;
+import com.samskivert.depot.impl.jdbc.ColumnDefinition;
+import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
+import com.samskivert.depot.impl.jdbc.HsqldbLiaison;
+import com.samskivert.depot.impl.jdbc.MySQLLiaison;
+import com.samskivert.depot.impl.jdbc.PostgreSQLLiaison;
 
 /**
  * Does something extraordinary.
@@ -138,6 +137,19 @@ public class DepotMetaData
                     " and " + liaison.columnSQL(MV_COLUMN) + " = " + guardVersion);
             }
         }) > 0;
+    }
+
+    /**
+     * Removes the version for the specified persistent class. This is useful if the class's table
+     * is being dropped.
+     */
+    public void clearVersion (final String pClass) {
+        _ctx.invoke(new Modifier.Simple() {
+            @Override protected String createQuery (DatabaseLiaison liaison) {
+                return "delete from " + liaison.tableSQL(SCHEMA_VERSION_TABLE) +
+                    " where " + liaison.columnSQL(P_COLUMN) + " = '" + pClass + "'";
+            }
+        });
     }
 
     /**

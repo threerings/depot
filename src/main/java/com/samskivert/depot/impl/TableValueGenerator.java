@@ -13,9 +13,8 @@ import java.util.Arrays;
 
 import com.samskivert.depot.annotation.GeneratedValue;
 import com.samskivert.depot.annotation.TableGenerator;
-
-import com.samskivert.jdbc.ColumnDefinition;
-import com.samskivert.jdbc.DatabaseLiaison;
+import com.samskivert.depot.impl.jdbc.ColumnDefinition;
+import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
 
 /**
  * Generates primary keys using an external table .

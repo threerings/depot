@@ -8,17 +8,17 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import com.samskivert.jdbc.DatabaseLiaison;
+import com.samskivert.depot.CacheAdapter.CacheCategory;
 import com.samskivert.depot.CacheKey;
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.DepotRepository;
 import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.Stats;
-import com.samskivert.depot.CacheAdapter.CacheCategory;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.SelectClause;
 import com.samskivert.depot.clause.WhereClause;
+import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
 
 import static com.samskivert.depot.Log.log;
 

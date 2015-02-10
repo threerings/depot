@@ -16,15 +16,13 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import com.samskivert.util.ByteEnum;
-
 import com.samskivert.depot.Key;
-import com.samskivert.depot.expression.ColumnExp;
-
 import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.annotation.Transform;
+import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.impl.FieldMarshaller;
+import com.samskivert.depot.util.ByteEnum;
 
 import static org.junit.Assert.*;
 

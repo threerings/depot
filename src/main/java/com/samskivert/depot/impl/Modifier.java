@@ -15,7 +15,7 @@ import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.Stats;
-import com.samskivert.jdbc.DatabaseLiaison;
+import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
 
 /**
  * Encapsulates a modification of persistent objects.

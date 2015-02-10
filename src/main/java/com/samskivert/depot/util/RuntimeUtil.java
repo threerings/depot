@@ -17,7 +17,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.util.Tuple;
+import com.samskivert.depot.util.Tuple2;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -263,14 +263,14 @@ public class RuntimeUtil
 
     protected static Function<Object, Object> getconv (Class<?> fc, Class<?> tc)
     {
-        return _converters.get(Tuple.newTuple(fc, tc));
+        return _converters.get(Tuple2.create(fc, tc));
     }
 
     protected static <F, T> void regconv (Class<F> fc, Class<T> tc, Function<F, T> conv)
     {
         @SuppressWarnings("unchecked") Function<Object, Object> value =
             (Function<Object, Object>)conv;
-        _converters.put(Tuple.newTuple(fc, tc), value);
+        _converters.put(Tuple2.create(fc, tc), value);
     }
 
     protected static Map<Object, Function<Object, Object>> _converters =

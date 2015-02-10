@@ -9,8 +9,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import com.samskivert.jdbc.DatabaseLiaison;
 import com.samskivert.depot.annotation.GeneratedValue;
+import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
 
 import static com.samskivert.depot.Log.log;
 

@@ -10,7 +10,7 @@ import java.sql.Statement;
 
 import com.samskivert.depot.PersistenceContext;
 import com.samskivert.depot.Stats;
-import com.samskivert.jdbc.DatabaseLiaison;
+import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
 
 /**
  * An abstraction that encompasses both {@link Fetcher} and {@link Modifier} operations.

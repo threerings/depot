@@ -6,15 +6,14 @@ package com.samskivert.depot.impl;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-
 import java.util.Map;
 import java.util.Set;
 
-import com.samskivert.depot.clause.Distinct;
-import com.samskivert.util.StringUtil;
+import com.google.common.base.Joiner;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.FullTextIndex;
+import com.samskivert.depot.clause.Distinct;
 import com.samskivert.depot.clause.OrderBy;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.operator.FullText;
@@ -188,10 +187,10 @@ public class MySQLBuilder
         String[] searchTerms = fullText.getQuery().toLowerCase().trim().split("\\W+");
         if (fullText.isMatchAll()) {
             // Prepend every search term with a plus for ANDing
-            return '+' + StringUtil.join(searchTerms, " +");
+            return "+" + Joiner.on(" +").join(searchTerms);
         } else {
             // Use the default OR matching
-            return StringUtil.join(searchTerms, " ");
+            return Joiner.on(" ").join(searchTerms);
         }
     }
 

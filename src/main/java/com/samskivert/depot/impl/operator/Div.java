@@ -4,7 +4,7 @@
 
 package com.samskivert.depot.impl.operator;
 
-import com.samskivert.util.StringUtil;
+import java.util.Arrays;
 
 import com.samskivert.depot.expression.SQLExpression;
 
@@ -34,7 +34,7 @@ public class Div<T extends Number> extends Arithmetic<T>
     {
         for (int ii = 1; ii < operands.length; ii ++) {
             if (Double.valueOf(0).equals(NUMERICAL.apply(operands[ii]))) {
-                return new NoValue("Division by zero in: " + StringUtil.toString(operands));
+                return new NoValue("Division by zero in: " + Arrays.toString(operands));
             }
         }
         return evaluate(operands, "/", new Accumulator<Double>() {

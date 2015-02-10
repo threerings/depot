@@ -2,7 +2,7 @@
 // Depot library - a Java relational persistence library
 // https://github.com/threerings/depot/blob/master/LICENSE
 
-package com.samskivert.depot.impl;
+package com.samskivert.depot;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -10,8 +10,9 @@ import java.sql.SQLException;
 import com.samskivert.depot.DataMigration;
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.PersistenceContext;
-
-import com.samskivert.jdbc.DatabaseLiaison;
+import com.samskivert.depot.impl.DepotMetaData;
+import com.samskivert.depot.impl.Modifier;
+import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
 
 /**
  * Migration to drop a table.
@@ -47,16 +48,7 @@ public class DropTableMigration extends DataMigration
                 }
             });
         // delete the schema version
-        _ctx.invoke(new Modifier.Simple() {
-                @Override protected String createQuery (DatabaseLiaison liaison)
-                {
-                    return "delete from " +
-                            liaison.tableSQL(DepotMetaData.SCHEMA_VERSION_TABLE) +
-                            " where " +
-                            liaison.columnSQL(DepotMetaData.P_COLUMN) +
-                            " = '" + _table + "'";
-                }
-            });
+        _ctx.getMetaData().clearVersion(_table);
     }
 
     /** Our persistence context. */

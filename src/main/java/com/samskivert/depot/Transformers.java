@@ -25,11 +25,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 
-import com.samskivert.util.ByteEnum;
-import com.samskivert.util.ByteEnumUtil;
-
 import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.Transform;
+import com.samskivert.depot.util.ByteEnum;
 
 import static com.samskivert.depot.Log.log;
 
@@ -61,13 +59,13 @@ public class Transformers
         @Override
         public Integer toPersistent (Set<E> value)
         {
-            return (value == null) ? null : ByteEnumUtil.setToInt(value);
+            return (value == null) ? null : ByteEnum.Util.setToInt(value);
         }
 
         @Override
         public Set<E> fromPersistent (Integer encoded)
         {
-            return (encoded == null) ? null : ByteEnumUtil.intToSet(_eclass, encoded);
+            return (encoded == null) ? null : ByteEnum.Util.intToSet(_eclass, encoded);
         }
 
         /** The enum class token. */

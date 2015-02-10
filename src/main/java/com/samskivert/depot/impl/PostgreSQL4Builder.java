@@ -14,7 +14,7 @@ import java.sql.Timestamp;
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.Exps;
 import com.samskivert.depot.impl.operator.In;
-import com.samskivert.util.ByteEnum;
+import com.samskivert.depot.util.ByteEnum;
 
 /**
  * Specializes our PostgreSQL builder for JDBC4.

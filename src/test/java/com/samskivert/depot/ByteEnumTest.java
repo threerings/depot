@@ -9,9 +9,8 @@ import java.lang.reflect.Field;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import com.samskivert.util.ByteEnum;
-
 import com.samskivert.depot.impl.FieldMarshaller;
+import com.samskivert.depot.util.ByteEnum;
 
 /**
  * Tests ByteEnum related bits.

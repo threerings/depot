@@ -12,8 +12,8 @@ import java.util.Properties;
 
 import com.google.common.collect.Lists;
 
-import com.samskivert.jdbc.ConnectionProvider;
-import com.samskivert.jdbc.StaticConnectionProvider;
+import com.samskivert.depot.ConnectionProvider;
+import com.samskivert.depot.StaticConnectionProvider;
 import com.samskivert.util.Calendars;
 
 import static org.junit.Assert.*;

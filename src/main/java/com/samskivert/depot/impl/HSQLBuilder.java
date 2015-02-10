@@ -7,6 +7,7 @@ package com.samskivert.depot.impl;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,21 +24,19 @@ import com.samskivert.depot.clause.OrderBy;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.expression.AggregateFun;
-import com.samskivert.depot.impl.expression.DateFun.DatePart;
 import com.samskivert.depot.impl.expression.DateFun.DatePart.Part;
+import com.samskivert.depot.impl.expression.DateFun.DatePart;
 import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
 import com.samskivert.depot.impl.expression.LiteralExp;
 import com.samskivert.depot.impl.expression.NumericalFun;
 import com.samskivert.depot.impl.expression.StringFun.Lower;
 import com.samskivert.depot.impl.expression.ValueExp;
+import com.samskivert.depot.impl.jdbc.ColumnDefinition;
 import com.samskivert.depot.impl.operator.BitAnd;
 import com.samskivert.depot.impl.operator.BitOr;
 import com.samskivert.depot.impl.operator.Like;
 import com.samskivert.depot.impl.operator.MultiOperator;
 import com.samskivert.depot.operator.FullText;
-import com.samskivert.util.ArrayUtil;
-
-import com.samskivert.jdbc.ColumnDefinition;
 
 public class HSQLBuilder
     extends SQLBuilder
@@ -92,10 +91,11 @@ public class HSQLBuilder
                 getFullTextIndex(match.getDefinition().getName()).fields();
 
             // explode the query into words
-            String[] ftsWords = match.getDefinition().getQuery().toLowerCase().split("\\W+");
-            if (ftsWords.length > 0 && ftsWords[0].length() == 0) {
+            List<String> ftsWords = Arrays.asList(
+                match.getDefinition().getQuery().toLowerCase().split("\\W+"));
+            if (ftsWords.size() > 0 && ftsWords.get(0).length() == 0) {
                 // if the query led with whitespace, the first 'word' will be empty; strip it
-                ftsWords = ArrayUtil.splice(ftsWords, 0, 1);
+                ftsWords = ftsWords.subList(1, ftsWords.size());
             }
 
             // now iterate over the cartesian product of the query words & the fields

@@ -6,10 +6,11 @@ package com.samskivert.depot.impl.expression;
 
 import java.util.Collection;
 
+import com.google.common.base.Joiner;
+
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.expression.SQLExpression;
-import com.samskivert.util.StringUtil;
 
 public interface Function
 {
@@ -91,7 +92,7 @@ public interface Function
         @Override
         public String toString ()
         {
-            return getCanonicalFunctionName() + "(" + StringUtil.join(_args, ", ") + ")";
+            return getCanonicalFunctionName() + "(" + Joiner.on(", ").join(_args) + ")";
         }
     }
 }

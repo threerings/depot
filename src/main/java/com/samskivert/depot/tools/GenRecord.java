@@ -4,24 +4,17 @@
 
 package com.samskivert.depot.tools;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import java.lang.reflect.*;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -29,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
 
 import com.samskivert.depot.PersistentRecord;
@@ -36,10 +30,6 @@ import com.samskivert.depot.annotation.GeneratedValue;
 import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.annotation.Transient;
 import com.samskivert.depot.impl.DepotUtil;
-import com.samskivert.io.StreamUtil;
-import com.samskivert.util.ClassUtil;
-import com.samskivert.util.GenUtil;
-import com.samskivert.util.StringUtil;
 
 public abstract class GenRecord
 {
@@ -95,9 +85,9 @@ public abstract class GenRecord
         List<Field> kflist = Lists.newArrayList();
         if (!Modifier.isAbstract(rclass.getModifiers())) {
             // determine which fields make up our primary key; we'd just use Class.getFields() but
-            // that returns things in a random order whereas ClassUtil returns fields in
-            // declaration order starting from the top-most class and going down the line
-            for (Field field : ClassUtil.getFields(rclass)) {
+            // that returns things in a random order whereas ours returns fields in declaration
+            // order starting from the top-most class and going down the line
+            for (Field field : getFields(rclass)) {
                 if (hasAnnotation(field, Id.class)) kflist.add(field);
                 else if (hasAnnotation(field, GeneratedValue.class)) {
                     logWarn("Skipping " + rclass.getName() + ".  Field '" + field.getName() +
@@ -221,7 +211,7 @@ public abstract class GenRecord
             Map<String, String> fsubs = Maps.newHashMap(subs);
             fsubs.put("type", getTypeName(f.getGenericType()));
             fsubs.put("field", fname);
-            fsubs.put("capfield", StringUtil.unStudlyName(fname).toUpperCase());
+            fsubs.put("capfield", unStudlyName(fname).toUpperCase());
 
             // now generate our bits
             fsection.append(mergeTemplate(COL_TMPL, fsubs));
@@ -242,9 +232,9 @@ public abstract class GenRecord
                     fieldNameList.append(", ");
                 }
                 String name = keyField.getName();
-                argList.append(GenUtil.simpleName(keyField)).append(" ").append(name);
+                argList.append(simpleName(keyField.getGenericType())).append(" ").append(name);
                 argNameList.append(name);
-                fieldNameList.append(StringUtil.unStudlyName(name));
+                fieldNameList.append(unStudlyName(name));
             }
 
             subs.put("argList", argList.toString());
@@ -264,31 +254,23 @@ public abstract class GenRecord
 
         if (fsection.length() > 0) {
             String prev = get(lines, nstart-1);
-            if (!StringUtil.isBlank(prev) && !prev.equals("{")) {
-                pout.println();
-            }
+            if (!isBlank(prev) && !prev.equals("{")) pout.println();
             pout.println("    " + FIELDS_START);
             pout.write(fsection.toString());
             pout.println("    " + FIELDS_END);
-            if (!StringUtil.isBlank(get(lines, nend))) {
-                pout.println();
-            }
+            if (!isBlank(get(lines, nend))) pout.println();
         }
         for (int ii = nend; ii < mstart; ii++) {
             pout.println(lines[ii]);
         }
 
         if (msection.length() > 0) {
-            if (!StringUtil.isBlank(get(lines, mstart-1))) {
-                pout.println();
-            }
+            if (!isBlank(get(lines, mstart-1))) pout.println();
             pout.println("    " + METHODS_START);
             pout.write(msection.toString());
             pout.println("    " + METHODS_END);
             String next = get(lines, mend);
-            if (!StringUtil.isBlank(next) && !next.equals("}")) {
-                pout.println();
-            }
+            if (!isBlank(next) && !next.equals("}")) pout.println();
         }
         for (int ii = mend; ii < lines.length; ii++) {
             pout.println(lines[ii]);
@@ -340,8 +322,8 @@ public abstract class GenRecord
     protected String mergeTemplate (String tmpl, Map<String, String> subs)
     {
         try {
-            String text = StreamUtil.toString(
-                getClass().getClassLoader().getResourceAsStream(tmpl), "UTF-8");
+            InputStream in = getClass().getClassLoader().getResourceAsStream(tmpl);
+            String text = CharStreams.toString(new InputStreamReader(in, "UTF-8"));
             text = text.replace("\n", System.getProperty("line.separator"));
             for (Map.Entry<String, String> entry : subs.entrySet()) {
                 text = text.replaceAll("@"+entry.getKey()+"@", entry.getValue());
@@ -432,6 +414,121 @@ public abstract class GenRecord
         } else {
             throw new IllegalArgumentException("Unknown kind of type '" + type + "'");
         }
+    }
+
+    protected static Field[] getFields (Class<?> clazz)
+    {
+        List<Field> list = Lists.newArrayList();
+        getFields(clazz, list);
+        return list.toArray(new Field[list.size()]);
+    }
+
+    protected static void getFields (Class<?> clazz, List<Field> addTo)
+    {
+        // first get the fields of the superclass
+        Class<?> pclazz = clazz.getSuperclass();
+        if (pclazz != null && !pclazz.equals(Object.class)) getFields(pclazz, addTo);
+
+        // then reflect on this class's declared fields
+        Field[] fields = clazz.getDeclaredFields();
+
+        // override the default accessibility check for the fields
+        try {
+            AccessibleObject.setAccessible(fields, true);
+        } catch (SecurityException se) {
+            // ah well, only publics for us
+        }
+
+        for (Field field : fields) {
+            int mods = field.getModifiers();
+            // skip static and transient fields
+            if (Modifier.isStatic(mods) || Modifier.isTransient(mods)) continue;
+            addTo.add(field);
+        }
+    }
+
+    protected static String simpleName (Type type)
+    {
+        if (type instanceof GenericArrayType) {
+            return simpleName(((GenericArrayType)type).getGenericComponentType()) + "[]";
+        } else if (type instanceof Class<?>) {
+            Class<?> clazz = (Class<?>)type;
+            if (clazz.isArray()) {
+                return simpleName(clazz.getComponentType()) + "[]";
+            } else {
+                Package pkg = clazz.getPackage();
+                int offset = (pkg == null) ? 0 : pkg.getName().length()+1;
+                return clazz.getName().substring(offset).replace('$', '.');
+            }
+
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType pt = (ParameterizedType)type;
+            StringBuilder buf = new StringBuilder();
+            for (Type arg : pt.getActualTypeArguments()) {
+                if (buf.length() > 0) {
+                    buf.append(", ");
+                }
+                buf.append(simpleName(arg));
+            }
+            return simpleName(pt.getRawType()) + "<" + buf + ">";
+
+        } else if (type instanceof WildcardType) {
+            WildcardType wt = (WildcardType)type;
+            if (wt.getLowerBounds().length > 0) {
+                String errmsg = "Generation of simple name for wildcard type with lower bounds " +
+                    "not implemented [type=" + type +
+                    ", lbounds=" + Arrays.toString(wt.getLowerBounds()) + "]";
+                throw new IllegalArgumentException(errmsg);
+            }
+            if (wt.getUpperBounds().length > 1) {
+                String errmsg = "Generation of simple name for wildcard type with multiple upper " +
+                    "bounds not implemented [type=" + type +
+                    ", ubounds=" + Arrays.toString(wt.getUpperBounds()) + "]";
+                throw new IllegalArgumentException(errmsg);
+            }
+            StringBuilder buf = new StringBuilder("?");
+            if (!Object.class.equals(wt.getUpperBounds()[0])) {
+                buf.append(" extends ").append(simpleName(wt.getUpperBounds()[0]));
+            }
+            return buf.toString();
+
+        } else if (type instanceof TypeVariable) {
+            return ((TypeVariable<?>)type).getName();
+
+        } else {
+            throw new IllegalArgumentException("Can't generate simple name [type=" + type + "]");
+        }
+    }
+
+    protected static boolean isBlank (String value)
+    {
+        for (int ii = 0, ll = (value == null) ? 0 : value.length(); ii < ll; ii++) {
+            if (!Character.isWhitespace(value.charAt(ii))) return false;
+        }
+        return true;
+    }
+
+    protected static String unStudlyName (String name)
+    {
+        boolean seenLower = false;
+        StringBuilder nname = new StringBuilder();
+        int nlen = name.length();
+        for (int i = 0; i < nlen; i++) {
+            char c = name.charAt(i);
+            // if we see an upper case character and we've seen a lower case character since the
+            // last time we did so, slip in an _
+            if (Character.isUpperCase(c)) {
+                if (seenLower) {
+                    nname.append("_");
+                }
+                seenLower = false;
+                nname.append(c);
+            } else {
+                seenLower = true;
+                nname.append(Character.toUpperCase(c));
+            }
+        }
+        return nname.toString();
     }
 
     /** Used to do our own classpath business. */

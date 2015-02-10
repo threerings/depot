@@ -7,12 +7,11 @@ package com.samskivert.depot.impl.clause;
 import java.util.Collection;
 import java.util.List;
 
-import com.samskivert.util.Tuple;
-
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.clause.OrderBy.Order;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.util.Tuple2;
 
 import com.samskivert.depot.impl.FragmentVisitor;
 
@@ -27,7 +26,7 @@ public class CreateIndexClause
      * database.
      */
     public CreateIndexClause (Class<? extends PersistentRecord> pClass, String name, boolean unique,
-                              List<Tuple<SQLExpression<?>, Order>> fields)
+                              List<Tuple2<SQLExpression<?>, Order>> fields)
     {
         _pClass = pClass;
         _name = name;
@@ -50,7 +49,7 @@ public class CreateIndexClause
         return _unique;
     }
 
-    public List<Tuple<SQLExpression<?>,Order>> getFields ()
+    public List<Tuple2<SQLExpression<?>,Order>> getFields ()
     {
         return _fields;
     }
@@ -72,5 +71,5 @@ public class CreateIndexClause
     protected boolean _unique;
 
     /** The components of the index, e.g. columns or functions of columns. */
-    protected List<Tuple<SQLExpression<?>,Order>> _fields;
+    protected List<Tuple2<SQLExpression<?>,Order>> _fields;
 }

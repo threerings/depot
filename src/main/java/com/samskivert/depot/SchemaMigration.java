@@ -8,13 +8,12 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
 
-import com.samskivert.jdbc.ColumnDefinition;
-import com.samskivert.jdbc.DatabaseLiaison;
-
 import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.impl.FieldMarshaller;
 import com.samskivert.depot.impl.Modifier;
+import com.samskivert.depot.impl.jdbc.ColumnDefinition;
+import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.samskivert.depot.Log.log;

@@ -8,8 +8,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import com.samskivert.jdbc.DatabaseLiaison;
 import com.samskivert.depot.annotation.GeneratedValue;
+import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
 
 /**
  * Generates primary keys using an identity column.

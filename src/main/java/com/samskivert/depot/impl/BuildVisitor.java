@@ -16,10 +16,6 @@ import com.google.common.collect.Maps;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.samskivert.depot.clause.Distinct;
-import com.samskivert.util.ByteEnum;
-import com.samskivert.util.Tuple;
-
 import com.samskivert.depot.Exps;
 import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistentRecord;
@@ -39,29 +35,30 @@ import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.*;
 import com.samskivert.depot.operator.Case;
 import com.samskivert.depot.operator.FullText;
+import com.samskivert.depot.util.ByteEnum;
+import com.samskivert.depot.util.Tuple2;
 import static com.samskivert.depot.Log.log;
 
+import com.samskivert.depot.clause.Distinct;
 import com.samskivert.depot.impl.clause.CreateIndexClause;
 import com.samskivert.depot.impl.clause.DeleteClause;
 import com.samskivert.depot.impl.clause.DropIndexClause;
 import com.samskivert.depot.impl.clause.UpdateClause;
-import com.samskivert.depot.impl.expression.AggregateFun;
-import com.samskivert.depot.impl.expression.IntervalExp;
-import com.samskivert.depot.impl.expression.LiteralExp;
-import com.samskivert.depot.impl.expression.RandomExp;
-import com.samskivert.depot.impl.expression.ValueExp;
 import com.samskivert.depot.impl.expression.AggregateFun.Average;
 import com.samskivert.depot.impl.expression.AggregateFun.Count;
 import com.samskivert.depot.impl.expression.AggregateFun.Every;
 import com.samskivert.depot.impl.expression.AggregateFun.Max;
 import com.samskivert.depot.impl.expression.AggregateFun.Min;
 import com.samskivert.depot.impl.expression.AggregateFun.Sum;
+import com.samskivert.depot.impl.expression.AggregateFun;
 import com.samskivert.depot.impl.expression.ConditionalFun.Coalesce;
 import com.samskivert.depot.impl.expression.ConditionalFun.Greatest;
 import com.samskivert.depot.impl.expression.ConditionalFun.Least;
 import com.samskivert.depot.impl.expression.DateFun.DatePart;
 import com.samskivert.depot.impl.expression.DateFun.DateTruncate;
 import com.samskivert.depot.impl.expression.DateFun.Now;
+import com.samskivert.depot.impl.expression.IntervalExp;
+import com.samskivert.depot.impl.expression.LiteralExp;
 import com.samskivert.depot.impl.expression.NumericalFun.Abs;
 import com.samskivert.depot.impl.expression.NumericalFun.Ceil;
 import com.samskivert.depot.impl.expression.NumericalFun.Exp;
@@ -75,12 +72,14 @@ import com.samskivert.depot.impl.expression.NumericalFun.Round;
 import com.samskivert.depot.impl.expression.NumericalFun.Sign;
 import com.samskivert.depot.impl.expression.NumericalFun.Sqrt;
 import com.samskivert.depot.impl.expression.NumericalFun.Trunc;
+import com.samskivert.depot.impl.expression.RandomExp;
 import com.samskivert.depot.impl.expression.StringFun.Length;
 import com.samskivert.depot.impl.expression.StringFun.Lower;
 import com.samskivert.depot.impl.expression.StringFun.Position;
 import com.samskivert.depot.impl.expression.StringFun.Substring;
 import com.samskivert.depot.impl.expression.StringFun.Trim;
 import com.samskivert.depot.impl.expression.StringFun.Upper;
+import com.samskivert.depot.impl.expression.ValueExp;
 import com.samskivert.depot.impl.operator.BinaryOperator;
 import com.samskivert.depot.impl.operator.Exists;
 import com.samskivert.depot.impl.operator.In;
@@ -214,11 +213,11 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     public Void visit (Case<?> caseExp)
     {
         _builder.append("(case ");
-        for (Tuple<SQLExpression<?>, SQLExpression<?>> tuple : caseExp.getWhenExps()) {
+        for (Tuple2<SQLExpression<?>, SQLExpression<?>> tuple : caseExp.getWhenExps()) {
             _builder.append(" when ");
-            tuple.left.accept(this);
+            tuple.a.accept(this);
             _builder.append(" then ");
-            tuple.right.accept(this);
+            tuple.b.accept(this);
         }
         SQLExpression<?> elseExp = caseExp.getElseExp();
         if (elseExp != null) {
@@ -511,8 +510,8 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     public Void visit (CreateIndexClause createIndexClause)
     {
         if (!_allowComplexIndices) {
-            for (Tuple<SQLExpression<?>, Order> field : createIndexClause.getFields()) {
-                if (!(field.left instanceof ColumnExp<?>)) {
+            for (Tuple2<SQLExpression<?>, Order> field : createIndexClause.getFields()) {
+                if (!(field.a instanceof ColumnExp<?>)) {
                     log.warning("This database can't handle complex indexes. Not creating.",
                         "ixName", createIndexClause.getName());
                     return null;
@@ -532,7 +531,7 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
         // turn off table abbreviations here
         _defaultType = createIndexClause.getPersistentClass();
         boolean comma = false;
-        for (Tuple<SQLExpression<?>, Order> field : createIndexClause.getFields()) {
+        for (Tuple2<SQLExpression<?>, Order> field : createIndexClause.getFields()) {
             if (comma) {
                 _builder.append(", ");
             }
@@ -544,11 +543,11 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
             if (_allowComplexIndices) {
                 _builder.append("(");
             }
-            field.left.accept(this);
+            field.a.accept(this);
             if (_allowComplexIndices) {
                 _builder.append(")");
             }
-            if (field.right == Order.DESC) {
+            if (field.b == Order.DESC) {
                 // ascending is default, print nothing unless explicitly descending
                 _builder.append(" desc");
             }

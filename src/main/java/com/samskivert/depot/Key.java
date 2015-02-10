@@ -10,9 +10,8 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.google.common.base.Function;
+import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
-
-import com.samskivert.util.StringUtil;
 
 import com.samskivert.depot.clause.WhereClause;
 import com.samskivert.depot.expression.ColumnExp;
@@ -260,7 +259,7 @@ public class Key<T extends PersistentRecord> extends WhereClause
 
         // finally make sure we were not given any fields that are not primary key fields
         checkArgument(map.isEmpty(), "Non-key columns given: " +
-                      StringUtil.join(map.keySet().toArray()));
+                      Joiner.on(", ").join(map.keySet()));
 
         return cvalues;
     }

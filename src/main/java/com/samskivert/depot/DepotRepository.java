@@ -19,12 +19,9 @@ import java.util.Set;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.ObjectArrays;
 import com.google.common.collect.Sets;
 import static com.google.common.base.Preconditions.checkArgument;
-
-import com.samskivert.jdbc.ConnectionProvider;
-import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.util.ArrayUtil;
 
 import com.samskivert.depot.clause.InsertClause;
 import com.samskivert.depot.clause.Limit;
@@ -48,6 +45,7 @@ import com.samskivert.depot.impl.SQLBuilder;
 import com.samskivert.depot.impl.clause.DeleteClause;
 import com.samskivert.depot.impl.clause.UpdateClause;
 import com.samskivert.depot.impl.expression.ValueExp;
+import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
 import com.samskivert.depot.impl.util.SeqImpl;
 
 /**
@@ -143,7 +141,7 @@ public abstract class DepotRepository
         Key<T> key, CacheStrategy strategy, QueryClause... clauses)
         throws DatabaseException
     {
-        clauses = ArrayUtil.append(clauses, key);
+        clauses = ObjectArrays.concat(clauses, key);
         return _ctx.invoke(new FindOneQuery<T>(_ctx, key.getPersistentClass(), strategy, clauses));
     }
 

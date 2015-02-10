@@ -4,8 +4,6 @@
 
 package com.samskivert.depot;
 
-import com.samskivert.io.PersistenceException;
-import com.samskivert.jdbc.ConnectionProvider;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -122,7 +120,7 @@ public class Transaction {
         }
     }
 
-    Connection getConnection () throws PersistenceException
+    Connection getConnection ()
     {
         if (_conn == null) _conn = ctx._conprov.getTxConnection(ctx._ident);
         return _conn;

@@ -18,17 +18,13 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Function;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import static com.google.common.base.Preconditions.checkArgument;
-
-import com.samskivert.jdbc.ColumnDefinition;
-import com.samskivert.jdbc.DatabaseLiaison;
-import com.samskivert.util.StringUtil;
-import com.samskivert.util.Tuple;
 
 import com.samskivert.depot.DatabaseException;
 import com.samskivert.depot.Key;
@@ -50,6 +46,9 @@ import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.clause.CreateIndexClause;
+import com.samskivert.depot.impl.jdbc.ColumnDefinition;
+import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
+import com.samskivert.depot.util.Tuple2;
 import static com.samskivert.depot.Log.log;
 
 /**
@@ -100,9 +99,9 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
 
         // introspect on the class and create marshallers and indices for persistent fields
         List<ColumnExp<?>> fields = Lists.newArrayList();
-        ListMultimap<String, Tuple<SQLExpression<?>, Order>> namedFieldIndices =
+        ListMultimap<String, Tuple2<SQLExpression<?>, Order>> namedFieldIndices =
             ArrayListMultimap.create();
-        ListMultimap<String, Tuple<SQLExpression<?>, Order>> uniqueNamedFieldIndices =
+        ListMultimap<String, Tuple2<SQLExpression<?>, Order>> uniqueNamedFieldIndices =
             ArrayListMultimap.create();
         for (Field field : _pClass.getFields()) {
             int mods = field.getModifiers();
@@ -183,8 +182,8 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
                     "Unique columns are implicitly indexed and should not be @Index'd.");
 
                 String name = index.name().equals("") ? field.getName() + "Index" : index.name();
-                Tuple<SQLExpression<?>, Order> entry =
-                    new Tuple<SQLExpression<?>, Order>(fieldColumn, Order.ASC);
+                Tuple2<SQLExpression<?>, Order> entry =
+                    new Tuple2<SQLExpression<?>, Order>(fieldColumn, Order.ASC);
                 if (index.unique()) {
                     checkArgument(!namedFieldIndices.containsKey(index.name()),
                                   "All @Index for a particular name must be unique or non-unique");
@@ -931,27 +930,27 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
 
     protected CreateIndexClause buildIndex (String name, boolean unique, Object config)
     {
-        List<Tuple<SQLExpression<?>, Order>> definition = Lists.newArrayList();
+        List<Tuple2<SQLExpression<?>, Order>> definition = Lists.newArrayList();
         if (config instanceof ColumnExp<?>) {
-            definition.add(new Tuple<SQLExpression<?>, Order>((ColumnExp<?>)config, Order.ASC));
+            definition.add(new Tuple2<SQLExpression<?>, Order>((ColumnExp<?>)config, Order.ASC));
         } else if (config instanceof ColumnExp<?>[]) {
             for (ColumnExp<?> column : (ColumnExp<?>[])config) {
-                definition.add(new Tuple<SQLExpression<?>, Order>(column, Order.ASC));
+                definition.add(new Tuple2<SQLExpression<?>, Order>(column, Order.ASC));
             }
         } else if (config instanceof SQLExpression) {
-            definition.add(new Tuple<SQLExpression<?>, Order>((SQLExpression<?>)config, Order.ASC));
-        } else if (config instanceof Tuple<?,?>) {
-            @SuppressWarnings("unchecked") Tuple<SQLExpression<?>, Order> tuple =
-                (Tuple<SQLExpression<?>, Order>)config;
+            definition.add(new Tuple2<SQLExpression<?>, Order>((SQLExpression<?>)config, Order.ASC));
+        } else if (config instanceof Tuple2<?,?>) {
+            @SuppressWarnings("unchecked") Tuple2<SQLExpression<?>, Order> tuple =
+                (Tuple2<SQLExpression<?>, Order>)config;
             definition.add(tuple);
         } else if (config instanceof List<?>) {
-            @SuppressWarnings("unchecked") List<Tuple<SQLExpression<?>, Order>> defs =
-                (List<Tuple<SQLExpression<?>, Order>>)config;
+            @SuppressWarnings("unchecked") List<Tuple2<SQLExpression<?>, Order>> defs =
+                (List<Tuple2<SQLExpression<?>, Order>>)config;
             definition.addAll(defs);
         } else {
             throw new IllegalArgumentException(
                 "Method '" + name + "' must return ColumnExp[], SQLExpression or " +
-                "List<Tuple<SQLExpression, Order>>");
+                "List<Tuple2<SQLExpression, Order>>");
         }
         return new CreateIndexClause(_pClass, getTableName() + "_" + name, unique, definition);
     }
@@ -1087,10 +1086,15 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             return true;
         }
 
-        @Override
-        public String toString ()
+        @Override public String toString ()
         {
-            return StringUtil.fieldsToString(this);
+            return MoreObjects.toStringHelper(this).
+                add("tableExists", tableExists).
+                add("tableColumns", tableColumns).
+                add("indexColumns", indexColumns).
+                add("pkName", pkName).
+                add("pkColumns", pkColumns).
+                toString();
         }
     }
 

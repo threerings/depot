@@ -13,7 +13,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.samskivert.util.Histogram;
 
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.CacheManager;
@@ -43,10 +42,10 @@ public class EHCacheAdapter
 {
     public static class EHCachePerformance
     {
-        public Histogram lookups;
-        public Histogram stores;
-        public Histogram removes;
-        public Histogram enumerations;
+        public Stats.Histogram lookups;
+        public Stats.Histogram stores;
+        public Stats.Histogram removes;
+        public Stats.Histogram enumerations;
     }
 
     public static class EHCacheConfig
@@ -412,10 +411,10 @@ public class EHCacheAdapter
     };
 
     protected CacheManager _cachemgr;
-    protected Histogram _lookups = new Histogram(0, 50, 20);
-    protected Histogram _stores = new Histogram(0, 50, 20);
-    protected Histogram _removes = new Histogram(0, 50, 20);
-    protected Histogram _enumerations = new Histogram(0, 50, 20);
+    protected Stats.Histogram _lookups = new Stats.Histogram(0, 50, 20);
+    protected Stats.Histogram _stores = new Stats.Histogram(0, 50, 20);
+    protected Stats.Histogram _removes = new Stats.Histogram(0, 50, 20);
+    protected Stats.Histogram _enumerations = new Stats.Histogram(0, 50, 20);
 
     protected Map<CacheCategory, Ehcache> _categories =
         Collections.synchronizedMap(Maps.<CacheCategory, Ehcache>newHashMap());

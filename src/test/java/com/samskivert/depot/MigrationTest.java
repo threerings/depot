@@ -11,7 +11,7 @@ import org.junit.Test;
 import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.impl.Modifier;
 
-import com.samskivert.jdbc.DatabaseLiaison;
+import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
 
 /**
  * Tests various migrations.

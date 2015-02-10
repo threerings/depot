@@ -33,8 +33,8 @@ import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.clause.SelectClause;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
+import com.samskivert.depot.impl.jdbc.DatabaseLiaison;
 import com.samskivert.depot.impl.operator.In;
-import com.samskivert.jdbc.DatabaseLiaison;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.samskivert.depot.Log.log;

@@ -2,9 +2,6 @@
 // Depot library - a Java relational persistence library
 // https://github.com/threerings/depot/blob/master/LICENSE
 
-/**
- *
- */
 package com.samskivert.depot;
 
 import java.util.Arrays;
@@ -22,8 +19,7 @@ import com.google.common.collect.Sets;
 import com.samskivert.depot.expression.ColumnExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.DepotUtil;
-import com.samskivert.util.StringUtil;
-import com.samskivert.util.Tuple;
+import com.samskivert.depot.util.Tuple2;
 
 /**
  * This class handles the construction of a Where clause from a set of multi-column keys.
@@ -85,7 +81,7 @@ class MultiKeySet<T extends PersistentRecord> extends KeySet<T>
     }
 
     @Override public String toString () {
-        return DepotUtil.justClassName(_pClass) + StringUtil.toString(_keys);
+        return DepotUtil.justClassName(_pClass) + Arrays.toString(_keys);
     }
 
     // note: this method will destructively modify its arguments
@@ -102,11 +98,11 @@ class MultiKeySet<T extends PersistentRecord> extends KeySet<T>
             Comparable<?> maxValue = null;
 
             for (int column : columnsLeft) {
-                Tuple<Comparable<?>, Integer> colChunk = findBiggestChunk(keys, column);
-                if (colChunk.right > maxSize) {
+                Tuple2<Comparable<?>, Integer> colChunk = findBiggestChunk(keys, column);
+                if (colChunk.b > maxSize) {
                     maxColumn = column;
-                    maxSize = colChunk.right;
-                    maxValue = colChunk.left;
+                    maxSize = colChunk.b;
+                    maxValue = colChunk.a;
                 }
             }
 
@@ -125,7 +121,7 @@ class MultiKeySet<T extends PersistentRecord> extends KeySet<T>
     }
 
     // iterate key rows and find the most common value across those rows, in the given column
-    protected Tuple<Comparable<?>, Integer> findBiggestChunk (List<Comparable<?>[]> rows, int col)
+    protected Tuple2<Comparable<?>, Integer> findBiggestChunk (List<Comparable<?>[]> rows, int col)
     {
         int maxCount = 0;
         Comparable<?> maxValue = null;
@@ -146,7 +142,7 @@ class MultiKeySet<T extends PersistentRecord> extends KeySet<T>
                 maxValue = element;
             }
         }
-        return new Tuple<Comparable<?>, Integer>(maxValue, maxCount);
+        return new Tuple2<Comparable<?>, Integer>(maxValue, maxCount);
     }
 
     // find all the rows that contain the given chunk value in the given column. delete these

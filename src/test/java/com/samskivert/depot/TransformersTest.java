@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
 
 import com.google.common.collect.Sets;
 
-import com.samskivert.util.ByteEnum;
+import com.samskivert.depot.util.ByteEnum;
 
 /**
  * Tests the stock transformers.

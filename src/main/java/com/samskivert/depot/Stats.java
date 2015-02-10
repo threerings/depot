@@ -4,7 +4,7 @@
 
 package com.samskivert.depot;
 
-import com.samskivert.util.Histogram;
+import java.util.Arrays;
 
 import static com.samskivert.depot.Log.log;
 
@@ -13,6 +13,77 @@ import static com.samskivert.depot.Log.log;
  */
 public class Stats
 {
+    /** Used for tracking a set of values that fall into a discrete range of values. */
+    public static class Histogram implements Cloneable
+    {
+        public Histogram (int minValue, int bucketWidth, int bucketCount) {
+            _minValue = minValue;
+            _maxValue = minValue + bucketWidth*bucketCount;
+            _bucketWidth = bucketWidth;
+            _buckets = new int[bucketCount];
+        }
+
+        /**
+         * Returns the array containing the bucket values. The zeroth element contains the count of
+         * all values less than <code>minValue</code>, the subsequent <code>bucketCount</code>
+         * elements contain the count of values falling into those buckets and the last element
+         * contains values greater than or equal to <code>maxValue</code>.
+         */
+        public int[] getBuckets () {
+            return _buckets;
+        }
+
+        /**
+         * Generates a terse summary of the count and contents of the values in this histogram.
+         */
+        public String summarize () {
+            StringBuilder buf = new StringBuilder();
+            buf.append(_count).append(":");
+            for (int ii = 0; ii < _buckets.length; ii++) {
+                if (ii > 0) {
+                    buf.append(",");
+                }
+                buf.append(_buckets[ii]);
+            }
+            return buf.toString();
+        }
+
+        @Override public Histogram clone () {
+            try {
+                Histogram chisto = (Histogram)super.clone();
+                chisto._buckets = _buckets.clone();
+                return chisto;
+            } catch (CloneNotSupportedException cnse) {
+                throw new AssertionError(cnse);
+            }
+        }
+
+        @Override public String toString () {
+            return "[min=" + _minValue + ", max=" + _maxValue + ", bwidth=" + _bucketWidth +
+                ", buckets=" + Arrays.toString(_buckets) + "]";
+        }
+
+        void addValue (int value) {
+            if (value < _minValue) {
+                _buckets[0]++;
+            } else if (value >= _maxValue) {
+                _buckets[_buckets.length-1]++;
+            } else {
+                _buckets[(value-_minValue)/_bucketWidth]++;
+            }
+            _count++;
+        }
+        int size () {
+            return _count;
+        }
+        void clear () {
+            Arrays.fill(_buckets, 0);
+        }
+
+        protected int _minValue, _maxValue, _bucketWidth, _count;
+        protected int[] _buckets;
+    }
+
     /**
      * An immutable class used to report statistics on repository activity. Statistics are tracked
      * from the start of the VM and are never reset.
