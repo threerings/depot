@@ -38,7 +38,6 @@ import com.samskivert.depot.expression.*;
 import com.samskivert.depot.operator.Case;
 import com.samskivert.depot.operator.FullText;
 import com.samskivert.depot.util.ByteEnum;
-import com.samskivert.depot.util.Tuple2;
 import static com.samskivert.depot.Log.log;
 
 import com.samskivert.depot.impl.clause.*;
@@ -176,11 +175,11 @@ public abstract class BuildVisitor implements FragmentVisitor<Void>
     public Void visit (Case<?> caseExp)
     {
         _builder.append("(case ");
-        for (Tuple2<SQLExpression<?>, SQLExpression<?>> tuple : caseExp.getWhenExps()) {
+        for (Case.Exp exp : caseExp.getWhenExps()) {
             _builder.append(" when ");
-            tuple.a.accept(this);
+            exp.when.accept(this);
             _builder.append(" then ");
-            tuple.b.accept(this);
+            exp.then.accept(this);
         }
         SQLExpression<?> elseExp = caseExp.getElseExp();
         if (elseExp != null) {

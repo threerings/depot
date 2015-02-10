@@ -9,7 +9,6 @@ import java.util.Arrays;
 
 import com.samskivert.depot.Key;
 import com.samskivert.depot.PersistentRecord;
-import com.samskivert.depot.util.Tuple2;
 
 import com.samskivert.depot.clause.Distinct;
 import com.samskivert.depot.clause.FieldDefinition;
@@ -145,13 +144,13 @@ public class ExpressionEvaluator
 
     public Object visit (Case<?> caseExp)
     {
-        for (Tuple2<SQLExpression<?>, SQLExpression<?>> exp : caseExp.getWhenExps()) {
-            Object result = exp.a.accept(this);
+        for (Case.Exp exp : caseExp.getWhenExps()) {
+            Object result = exp.when.accept(this);
             if (result instanceof NoValue || !(result instanceof Boolean)) {
-                return new NoValue("Failed to evaluate case: " + exp.a + " -> " + result);
+                return new NoValue("Failed to evaluate case: " + exp.when + " -> " + result);
             }
             if (((Boolean) result).booleanValue()) {
-                return exp.b.accept(this);
+                return exp.then.accept(this);
             }
         }
         SQLExpression<?> elseExp = caseExp.getElseExp();

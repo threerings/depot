@@ -12,24 +12,31 @@ import com.google.common.collect.Lists;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FragmentVisitor;
-import com.samskivert.depot.util.Tuple2;
 
 /**
  * The SQL 'case' operator.
  */
-public class Case<T>
-    implements SQLExpression<T>
+public class Case<T> implements SQLExpression<T>
 {
+    public static class Exp {
+        public SQLExpression<?> when;
+        public SQLExpression<?> then;
+        public Exp (SQLExpression<?> when, SQLExpression<?> then) {
+            this.when = when;
+            this.then = then;
+        }
+    }
+
     public Case (SQLExpression<?>... exps)
     {
         int i = 0;
         for (; i + 1 < exps.length; i += 2) {
-            _whenExps.add(Tuple2.<SQLExpression<?>, SQLExpression<?>>create(exps[i], exps[i + 1]));
+            _whenExps.add(new Exp(exps[i], exps[i + 1]));
         }
         _elseExp = (i < exps.length) ? exps[i] : null;
     }
 
-    public List<Tuple2<SQLExpression<?>, SQLExpression<?>>> getWhenExps ()
+    public List<Exp> getWhenExps ()
     {
         return _whenExps;
     }
@@ -48,9 +55,9 @@ public class Case<T>
     // from SQLExpression
     public void addClasses (Collection<Class<? extends PersistentRecord>> classSet)
     {
-        for (Tuple2<SQLExpression<?>, SQLExpression<?>> tuple : _whenExps) {
-            tuple.a.addClasses(classSet);
-            tuple.b.addClasses(classSet);
+        for (Exp exp : _whenExps) {
+            exp.when.addClasses(classSet);
+            exp.then.addClasses(classSet);
         }
         if (_elseExp != null) {
             _elseExp.addClasses(classSet);
@@ -62,9 +69,9 @@ public class Case<T>
     {
         StringBuilder builder = new StringBuilder();
         builder.append("Case(");
-        for (Tuple2<SQLExpression<?>, SQLExpression<?>> tuple : _whenExps) {
-            builder.append(tuple.a.toString()).append("->");
-            builder.append(tuple.b.toString()).append(",");
+        for (Exp exp : _whenExps) {
+            builder.append(exp.when.toString()).append("->");
+            builder.append(exp.then.toString()).append(",");
         }
         if (_elseExp != null) {
             builder.append(_elseExp.toString()).append(")");
@@ -72,6 +79,6 @@ public class Case<T>
         return builder.toString();
     }
 
-    protected List<Tuple2<SQLExpression<?>, SQLExpression<?>>> _whenExps = Lists.newArrayList();
+    protected List<Exp> _whenExps = Lists.newArrayList();
     protected SQLExpression<?> _elseExp;
 }
