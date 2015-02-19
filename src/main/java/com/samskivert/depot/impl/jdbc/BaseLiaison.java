@@ -85,7 +85,7 @@ public abstract class BaseLiaison implements DatabaseLiaison
     public boolean tableContainsColumn (Connection conn, String table, String column)
         throws SQLException
     {
-        ResultSet rs = conn.getMetaData().getColumns(null, null, table, column);
+        ResultSet rs = conn.getMetaData().getColumns(null, getSchemaName(), table, column);
         while (rs.next()) {
             String tname = rs.getString("TABLE_NAME");
             String cname = rs.getString("COLUMN_NAME");
@@ -100,7 +100,7 @@ public abstract class BaseLiaison implements DatabaseLiaison
     public boolean tableContainsIndex (Connection conn, String table, String index)
         throws SQLException
     {
-        ResultSet rs = conn.getMetaData().getIndexInfo(null, null, table, false, true);
+        ResultSet rs = conn.getMetaData().getIndexInfo(null, getSchemaName(), table, false, true);
         while (rs.next()) {
             String tname = rs.getString("TABLE_NAME");
             String iname = rs.getString("INDEX_NAME");
@@ -296,6 +296,12 @@ public abstract class BaseLiaison implements DatabaseLiaison
         executeQuery(conn, "DROP TABLE " + tableSQL(name));
         log("Table '" + name + "' dropped.");
         return true;
+    }
+
+    // from DatabaseLiaison
+    public String getSchemaName ()
+    {
+        return null;
     }
 
     // from DatabaseLiaison

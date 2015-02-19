@@ -204,6 +204,11 @@ public interface DatabaseLiaison
         throws SQLException;
 
     /**
+     * Get the schema name to pass to DatabaseMetaData calls, which may be null.
+     */
+    public String getSchemaName ();
+
+    /**
      * Returns the proper SQL to identify a table. Some databases require table names to be quoted.
      */
     public String tableSQL (String table);

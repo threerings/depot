@@ -1022,25 +1022,25 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             return ctx.invoke(new Fetcher.Trivial<TableMetaData>() {
                 public TableMetaData invoke (PersistenceContext ctx, Connection conn,
                                              DatabaseLiaison dl) throws SQLException {
-                    return new TableMetaData(conn.getMetaData(), tableName);
+                    return new TableMetaData(conn.getMetaData(), dl, tableName);
                 }
             });
         }
 
-        public TableMetaData (DatabaseMetaData meta, String tableName)
+        public TableMetaData (DatabaseMetaData meta, DatabaseLiaison dl, String tableName)
             throws SQLException
         {
-            tableExists = meta.getTables(null, null, tableName, null).next();
+            tableExists = meta.getTables(null, dl.getSchemaName(), tableName, null).next();
             if (!tableExists) {
                 return;
             }
 
-            ResultSet rs = meta.getColumns(null, null, tableName, "%");
+            ResultSet rs = meta.getColumns(null, dl.getSchemaName(), tableName, "%");
             while (rs.next()) {
                 tableColumns.add(rs.getString("COLUMN_NAME"));
             }
 
-            rs = meta.getIndexInfo(null, null, tableName, false, false);
+            rs = meta.getIndexInfo(null, dl.getSchemaName(), tableName, false, false);
             while (rs.next()) {
                 String indexName = rs.getString("INDEX_NAME");
                 Set<String> set = indexColumns.get(indexName);
@@ -1060,7 +1060,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
                 }
             }
 
-            rs = meta.getPrimaryKeys(null, null, tableName);
+            rs = meta.getPrimaryKeys(null, dl.getSchemaName(), tableName);
             while (rs.next()) {
                 pkName = rs.getString("PK_NAME");
                 pkColumns.add(rs.getString("COLUMN_NAME"));
