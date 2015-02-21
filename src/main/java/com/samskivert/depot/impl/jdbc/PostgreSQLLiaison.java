@@ -119,6 +119,14 @@ public class PostgreSQLLiaison extends BaseLiaison
         return true;
     }
 
+    @Override
+    public String getSchemaName ()
+    {
+        // TODO: is this global to all postgres? Should this be discovered by asking
+        // DatabaseMetaData.getSchemas()?
+        return "public";
+    }
+
     // from DatabaseLiaison
     public String columnSQL (String column)
     {
