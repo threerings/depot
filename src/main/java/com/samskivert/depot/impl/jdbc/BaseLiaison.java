@@ -71,7 +71,7 @@ public abstract class BaseLiaison implements DatabaseLiaison
     // from DatabaseLiaison
     public boolean tableExists (Connection conn, String name) throws SQLException
     {
-        ResultSet rs = conn.getMetaData().getTables(null, null, name, null);
+        ResultSet rs = conn.getMetaData().getTables(null, getSchemaName(), name, null);
         while (rs.next()) {
             String tname = rs.getString("TABLE_NAME");
             if (name.equals(tname)) {
