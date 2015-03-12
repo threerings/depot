@@ -7,7 +7,7 @@ Depot currently requires JDK 1.6 or greater.
 ### Integrate with Ivy or Maven
 
 Depot is published to the Maven Central repository and can be added as a dependency using the
-following configuration: `com.samskivert:depot:1.6.5`
+following configuration: `com.samskivert:depot:1.7`
 
 This will automatically include the Google Guava and samskivert dependencies. You can add Ehcache
 as well via `net.sf.ehcache:ehcache:1.6.0` (or a newer version, if available).
