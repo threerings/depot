@@ -24,9 +24,9 @@ public class DataSourceConnectionProvider implements ConnectionProvider
      * Responsibility for the lifecycle of the supplied datasources is left to the caller and is
      * not managed by the connection provider ({@link #shutdown} does nothing).
      *
-     * @param url a URL prefix that can be used by the {@link DatabaseLiaison} to identify the type
-     * of database being accessed by the supplied data sources, this should be one of "jdbc:mysql"
-     * or "jdbc:postgresql" as those are the only two types of database currently supported.
+     * @param url a URL prefix that can be used to identify the type of database being accessed by
+     * the supplied data sources, this should be one of "jdbc:mysql" or "jdbc:postgresql" as those
+     * are the only two types of database currently supported.
      */
     public DataSourceConnectionProvider (String url, DataSource readSource, DataSource writeSource)
     {

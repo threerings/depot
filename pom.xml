@@ -76,7 +76,7 @@
     <dependency>
       <groupId>com.samskivert</groupId>
       <artifactId>samskivert</artifactId>
-      <version>1.8.2</version>
+      <version>1.9</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -130,6 +130,7 @@
         <configuration>
           <quiet>true</quiet>
           <show>public</show>
+          <additionalparam>-Xdoclint:all -Xdoclint:-missing</additionalparam>
           <excludePackageNames>com.samskivert.depot.impl</excludePackageNames>
           <links>
             <link>http://docs.guava-libraries.googlecode.com/git/javadoc/</link>
