@@ -32,10 +32,6 @@ import com.samskivert.depot.impl.jdbc.LiaisonRegistry;
 public class PostgreSQLBuilder
     extends SQLBuilder
 {
-    // Are we running with PostgreSQL 8.3's new FTS engine, or the old one?
-    // TODO: Rip out when no longer needed.
-    public final static boolean PG83 = Boolean.getBoolean("com.samskivert.depot.pg83");
-
     public class PGBuildVisitor extends BuildVisitor
     {
         @Override public Void visit (RandomExp randomExp) {
@@ -60,7 +56,7 @@ public class PostgreSQLBuilder
         }
 
         @Override public Void visit (FullText.Rank rank) {
-            _builder.append(PG83 ? "ts_rank" : "rank").append("(");
+            _builder.append("ts_rank(");
             appendIdentifier("ftsCol_" + rank.getDefinition().getName());
             _builder.append(", to_tsquery('").
             append(translateFTConfig(getFTIndex(rank.getDefinition()).configuration())).
@@ -186,25 +182,16 @@ public class PostgreSQLBuilder
         }
         initColumn.append(")");
 
-        String triggerFun = PG83 ? "tsvector_update_trigger" : "tsearch2";
-
         // build the CREATE TRIGGER
         StringBuilder createTrigger = new StringBuilder("CREATE TRIGGER ").
             append(liaison.columnSQL(trigger)).append(" BEFORE UPDATE OR INSERT ON ").
             append(liaison.tableSQL(table)).
-            append(" FOR EACH ROW EXECUTE PROCEDURE ").append(triggerFun).append("(").
-            append(liaison.columnSQL(column)).append(", ");
-
-            if (PG83) {
-                createTrigger.append("'").
-                append(translateFTConfig(fts.configuration())).
-                append("', ");
-            }
+            append(" FOR EACH ROW EXECUTE PROCEDURE tsvector_update_trigger(").
+            append(liaison.columnSQL(column)).append(", ").
+            append("'").append(translateFTConfig(fts.configuration())).append("', ");
 
         for (int ii = 0; ii < fields.length; ii ++) {
-            if (ii > 0) {
-                createTrigger.append(", ");
-            }
+            if (ii > 0) createTrigger.append(", ");
             createTrigger.append(liaison.columnSQL(_types.getColumnName(pClass, fields[ii])));
         }
         createTrigger.append(")");
@@ -212,8 +199,7 @@ public class PostgreSQLBuilder
         // build the CREATE INDEX
         StringBuilder createIndex = new StringBuilder("CREATE INDEX ").
             append(liaison.columnSQL(index)).append(" ON " ).append(liaison.tableSQL(table)).
-            append(" USING ").append(PG83 ? "GIN" : "GIST").append("(").
-            append(liaison.columnSQL(column)).append(")");
+            append(" USING GIN(").append(liaison.columnSQL(column)).append(")");
 
         Statement stmt = conn.createStatement();
         log.info("Adding full-text search column, index and trigger: " + column + ", " +
@@ -289,10 +275,6 @@ public class PostgreSQLBuilder
     // in FullText to actual PostgreSQL configuration identifiers.
     protected static String translateFTConfig (Configuration configuration)
     {
-        // legacy support
-        if (!PG83) {
-            return "default";
-        }
         switch(configuration) {
         case Simple:
             return "pg_catalog.simple";
