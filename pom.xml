@@ -130,7 +130,9 @@
         <configuration>
           <quiet>true</quiet>
           <show>public</show>
+          <!--
           <additionalparam>-Xdoclint:all -Xdoclint:-missing</additionalparam>
+          -->
           <excludePackageNames>com.samskivert.depot.impl</excludePackageNames>
           <links>
             <link>http://docs.guava-libraries.googlecode.com/git/javadoc/</link>
