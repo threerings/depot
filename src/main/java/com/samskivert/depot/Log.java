@@ -45,7 +45,7 @@ public class Log
         if (args.length < 2) return message;
         StringBuilder sb = new StringBuilder(message);
         sb.append(" [");
-        for (int ii = 0; ii < args.length; ii += 2) {
+        for (int ii = 0, nn = args.length - (args.length % 2); ii < nn; ii += 2) {
             sb.append(args[ii]).append("=").append(args[ii+1]);
         }
         return sb.append("]").toString();
