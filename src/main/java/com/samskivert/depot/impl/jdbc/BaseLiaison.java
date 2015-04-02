@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.List;
 
 import static com.samskivert.depot.Log.log;
@@ -239,7 +240,8 @@ public abstract class BaseLiaison implements DatabaseLiaison
     public boolean createTableIfMissing (Connection conn, String table, List<String> columns,
                                          List<ColumnDefinition> declarations,
                                          List<String> primaryKeyColumns) throws SQLException {
-        return createTableIfMissing(conn, table, columns, declarations, null, primaryKeyColumns);
+        return createTableIfMissing(conn, table, columns, declarations,
+                                    Collections.<List<String>>emptyList(), primaryKeyColumns);
     }
 
     // from DatabaseLiaison
