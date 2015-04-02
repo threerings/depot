@@ -917,12 +917,14 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             throw new IllegalArgumentException(
                 "Index flagged as complex, but no defining method '" + name + "' found.", nsme);
         }
+        Object config;
         try {
-            return buildIndex(name, unique, method.invoke(null));
+            config = method.invoke(null);
         } catch (Exception e) {
             throw new IllegalArgumentException(
                 "Error calling index definition method '" + name + "'", e);
         }
+        return buildIndex(name, unique, config);
     }
 
     protected CreateIndexClause buildIndex (String name, boolean unique, Object config)
