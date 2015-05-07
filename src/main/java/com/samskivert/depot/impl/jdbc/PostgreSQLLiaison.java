@@ -82,6 +82,12 @@ public class PostgreSQLLiaison extends BaseLiaison
                                  Boolean nullable, Boolean unique, String defaultValue)
         throws SQLException
     {
+        // We can create a column as "BIGSERIAL" but when changing we need to say "BIGINT".
+        // TODO: does this handle all cases?
+        if ("BIGSERIAL".equalsIgnoreCase(type)) {
+            type = "BIGINT";
+        }
+
         StringBuilder lbuf = new StringBuilder();
         if (type != null) {
             executeQuery(
