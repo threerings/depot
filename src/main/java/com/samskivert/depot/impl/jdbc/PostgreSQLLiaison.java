@@ -109,7 +109,14 @@ public class PostgreSQLLiaison extends BaseLiaison
             if (lbuf.length() > 0) {
                 lbuf.append(", ");
             }
-            lbuf.append("unique=").append(unique).append(" (not implemented yet)");
+            lbuf.append("unique=").append(unique);
+            if (unique) {
+                executeQuery(
+                        conn, "ALTER TABLE " + tableSQL(table) + "ADD UNIQUE (" +
+                        columnSQL(column) + ")");
+            } else {
+                lbuf.append(" (not implemented yet)");
+            }
         }
         if (defaultValue != null) {
             executeQuery(
