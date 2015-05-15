@@ -6,6 +6,8 @@ package com.samskivert.depot.clause;
 
 import java.util.Collection;
 
+import com.google.common.collect.Lists;
+
 import com.samskivert.depot.Ops;
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.expression.ColumnExp;
@@ -49,6 +51,11 @@ public class Where extends WhereClause
     public Where (SQLExpression<?> condition)
     {
         _condition = condition;
+    }
+
+    public Where (SQLExpression<?> condition1, SQLExpression<?>... andConditions)
+    {
+        _condition = Ops.and(Lists.asList(condition1, andConditions));
     }
 
     @Override // from WhereClause
