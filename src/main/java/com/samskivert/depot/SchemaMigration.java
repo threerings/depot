@@ -186,7 +186,7 @@ public abstract class SchemaMigration extends Modifier
     }
 
     /**
-     * A convenient migration for dropping a column from an entity.
+     * A convenient migration for dropping an index from an entity.
      */
     public static class DropIndex extends SchemaMigration
     {
