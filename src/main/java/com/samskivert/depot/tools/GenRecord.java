@@ -6,6 +6,7 @@ package com.samskivert.depot.tools;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
@@ -16,14 +17,17 @@ import java.util.regex.Pattern;
 
 import java.lang.reflect.*;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.CharStreams;
 import com.google.common.io.Files;
+import com.google.common.io.Resources;
 
 import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.GeneratedValue;
@@ -41,6 +45,14 @@ public abstract class GenRecord
         } catch (Exception e) {
             throw mkFail("Can't resolve PersistentRecord", e);
         }
+    }
+
+    /**
+     * Configures the number of spaces used for each indentation level in generated code. The
+     * default is four.
+     */
+    public void setIndentWidth (int spaces) {
+       _indentWidth = spaces;
     }
 
     /**
@@ -255,9 +267,9 @@ public abstract class GenRecord
         if (fsection.length() > 0) {
             String prev = get(lines, nstart-1);
             if (!isBlank(prev) && !prev.equals("{")) pout.println();
-            pout.println("    " + FIELDS_START);
+            pout.println(makeIndent(1) + FIELDS_START);
             pout.write(fsection.toString());
-            pout.println("    " + FIELDS_END);
+            pout.println(makeIndent(1) + FIELDS_END);
             if (!isBlank(get(lines, nend))) pout.println();
         }
         for (int ii = nend; ii < mstart; ii++) {
@@ -266,9 +278,9 @@ public abstract class GenRecord
 
         if (msection.length() > 0) {
             if (!isBlank(get(lines, mstart-1))) pout.println();
-            pout.println("    " + METHODS_START);
+            pout.println(makeIndent(1) + METHODS_START);
             pout.write(msection.toString());
-            pout.println("    " + METHODS_END);
+            pout.println(makeIndent(1) + METHODS_END);
             String next = get(lines, mend);
             if (!isBlank(next) && !next.equals("}")) pout.println();
         }
@@ -322,15 +334,29 @@ public abstract class GenRecord
     protected String mergeTemplate (String tmpl, Map<String, String> subs)
     {
         try {
-            InputStream in = getClass().getClassLoader().getResourceAsStream(tmpl);
-            String text = CharStreams.toString(new InputStreamReader(in, "UTF-8"));
-            text = text.replace("\n", System.getProperty("line.separator"));
+            URL url = getClass().getClassLoader().getResource(tmpl);
+            List<String> lines = Resources.readLines(url, Charsets.UTF_8);
+            adjustIndent(lines);
+            String lineSep = System.getProperty("line.separator");
+            String text = Joiner.on(lineSep).join(lines) + lineSep;
             for (Map.Entry<String, String> entry : subs.entrySet()) {
-                text = text.replaceAll("@"+entry.getKey()+"@", entry.getValue());
+                text = text.replace("@"+entry.getKey()+"@", entry.getValue());
             }
             return text;
         } catch (Exception e) {
             throw mkFail("Failed processing template [tmpl=" + tmpl + "]", e);
+        }
+    }
+
+    protected void adjustIndent (List<String> lines) {
+        int tmplWidth = TEMPLATE_INDENT_SPACES;
+        for (int ii = 0, ll = lines.size(); ii < ll; ii++) {
+            String line = lines.get(ii);
+            if (line.length() == 0) continue;
+            int cc = 0;
+            while (line.charAt(cc) == ' ' && cc < line.length()) cc++;
+            int depth = cc / tmplWidth;
+            lines.set(ii, makeIndent(depth) + line.substring(depth * tmplWidth));
         }
     }
 
@@ -531,12 +557,19 @@ public abstract class GenRecord
         return nname.toString();
     }
 
+    protected String makeIndent (int depth) {
+        return Strings.repeat(" ", depth * _indentWidth);
+    }
+
     /** Used to do our own classpath business. */
     protected final ClassLoader _cloader;
 
     /** {@link PersistentRecord} resolved with the proper classloader so that we can compare it to
      * loaded derived classes. */
     protected final Class<?> _prclass;
+
+    /** The number of spaces to use for an indent. */
+    protected int _indentWidth = TEMPLATE_INDENT_SPACES;
 
     /** Specifies the path to the name code template. */
     protected static final String PROTO_TMPL = "com/samskivert/depot/tools/record_proto.tmpl";
@@ -546,6 +579,9 @@ public abstract class GenRecord
 
     /** Specifies the path to the key code template. */
     protected static final String KEY_TMPL = "com/samskivert/depot/tools/record_key.tmpl";
+
+    /** The number of spaces for each indent used by the template files. */
+    protected static final int TEMPLATE_INDENT_SPACES = 4;
 
     // markers
     protected static final String MARKER = "// AUTO-GENERATED: ";
