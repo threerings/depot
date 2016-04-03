@@ -59,19 +59,19 @@ public abstract class FluentExp<T>
     }
 
     /** Returns an {@link IsNull} with this expression as its target. */
-    public IsNull isNull ()
+    public FluentExp<Boolean> isNull ()
     {
         return new IsNull(this);
     }
 
     /** Returns an {@link In} with this expression and the supplied values. */
-    public In in (Comparable<?>... values)
+    public FluentExp<Boolean> in (Comparable<?>... values)
     {
         return new In(this, values);
     }
 
     /** Returns an {@link In} with this column and the supplied values. */
-    public In in (Iterable<? extends Comparable<?>> values)
+    public FluentExp<Boolean> in (Iterable<? extends Comparable<?>> values)
     {
         return new In(this, values);
     }

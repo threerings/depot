@@ -7,14 +7,14 @@ package com.samskivert.depot.impl.operator;
 import java.util.Collection;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FragmentVisitor;
 
 /**
  * The SQL 'is null' operator.
  */
-public class IsNull
-    implements SQLExpression<Boolean>
+public class IsNull extends FluentExp<Boolean>
 {
     public IsNull (SQLExpression<?> expression)
     {
