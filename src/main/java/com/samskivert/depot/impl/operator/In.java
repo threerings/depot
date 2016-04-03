@@ -8,14 +8,14 @@ import java.util.Collection;
 
 import com.google.common.collect.Iterables;
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.expression.FluentExp;
 import com.samskivert.depot.expression.SQLExpression;
 import com.samskivert.depot.impl.FragmentVisitor;
 
 /**
  * The SQL 'in (...)' operator.
  */
-public class In
-    implements SQLExpression<Boolean>
+public class In extends FluentExp<Boolean>
 {
     /** The maximum number of keys allowed in an IN() clause. */
     public static final int MAX_KEYS = Short.MAX_VALUE;
