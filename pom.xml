@@ -36,10 +36,6 @@
     </developer>
   </developers>
 
-  <prerequisites>
-    <maven>3.3.0</maven>
-  </prerequisites>
-
   <scm>
     <connection>scm:git:git://github.com/threerings/depot.git</connection>
     <developerConnection>scm:git:git@github.com:threerings/depot.git</developerConnection>
