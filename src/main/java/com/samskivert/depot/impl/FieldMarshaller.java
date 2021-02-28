@@ -558,6 +558,50 @@ public abstract class FieldMarshaller<T>
         }
     }
 
+    protected static class ShortArrayMarshaller extends FieldMarshaller<int[]> {
+        @Override public String getColumnType (ColumnTyper typer, int length) {
+            return typer.getBlobType(length*2);
+        }
+        @Override public short[] getFromObject (Object po)
+            throws IllegalArgumentException, IllegalAccessException {
+            return (short[]) _field.get(po);
+        }
+        @Override public short[] getFromSet (ResultSet rs) throws SQLException {
+            // TODO: why not use getBytes()?
+            return fromBytes((byte[]) rs.getObject(getColumnName()));
+        }
+        @Override public short[] getFromSet (ResultSet rs, int index) throws SQLException {
+            // TODO: why not use getBytes()?
+            return fromBytes((byte[]) rs.getObject(index));
+        }
+        @Override public void writeToObject (Object po, short[] value)
+            throws IllegalArgumentException, IllegalAccessException {
+            _field.set(po, value);
+        }
+        @Override public void writeToStatement (PreparedStatement ps, int column, short[] value)
+            throws SQLException {
+            byte[] raw;
+            if (value == null) {
+                raw = null;
+            } else {
+                ByteBuffer bbuf = ByteBuffer.allocate(value.length*2);
+                bbuf.asShortBuffer().put(value);
+                raw = bbuf.array();
+            }
+            ps.setObject(column, raw);
+        }
+        protected final short[] fromBytes (byte[] raw) {
+            short[] value;
+            if (raw == null) {
+                value = null;
+            } else {
+                value = new short[raw.length/2];
+                ByteBuffer.wrap(raw).asShortBuffer().get(value);
+            }
+            return value;
+        }
+    }
+
     protected static class IntArrayMarshaller extends FieldMarshaller<int[]> {
         @Override public String getColumnType (ColumnTyper typer, int length) {
             return typer.getBlobType(length*4);
@@ -811,6 +855,7 @@ public abstract class FieldMarshaller<T>
 
         // some primitive array types
         put(byte[].class, new ByteArrayMarshaller()).
+        put(short[].class, new ShortArrayMarshaller()).
         put(int[].class, new IntArrayMarshaller()).
         put(long[].class, new LongArrayMarshaller()).
 
