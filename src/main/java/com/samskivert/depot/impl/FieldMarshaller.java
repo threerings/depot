@@ -584,7 +584,7 @@ public abstract class FieldMarshaller<T>
             if (value == null) {
                 raw = null;
             } else {
-                ByteBuffer bbuf = ByteBuffer.allocate(value.length*4);
+                ByteBuffer bbuf = ByteBuffer.allocate(value.length*2);
                 bbuf.asShortBuffer().put(value);
                 raw = bbuf.array();
             }
