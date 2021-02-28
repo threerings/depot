@@ -558,7 +558,7 @@ public abstract class FieldMarshaller<T>
         }
     }
 
-    protected static class ShortArrayMarshaller extends FieldMarshaller<int[]> {
+    protected static class ShortArrayMarshaller extends FieldMarshaller<short[]> {
         @Override public String getColumnType (ColumnTyper typer, int length) {
             return typer.getBlobType(length*2);
         }
