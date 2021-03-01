@@ -263,8 +263,9 @@ public class Transformers
                 @SuppressWarnings({ "unchecked", "rawtypes" })
                 Class<Enum> eclazz = (Class<Enum>)elementType;
                 @SuppressWarnings("unchecked")
-                Set<E> eSet = EnumSet.noneOf(eclazz);
-                set = eSet;
+                EnumSet<E> eSet = EnumSet.noneOf(eclazz);
+                @SuppressWarnings("unchecked")
+                set = (Set<E>)eSet;
             }
             adder = set;
             if (immutable && (clazz == Set.class)) {
