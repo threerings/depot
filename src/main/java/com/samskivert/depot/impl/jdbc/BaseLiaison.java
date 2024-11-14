@@ -39,11 +39,6 @@ public abstract class BaseLiaison implements DatabaseLiaison
     // from DatabaseLiaison
     public abstract boolean isTransientException (SQLException sqe);
 
-    @Deprecated
-    public int lastInsertedId (Connection conn, String table, String column) throws SQLException {
-        return (int)lastInsertedId(conn, null, table, column);
-    }
-
     // from DatabaseLiaison
     public long lastInsertedId (Connection conn, Statement istmt, String table, String column)
         throws SQLException

@@ -44,10 +44,6 @@ public interface DatabaseLiaison
      */
     public boolean isTransientException (SQLException sqe);
 
-    /** @deprecated Use version that takes the insert statement. */
-    @Deprecated
-    public int lastInsertedId (Connection conn, String table, String column) throws SQLException;
-
     /**
      * Attempts as dialect-agnostic an interface as possible to the ability of certain databases to
      * auto-generated numerical values for i.e. key columns; there is MySQL's AUTO_INCREMENT and
