@@ -111,7 +111,7 @@ public class TableValueGenerator extends ValueGenerator
                     ", column=" + _valueColumnName + "]");
             }
             // fetch the next available value
-            int val = rs.getLong(1);
+            long val = rs.getLong(1);
 
             // claim this value locklessly
             writeStatement.setLong(1, val + _allocationSize);

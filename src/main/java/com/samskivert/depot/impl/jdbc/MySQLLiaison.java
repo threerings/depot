@@ -36,7 +36,7 @@ public class MySQLLiaison extends BaseLiaison
     }
 
     @Override // from DatabaseLiaison
-    public void createGenerator (Connection conn, String tableName, String columnName, int initValue)
+    public void createGenerator (Connection conn, String tableName, String columnName, long initValue)
         throws SQLException
     {
         // TODO: is there any way we can set the initial AUTO_INCREMENT value?

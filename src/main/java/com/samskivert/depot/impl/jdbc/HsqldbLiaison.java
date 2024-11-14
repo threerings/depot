@@ -49,7 +49,7 @@ public class HsqldbLiaison extends BaseLiaison
 
     @Override // from DatabaseLiaison
     public void createGenerator (Connection conn, String tableName,
-                                 String columnName, int initValue)
+                                 String columnName, long initValue)
         throws SQLException
     {
         if (initValue == 1) {

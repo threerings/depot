@@ -33,7 +33,7 @@ public class DefaultLiaison extends BaseLiaison
     }
 
     @Override // from DatabaseLiaison
-    public void createGenerator (Connection conn, String tableName, String columnName, int initValue)
+    public void createGenerator (Connection conn, String tableName, String columnName, long initValue)
         throws SQLException
     {
         // nothing doing

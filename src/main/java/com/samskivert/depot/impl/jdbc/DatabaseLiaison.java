@@ -63,7 +63,7 @@ public interface DatabaseLiaison
      * should have no negative effect like resetting it).
      */
     public void createGenerator (Connection conn, String tableName, String columnName,
-                                 int initialValue)
+                                 long initialValue)
         throws SQLException;
 
     /**

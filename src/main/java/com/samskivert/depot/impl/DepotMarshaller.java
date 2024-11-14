@@ -659,7 +659,7 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             }
 
             try {
-                int nextValue = vg.nextGeneratedValue(conn, liaison, stmt);
+                long nextValue = vg.nextGeneratedValue(conn, liaison, stmt);
                 field.set(po, nextValue);
 
             } catch (Exception e) {

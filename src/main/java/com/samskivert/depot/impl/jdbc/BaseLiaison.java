@@ -213,7 +213,7 @@ public abstract class BaseLiaison implements DatabaseLiaison
 
     // from DatabaseLiaison
     public abstract void createGenerator (Connection conn, String tableName, String columnName,
-                                          int initialValue)
+                                          long initialValue)
         throws SQLException;
 
     // from DatabaseLiaison
