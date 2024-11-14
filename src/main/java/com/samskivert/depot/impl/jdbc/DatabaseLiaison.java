@@ -58,7 +58,7 @@ public interface DatabaseLiaison
      * @return the requested inserted id.
      * @throws SQLException if we are unable to obtain the last inserted id.
      */
-    public int lastInsertedId (Connection conn, Statement istmt, String table, String column)
+    public long lastInsertedId (Connection conn, Statement istmt, String table, String column)
         throws SQLException;
 
     /**

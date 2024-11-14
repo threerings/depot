@@ -75,7 +75,7 @@ public class HsqldbLiaison extends BaseLiaison
     }
 
     @Override
-    protected int fetchLastInsertedId (Connection conn, String table, String column)
+    protected long fetchLastInsertedId (Connection conn, String table, String column)
         throws SQLException
     {
         // HSQL does not keep track of per-table-and-column insertion data, so we are pretty much
@@ -85,7 +85,7 @@ public class HsqldbLiaison extends BaseLiaison
          try {
              stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery("call IDENTITY()");
-             return rs.next() ? rs.getInt(1) : super.fetchLastInsertedId(conn, table, column);
+             return rs.next() ? rs.getLong(1) : super.fetchLastInsertedId(conn, table, column);
          } finally {
              JDBCUtil.close(stmt);
          }

@@ -30,7 +30,7 @@ public @interface GeneratedValue
      * initial value is 1. <em>Note:</em> this default differs from the value used by the EJB3
      * persistence framework.
      */
-    int initialValue () default 1;
+    long initialValue () default 1;
 
     /**
      * If there are rows in our corresponding table, this boolean determines whether or not to

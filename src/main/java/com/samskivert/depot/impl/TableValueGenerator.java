@@ -46,7 +46,7 @@ public class TableValueGenerator extends ValueGenerator
             conn, _valueTable,
             Arrays.asList(_pkColumnName, _valueColumnName),
             Arrays.asList(new ColumnDefinition("VARCHAR(255)", true, false, null),
-                          new ColumnDefinition("INTEGER")),
+                          new ColumnDefinition("BIGINT")),
             Arrays.asList(_pkColumnName));
 
         // and also that there's a row in it for us
@@ -58,11 +58,11 @@ public class TableValueGenerator extends ValueGenerator
             return;
         }
 
-        int initialValue = _initialValue;
+        long initialValue = _initialValue;
         if (_migrateIfExists) {
-            Integer max = getFieldMaximum(conn, liaison);
+            Long max = getFieldMaximum(conn, liaison);
             if (max != null) {
-                initialValue = 1 + max.intValue();
+                initialValue = 1 + max.longValue();
             }
         }
 
@@ -71,7 +71,7 @@ public class TableValueGenerator extends ValueGenerator
             liaison.columnSQL(_pkColumnName) + ", " + liaison.columnSQL(_valueColumnName) +
             ") VALUES (?, ?)");
         stmt.setString(1, _pkColumnValue);
-        stmt.setInt(2, initialValue);
+        stmt.setLong(2, initialValue);
         stmt.executeUpdate();
     }
 
@@ -86,7 +86,7 @@ public class TableValueGenerator extends ValueGenerator
     }
 
     @Override // from ValueGenerator
-    public int nextGeneratedValue (Connection conn, DatabaseLiaison liaison, Statement stmt)
+    public long nextGeneratedValue (Connection conn, DatabaseLiaison liaison, Statement stmt)
         throws SQLException
     {
         // TODO: Make this lockless!
@@ -111,12 +111,12 @@ public class TableValueGenerator extends ValueGenerator
                     ", column=" + _valueColumnName + "]");
             }
             // fetch the next available value
-            int val = rs.getInt(1);
+            int val = rs.getLong(1);
 
             // claim this value locklessly
-            writeStatement.setInt(1, val + _allocationSize);
+            writeStatement.setLong(1, val + _allocationSize);
             writeStatement.setString(2, _pkColumnValue);
-            writeStatement.setInt(3, val);
+            writeStatement.setLong(3, val);
 
             // if we modified a row, we know we and nobody else got this particular value!
             if (writeStatement.executeUpdate() == 1) {

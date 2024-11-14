@@ -41,18 +41,18 @@ public abstract class BaseLiaison implements DatabaseLiaison
 
     @Deprecated
     public int lastInsertedId (Connection conn, String table, String column) throws SQLException {
-        return lastInsertedId(conn, null, table, column);
+        return (int)lastInsertedId(conn, null, table, column);
     }
 
     // from DatabaseLiaison
-    public int lastInsertedId (Connection conn, Statement istmt, String table, String column)
+    public long lastInsertedId (Connection conn, Statement istmt, String table, String column)
         throws SQLException
     {
         // if this JDBC driver supports getGeneratedKeys, use it!
         if (istmt != null && conn.getMetaData().supportsGetGeneratedKeys()) {
             ResultSet rs = istmt.getGeneratedKeys();
             if (rs.next()) {
-                return rs.getInt(column);
+                return rs.getLong(column);
             }
         }
         return fetchLastInsertedId(conn, table, column);
@@ -62,7 +62,7 @@ public abstract class BaseLiaison implements DatabaseLiaison
      * Requests the last inserted id for the specified table and column. This is used if a JDBC
      * driver does not support {@code getGeneratedKeys} or an attempt to use that failed.
      */
-    protected int fetchLastInsertedId (Connection conn, String table, String column)
+    protected long fetchLastInsertedId (Connection conn, String table, String column)
         throws SQLException
     {
         throw new SQLException(

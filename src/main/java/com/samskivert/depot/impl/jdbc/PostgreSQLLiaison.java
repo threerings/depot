@@ -35,7 +35,7 @@ public class PostgreSQLLiaison extends BaseLiaison
     }
 
     @Override
-    protected int fetchLastInsertedId (Connection conn, String table, String column)
+    protected long fetchLastInsertedId (Connection conn, String table, String column)
         throws SQLException
     {
         // PostgreSQL's support for auto-generated ID's comes in the form of appropriately named
@@ -46,14 +46,14 @@ public class PostgreSQLLiaison extends BaseLiaison
         try {
             ResultSet rs = stmt.executeQuery(
                 "select currval('\"" + table + "_" + column + "_seq\"')");
-            return rs.next() ? rs.getInt(1) : super.fetchLastInsertedId(conn, table, column);
+            return rs.next() ? rs.getLong(1) : super.fetchLastInsertedId(conn, table, column);
         } finally {
             JDBCUtil.close(stmt);
         }
     }
 
     // from DatabaseLiaison
-    public void createGenerator (Connection conn, String tableName, String columnName, int initValue)
+    public void createGenerator (Connection conn, String tableName, String columnName, long initValue)
         throws SQLException
     {
         if (initValue == 1) {

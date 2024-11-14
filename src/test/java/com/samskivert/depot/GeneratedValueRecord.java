@@ -12,23 +12,23 @@ public class GeneratedValueRecord extends PersistentRecord
 {
     // AUTO-GENERATED: FIELDS START
     public static final Class<GeneratedValueRecord> _R = GeneratedValueRecord.class;
-    public static final ColumnExp<Integer> RECORD_ID = colexp(_R, "recordId");
-    public static final ColumnExp<Integer> VALUE = colexp(_R, "value");
+    public static final ColumnExp<Long> RECORD_ID = colexp(_R, "recordId");
+    public static final ColumnExp<Long> VALUE = colexp(_R, "value");
     // AUTO-GENERATED: FIELDS END
 
-    public static final int SCHEMA_VERSION = 1;
+    public static final int SCHEMA_VERSION = 2;
 
     @Id @GeneratedValue
-    public int recordId;
+    public long recordId;
 
-    public int value;
+    public long value;
 
     // AUTO-GENERATED: METHODS START
     /**
      * Create and return a primary {@link Key} to identify a {@link GeneratedValueRecord}
      * with the supplied key values.
      */
-    public static Key<GeneratedValueRecord> getKey (int recordId)
+    public static Key<GeneratedValueRecord> getKey (long recordId)
     {
         return newKey(_R, recordId);
     }

@@ -35,7 +35,7 @@ public class IdentityValueGenerator extends ValueGenerator
     }
 
     @Override // from ValueGenerator
-    public int nextGeneratedValue (Connection conn, DatabaseLiaison liaison, Statement stmt)
+    public long nextGeneratedValue (Connection conn, DatabaseLiaison liaison, Statement stmt)
         throws SQLException
     {
         return liaison.lastInsertedId(conn, stmt, _dm.getTableName(), _fm.getColumnName());

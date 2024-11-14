@@ -50,7 +50,7 @@ public abstract class ValueGenerator
      * @param stmt if post-factum, the statement that was used to perform the insert which resulted
      * in the auto-generation of a value, otherwise null.
      */
-    public abstract int nextGeneratedValue (Connection conn, DatabaseLiaison liaison, Statement stmt)
+    public abstract long nextGeneratedValue (Connection conn, DatabaseLiaison liaison, Statement stmt)
         throws SQLException;
 
     /**
@@ -61,10 +61,10 @@ public abstract class ValueGenerator
 
     /**
      * Scans the table associated with this {@link ValueGenerator} and returns either null, if
-     * there are no rows, or an {@link Integer} containing the largest numerical value our
+     * there are no rows, or a {@link Long} containing the largest numerical value our
      * field attains.
      */
-    protected Integer getFieldMaximum (Connection conn, DatabaseLiaison liaison)
+    protected Long getFieldMaximum (Connection conn, DatabaseLiaison liaison)
         throws SQLException
     {
         String column = _fm.getColumnName();
@@ -79,9 +79,9 @@ public abstract class ValueGenerator
             return null;
         }
 
-        int cnt = rs.getInt(1);
+        long cnt = rs.getLong(1);
         if (cnt > 0) {
-            return Integer.valueOf(rs.getInt(2));
+            return Long.valueOf(rs.getLong(2));
         }
         return null;
     }
@@ -96,7 +96,7 @@ public abstract class ValueGenerator
         return _fm;
     }
 
-    protected int _initialValue;
+    protected long _initialValue;
     protected int _allocationSize;
     protected boolean _migrateIfExists;
 

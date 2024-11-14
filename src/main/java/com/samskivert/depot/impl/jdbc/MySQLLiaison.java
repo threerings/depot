@@ -50,7 +50,7 @@ public class MySQLLiaison extends BaseLiaison
     }
 
     @Override // from BaseLiaison
-    public int lastInsertedId (Connection conn, Statement istmt, String table, String column)
+    public long lastInsertedId (Connection conn, Statement istmt, String table, String column)
         throws SQLException
     {
         // MySQL uses "GENERATED_KEY" as the column name for the last inserted key, so we have to
@@ -59,7 +59,7 @@ public class MySQLLiaison extends BaseLiaison
     }
 
     @Override
-    protected int fetchLastInsertedId (Connection conn, String table, String column)
+    protected long fetchLastInsertedId (Connection conn, String table, String column)
         throws SQLException
     {
         // MySQL does not keep track of per-table-and-column insertion data, so we are pretty much
@@ -69,7 +69,7 @@ public class MySQLLiaison extends BaseLiaison
         try {
             stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("select LAST_INSERT_ID()");
-            return rs.next() ? rs.getInt(1) : super.fetchLastInsertedId(conn, table, column);
+            return rs.next() ? rs.getLong(1) : super.fetchLastInsertedId(conn, table, column);
         } finally {
             JDBCUtil.close(stmt);
         }
