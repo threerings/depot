@@ -660,7 +660,16 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
 
             try {
                 long nextValue = vg.nextGeneratedValue(conn, liaison, stmt);
-                field.set(po, nextValue);
+                // We get the next generated value from the database as a long, but we have to
+                // narrow it if the primary key field is an `int` or `Integer`. We used to use int
+                // as the default auto-generated key type, so we need this for backwards compat.
+                if (field.getType().equals(int.class) || field.getType().equals(Integer.class)) {
+                    if (nextValue > Integer.MAX_VALUE) throw new IllegalStateException(
+                        "Primary key too large to fit in 'int': " + nextValue);
+                    field.set(po, (int)nextValue);
+                } else {
+                    field.set(po, nextValue); // fingers crossed!
+                }
 
             } catch (Exception e) {
                 throw new IllegalStateException(
