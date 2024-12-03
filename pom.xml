@@ -160,12 +160,12 @@
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.6.8</version>
+        <version>1.6.13</version>
         <extensions>true</extensions>
         <inherited>false</inherited>
         <configuration>
-          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
           <serverId>ossrh-releases</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
           <stagingProfileId>aaa740f9c5c260</stagingProfileId>
         </configuration>
       </plugin>
