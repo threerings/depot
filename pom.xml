@@ -154,10 +154,6 @@
           <show>public</show>
           <additionalparam>-Xdoclint:all -Xdoclint:-missing</additionalparam>
           <excludePackageNames>com.samskivert.depot.impl</excludePackageNames>
-          <links>
-            <link>http://docs.guava-libraries.googlecode.com/git/javadoc/</link>
-            <link>http://ehcache.org/apidocs/</link>
-          </links>
         </configuration>
       </plugin>
 
