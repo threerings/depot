@@ -46,7 +46,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>18.0</version>
+      <version>33.4.0-jre</version>
     </dependency>
     <dependency>
       <groupId>net.sf.ehcache</groupId>
