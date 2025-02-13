@@ -46,6 +46,7 @@ public class Log
         StringBuilder sb = new StringBuilder(message);
         sb.append(" [");
         for (int ii = 0, nn = args.length - (args.length % 2); ii < nn; ii += 2) {
+            if (ii > 0) sb.append(", ");
             sb.append(args[ii]).append("=").append(args[ii+1]);
         }
         return sb.append("]").toString();
