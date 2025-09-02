@@ -38,6 +38,14 @@ public class GenRecordTask extends Task
         _cloader = ClasspathUtils.getClassLoaderForPath(getProject(), pathref);
     }
 
+    /**
+     * Configure an alternate indent width to use for the generated lines.
+     */
+    public void setIndentWidth (int width)
+    {
+        _indentWidth = width;
+    }
+
     @Override
     public void execute () throws BuildException
     {
@@ -59,6 +67,7 @@ public class GenRecordTask extends Task
                 return new BuildException(msg, e);
             }
         };
+        if (_indentWidth != null) genner.setIndentWidth(_indentWidth);
 
         for (FileSet fs : _filesets) {
             DirectoryScanner ds = fs.getDirectoryScanner(getProject());
@@ -75,4 +84,7 @@ public class GenRecordTask extends Task
 
     /** Used to do our own classpath business. */
     protected ClassLoader _cloader;
+
+    /** If non-null, a custom indent width (other than the default of 4). */
+    protected Integer _indentWidth;
 }
