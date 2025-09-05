@@ -951,6 +951,15 @@ public class DepotMarshaller<T extends PersistentRecord> implements QueryMarshal
             definition.add((IndexDesc)config);
         } else if (config instanceof List<?>) {
             @SuppressWarnings("unchecked") List<IndexDesc> defs = (List<IndexDesc>)config;
+            // double check that their list contains objects of the correct type
+            if (defs.size() > 0) {
+                Object def = defs.get(0);
+                if (!(def instanceof IndexDesc)) {
+                    throw new IllegalArgumentException(
+                        "Method '" + name + "' must return ColumnExp[], SQLExpression or " +
+                            "List<IndexDesc>");
+                }
+            }
             definition.addAll(defs);
         } else {
             throw new IllegalArgumentException(
