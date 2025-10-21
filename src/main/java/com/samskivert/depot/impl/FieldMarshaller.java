@@ -7,6 +7,7 @@ package com.samskivert.depot.impl;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
+import java.time.LocalDateTime;
 import java.util.Map;
 
 import java.sql.Blob;
@@ -873,6 +874,19 @@ public abstract class FieldMarshaller<T>
         put(Timestamp.class, new ObjectMarshaller() {
             @Override public String getColumnType (ColumnTyper typer, int length) {
                 return typer.getTimestampType(length);
+            }
+            @Override public void writeToObject (Object po, Object value)
+                throws IllegalArgumentException, IllegalAccessException {
+                // MySQL switched from using Timestamp for DATETIME fields to LocalDateTime; but we
+                // don't want to have to retroactively change a zillion lions of code, so we do the
+                // somewhat hacky thing here of converting a LocalDateTime into a Timestamp.
+                // Presumably any code that used Timestamp correctly did not assume that it had
+                // meaningful timezone information, and I hope no sane person is using a 20 year old
+                // Java persistence library for new code.
+                if (value instanceof LocalDateTime) {
+                    value = Timestamp.valueOf((LocalDateTime)value);
+                }
+                _field.set(po, value);
             }
         }).
         put(Blob.class, new ObjectMarshaller() {
