@@ -23,7 +23,7 @@ public class MySQLLiaison extends BaseLiaison
     public boolean isDuplicateRowException (SQLException sqe)
     {
         String msg = sqe.getMessage();
-        return (msg != null && msg.indexOf("Duplicate entry") != -1);
+        return (sqe.getErrorCode() == 1062) || (msg != null && msg.indexOf("Duplicate entry") != -1);
     }
 
     @Override // from DatabaseLiaison

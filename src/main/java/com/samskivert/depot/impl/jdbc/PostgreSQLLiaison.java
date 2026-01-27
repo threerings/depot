@@ -21,8 +21,9 @@ public class PostgreSQLLiaison extends BaseLiaison
     // from DatabaseLiaison
     public boolean isDuplicateRowException (SQLException sqe)
     {
-        String msg = sqe.getMessage();
-        return (msg != null && msg.indexOf("duplicate key") != -1);
+        // PostgreSQL duplicate key error code is 23505
+        String state = sqe.getSQLState(), msg = sqe.getMessage();
+        return ("23505".equals(state)) || (msg != null && msg.indexOf("duplicate key") != -1);
     }
 
     // from DatabaseLiaison
