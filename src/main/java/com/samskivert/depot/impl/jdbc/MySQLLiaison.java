@@ -29,10 +29,29 @@ public class MySQLLiaison extends BaseLiaison
     @Override // from DatabaseLiaison
     public boolean isTransientException (SQLException sqe)
     {
+        // SQL state class "08" means connection exception per the SQL standard; this covers
+        // lost connections, timeouts, broken pipes, etc. without needing to match message text
+        String sqlState = sqe.getSQLState();
+        if (sqlState != null && sqlState.startsWith("08")) {
+            return true;
+        }
+
+        // also check the causal chain for connection exceptions (MySQL Connector/J's
+        // CommunicationsException is a SQLNonTransientConnectionException which has state "08")
+        Throwable cause = sqe.getCause();
+        if (cause instanceof SQLException) {
+            String causeState = ((SQLException)cause).getSQLState();
+            if (causeState != null && causeState.startsWith("08")) {
+                return true;
+            }
+        }
+
+        // fall back to message matching for older drivers or unexpected exception formats
         String msg = sqe.getMessage();
         return (msg != null && (msg.indexOf("Lost connection") != -1 ||
                                 msg.indexOf("link failure") != -1 ||
                                 msg.indexOf("Broken pipe") != -1 ||
+                                msg.indexOf("disconnected by the server") != -1 ||
                                 msg.indexOf("The last packet successfully received") != -1));
     }
 

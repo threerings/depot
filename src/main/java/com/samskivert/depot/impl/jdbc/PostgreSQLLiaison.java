@@ -29,10 +29,44 @@ public class PostgreSQLLiaison extends BaseLiaison
     // from DatabaseLiaison
     public boolean isTransientException (SQLException sqe)
     {
-        // TODO: Add more error messages here as we encounter them.
+        if (isTransientState(sqe.getSQLState())) {
+            return true;
+        }
+        // also check the causal chain for connection exceptions
+        Throwable cause = sqe.getCause();
+        if (cause instanceof SQLException && isTransientState(((SQLException)cause).getSQLState())) {
+            return true;
+        }
+
+        // fall back to message matching for older drivers or unexpected exception formats
         String msg = sqe.getMessage();
         return (msg != null &&
-                msg.indexOf("An I/O error occured while sending to the backend") != -1);
+                (msg.contains("An I/O error") ||
+                 msg.contains("Connection reset") ||
+                 msg.contains("Connection refused") ||
+                 msg.contains("Connection timed out") ||
+                 msg.contains("Broken pipe") ||
+                 msg.contains("unexpected EOF on client connection") ||
+                 msg.contains("terminating connection due to administrator command") ||
+                 msg.contains("This connection has been closed") ||
+                 msg.contains("No more data to read from socket")));
+    }
+
+    private static boolean isTransientState (String sqlState) {
+        if (sqlState == null) return false;
+        // SQL state class "08" means connection exception (08000 connection_exception,
+        // 08001 sqlclient_unable_to_establish_sqlconnection, 08003 connection_does_not_exist,
+        // 08006 connection_failure, 08P01 protocol_violation)
+        if (sqlState.startsWith("08")) return true;
+        // Class "57P" covers operator intervention: 57P01 admin_shutdown,
+        // 57P02 crash_shutdown, 57P03 cannot_connect_now
+        if (sqlState.startsWith("57P")) return true;
+        // Class "53" covers insufficient resources: 53000 insufficient_resources,
+        // 53100 disk_full, 53200 out_of_memory, 53300 too_many_connections
+        if (sqlState.startsWith("53")) return true;
+        // 40001 serialization_failure, 40P01 deadlock_detected
+        if ("40001".equals(sqlState) || "40P01".equals(sqlState)) return true;
+        return false;
     }
 
     @Override
