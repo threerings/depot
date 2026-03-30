@@ -288,7 +288,9 @@ public class MySQLBuilder
             return "DOUBLE";
         }
         public String getStringType (int length) {
-            return (length < (1 << 15)) ? "VARCHAR(" + length + ")" : "TEXT";
+            // MySQL VARCHAR max is floor(65535/max_char_bytes); for utf8mb4 that's 16383.
+            // Use 16383 as the threshold to be safe with any character set.
+            return (length <= 16383) ? "VARCHAR(" + length + ")" : "TEXT";
         }
         public String getDateType (int length) {
             return "DATE";
