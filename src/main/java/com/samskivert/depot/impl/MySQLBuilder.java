@@ -299,7 +299,7 @@ public class MySQLBuilder
             return "TIME";
         }
         public String getTimestampType (int length) {
-            return "DATETIME";
+            return "TIMESTAMP";
         }
         public String getBlobType (int length) {
             // semi-arbitrarily use VARBINARY() up to 32767
