@@ -201,7 +201,7 @@ public abstract class GenRecord
         // add our prototype declaration
         Map<String, String> subs = Maps.newHashMap();
         // We could add the @Generated annotation, but
-        // - we'd need to add the import for javax.annotation.Generated
+        // - we'd need to add the import for javax.annotation.processing.Generated
         // - it adds a lot of boilerplate to the source file
         // - we can't annotate the static initializer that registers the key fields
         // So it was decided to omit it and the few benefits:
