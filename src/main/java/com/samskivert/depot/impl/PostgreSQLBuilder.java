@@ -317,7 +317,7 @@ public class PostgreSQLBuilder
             return "TIME";
         }
         public String getTimestampType (int length) {
-            return "TIMESTAMP";
+            return "TIMESTAMPTZ";
         }
         public String getBlobType (int length) {
             return "BYTEA";
