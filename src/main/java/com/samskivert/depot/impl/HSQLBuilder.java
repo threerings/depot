@@ -17,6 +17,7 @@ import com.google.common.collect.Lists;
 import com.samskivert.depot.Exps;
 import com.samskivert.depot.Ops;
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.annotation.GeneratedValue;
 import com.samskivert.depot.clause.Distinct;
@@ -271,52 +272,52 @@ public class HSQLBuilder
     }
 
     @Override
-    protected <T> String getColumnType (FieldMarshaller<?> fm, int length)
+    protected <T> String getColumnType (FieldMarshaller<?> fm, Column col)
     {
-        return fm.getColumnType(TYPER, length);
+        return fm.getColumnType(TYPER, col);
     }
 
     /** Holds the Full Text Seach condition between build and bind phases. */
     protected SQLExpression<?> _ftsCondition;
 
     protected static final FieldMarshaller.ColumnTyper TYPER = new FieldMarshaller.ColumnTyper() {
-        public String getBooleanType (int length) {
+        public String getBooleanType (Column col) {
             return "BOOLEAN";
         }
-        public String getByteType (int length) {
+        public String getByteType (Column col) {
             return "TINYINT";
         }
-        public String getShortType (int length) {
+        public String getShortType (Column col) {
             return "SMALLINT";
         }
-        public String getIntType (int length) {
+        public String getIntType (Column col) {
             return "INTEGER";
         }
-        public String getLongType (int length) {
+        public String getLongType (Column col) {
             return "BIGINT";
         }
-        public String getFloatType (int length) {
+        public String getFloatType (Column col) {
             return "REAL";
         }
-        public String getDoubleType (int length) {
+        public String getDoubleType (Column col) {
             return "DOUBLE PRECISION";
         }
-        public String getStringType (int length) {
-            return "VARCHAR(" + length + ")";
+        public String getStringType (Column col) {
+            return "VARCHAR(" + col.length() + ")";
         }
-        public String getDateType (int length) {
+        public String getDateType (Column col) {
             return "DATE";
         }
-        public String getTimeType (int length) {
+        public String getTimeType (Column col) {
             return "TIME";
         }
-        public String getTimestampType (int length) {
+        public String getTimestampType (Column col) {
             return "TIMESTAMP";
         }
-        public String getBlobType (int length) {
-            return "VARBINARY(" + length + ")";
+        public String getBlobType (Column col, int multiplier) {
+            return "VARBINARY(" + (col.length() * multiplier) + ")";
         }
-        public String getClobType (int length) {
+        public String getClobType (Column col) {
             return "VARCHAR";
         }
     };

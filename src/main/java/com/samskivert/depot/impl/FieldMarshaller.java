@@ -45,19 +45,19 @@ public abstract class FieldMarshaller<T>
      * bunch of instanceof casts and to ensure that if a new supported type is added, all of the
      * builders will fail to compile instead of failing at runtime. */
     public static interface ColumnTyper {
-        String getBooleanType (int length);
-        String getByteType (int length);
-        String getShortType (int length);
-        String getIntType (int length);
-        String getLongType (int length);
-        String getFloatType (int length);
-        String getDoubleType (int length);
-        String getStringType (int length);
-        String getDateType (int length);
-        String getTimeType (int length);
-        String getTimestampType (int length);
-        String getBlobType (int length);
-        String getClobType (int length);
+        String getBooleanType (Column col);
+        String getByteType (Column col);
+        String getShortType (Column col);
+        String getIntType (Column col);
+        String getLongType (Column col);
+        String getFloatType (Column col);
+        String getDoubleType (Column col);
+        String getStringType (Column col);
+        String getDateType (Column col);
+        String getTimeType (Column col);
+        String getTimestampType (Column col);
+        String getBlobType (Column col, int multiplier);
+        String getClobType (Column col);
     }
 
     /**
@@ -120,8 +120,8 @@ public abstract class FieldMarshaller<T>
         delegate.create(field);
 
         FieldMarshaller<F> xmarsh = new FieldMarshaller<F>() {
-            @Override public String getColumnType (ColumnTyper typer, int length) {
-                return delegate.getColumnType(typer, length);
+            @Override public String getColumnType (ColumnTyper typer, Column col) {
+                return delegate.getColumnType(typer, col);
             }
             @Override public F getFromObject (Object po)
                 throws IllegalArgumentException, IllegalAccessException {
@@ -201,7 +201,7 @@ public abstract class FieldMarshaller<T>
      * Returns the appropriate column type for this field, given the database specific typer
      * supplied as an argument.
      */
-    public abstract String getColumnType (ColumnTyper typer, int length);
+    public abstract String getColumnType (ColumnTyper typer, Column col);
 
     /**
      * Reads this field from the given persistent object.
@@ -347,8 +347,8 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class BooleanMarshaller extends FieldMarshaller<Boolean> {
-        @Override public String getColumnType (ColumnTyper typer, int length) {
-            return typer.getBooleanType(length);
+        @Override public String getColumnType (ColumnTyper typer, Column col) {
+            return typer.getBooleanType(col);
         }
         @Override public Boolean getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
@@ -371,8 +371,8 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class ByteMarshaller extends FieldMarshaller<Byte> {
-        @Override public String getColumnType (ColumnTyper typer, int length) {
-            return typer.getByteType(length);
+        @Override public String getColumnType (ColumnTyper typer, Column col) {
+            return typer.getByteType(col);
         }
         @Override public Byte getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
@@ -395,8 +395,8 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class ShortMarshaller extends FieldMarshaller<Short> {
-        @Override public String getColumnType (ColumnTyper typer, int length) {
-            return typer.getShortType(length);
+        @Override public String getColumnType (ColumnTyper typer, Column col) {
+            return typer.getShortType(col);
         }
         @Override public Short getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
@@ -419,8 +419,8 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class IntMarshaller extends FieldMarshaller<Integer> {
-        @Override public String getColumnType (ColumnTyper typer, int length) {
-            return typer.getIntType(length);
+        @Override public String getColumnType (ColumnTyper typer, Column col) {
+            return typer.getIntType(col);
         }
         @Override public Integer getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
@@ -443,8 +443,8 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class LongMarshaller extends FieldMarshaller<Long> {
-        @Override public String getColumnType (ColumnTyper typer, int length) {
-            return typer.getLongType(length);
+        @Override public String getColumnType (ColumnTyper typer, Column col) {
+            return typer.getLongType(col);
         }
         @Override public Long getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
@@ -467,8 +467,8 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class FloatMarshaller extends FieldMarshaller<Float> {
-        @Override public String getColumnType (ColumnTyper typer, int length) {
-            return typer.getFloatType(length);
+        @Override public String getColumnType (ColumnTyper typer, Column col) {
+            return typer.getFloatType(col);
         }
         @Override public Float getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
@@ -491,8 +491,8 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class DoubleMarshaller extends FieldMarshaller<Double> {
-        @Override public String getColumnType (ColumnTyper typer, int length) {
-            return typer.getDoubleType(length);
+        @Override public String getColumnType (ColumnTyper typer, Column col) {
+            return typer.getDoubleType(col);
         }
         @Override public Double getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
@@ -536,8 +536,8 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class ByteArrayMarshaller extends FieldMarshaller<byte[]> {
-        @Override public String getColumnType (ColumnTyper typer, int length) {
-            return typer.getBlobType(length);
+        @Override public String getColumnType (ColumnTyper typer, Column col) {
+            return typer.getBlobType(col, 1);
         }
         @Override public byte[] getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
@@ -560,8 +560,8 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class ShortArrayMarshaller extends FieldMarshaller<short[]> {
-        @Override public String getColumnType (ColumnTyper typer, int length) {
-            return typer.getBlobType(length*2);
+        @Override public String getColumnType (ColumnTyper typer, Column col) {
+            return typer.getBlobType(col, 2);
         }
         @Override public short[] getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
@@ -604,8 +604,8 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class IntArrayMarshaller extends FieldMarshaller<int[]> {
-        @Override public String getColumnType (ColumnTyper typer, int length) {
-            return typer.getBlobType(length*4);
+        @Override public String getColumnType (ColumnTyper typer, Column col) {
+            return typer.getBlobType(col, 4);
         }
         @Override public int[] getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
@@ -648,8 +648,8 @@ public abstract class FieldMarshaller<T>
     }
 
     protected static class LongArrayMarshaller extends FieldMarshaller<long[]> {
-        @Override public String getColumnType (ColumnTyper typer, int length) {
-            return typer.getBlobType(length*8);
+        @Override public String getColumnType (ColumnTyper typer, Column col) {
+            return typer.getBlobType(col, 8);
         }
         @Override public long[] getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
@@ -704,8 +704,8 @@ public abstract class FieldMarshaller<T>
                           "ByteEnum not implemented by real Enum: " + field);
         }
 
-        @Override public String getColumnType (ColumnTyper typer, int length) {
-            return typer.getByteType(length);
+        @Override public String getColumnType (ColumnTyper typer, Column col) {
+            return typer.getByteType(col);
         }
         @Override public ByteEnum getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
@@ -736,8 +736,8 @@ public abstract class FieldMarshaller<T>
             _eclass = clazz;
         }
 
-        @Override public String getColumnType (ColumnTyper typer, int length) {
-            return typer.getStringType(length);
+        @Override public String getColumnType (ColumnTyper typer, Column col) {
+            return typer.getStringType(col);
         }
         @Override public E getFromObject (Object po)
             throws IllegalArgumentException, IllegalAccessException {
@@ -790,13 +790,13 @@ public abstract class FieldMarshaller<T>
 
         // boxed primitive types
         put(Boolean.class, new ObjectMarshaller() {
-            @Override public String getColumnType (ColumnTyper typer, int length) {
-                return typer.getBooleanType(length);
+            @Override public String getColumnType (ColumnTyper typer, Column col) {
+                return typer.getBooleanType(col);
             }
         }).
         put(Byte.class, new ObjectMarshaller() {
-            @Override public String getColumnType (ColumnTyper typer, int length) {
-                return typer.getByteType(length);
+            @Override public String getColumnType (ColumnTyper typer, Column col) {
+                return typer.getByteType(col);
             }
             @Override public Object getFromSet (ResultSet rs) throws SQLException {
                 return massageResult(super.getFromSet(rs));
@@ -808,8 +808,8 @@ public abstract class FieldMarshaller<T>
             }
         }).
         put(Short.class, new ObjectMarshaller() {
-            @Override public String getColumnType (ColumnTyper typer, int length) {
-                return typer.getShortType(length);
+            @Override public String getColumnType (ColumnTyper typer, Column col) {
+                return typer.getShortType(col);
             }
             @Override public Object getFromSet (ResultSet rs) throws SQLException {
                 return massageResult(super.getFromSet(rs));
@@ -821,18 +821,18 @@ public abstract class FieldMarshaller<T>
             }
         }).
         put(Integer.class, new ObjectMarshaller() {
-            @Override public String getColumnType (ColumnTyper typer, int length) {
-                return typer.getIntType(length);
+            @Override public String getColumnType (ColumnTyper typer, Column col) {
+                return typer.getIntType(col);
             }
         }).
         put(Long.class, new ObjectMarshaller() {
-            @Override public String getColumnType (ColumnTyper typer, int length) {
-                return typer.getLongType(length);
+            @Override public String getColumnType (ColumnTyper typer, Column col) {
+                return typer.getLongType(col);
             }
         }).
         put(Float.class, new ObjectMarshaller() {
-            @Override public String getColumnType (ColumnTyper typer, int length) {
-                return typer.getFloatType(length);
+            @Override public String getColumnType (ColumnTyper typer, Column col) {
+                return typer.getFloatType(col);
             }
             @Override public Object getFromSet (ResultSet rs) throws SQLException {
                 return massageResult(super.getFromSet(rs));
@@ -844,13 +844,13 @@ public abstract class FieldMarshaller<T>
             }
         }).
         put(Double.class, new ObjectMarshaller() {
-            @Override public String getColumnType (ColumnTyper typer, int length) {
-                return typer.getDoubleType(length);
+            @Override public String getColumnType (ColumnTyper typer, Column col) {
+                return typer.getDoubleType(col);
             }
         }).
         put(String.class, new ObjectMarshaller() {
-            @Override public String getColumnType (ColumnTyper typer, int length) {
-                return typer.getStringType(length);
+            @Override public String getColumnType (ColumnTyper typer, Column col) {
+                return typer.getStringType(col);
             }
         }).
 
@@ -862,18 +862,18 @@ public abstract class FieldMarshaller<T>
 
         // SQL types
         put(Date.class, new ObjectMarshaller() {
-            @Override public String getColumnType (ColumnTyper typer, int length) {
-                return typer.getDateType(length);
+            @Override public String getColumnType (ColumnTyper typer, Column col) {
+                return typer.getDateType(col);
             }
         }).
         put(Time.class, new ObjectMarshaller() {
-            @Override public String getColumnType (ColumnTyper typer, int length) {
-                return typer.getTimeType(length);
+            @Override public String getColumnType (ColumnTyper typer, Column col) {
+                return typer.getTimeType(col);
             }
         }).
         put(Timestamp.class, new ObjectMarshaller() {
-            @Override public String getColumnType (ColumnTyper typer, int length) {
-                return typer.getTimestampType(length);
+            @Override public String getColumnType (ColumnTyper typer, Column col) {
+                return typer.getTimestampType(col);
             }
             @Override public void writeToObject (Object po, Object value)
                 throws IllegalArgumentException, IllegalAccessException {
@@ -890,13 +890,13 @@ public abstract class FieldMarshaller<T>
             }
         }).
         put(Blob.class, new ObjectMarshaller() {
-            @Override public String getColumnType (ColumnTyper typer, int length) {
-                return typer.getBlobType(length);
+            @Override public String getColumnType (ColumnTyper typer, Column col) {
+                return typer.getBlobType(col, 1);
             }
         }).
         put(Clob.class, new ObjectMarshaller() {
-            @Override public String getColumnType (ColumnTyper typer, int length) {
-                return typer.getClobType(length);
+            @Override public String getColumnType (ColumnTyper typer, Column col) {
+                return typer.getClobType(col);
             }
         }).
         build();

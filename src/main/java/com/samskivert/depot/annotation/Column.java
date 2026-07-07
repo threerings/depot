@@ -47,4 +47,9 @@ public @interface Column
      * <code>'2006-01-01'</code> or <code>25</code> or <code>NULL</code>.
      */
     String defaultValue () default "";
+
+    /**
+     * Should date columns contain the time zone?
+     */
+    boolean withTimezone () default true;
 }

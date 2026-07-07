@@ -12,6 +12,7 @@ import java.util.Set;
 import com.google.common.base.Joiner;
 
 import com.samskivert.depot.PersistentRecord;
+import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.clause.Distinct;
 import com.samskivert.depot.clause.OrderBy;
@@ -260,48 +261,50 @@ public class MySQLBuilder
     }
 
     @Override
-    protected <T> String getColumnType (FieldMarshaller<?> fm, int length)
+    protected <T> String getColumnType (FieldMarshaller<?> fm, Column col)
     {
-        return fm.getColumnType(TYPER, length);
+        return fm.getColumnType(TYPER, col);
     }
 
     protected static final FieldMarshaller.ColumnTyper TYPER = new FieldMarshaller.ColumnTyper() {
-        public String getBooleanType (int length) {
+        public String getBooleanType (Column col) {
             return "TINYINT";
         }
-        public String getByteType (int length) {
+        public String getByteType (Column col) {
             return "TINYINT";
         }
-        public String getShortType (int length) {
+        public String getShortType (Column col) {
             return "SMALLINT";
         }
-        public String getIntType (int length) {
+        public String getIntType (Column col) {
             return "INTEGER";
         }
-        public String getLongType (int length) {
+        public String getLongType (Column col) {
             return "BIGINT";
         }
-        public String getFloatType (int length) {
+        public String getFloatType (Column col) {
             return "FLOAT";
         }
-        public String getDoubleType (int length) {
+        public String getDoubleType (Column col) {
             return "DOUBLE";
         }
-        public String getStringType (int length) {
+        public String getStringType (Column col) {
             // MySQL VARCHAR max is floor(65535/max_char_bytes); for utf8mb4 that's 16383.
             // Use 16383 as the threshold to be safe with any character set.
+            int length = col.length();
             return (length <= 16383) ? "VARCHAR(" + length + ")" : "TEXT";
         }
-        public String getDateType (int length) {
+        public String getDateType (Column col) {
             return "DATE";
         }
-        public String getTimeType (int length) {
+        public String getTimeType (Column col) {
             return "TIME";
         }
-        public String getTimestampType (int length) {
+        public String getTimestampType (Column col) {
             return "TIMESTAMP";
         }
-        public String getBlobType (int length) {
+        public String getBlobType (Column col, int multiplier) {
+            int length = col.length() * multiplier;
             // semi-arbitrarily use VARBINARY() up to 32767
             if (length < (1 << 15)) {
                 return "VARBINARY(" + length + ")";
@@ -315,7 +318,7 @@ public class MySQLBuilder
             }
             return "LONGBLOB";
         }
-        public String getClobType (int length) {
+        public String getClobType (Column col) {
             return "TEXT";
         }
     };

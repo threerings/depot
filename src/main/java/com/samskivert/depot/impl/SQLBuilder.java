@@ -5,6 +5,7 @@
 package com.samskivert.depot.impl;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Proxy;
 
 import java.util.Map;
 import java.util.Set;
@@ -108,7 +109,7 @@ public abstract class SQLBuilder
         }
 
         if (coldef.type == null) {
-            coldef.type = getColumnType(fm, (column != null) ? column.length() : 255);
+            coldef.type = getColumnType(fm, (column != null) ? column : _genericColumn);
         }
 
         // sanity check nullability
@@ -244,11 +245,16 @@ public abstract class SQLBuilder
      * Overridden by subclasses to figure the dialect-specific SQL type of the given field.
      * @param length
      */
-    protected abstract <T> String getColumnType (FieldMarshaller<?> fm, int length);
+    protected abstract <T> String getColumnType (FieldMarshaller<?> fm, Column col);
 
     /** The class that maps persistent classes to marshallers. */
     protected DepotTypes _types;
 
     protected QueryClause _clause;
     protected BuildVisitor _buildVisitor;
+
+    /** A basic, unadorned, defaults-for-everything Column annotation. */
+    protected static final Column _genericColumn = (Column)Proxy.newProxyInstance(
+        Column.class.getClassLoader(), new Class<?>[] { Column.class },
+        (proxy, method, args) -> method.getDefaultValue());
 }
