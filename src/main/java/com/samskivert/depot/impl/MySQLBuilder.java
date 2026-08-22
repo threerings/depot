@@ -301,7 +301,10 @@ public class MySQLBuilder
             return "TIME";
         }
         public String getTimestampType (Column col) {
-            return "TIMESTAMP";
+            // MySQL's TIMESTAMP is stored as UTC and converted to/from the session time zone,
+            // making it the timezone-aware type; DATETIME stores the literal value with no
+            // conversion, making it the naive type withTimezone(false) asks for
+            return col.withTimezone() ? "TIMESTAMP" : "DATETIME";
         }
         public String getBlobType (Column col, int multiplier) {
             int length = col.length() * multiplier;

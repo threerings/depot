@@ -312,7 +312,7 @@ public class HSQLBuilder
             return "TIME";
         }
         public String getTimestampType (Column col) {
-            return "TIMESTAMP";
+            return col.withTimezone() ? "TIMESTAMP WITH TIME ZONE" : "TIMESTAMP";
         }
         public String getBlobType (Column col, int multiplier) {
             return "VARBINARY(" + (col.length() * multiplier) + ")";

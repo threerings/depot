@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Map;
 
 import java.sql.Blob;
@@ -885,6 +886,9 @@ public abstract class FieldMarshaller<T>
                 // Java persistence library for new code.
                 if (value instanceof LocalDateTime) {
                     value = Timestamp.valueOf((LocalDateTime)value);
+                } else if (value instanceof OffsetDateTime) {
+                    // HSQLDB hands back OffsetDateTime for TIMESTAMP WITH TIME ZONE columns
+                    value = Timestamp.from(((OffsetDateTime)value).toInstant());
                 }
                 _field.set(po, value);
             }
