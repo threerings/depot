@@ -12,18 +12,26 @@ import org.junit.Test;
 
 import com.google.common.collect.Iterables;
 
+import com.samskivert.depot.impl.DepotTypes;
+import com.samskivert.depot.impl.MySQLBuilder;
+import com.samskivert.depot.impl.PostgreSQLBuilder;
+import com.samskivert.depot.impl.SQLBuilder;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 
 public class GeneratedValueTest
 {
     @Before public void createRepository ()
     {
-        PersistenceContext pc = TestBase.createPersistenceContext();
-        _dr = new DepotRepository(pc) {
+        _pc = TestBase.createPersistenceContext();
+        _dr = new DepotRepository(_pc) {
             @Override
             protected void getManagedRecords (Set<Class<? extends PersistentRecord>> classes) {
                 classes.add(GeneratedValueRecord.class);
                 classes.add(AllGeneratedRecord.class);
+                classes.add(CompositeGeneratedRecord.class);
             }
         };
 
@@ -49,5 +57,37 @@ public class GeneratedValueTest
         assertEquals(1, rec.recordId);
     }
 
+    @Test public void insertCompositeGeneratedValue ()
+    {
+        CompositeGeneratedRecord first = new CompositeGeneratedRecord();
+        assertEquals(1, _dr.insert(first));
+        assertNotEquals(0, first.recordId);
+
+        // the generated column is only half the key, so it may repeat with a different seqId
+        CompositeGeneratedRecord second = new CompositeGeneratedRecord();
+        second.recordId = first.recordId;
+        second.seqId = 1;
+        assertEquals(1, _dr.insert(second));
+        assertEquals(2, _dr.from(CompositeGeneratedRecord.class)
+                     .where(CompositeGeneratedRecord.RECORD_ID.eq(first.recordId)).selectCount());
+    }
+
+    // HsqldbLiaison strips UNIQUE from all primary key columns, so the insert test above can't
+    // catch a stray constraint; check the definitions the other dialects would emit
+    @Test public void compositeGeneratedColumnNotUnique ()
+    {
+        DepotTypes types = new DepotTypes(_pc, CompositeGeneratedRecord.class);
+        assertNotUnique(new PostgreSQLBuilder(types));
+        assertNotUnique(new MySQLBuilder(types));
+    }
+
+    protected void assertNotUnique (SQLBuilder builder)
+    {
+        assertFalse(builder.getClass().getSimpleName(),
+                    builder.buildColumnDefinition(_pc.getMarshaller(CompositeGeneratedRecord.class)
+                                                  .getFieldMarshaller("recordId")).unique);
+    }
+
+    protected PersistenceContext _pc;
     protected DepotRepository _dr;
 }

@@ -263,7 +263,7 @@ public class HSQLBuilder
         case AUTO:
         case IDENTITY:
             column.defaultValue = "IDENTITY";
-            column.unique = true;
+            column.unique = needsUniqueForGeneratedValue(field);
             break;
 
         default:

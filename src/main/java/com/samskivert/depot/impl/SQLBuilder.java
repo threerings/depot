@@ -19,6 +19,7 @@ import com.samskivert.depot.PersistentRecord;
 import com.samskivert.depot.annotation.Column;
 import com.samskivert.depot.annotation.FullTextIndex;
 import com.samskivert.depot.annotation.GeneratedValue;
+import com.samskivert.depot.annotation.Id;
 import com.samskivert.depot.clause.QueryClause;
 import com.samskivert.depot.impl.jdbc.ColumnDefinition;
 import com.samskivert.depot.util.ByteEnum;
@@ -208,7 +209,7 @@ public abstract class SQLBuilder
         case AUTO:
         case IDENTITY:
             coldef.type = getSerialType(field);
-            coldef.unique = true;
+            coldef.unique = needsUniqueForGeneratedValue(field);
             break;
 
         case SEQUENCE: // TODO
@@ -218,6 +219,20 @@ public abstract class SQLBuilder
             // nothing to do here, it'll be handled later
             break;
         }
+    }
+
+    /**
+     * Returns whether an AUTO/IDENTITY generated column must be declared UNIQUE. An {@link Id}
+     * column needs no separate constraint: as the sole key column the primary key already makes it
+     * unique, and as part of a composite key its values legitimately repeat.
+     *
+     * <p>MySQL requires an AUTO_INCREMENT column to lead some index, which the UNIQUE constraint
+     * used to provide. In a composite key only the primary key does now, so the generated field
+     * must be declared before the other {@link Id} fields or MySQL will refuse to create the table.
+     */
+    protected boolean needsUniqueForGeneratedValue (Field field)
+    {
+        return field.getAnnotation(Id.class) == null;
     }
 
     /**
